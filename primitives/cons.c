@@ -1,5 +1,7 @@
 
+#include "malloc.h"
 #include "cons.h"
+#include "value.h"
 
 extern
 cons_t* make_cons(value_t car, value_t cdr) {
