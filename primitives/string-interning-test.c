@@ -41,6 +41,7 @@ TEST(interning_idempotent) {
 }
 
 TEST(interning_interns) {
+  // Formery distinct equal strings become the same after interning.
   const char* foo1 = make("foo");
   const char* foo2 = make("foo");
   ASSERT_TRUE(foo1 != foo2);
