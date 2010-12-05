@@ -48,10 +48,18 @@ TEST(interning_interns) {
   ASSERT_TRUE(intern_string(foo1) == intern_string(foo2));
 }
 
+TEST(interning_predicate) {
+  const char* abc = make("abc");
+  const char* abc2 = intern_string(abc);
+  ASSERT_TRUE(!is_interned(abc));
+  ASSERT_TRUE(is_interned(abc2));
+}
+
 void interning_tests() {
   TESTRUN(simple_interning);
   TESTRUN(interns_to_different_values);
   TESTRUN(interning_different_values);
   TESTRUN(interning_idempotent);
   TESTRUN(interning_interns);
+  TESTRUN(interning_predicate);
 }

@@ -45,3 +45,12 @@ const char* intern_string(const char* s) {
   curr[strlen(s) + 1] = '\0';
   return curr;
 }
+
+bool is_interned(const char* s) {
+  if (interned_strings == NULL) {
+    return NO; // Nothing is interned yet.
+  }
+
+  return TO_BOOL(s >= interned_strings &&
+		 s < interned_strings + INTERNED_DB_SIZE);
+}
