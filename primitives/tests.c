@@ -2,6 +2,7 @@
 #include "tests.h"
 #include "value.h"
 #include "intreg-test.h"
+#include "string-interning-test.h"
 #include <stdio.h>
 
 unsigned int assertion_count = 0;
@@ -16,8 +17,18 @@ extern
 void fail(const char* filename,
 	  unsigned int line,
 	  const char* msg) {
-  printf("%s:%d: FAIL -- %s\n", filename, line, msg);
+  printf("\n%s:%d: FAIL -- %s\n", filename, line, msg);
   failure_count++;
+}
+
+extern
+void assert_true(const char* filename,
+		 unsigned int line,
+		 bool b) {
+  init_assert();
+  if (!b) {
+    fail(filename, line, "Expected true, got false.");
+  }
 }
 
 extern
@@ -36,6 +47,7 @@ int main(int argc, char* argv) {
   printf("Test execution:\n");
   /* Register tests here. */
   intreg_tests();
+  interning_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
