@@ -3,6 +3,8 @@
 #include "value.h"
 #include "intreg-test.h"
 #include "string-interning-test.h"
+#include "cons-test.h"
+
 #include <stdio.h>
 
 unsigned int assertion_count = 0;
@@ -48,6 +50,7 @@ int main(int argc, char* argv) {
   /* Register tests here. */
   intreg_tests();
   interning_tests();
+  cons_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
