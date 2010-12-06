@@ -18,6 +18,11 @@ void assert_true(const char* filename,
 		 unsigned int line,
 		 bool b);
 
+extern
+void assert_nil(const char* filename,
+		unsigned int line,
+		value_t value);
+
 #define FAIL(msg) \
   fail(__FILE__, __LINE__, msg)
 
@@ -26,6 +31,9 @@ void assert_true(const char* filename,
 
 #define ASSERT_TRUE(value) \
   assert_true(__FILE__, __LINE__, value)
+
+#define ASSERT_NIL(value) \
+  assert_nil(__FILE__, __LINE__, value)
 
 #define TEST(name) void name()
 #define TESTRUN(name) name();

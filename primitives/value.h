@@ -9,12 +9,17 @@ typedef char bool;
 #define NO 0
 #define TO_BOOL(b) ((b) ? YES : NO)
 
+#define NIL ((value_t) (uint64) 0L)
+
 struct cons_s;
 
 typedef union value_u {
   uint64 uint;
   struct cons_s* cons;
 } value_t;
+
+extern
+value_t make_uint(uint64 i);
 
 extern
 bool value_eq(value_t a, value_t b);

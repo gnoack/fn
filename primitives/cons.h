@@ -18,4 +18,8 @@ value_t first(value_t cons);
 extern
 value_t rest(value_t cons);
 
+/** End this with nil. */
+extern
+value_t make_list(value_t first, ...);
+
 #endif // _CONS_H_

@@ -34,6 +34,16 @@ void assert_true(const char* filename,
 }
 
 extern
+void assert_nil(const char* filename,
+		unsigned int line,
+		value_t value) {
+  init_assert();
+  if (!is_nil(value)) {
+    fail(filename, line, "Expected true, got false.");
+  }
+}
+
+extern
 void assert_eq(const char* filename,
 	       unsigned int line,
 	       value_t a,
