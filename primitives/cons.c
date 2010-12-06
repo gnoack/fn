@@ -4,20 +4,21 @@
 #include "value.h"
 
 extern
-cons_t* make_cons(value_t car, value_t cdr) {
-  cons_t* cons = malloc(sizeof(cons_t));
-  cons->first = car;
-  cons->rest = cdr;
+value_t make_cons(value_t car, value_t cdr) {
+  value_t cons;
+  cons.cons = malloc(sizeof(cons_t));
+  cons.cons->first = car;
+  cons.cons->rest = cdr;
   return cons;
 }
 
 extern
-value_t first(cons_t* cons) {
-  return cons->first;
+value_t first(value_t cons) {
+  return cons.cons->first;
 }
 
 extern
-value_t rest(cons_t* cons) {
-  return cons->rest;
+value_t rest(value_t cons) {
+  return cons.cons->rest;
 }
 
