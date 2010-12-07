@@ -22,4 +22,6 @@ value_t rest(value_t cons);
 extern
 value_t make_list(value_t first, ...);
 
+#define LIST(...) make_list(__VA_ARGS__, NIL)
+
 #endif // _CONS_H_
