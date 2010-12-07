@@ -58,6 +58,7 @@ void assert_eq(const char* filename,
 int main(int argc, char* argv) {
   printf("Test execution:\n");
   /* Register tests here. */
+  eval_tests();
   intreg_tests();
   interning_tests();
   cons_tests();
