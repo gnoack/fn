@@ -16,10 +16,14 @@ struct cons_s;
 typedef union value_u {
   uint64 uint;
   struct cons_s* cons;
+  const char* string;
 } value_t;
 
 extern
 value_t make_uint(uint64 i);
+
+extern
+value_t make_string(const char* str);
 
 extern
 bool value_eq(value_t a, value_t b);

@@ -1,7 +1,7 @@
 
 HEADERS = *.h
 OBJECTS = intreg.o value.o string-interning.o cons.o
-TESTOBJECTS = intreg-test.o string-interning-test.o cons-test.o tests.o
+TESTOBJECTS = intreg-test.o string-interning-test.o cons-test.o value-test.o tests.o
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
 tests: tests-bin

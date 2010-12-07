@@ -61,6 +61,7 @@ int main(int argc, char* argv) {
   intreg_tests();
   interning_tests();
   cons_tests();
+  value_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
