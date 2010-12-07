@@ -12,19 +12,29 @@ TEST(cons_simple_test) {
   ASSERT_EQ(b, rest(cons));
 }
 
+value_t I(uint64 i) { return make_uint(i); }
+
 TEST(cons_list_test) {
-  value_t l = make_list(make_uint(1),
-			make_uint(2),
-			make_uint(3),
+  value_t l = make_list(I(1),
+			I(2),
+			I(3),
 			NIL);
-  ASSERT_EQ(make_uint(1), first(l));
-  ASSERT_EQ(make_uint(2), first(rest(l)));
-  ASSERT_EQ(make_uint(3), first(rest(rest(l))));
+  ASSERT_EQ(I(1), first(l));
+  ASSERT_EQ(I(2), first(rest(l)));
+  ASSERT_EQ(I(3), first(rest(rest(l))));
   ASSERT_NIL(rest(rest(rest(l))));
+}
+
+TEST(cons_list_macro_test) {
+  value_t l = LIST(I(1), I(2));
+  ASSERT_EQ(I(1), first(l));
+  ASSERT_EQ(I(2), first(rest(l)));
+  ASSERT_NIL(rest(rest(l)));
 }
 
 extern
 void cons_tests() {
   TESTRUN(cons_simple_test);
   TESTRUN(cons_list_test);
+  TESTRUN(cons_list_macro_test);
 }
