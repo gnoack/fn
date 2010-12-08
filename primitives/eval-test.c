@@ -14,6 +14,7 @@ TEST(eval_if_false) {
   ASSERT_EQ(I(50), eval(LIST(S("if"), NIL, I(5), I(50))));
 }
 
+// TODO(gnoack): Tests for: Lambda, Cond.
 // TODO(gnoack): Differ between true, false, nil and 0.
 
 extern
