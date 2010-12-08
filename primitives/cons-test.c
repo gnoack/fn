@@ -18,7 +18,7 @@ TEST(cons_list_test) {
   value_t l = make_list(I(1),
 			I(2),
 			I(3),
-			NIL);
+			end_marker());
   ASSERT_EQ(I(1), first(l));
   ASSERT_EQ(I(2), first(rest(l)));
   ASSERT_EQ(I(3), first(rest(rest(l))));

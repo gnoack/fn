@@ -11,6 +11,11 @@ typedef char bool;
 
 #define NIL ((value_t) (uint64) 0L)
 
+#define CHECK(x, msg)                              \
+  if (!(x)) {                                      \
+    printf("%s:%s: %s", __FILE__, __LINE__, msg);  \
+  }
+
 struct cons_s;
 
 typedef union value_u {
@@ -24,6 +29,18 @@ value_t make_uint(uint64 i);
 
 extern
 value_t make_string(const char* str);
+
+extern
+bool is_nil(value_t a);
+
+extern
+bool is_uint(value_t v);
+
+extern
+bool is_string(value_t v);
+
+extern
+bool is_cons(value_t v);
 
 extern
 bool value_eq(value_t a, value_t b);
