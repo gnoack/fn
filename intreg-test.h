@@ -1,3 +1,0 @@
-
-TEST(simple_add);
-

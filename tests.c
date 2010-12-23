@@ -1,7 +1,6 @@
 
 #include "tests.h"
 #include "value.h"
-#include "intreg-test.h"
 #include "string-interning-test.h"
 #include "cons-test.h"
 
@@ -59,7 +58,6 @@ int main(int argc, char* argv) {
   printf("Test execution:\n");
   /* Register tests here. */
   eval_tests();
-  intreg_tests();
   interning_tests();
   cons_tests();
   value_tests();
