@@ -6,10 +6,11 @@
 #include "string-interning.h"
 
 extern
-oop make_uint(uint i) {
+oop make_smallint(uint i) {
+  // TODO: Upper bounds check!
   oop a;
   a.smallint = (i << 1) | 1L;
-  if (!is_uint(a) || is_nil(a) || is_cons(a) || is_string(a)) {
+  if (!is_smallint(a) || is_nil(a) || is_cons(a) || is_string(a)) {
     printf("An int is an int is an int...\n");
     return NIL;
   }
@@ -20,7 +21,7 @@ extern
 oop make_string(const char* str) {
   oop a;
   a.string = intern_string(str);
-  if (is_uint(a) || is_nil(a) || is_cons(a) || !is_string(a)) {
+  if (is_smallint(a) || is_nil(a) || is_cons(a) || !is_string(a)) {
     printf("A string is a string is a string...\n");
     return NIL;
   }
@@ -33,7 +34,7 @@ oop make_string(const char* str) {
 bool value_eq(oop a, oop b) {
   if (is_string(a) && is_string(b)) {
     return TO_BOOL(a.string == b.string);
-  } else if (is_uint(a) && is_uint(b)) {
+  } else if (is_smallint(a) && is_smallint(b)) {
     return TO_BOOL(a.smallint == b.smallint);
   } else if (is_cons(a) && is_cons(a)) {
     return TO_BOOL(a.cons == b.cons);
@@ -48,7 +49,7 @@ bool is_nil(oop a) {
 }
 
 extern
-bool is_uint(oop v) {
+bool is_smallint(oop v) {
   return TO_BOOL(((v.smallint) & 1) != 0);
 }
 
@@ -59,13 +60,13 @@ bool is_string(oop v) {
 
 extern
 bool is_cons(oop v) {
-  return !is_uint(v) && !is_string(v) && !is_nil(v);
+  return !is_smallint(v) && !is_string(v) && !is_nil(v);
 }
 
 
 // Prints values, for debugging.
 void print_value_internal(oop v) {
-  if (is_uint(v)) {
+  if (is_smallint(v)) {
     printf("%d", (v.smallint >> 1));
   } else if (is_string(v)) {
     printf("%s", v.string);

@@ -32,7 +32,7 @@ typedef union value_u {
 } oop;
 
 extern
-oop make_uint(uint i);
+oop make_smallint(uint i);
 
 extern
 oop make_string(const char* str);
@@ -41,7 +41,7 @@ extern
 bool is_nil(oop a);
 
 extern
-bool is_uint(oop v);
+bool is_smallint(oop v);
 
 extern
 bool is_string(oop v);

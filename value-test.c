@@ -17,8 +17,8 @@ TEST(identifying_conses) {
   ASSERT_TRUE(is_cons(make_cons(make_string("a"), make_string("b"))));
 }
 
-TEST(identifying_uint) {
-  ASSERT_TRUE(is_uint(make_uint(200)));
+TEST(identifying_smallint) {
+  ASSERT_TRUE(is_smallint(make_smallint(200)));
 }
 
 TEST(value_size) {
@@ -32,7 +32,7 @@ extern
 void value_tests() {
   TESTRUN(strings);
   TESTRUN(identifying_strings);
-  TESTRUN(identifying_uint);
+  TESTRUN(identifying_smallint);
   TESTRUN(identifying_conses);
   TESTRUN(value_size);
 }

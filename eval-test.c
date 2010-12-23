@@ -3,7 +3,7 @@
 #include "tests.h"
 #include "eval.h"
 
-#define I make_uint
+#define I make_smallint
 #define S make_string
 
 TEST(eval_if_true) {
@@ -22,7 +22,7 @@ TEST(eval_if_cascaded) {
 }
 
 // TODO(gnoack): Tests for: Lambda, Cond.
-// TODO(gnoack): Differ between true, false, nil and 0.
+// TODO(gnoack): Introduce real true, false instead of nil, non-nil.
 
 extern
 void eval_tests() {

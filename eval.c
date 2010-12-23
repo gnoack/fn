@@ -39,7 +39,7 @@ oop eval(oop program) {
   init_symbols_if_needed();
   printf("eval: ");
   print_value(program);
-  if (is_uint(program) || is_string(program) || is_nil(program)) {
+  if (is_smallint(program) || is_string(program) || is_nil(program)) {
     return program;
   }
   CHECK(is_cons(program), "What is this? I can't evaluate it!");

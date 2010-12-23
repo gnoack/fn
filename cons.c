@@ -39,7 +39,7 @@ unsigned int length_int(oop list) {
 
 extern
 oop length(oop list) {
-  return make_uint(length_int(list));
+  return make_smallint(length_int(list));
 }
 
 
