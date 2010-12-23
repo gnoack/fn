@@ -50,16 +50,16 @@ void assert_eq(const char* filename,
   init_assert();
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
-    printf("expected %d, got %d\n", a.uint, b.uint);
+    printf("expected %d, got %d\n", a.smallint, b.smallint);
   }
 }
 
 int main(int argc, char* argv) {
   printf("Test execution:\n");
   /* Register tests here. */
-  eval_tests();
-  interning_tests();
   cons_tests();
+  interning_tests();
+  eval_tests();
   value_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",

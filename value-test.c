@@ -23,8 +23,8 @@ TEST(identifying_uint) {
 
 TEST(value_size) {
   // TODO(gnoack): Ugh, this is implementation-specific.
-  ASSERT_TRUE(8 == sizeof(oop));
-  ASSERT_TRUE(8 == sizeof(uint64));
+  ASSERT_TRUE(4 == sizeof(oop));
+  ASSERT_TRUE(4 == sizeof(uint));
   ASSERT_TRUE(4 == sizeof(char*));
 }
 

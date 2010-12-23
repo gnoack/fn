@@ -35,6 +35,9 @@ const char* intern_string(const char* s) {
       return curr;
     } else {
       curr = curr + strlen(curr) + 1;
+      if ((unsigned) curr & 1) {
+	curr++;
+      }
     }
   }
   // Append.

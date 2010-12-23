@@ -4,15 +4,14 @@
 #include "cons.h"
 
 TEST(cons_simple_test) {
-  oop a, b;
-  a.uint = 3L;
-  b.uint = 4L;
+  oop a = make_uint(3);
+  oop b = make_uint(4);
   oop cons = make_cons(a, b);
   ASSERT_EQ(a, first(cons));
   ASSERT_EQ(b, rest(cons));
 }
 
-oop I(uint64 i) { return make_uint(i); }
+oop I(uint i) { return make_uint(i); }
 
 TEST(cons_list_test) {
   oop l = make_list(I(1),
