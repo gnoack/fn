@@ -4,8 +4,8 @@
 #include "cons.h"
 
 TEST(strings) {
-  value_t s = make_string("foo");
-  value_t s2 = make_string("foo");
+  oop s = make_string("foo");
+  oop s2 = make_string("foo");
   ASSERT_EQ(s, s2);
 }
 
@@ -23,7 +23,7 @@ TEST(identifying_uint) {
 
 TEST(value_size) {
   // TODO(gnoack): Ugh, this is implementation-specific.
-  ASSERT_TRUE(8 == sizeof(value_t));
+  ASSERT_TRUE(8 == sizeof(oop));
   ASSERT_TRUE(8 == sizeof(uint64));
   ASSERT_TRUE(4 == sizeof(char*));
 }

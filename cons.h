@@ -10,27 +10,27 @@ typedef struct cons_s {
 } cons_t;
 
 extern
-value_t make_cons(value_t car, value_t cdr);
+oop make_cons(oop car, oop cdr);
 
 extern
-value_t first(value_t cons);
+oop first(oop cons);
 
 extern
-value_t rest(value_t cons);
+oop rest(oop cons);
 
 extern
-value_t length(value_t list);
+oop length(oop list);
 
 extern
-unsigned int length_int(value_t list);
+unsigned int length_int(oop list);
 
 /** The end marker value is guaranteed to be hard to guess. */
 extern
-value_t end_marker();
+oop end_marker();
 
 /** End this with the value returned by end_marker. */
 extern
-value_t make_list(value_t first, ...);
+oop make_list(oop first, ...);
 
 #define LIST(...) make_list(__VA_ARGS__, end_marker())
 

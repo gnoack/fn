@@ -4,18 +4,18 @@
 #include "cons.h"
 
 TEST(cons_simple_test) {
-  value_t a, b;
+  oop a, b;
   a.uint = 3L;
   b.uint = 4L;
-  value_t cons = make_cons(a, b);
+  oop cons = make_cons(a, b);
   ASSERT_EQ(a, first(cons));
   ASSERT_EQ(b, rest(cons));
 }
 
-value_t I(uint64 i) { return make_uint(i); }
+oop I(uint64 i) { return make_uint(i); }
 
 TEST(cons_list_test) {
-  value_t l = make_list(I(1),
+  oop l = make_list(I(1),
 			I(2),
 			I(3),
 			end_marker());
@@ -26,7 +26,7 @@ TEST(cons_list_test) {
 }
 
 TEST(cons_list_macro_test) {
-  value_t l = LIST(I(1), I(2));
+  oop l = LIST(I(1), I(2));
   ASSERT_EQ(I(1), first(l));
   ASSERT_EQ(I(2), first(rest(l)));
   ASSERT_NIL(rest(rest(l)));

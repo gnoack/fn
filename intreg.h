@@ -3,7 +3,7 @@
 #include "value.h"
 
 extern
-void intreg_add(value_t a, value_t b, value_t* dst);
+void intreg_add(oop a, oop b, oop* dst);
 
 extern
-void make_intreg(unsigned long long value, value_t* dst);
+void make_intreg(unsigned long long value, oop* dst);

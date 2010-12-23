@@ -6,7 +6,7 @@
 #include "eval.h"
 
 struct {
-  value_t _if;
+  oop _if;
 } symbols;
 
 bool initialized = NO;
@@ -24,7 +24,7 @@ void init_symbols_if_needed() {
 #define cadddr(x) caddr(cdr(x))
 
 // Prints values, for debugging.
-void print_value_internal(value_t v) {
+void print_value_internal(oop v) {
   if (is_uint(v)) {
     printf("%d", v.uint);
   } else if (is_string(v)) {
@@ -51,16 +51,16 @@ void print_value_internal(value_t v) {
   }
 }
 
-void print_value(value_t v) {
+void print_value(oop v) {
   print_value_internal(v);
   printf("\n");
 }
 
-value_t eval_if(value_t sexp) {
+oop eval_if(oop sexp) {
   CHECK(length_int(sexp) == 4, "Must have size of 4");
-  value_t condition = cadr(sexp);
-  value_t then_branch = caddr(sexp);
-  value_t else_branch = cadddr(sexp);
+  oop condition = cadr(sexp);
+  oop then_branch = caddr(sexp);
+  oop else_branch = cadddr(sexp);
 
   if (is_nil(eval(condition)))
     return eval(else_branch);
@@ -69,7 +69,7 @@ value_t eval_if(value_t sexp) {
 }
 
 extern
-value_t eval(value_t program) {
+oop eval(oop program) {
   init_symbols_if_needed();
   printf("eval: ");
   print_value(program);
@@ -77,7 +77,7 @@ value_t eval(value_t program) {
     return program;
   }
   CHECK(is_cons(program), "What is this? I can't evaluate it!");
-  value_t command = car(program);
+  oop command = car(program);
   if (value_eq(command, symbols._if)) return eval_if(program);
   // All other cases are unsupported.
   printf("We hit an unsupported case!\n");

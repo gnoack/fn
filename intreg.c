@@ -1,11 +1,11 @@
 
 #include "intreg.h"
 
-void make_intreg(unsigned long long value, value_t* dst) {
+void make_intreg(unsigned long long value, oop* dst) {
   dst->uint = value;
 }
 
 // TODO(gnoack): Overflow handling.
-void intreg_add(value_t a, value_t b, value_t* dst) {
+void intreg_add(oop a, oop b, oop* dst) {
   make_intreg(a.uint + b.uint, dst);
 }

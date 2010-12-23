@@ -10,8 +10,8 @@ void fail(const char* filename,
 extern
 void assert_eq(const char* filename,
 	       unsigned int line,
-	       value_t a,
-	       value_t b);
+	       oop a,
+	       oop b);
 
 extern
 void assert_true(const char* filename,
@@ -21,7 +21,7 @@ void assert_true(const char* filename,
 extern
 void assert_nil(const char* filename,
 		unsigned int line,
-		value_t value);
+		oop value);
 
 #define FAIL(msg) \
   fail(__FILE__, __LINE__, msg)

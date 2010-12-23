@@ -36,7 +36,7 @@ void assert_true(const char* filename,
 extern
 void assert_nil(const char* filename,
 		unsigned int line,
-		value_t value) {
+		oop value) {
   init_assert();
   if (!is_nil(value)) {
     fail(filename, line, "Expected true, got false.");
@@ -46,8 +46,8 @@ void assert_nil(const char* filename,
 extern
 void assert_eq(const char* filename,
 	       unsigned int line,
-	       value_t a,
-	       value_t b) {
+	       oop a,
+	       oop b) {
   init_assert();
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");

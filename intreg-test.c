@@ -4,11 +4,11 @@
 #include "tests.h"
 
 TEST(simple_add) {
-  value_t a, b, c;
+  oop a, b, c;
   make_intreg(4L, &a);
   make_intreg(6L, &b);
   intreg_add(a, b, &c);
-  value_t expected;
+  oop expected;
   make_intreg(10L, &expected);
   ASSERT_EQ(expected, c);
 }

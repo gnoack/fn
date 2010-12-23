@@ -4,15 +4,15 @@
 #include "string-interning.h"
 
 extern
-value_t make_uint(uint64 i) {
-  value_t a;
+oop make_uint(uint64 i) {
+  oop a;
   a.uint = i;
   return a;
 }
 
 extern
-value_t make_string(const char* str) {
-  value_t a;
+oop make_string(const char* str) {
+  oop a;
   a.string = intern_string(str);
   return a;
 }
@@ -23,7 +23,7 @@ value_t make_string(const char* str) {
  * TODO(gnoack): May return true in rare cases if an integer value
  * happens to equal a pointer value.
  */
-bool value_eq(value_t a, value_t b) {
+bool value_eq(oop a, oop b) {
   if (is_string(a) && is_string(b)) {
     return TO_BOOL(a.string == b.string);
   } else if (is_uint(a) && is_uint(b)) {
@@ -36,23 +36,23 @@ bool value_eq(value_t a, value_t b) {
 }
 
 extern
-bool is_nil(value_t a) {
+bool is_nil(oop a) {
   // TODO(gnoack): What's the definition of nil?
   return TO_BOOL(a.uint == 0L);
 }
 
 extern
-bool is_uint(value_t v) {
+bool is_uint(oop v) {
   return !is_string(v) && !is_cons(v);
 }
 
 extern
-bool is_string(value_t v) {
+bool is_string(oop v) {
   return is_interned(v.string);
 }
 
 extern
-bool is_cons(value_t v) {
+bool is_cons(oop v) {
   // TODO(gnoack): Oooh, this is major guesswork... :)
   return v.uint > 0xffffff;
 }
