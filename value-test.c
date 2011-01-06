@@ -4,17 +4,18 @@
 #include "cons.h"
 
 TEST(strings) {
-  oop s = make_string("foo");
-  oop s2 = make_string("foo");
+  oop s = make_symbol("foo");
+  oop s2 = make_symbol("foo");
   ASSERT_EQ(s, s2);
 }
 
 TEST(identifying_strings) {
-  ASSERT_TRUE(is_string(make_string("eggs")));
+  ASSERT_TRUE(is_symbol(make_symbol("eggs")));
 }
 
 TEST(identifying_conses) {
-  ASSERT_TRUE(is_cons(make_cons(make_string("a"), make_string("b"))));
+  ASSERT_TRUE(is_cons(make_cons(make_symbol("a"),
+				make_symbol("b"))));
 }
 
 TEST(identifying_smallint) {

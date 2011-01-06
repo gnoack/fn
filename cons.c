@@ -49,7 +49,7 @@ bool initialized_marker = NO;
 extern
 oop end_marker() {
   if (!initialized_marker) {
-    the_end_marker = make_string("hard to guess");
+    the_end_marker = make_symbol("hard to guess");
     initialized_marker = YES;
   }
   return the_end_marker;

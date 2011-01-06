@@ -28,14 +28,14 @@ typedef union value_u {
   struct cons_s* cons;
 
   /* Pointer to a symbol. */
-  const char* string;
+  const char* symbol;
 } oop;
 
 extern
 oop make_smallint(uint i);
 
 extern
-oop make_string(const char* str);
+oop make_symbol(const char* str);
 
 extern
 bool is_nil(oop a);
@@ -44,7 +44,7 @@ extern
 bool is_smallint(oop v);
 
 extern
-bool is_string(oop v);
+bool is_symbol(oop v);
 
 extern
 bool is_cons(oop v);

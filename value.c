@@ -10,21 +10,16 @@ oop make_smallint(uint i) {
   // TODO: Upper bounds check!
   oop a;
   a.smallint = (i << 1) | 1L;
-  if (!is_smallint(a) || is_nil(a) || is_cons(a) || is_string(a)) {
-    printf("An int is an int is an int...\n");
-    return NIL;
-  }
+  CHECK(a.smallint >> 1 == i, "Integer doesn't fit into smallint.");
+  CHECK(is_smallint(a), "Couldn't produce a smallint.");
   return a;
 }
 
 extern
-oop make_string(const char* str) {
+oop make_symbol(const char* str) {
   oop a;
-  a.string = intern_string(str);
-  if (is_smallint(a) || is_nil(a) || is_cons(a) || !is_string(a)) {
-    printf("A string is a string is a string...\n");
-    return NIL;
-  }
+  a.symbol = intern_string(str);
+  CHECK(is_symbol(a), "Couldn't construct string.");
   return a;
 }
 
@@ -32,8 +27,8 @@ oop make_string(const char* str) {
  * well.  (This works because string values are always interned.)
  */
 bool value_eq(oop a, oop b) {
-  if (is_string(a) && is_string(b)) {
-    return TO_BOOL(a.string == b.string);
+  if (is_symbol(a) && is_symbol(b)) {
+    return TO_BOOL(a.symbol == b.symbol);
   } else if (is_smallint(a) && is_smallint(b)) {
     return TO_BOOL(a.smallint == b.smallint);
   } else if (is_cons(a) && is_cons(a)) {
@@ -54,13 +49,13 @@ bool is_smallint(oop v) {
 }
 
 extern
-bool is_string(oop v) {
-  return is_interned(v.string);
+bool is_symbol(oop v) {
+  return is_interned(v.symbol);
 }
 
 extern
 bool is_cons(oop v) {
-  return !is_smallint(v) && !is_string(v) && !is_nil(v);
+  return !is_smallint(v) && !is_symbol(v) && !is_nil(v);
 }
 
 
@@ -68,8 +63,8 @@ bool is_cons(oop v) {
 void print_value_internal(oop v) {
   if (is_smallint(v)) {
     printf("%d", (v.smallint >> 1));
-  } else if (is_string(v)) {
-    printf("%s", v.string);
+  } else if (is_symbol(v)) {
+    printf("%s", v.symbol);
   } else if (is_nil(v)) {
     printf("nil");
   } else {

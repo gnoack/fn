@@ -8,6 +8,8 @@
 struct {
   oop _if;
   oop _lambda;
+  oop _native_procedure_marker;
+  oop _lisp_procedure_marker;
 } symbols;
 
 oop global_env;
@@ -48,11 +50,12 @@ typedef oop (*function)(oop args);
 oop make_native_fn(function c_function) {
   CHECK((c_function == (function)((((uint) c_function) >> 1) << 1)),
 	"Very bad. Can't save native procedure in one smallint.");
-  return LIST(make_string("native"), make_smallint((uint) c_function));
+  return LIST(symbols._native_procedure_marker,
+	      make_smallint((uint) c_function));
 }
 
 bool is_native_fn(oop fn) {
-  return value_eq(car(fn), make_string("native"));
+  return value_eq(car(fn), symbols._native_procedure_marker);
 }
 
 function native_fn_function(oop fn) {
@@ -65,15 +68,17 @@ oop native_fn_apply(oop fn, oop args) {
 }
 
 void register_in_global_env(const char* name, function fn) {
-  global_env = make_env(make_string(name),
+  global_env = make_env(make_symbol(name),
 			make_native_fn(fn),
 			global_env);
 }
 
 void init_symbols_if_needed() {
   if (initialized) return;
-  symbols._if = make_string("if");
-  symbols._lambda = make_string("lambda");
+  symbols._if = make_symbol("if");
+  symbols._lambda = make_symbol("lambda");
+  symbols._native_procedure_marker = make_symbol("native");
+  symbols._lisp_procedure_marker = make_symbol("procedure");
   global_env = NIL;
   register_in_global_env("+", add);
   initialized = YES;
@@ -139,14 +144,14 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
 
 // Lisp procedures and accessing them.
 oop make_procedure(oop lambda_list, oop body, oop env) {
-  return LIST(make_string("procedure"),
+  return LIST(symbols._lisp_procedure_marker,
 	      lambda_list, body, env);
 }
 oop fn_lambda_list(oop fn) { return cadr(fn); }
 oop fn_body(oop fn) { return caddr(fn); }
 oop fn_env(oop fn) { return cadddr(fn); }
 bool is_lisp_procedure(oop fn) {
-  return value_eq(make_string("procedure"), car(fn));
+  return value_eq(symbols._lisp_procedure_marker, car(fn));
 }
 
 oop eval_lambda(oop program, oop env) {
@@ -184,7 +189,7 @@ oop eval(oop program, oop env) {
   print_value(program);
   if (is_smallint(program) || is_nil(program)) {
     return program;
-  } else if (is_string(program)) {
+  } else if (is_symbol(program)) {
     if (env_haskey(env, program)) {
       return env_lookup(env, program);
     } else {

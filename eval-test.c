@@ -4,7 +4,7 @@
 #include "eval.h"
 
 #define I make_smallint
-#define S make_string
+#define S make_symbol
 
 TEST(eval_if_true) {
   // (if 1 5 50) --> 5
