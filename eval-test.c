@@ -42,12 +42,18 @@ TEST(eval_lambda_simple) {
 			     I(5))));
 }
 
+TEST(eval_let_simple) {
+  ASSERT_EQ(I(3),
+	    eval_global(LIST(S("let"), LIST(LIST(S("x"), I(3))),
+			     S("x"))));
+}
+
 TEST(eval_symbol_in_env) {
   oop env = LIST(make_cons(S("x"), I(2)));
   ASSERT_EQ(I(2), eval(S("x"), env));
 }
 
-// TODO(gnoack): Tests for: Lambda, Cond.
+// TODO(gnoack): Tests for: Cond.
 // TODO(gnoack): Introduce real true, false instead of nil, non-nil.
 
 extern
@@ -57,4 +63,5 @@ void eval_tests() {
   TESTRUN(eval_if_true);
   TESTRUN(eval_if_false);
   TESTRUN(eval_if_cascaded);
+  TESTRUN(eval_let_simple);
 }

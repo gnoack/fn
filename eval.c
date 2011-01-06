@@ -8,6 +8,7 @@
 struct {
   oop _if;
   oop _lambda;
+  oop _let;
   oop _native_procedure_marker;
   oop _lisp_procedure_marker;
 } symbols;
@@ -77,6 +78,7 @@ void init_symbols_if_needed() {
   if (initialized) return;
   symbols._if = make_symbol("if");
   symbols._lambda = make_symbol("lambda");
+  symbols._let = make_symbol("let");
   symbols._native_procedure_marker = make_symbol("native");
   symbols._lisp_procedure_marker = make_symbol("procedure");
   global_env = NIL;
@@ -93,6 +95,20 @@ oop eval_if(oop sexp, oop env) {
     return eval(else_branch, env);
   else
     return eval(then_branch, env);
+}
+
+oop eval_let(oop sexp, oop env) {
+  CHECK(value_eq(symbols._let, car(sexp)), "Must be a let form.");
+  CHECK(length_int(sexp) == 3, "Bad let form length.");
+  oop bindings = cadr(sexp);
+  while (!is_nil(bindings)) {
+    oop binding = car(bindings);
+    CHECK(length_int(binding) == 2, "Bad binding length.");
+    env = make_env(car(binding), eval(cadr(binding), env), env);
+    bindings = cdr(bindings);
+  }
+  oop body = caddr(sexp);
+  return eval(body, env);
 }
 
 // C equivalent to calling (map eval list).
@@ -203,6 +219,9 @@ oop eval(oop program, oop env) {
   if (value_eq(command, symbols._if)) return eval_if(program, env);
   if (value_eq(command, symbols._lambda)) {
     return eval_lambda(program, env);
+  }
+  if (value_eq(command, symbols._let)) {
+    return eval_let(program, env);
   }
   // Otherwise, it must be a function application.
   return apply(map_eval(program, env));
