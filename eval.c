@@ -3,26 +3,13 @@
 
 #include "cons.h"
 #include "value.h"
+#include "carcdr.h"
+#include "procedures.h"
+#include "symbols.h"
+
 #include "eval.h"
 
-struct {
-  oop _if;
-  oop _lambda;
-  oop _let;
-  oop _native_procedure_marker;
-  oop _lisp_procedure_marker;
-} symbols;
-
 oop global_env;
-
-bool initialized = NO;
-
-#define car(x) first(x)
-#define cdr(x) rest(x)
-#define caar(x) car(car(x))
-#define cadr(x) car(cdr(x))
-#define caddr(x) cadr(cdr(x))
-#define cadddr(x) caddr(cdr(x))
 
 oop add(oop args) {
   // TODO: Pretty inaccurate. This works on smallints only.
@@ -74,17 +61,14 @@ void register_in_global_env(const char* name, function fn) {
 			global_env);
 }
 
-void init_symbols_if_needed() {
+void init_eval() {
+  static bool initialized = NO;
   if (initialized) return;
-  symbols._if = make_symbol("if");
-  symbols._lambda = make_symbol("lambda");
-  symbols._let = make_symbol("let");
-  symbols._native_procedure_marker = make_symbol("native");
-  symbols._lisp_procedure_marker = make_symbol("procedure");
   global_env = NIL;
   register_in_global_env("+", add);
-  initialized = YES;
 }
+
+// Evaluation.
 
 oop eval_if(oop sexp, oop env) {
   CHECK(length_int(sexp) == 4, "Must have size of 4");
@@ -158,18 +142,6 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
   }
 }
 
-// Lisp procedures and accessing them.
-oop make_procedure(oop lambda_list, oop body, oop env) {
-  return LIST(symbols._lisp_procedure_marker,
-	      lambda_list, body, env);
-}
-oop fn_lambda_list(oop fn) { return cadr(fn); }
-oop fn_body(oop fn) { return caddr(fn); }
-oop fn_env(oop fn) { return cadddr(fn); }
-bool is_lisp_procedure(oop fn) {
-  return value_eq(symbols._lisp_procedure_marker, car(fn));
-}
-
 oop eval_lambda(oop program, oop env) {
   return make_procedure(cadr(program),
 			caddr(program),
@@ -194,25 +166,19 @@ oop apply(oop oop_vector) {
 
 extern
 oop eval_global(oop program) {
-  init_symbols_if_needed();
   return eval(program, global_env);
 }
 
 extern
 oop eval(oop program, oop env) {
-  init_symbols_if_needed();
   printf("eval: ");
   print_value(program);
   if (is_smallint(program) || is_nil(program)) {
     return program;
   } else if (is_symbol(program)) {
-    if (env_haskey(env, program)) {
-      return env_lookup(env, program);
-    } else {
-      printf("* Bad symbol, returning NIL (FIXME).\n");
-      print_value(program);
-      return NIL;
-    }
+    // TODO: Proper error handling.
+    CHECK(env_haskey(env, program), "Unknown symbol.");
+    return env_lookup(env, program);
   }
   CHECK(is_cons(program), "What is this? I can't evaluate it!");
   oop command = car(program);

@@ -3,6 +3,8 @@
 #include "value.h"
 #include "string-interning-test.h"
 #include "cons-test.h"
+#include "eval.h"
+#include "symbols.h"
 
 #include <stdio.h>
 
@@ -54,7 +56,13 @@ void assert_eq(const char* filename,
   }
 }
 
+void init() {
+  init_symbols();
+  init_eval();
+}
+
 int main(int argc, char* argv) {
+  init();
   printf("Test execution:\n");
   /* Register tests here. */
   cons_tests();

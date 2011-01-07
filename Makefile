@@ -1,6 +1,6 @@
 
 HEADERS = *.h
-OBJECTS = value.o string-interning.o cons.o eval.o
+OBJECTS = value.o string-interning.o cons.o eval.o procedures.o symbols.o
 TESTOBJECTS = eval-test.o string-interning-test.o cons-test.o value-test.o tests.o
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
