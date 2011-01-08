@@ -5,6 +5,8 @@ typedef struct {
   oop _if;
   oop _lambda;
   oop _let;
+  oop _true;
+  oop _false;
   oop _native_procedure_marker;
   oop _lisp_procedure_marker;
 } symbols_t;

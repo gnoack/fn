@@ -7,26 +7,24 @@
 #define S make_symbol
 
 TEST(eval_if_true) {
-  // (if 1 5 50) --> 5
-  ASSERT_EQ(I(5), eval(LIST(S("if"), I(1), I(5), I(50)),
-		       NIL));
+  // (if true 5 50) --> 5
+  ASSERT_EQ(I(5), eval_global(LIST(S("if"), S("true"), I(5), I(50))));
 }
 
 TEST(eval_if_false) {
-  // (if nil 5 50) --> 50
-  ASSERT_EQ(I(50), eval(LIST(S("if"), NIL, I(5), I(50)),
-			NIL));
+  // (if false 5 50) --> 50
+  ASSERT_EQ(I(50), eval_global(LIST(S("if"), S("false"), I(5), I(50))));
 }
 
 TEST(eval_if_cascaded) {
-  //     (if (if nil nil 4) 5 50)
-  // --> (if 4 5 50)
+  //     (if (if false false true) 5 50)
+  // --> (if true 5 50)
   // --> 5
-  ASSERT_EQ(I(5), eval(LIST(S("if"),
-			    LIST(S("if"), NIL, NIL, I(4)),
-			    I(5),
-			    I(50)),
-		       NIL));
+  ASSERT_EQ(I(5),
+	    eval_global(LIST(S("if"),
+			     LIST(S("if"), S("false"), S("false"), S("true")),
+			     I(5),
+			     I(50))));
 }
 
 TEST(eval_globally_bound_function) {
@@ -54,7 +52,6 @@ TEST(eval_symbol_in_env) {
 }
 
 // TODO(gnoack): Tests for: Cond.
-// TODO(gnoack): Introduce real true, false instead of nil, non-nil.
 
 extern
 void eval_tests() {

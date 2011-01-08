@@ -28,17 +28,23 @@ oop add(oop args) {
   return make_smallint(i);
 }
 
-void register_in_global_env(const char* name, function fn) {
+void register_globally(const char* name, oop value) {
   global_env = make_env(make_symbol(name),
-			make_native_fn(fn),
+			value,
 			global_env);
+}
+
+void register_globally_fn(const char* name, function fn) {
+  register_globally(name, make_native_fn(fn));
 }
 
 void init_eval() {
   static bool initialized = NO;
   if (initialized) return;
   global_env = NIL;
-  register_in_global_env("+", add);
+  register_globally_fn("+", add);
+  register_globally("true", symbols._true);
+  register_globally("false", symbols._false);
 }
 
 // Evaluation.
@@ -48,10 +54,14 @@ oop eval_if(oop sexp, oop env) {
   oop condition = cadr(sexp);
   oop then_branch = caddr(sexp);
   oop else_branch = cadddr(sexp);
-  if (is_nil(eval(condition, env)))
-    return eval(else_branch, env);
-  else
+  oop condition_result = eval(condition, env);
+  if (value_eq(condition_result, symbols._true)) {
     return eval(then_branch, env);
+  } else {
+    CHECK(value_eq(condition_result, symbols._false),
+	  "Need true or false as condition value.");
+    return eval(else_branch, env);
+  }
 }
 
 oop eval_let(oop sexp, oop env) {
