@@ -6,6 +6,7 @@
 #include "carcdr.h"
 #include "procedures.h"
 #include "symbols.h"
+#include "env.h"
 
 #include "eval.h"
 
@@ -25,10 +26,6 @@ oop add(oop args) {
     args = cdr(args);
   }
   return make_smallint(i);
-}
-
-oop make_env(oop key, oop value, oop env) {
-  return make_cons(make_cons(key, value), env);
 }
 
 // Defines the type "function" to be oop --> oop.
@@ -103,30 +100,6 @@ oop map_eval(oop list, oop env) {
     // Done in two steps for in-order execution.
     oop mycar = eval(car(list), env);
     return make_cons(mycar, map_eval(cdr(list), env));
-  }
-}
-
-bool env_haskey(oop env, oop key) {
-  while (!is_nil(env)) {
-    if (value_eq(key, caar(env))) {
-      return YES;
-    }
-    env = cdr(env);
-  }
-  return NO;
-}
-
-oop env_lookup(oop env, oop key) {
-  if (is_nil(env)) {
-    return NIL;
-  } else {
-    oop pair = car(env);
-    oop mykey = car(pair);
-    if (value_eq(mykey, key)) {
-      return cdr(pair);
-    } else {
-      return env_lookup(cdr(env), key);
-    }
   }
 }
 
