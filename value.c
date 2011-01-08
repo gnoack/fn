@@ -6,7 +6,6 @@
 #include "string-interning.h"
 
 oop make_smallint(uint i) {
-  // TODO: Upper bounds check!
   oop a;
   a.smallint = (i << 1) | 1L;
   CHECK(a.smallint >> 1 == i, "Integer doesn't fit into smallint.");
