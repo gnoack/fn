@@ -50,6 +50,9 @@ extern
 bool is_cons(oop v);
 
 extern
+uint get_smallint(oop v);
+
+extern
 bool value_eq(oop a, oop b);
 
 /** For debugging. */

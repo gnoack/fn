@@ -45,8 +45,6 @@ oop apply_lisp_procedure(oop fn, oop args) {
 
 // Native procedures
 oop make_native_fn(function c_function) {
-  CHECK((c_function == (function)((((uint) c_function) >> 1) << 1)),
-	"Very bad. Can't save native procedure in one smallint.");
   return LIST(symbols._native_procedure_marker,
 	      make_smallint((uint) c_function));
 }
@@ -56,7 +54,7 @@ bool is_native_fn(oop fn) {
 }
 
 function native_fn_function(oop fn) {
-  return (function)(cadr(fn).smallint >> 1);
+  return (function)(get_smallint(cadr(fn)));
 }
 
 oop native_fn_apply(oop fn, oop args) {

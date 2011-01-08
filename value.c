@@ -5,7 +5,6 @@
 #include "cons.h"
 #include "string-interning.h"
 
-extern
 oop make_smallint(uint i) {
   // TODO: Upper bounds check!
   oop a;
@@ -15,7 +14,6 @@ oop make_smallint(uint i) {
   return a;
 }
 
-extern
 oop make_symbol(const char* str) {
   oop a;
   a.symbol = intern_string(str);
@@ -38,31 +36,31 @@ bool value_eq(oop a, oop b) {
   }
 }
 
-extern
 bool is_nil(oop a) {
   return TO_BOOL(a.smallint == 0L);
 }
 
-extern
 bool is_smallint(oop v) {
   return TO_BOOL(((v.smallint) & 1) != 0);
 }
 
-extern
 bool is_symbol(oop v) {
   return is_interned(v.symbol);
 }
 
-extern
 bool is_cons(oop v) {
   return !is_smallint(v) && !is_symbol(v) && !is_nil(v);
 }
 
+uint get_smallint(oop v) {
+  CHECK(is_smallint(v), "Must be a smallint.");
+  return v.smallint >> 1;
+}
 
 // Prints values, for debugging.
 void print_value_internal(oop v) {
   if (is_smallint(v)) {
-    printf("%d", (v.smallint >> 1));
+    printf("%d", get_smallint(v));
   } else if (is_symbol(v)) {
     printf("%s", v.symbol);
   } else if (is_nil(v)) {

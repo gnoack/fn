@@ -22,7 +22,7 @@ oop add(oop args) {
       printf("Warning: Trying to int-add bad value: ");
       print_value(arg);
     }
-    i += arg.smallint >> 1;
+    i += get_smallint(arg);
     args = cdr(args);
   }
   return make_smallint(i);
