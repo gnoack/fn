@@ -34,5 +34,8 @@ extern bool is_native_fn(oop fn);
 extern oop native_fn_apply(oop fn, oop args);
 
 
+// Function application.
+extern oop apply(oop values);
+
 #define __PROCEDURES_H__ 0
 #endif // __PROCEDURES_H__

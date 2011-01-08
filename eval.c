@@ -68,6 +68,17 @@ oop eval_let(oop sexp, oop env) {
   return eval(body, env);
 }
 
+oop eval_lambda(oop program, oop env) {
+  return make_procedure(cadr(program),
+			caddr(program),
+			env);
+}
+
+extern
+oop eval_global(oop program) {
+  return eval(program, global_env);
+}
+
 // C equivalent to calling (map eval list).
 oop map_eval(oop list, oop env) {
   if (is_nil(list)) {
@@ -77,45 +88,6 @@ oop map_eval(oop list, oop env) {
     oop mycar = eval(car(list), env);
     return make_cons(mycar, map_eval(cdr(list), env));
   }
-}
-
-// Given a lambda list and a argument vector,
-// returns a filled environment linking to the
-// environment env.
-oop destructure_lambda_list(oop ll, oop args, oop env) {
-  if (is_nil(ll)) {
-    return env;
-  } else {
-    return make_env(car(ll), car(args),
-		    destructure_lambda_list(cdr(ll), cdr(args), env));
-  }
-}
-
-oop eval_lambda(oop program, oop env) {
-  return make_procedure(cadr(program),
-			caddr(program),
-			env);
-}
-
-// Function application.
-// First argument is function, rest are arguments.
-oop apply(oop oop_vector) {
-  oop fn = car(oop_vector);
-  if (is_lisp_procedure(fn)) {
-    oop args = cdr(oop_vector);
-    oop env = destructure_lambda_list(fn_lambda_list(fn),
-				      args, fn_env(fn));
-    return eval(fn_body(fn), env);
-  } else if (is_native_fn(fn)) {
-    return native_fn_apply(fn, cdr(oop_vector));
-  }
-  printf("Not a procedure.");
-  print_value(fn);
-}
-
-extern
-oop eval_global(oop program) {
-  return eval(program, global_env);
 }
 
 extern
