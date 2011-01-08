@@ -28,30 +28,6 @@ oop add(oop args) {
   return make_smallint(i);
 }
 
-// Defines the type "function" to be oop --> oop.
-// Who came up with this syntax?
-typedef oop (*function)(oop args);
-
-oop make_native_fn(function c_function) {
-  CHECK((c_function == (function)((((uint) c_function) >> 1) << 1)),
-	"Very bad. Can't save native procedure in one smallint.");
-  return LIST(symbols._native_procedure_marker,
-	      make_smallint((uint) c_function));
-}
-
-bool is_native_fn(oop fn) {
-  return value_eq(car(fn), symbols._native_procedure_marker);
-}
-
-function native_fn_function(oop fn) {
-  return (function)(cadr(fn).smallint >> 1);
-}
-
-oop native_fn_apply(oop fn, oop args) {
-  function c_function = native_fn_function(fn);
-  return c_function(args);
-}
-
 void register_in_global_env(const char* name, function fn) {
   global_env = make_env(make_symbol(name),
 			make_native_fn(fn),
