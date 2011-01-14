@@ -1,0 +1,19 @@
+
+Slime bindings:
+ C-c C-k, C-c C-l   reload file / buffer
+ M-.                jump to definition
+ C-]                close brackets
+ C-Return           close brackets and enter
+ C-c C-f            show function help
+
+
+Common Lisp:
+  Don't forget CL has different namespaces for
+  variables and functions.  Even for lambdas, you
+  need to add the #' prefix:
+
+   #'(lambda (x) (+ x 1))
+
+   (map #'string (list 1 2 3))
+
+
