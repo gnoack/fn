@@ -30,6 +30,8 @@ bool value_eq(oop a, oop b) {
     return TO_BOOL(a.smallint == b.smallint);
   } else if (is_cons(a) && is_cons(a)) {
     return TO_BOOL(a.cons == b.cons);
+  } else if (is_nil(a) && is_nil(b)) {
+    return YES;
   } else {
     return NO;  // a and b have different types.
   }

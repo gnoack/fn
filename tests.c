@@ -35,6 +35,16 @@ void assert_true(const char* filename,
 }
 
 extern
+void assert_false(const char* filename,
+		  unsigned int line,
+		  bool b) {
+  init_assert();
+  if (b) {
+    fail(filename, line, "Expected false, got true.");
+  }
+}
+
+extern
 void assert_nil(const char* filename,
 		unsigned int line,
 		oop value) {
@@ -52,7 +62,8 @@ void assert_eq(const char* filename,
   init_assert();
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
-    printf("expected %d, got %d\n", get_smallint(a), get_smallint(b));
+    // TODO: Use nice object representation instead!
+    printf("expected %d, got %d\n", a.smallint, b.smallint);
   }
 }
 

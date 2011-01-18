@@ -19,6 +19,11 @@ void assert_true(const char* filename,
 		 bool b);
 
 extern
+void assert_false(const char* filename,
+		  unsigned int line,
+		  bool b);
+
+extern
 void assert_nil(const char* filename,
 		unsigned int line,
 		oop value);
@@ -31,6 +36,9 @@ void assert_nil(const char* filename,
 
 #define ASSERT_TRUE(value) \
   assert_true(__FILE__, __LINE__, value)
+
+#define ASSERT_FALSE(value)			\
+  assert_false(__FILE__, __LINE__, value)
 
 #define ASSERT_NIL(value) \
   assert_nil(__FILE__, __LINE__, value)

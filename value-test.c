@@ -29,6 +29,21 @@ TEST(value_size) {
   ASSERT_TRUE(4 == sizeof(char*));
 }
 
+TEST(int_equality) {
+  oop a = make_smallint(10);
+  oop b = make_smallint(10);
+  oop c = make_smallint(11);
+  ASSERT_TRUE(value_eq(a, b));
+  ASSERT_FALSE(value_eq(a, c));
+  ASSERT_FALSE(value_eq(NIL, a));
+}
+
+TEST(nil_equality) {
+  oop a = make_smallint(10);
+  ASSERT_FALSE(value_eq(NIL, a));
+  ASSERT_EQ(NIL, NIL);
+}
+
 extern
 void value_tests() {
   TESTRUN(strings);
@@ -36,4 +51,6 @@ void value_tests() {
   TESTRUN(identifying_smallint);
   TESTRUN(identifying_conses);
   TESTRUN(value_size);
+  TESTRUN(int_equality);
+  TESTRUN(nil_equality);
 }
