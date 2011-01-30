@@ -5,6 +5,11 @@
 #include "cons.h"
 #include "string-interning.h"
 
+// Characters are mapped to char_start in memory;
+// the nth ASCII character corresponds to the value
+// char_start + (n << 2).
+uint char_start = 0xcccc0000;
+
 oop make_smallint(uint i) {
   oop a;
   a.smallint = (i << 1) | 1L;
@@ -20,15 +25,25 @@ oop make_symbol(const char* str) {
   return a;
 }
 
+oop make_char(const char c) {
+  oop a;
+  a.smallint = char_start + ((uint)c << 2);
+  return a;
+}
+
 /* Value identity.  Returns true for equal integers and string as
  * well.  (This works because string values are always interned.)
  */
 bool value_eq(oop a, oop b) {
+  // TODO(gnoack): Consider TO_BOOL(a.smallint == a.smallint),
+  //   we don't need these types.
   if (is_symbol(a) && is_symbol(b)) {
     return TO_BOOL(a.symbol == b.symbol);
   } else if (is_smallint(a) && is_smallint(b)) {
     return TO_BOOL(a.smallint == b.smallint);
   } else if (is_cons(a) && is_cons(a)) {
+    return TO_BOOL(a.cons == b.cons);
+  } else if (is_char(a) && is_char(b)) {
     return TO_BOOL(a.cons == b.cons);
   } else if (is_nil(a) && is_nil(b)) {
     return YES;
@@ -37,6 +52,9 @@ bool value_eq(oop a, oop b) {
   }
 }
 
+// TODO(gnoack): Reduce the is_* to a function that returns the
+//   primitive type from the value.  This would ensure a value
+//   can have only one type.
 bool is_nil(oop a) {
   return TO_BOOL(a.smallint == 0L);
 }
@@ -50,7 +68,12 @@ bool is_symbol(oop v) {
 }
 
 bool is_cons(oop v) {
-  return !is_smallint(v) && !is_symbol(v) && !is_nil(v);
+  return !is_smallint(v) && !is_symbol(v) && !is_nil(v) && !is_char(v);
+}
+
+bool is_char(oop v) {
+  return TO_BOOL(char_start <= v.smallint &&
+		 v.smallint < char_start + (256 << 2));
 }
 
 uint get_smallint(oop v) {

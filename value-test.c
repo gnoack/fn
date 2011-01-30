@@ -22,6 +22,14 @@ TEST(identifying_smallint) {
   ASSERT_TRUE(is_smallint(make_smallint(200)));
 }
 
+TEST(identifying_char) {
+  oop a = make_char('a');
+  ASSERT_TRUE(is_char(a));
+  ASSERT_FALSE(is_smallint(a));
+  ASSERT_FALSE(is_cons(a));
+  ASSERT_FALSE(is_symbol(a));
+}
+
 TEST(value_size) {
   // TODO(gnoack): Ugh, this is implementation-specific.
   ASSERT_TRUE(4 == sizeof(oop));
@@ -38,6 +46,14 @@ TEST(int_equality) {
   ASSERT_FALSE(value_eq(NIL, a));
 }
 
+TEST(char_equality) {
+  oop a = make_char('a');
+  oop a2 = make_char('a');
+  oop b = make_char('b');
+  ASSERT_TRUE(value_eq(a, a2));
+  ASSERT_FALSE(value_eq(b, a));
+}
+
 TEST(nil_equality) {
   oop a = make_smallint(10);
   ASSERT_FALSE(value_eq(NIL, a));
@@ -50,7 +66,9 @@ void value_tests() {
   TESTRUN(identifying_strings);
   TESTRUN(identifying_smallint);
   TESTRUN(identifying_conses);
+  TESTRUN(identifying_char);
   TESTRUN(value_size);
   TESTRUN(int_equality);
   TESTRUN(nil_equality);
+  TESTRUN(char_equality);
 }

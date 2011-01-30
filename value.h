@@ -38,6 +38,9 @@ extern
 oop make_symbol(const char* str);
 
 extern
+oop make_char(const char c);
+
+extern
 bool is_nil(oop a);
 
 extern
@@ -48,6 +51,9 @@ bool is_symbol(oop v);
 
 extern
 bool is_cons(oop v);
+
+extern
+bool is_char(oop v);
 
 extern
 uint get_smallint(oop v);
