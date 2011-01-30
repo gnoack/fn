@@ -5,6 +5,7 @@
 #include "cons-test.h"
 #include "eval.h"
 #include "symbols.h"
+#include "strings-test.h"
 
 #include <stdio.h>
 
@@ -80,6 +81,7 @@ int main(int argc, char* argv) {
   interning_tests();
   eval_tests();
   value_tests();
+  strings_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
