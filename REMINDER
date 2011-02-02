@@ -14,6 +14,6 @@ Common Lisp:
 
    #'(lambda (x) (+ x 1))
 
-   (map #'string (list 1 2 3))
+   (mapcar #'string (list 1 2 3))
 
 

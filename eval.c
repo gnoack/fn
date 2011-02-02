@@ -12,12 +12,14 @@
 
 oop global_env;
 
+// Integer addition.
+// TODO: Move this into a different file.
 oop add(oop args) {
   // TODO: Pretty inaccurate. This works on smallints only.
   uint i = 0;
   while (!is_nil(args)) {
     oop arg = car(args);
-    // TODO: How to do proper error handling in-lisp?
+    // TODO: How to do proper in-lisp error handling?
     if (!is_smallint(arg)) {
       printf("Warning: Trying to int-add bad value: ");
       print_value(arg);
@@ -28,12 +30,14 @@ oop add(oop args) {
   return make_smallint(i);
 }
 
+// Registers a lisp value under a global variable name.
 void register_globally(const char* name, oop value) {
   global_env = make_env(make_symbol(name),
 			value,
 			global_env);
 }
 
+// Registers a lisp function under a global variable name.
 void register_globally_fn(const char* name, function fn) {
   register_globally(name, make_native_fn(fn));
 }

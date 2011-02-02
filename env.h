@@ -1,6 +1,10 @@
 
 #ifndef __ENV_H__
 
+/*
+ * An environment maps values to other values.
+ * Keys are compared using value_eq (reference identity).
+ */
 // Empty environment is nil.
 extern oop make_env(oop key, oop value, oop env);
 extern bool env_haskey(oop env, oop key);
