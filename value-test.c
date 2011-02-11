@@ -60,6 +60,11 @@ TEST(nil_equality) {
   ASSERT_EQ(NIL, NIL);
 }
 
+TEST(char_conversion) {
+  oop c = make_char('b');
+  ASSERT_TRUE(TO_BOOL(get_char(c) == 'b'));
+}
+
 extern
 void value_tests() {
   TESTRUN(strings);
@@ -71,4 +76,5 @@ void value_tests() {
   TESTRUN(int_equality);
   TESTRUN(nil_equality);
   TESTRUN(char_equality);
+  TESTRUN(char_conversion);
 }

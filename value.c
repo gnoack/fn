@@ -81,6 +81,11 @@ uint get_smallint(oop v) {
   return v.smallint >> 1;
 }
 
+char get_char(oop v) {
+  CHECK(is_char(v), "Must be a character.");
+  return (char) ((v.smallint - char_start) >> 2);
+}
+
 // Prints values, for debugging.
 void print_value_internal(oop v) {
   if (is_smallint(v)) {

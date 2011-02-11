@@ -59,6 +59,9 @@ extern
 uint get_smallint(oop v);
 
 extern
+char get_char(oop v);
+
+extern
 bool value_eq(oop a, oop b);
 
 /** For debugging. */
