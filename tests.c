@@ -6,6 +6,7 @@
 #include "eval.h"
 #include "symbols.h"
 #include "strings-test.h"
+#include "parser-test.h"
 
 #include <stdio.h>
 
@@ -82,6 +83,7 @@ int main(int argc, char* argv) {
   eval_tests();
   value_tests();
   strings_tests();
+  parser_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

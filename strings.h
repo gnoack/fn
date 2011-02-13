@@ -11,5 +11,8 @@
 extern
 oop make_string(const char* str);
 
+extern
+const char* c_string(oop str);
+
 #define __STRINGS_H__ 0
 #endif // __STRINGS_H__
