@@ -1,0 +1,25 @@
+
+;; Relying on first, rest, cons
+;; Relying on char->num num->char
+;; + -
+
+(
+(def nil? (lambda x
+  (eq? nil sequence)))
+
+(def map (lambda (proc sequence)
+	   (if (nil? sequence)
+	       sequence
+	       (cons (proc (first sequence))
+		     (map proc (rest sequence))))))
+
+(def digit->int (lambda digit)
+  (- (char->num digit) (char->num #\0)))
+
+(def parse-int (lambda (str)
+		 (reduce (lambda (init next)
+			   (+ (* 10 init) next))
+			 (map digit->int str)
+			 0)))
+
+)
