@@ -1,4 +1,6 @@
 
+;; (convert "utils.fn" "utils.h")
+
 (defun concatenate-string (&rest strings)
   (apply #'concatenate 'string strings))
 
@@ -10,7 +12,8 @@
 (defun translate (input)
   #!+sb-doc
   "Translates an input program into a C-readable form."
-  (cond ((listp input) (translate-list input))
+  (cond ((eq nil input) "NIL")
+	((listp input) (translate-list input))
 	((numberp input) (translate-int input))
 	((stringp input) (translate-string input))
 	((symbolp input) (translate-symbol input))
