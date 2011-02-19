@@ -1,8 +1,28 @@
 
 CFLAGS = -g
 HEADERS = *.h
-OBJECTS = value.o string-interning.o cons.o eval.o procedures.o symbols.o env.o strings.o parser.o primitives.o
-TESTOBJECTS = eval-test.o string-interning-test.o cons-test.o value-test.o tests.o strings-test.o parser-test.o primitives-test.o
+OBJECTS = \
+	cons.o \
+	env.o \
+	eval.o \
+	parser.o \
+	primitives.o \
+	procedures.o \
+	string-interning.o \
+	strings.o \
+	symbols.o \
+	value.o \
+
+TESTOBJECTS = \
+	cons-test.o \
+	eval-test.o \
+	parser-test.o \
+	primitives-test.o \
+	string-interning-test.o \
+	strings-test.o \
+	tests.o \
+	value-test.o \
+
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
 tests: tests-bin

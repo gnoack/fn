@@ -1,5 +1,8 @@
 
+#include "stdio.h"
+
 #include "primitives.h"
+
 #include "eval.h"
 #include "cons.h"
 #include "carcdr.h"
