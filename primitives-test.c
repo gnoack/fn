@@ -16,10 +16,10 @@ TEST(primitives_existence) {
   assert_exists("first");
   assert_exists("rest");
   assert_exists("cons");
+  // Character conversion.
+  assert_exists("char->num");
+  assert_exists("num->char");
   // TODO: For later.
-  /* // Character conversion. */
-  /* assert_exists("char->num"); */
-  /* assert_exists("num->char"); */
   /* // Arithmetic. */
   /* assert_exists("+"); */
   /* assert_exists("-"); */
