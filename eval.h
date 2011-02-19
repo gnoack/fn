@@ -1,7 +1,8 @@
 
 #ifndef __EVAL_H__
 
-#import "value.h"
+#include "procedures.h"
+#include "value.h"
 
 // Global namespace.
 extern
@@ -12,6 +13,9 @@ oop eval_global(oop program);
 
 extern
 oop eval(oop program, oop env);
+
+extern
+void register_globally_fn(const char* name, function fn);
 
 extern
 void init_eval();

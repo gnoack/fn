@@ -1,12 +1,14 @@
 
 #include "tests.h"
 #include "value.h"
-#include "string-interning-test.h"
-#include "cons-test.h"
 #include "eval.h"
 #include "symbols.h"
+#include "primitives.h"
+#include "string-interning-test.h"
+#include "cons-test.h"
 #include "strings-test.h"
 #include "parser-test.h"
+#include "primitives-test.h"
 
 #include <stdio.h>
 
@@ -72,6 +74,7 @@ void assert_eq(const char* filename,
 void init() {
   init_symbols();
   init_eval();
+  init_primitives();
 }
 
 int main(int argc, char* argv) {
@@ -84,6 +87,7 @@ int main(int argc, char* argv) {
   value_tests();
   strings_tests();
   parser_tests();
+  primitives_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
