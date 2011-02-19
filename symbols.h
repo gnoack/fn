@@ -3,6 +3,7 @@
 
 typedef struct {
   oop _if;
+  oop _def;
   oop _lambda;
   oop _let;
   oop _true;

@@ -9,6 +9,7 @@ void init_symbols() {
   static bool initialized = NO;
   if (initialized) return;
   symbols._if = make_symbol("if");
+  symbols._def = make_symbol("def");
   symbols._lambda = make_symbol("lambda");
   symbols._let = make_symbol("let");
   symbols._true = make_symbol("true");

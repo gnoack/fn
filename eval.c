@@ -30,11 +30,13 @@ oop add(oop args) {
   return make_smallint(i);
 }
 
+void register_globally_oop(oop key, oop value) {
+  global_env = make_env(key, value, global_env);
+}
+
 // Registers a lisp value under a global variable name.
 void register_globally(const char* name, oop value) {
-  global_env = make_env(make_symbol(name),
-			value,
-			global_env);
+  register_globally_oop(make_symbol(name), value);
 }
 
 // Registers a lisp function under a global variable name.
@@ -82,6 +84,13 @@ oop eval_let(oop sexp, oop env) {
   return eval(body, env);
 }
 
+oop eval_def(oop program, oop env) {
+  oop symbol = cadr(program);
+  oop value = eval(caddr(program), env);
+  register_globally_oop(symbol, value);
+  return value;
+}
+
 oop eval_lambda(oop program, oop env) {
   return make_procedure(cadr(program),
 			caddr(program),
@@ -120,6 +129,9 @@ oop eval(oop program, oop env) {
   if (value_eq(command, symbols._if)) return eval_if(program, env);
   if (value_eq(command, symbols._lambda)) {
     return eval_lambda(program, env);
+  }
+  if (value_eq(command, symbols._def)) {
+    return eval_def(program, env);
   }
   if (value_eq(command, symbols._let)) {
     return eval_let(program, env);
