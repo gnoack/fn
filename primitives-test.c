@@ -19,11 +19,10 @@ TEST(primitives_existence) {
   // Character conversion.
   assert_exists("char->num");
   assert_exists("num->char");
-  // TODO: For later.
-  /* // Arithmetic. */
-  /* assert_exists("+"); */
-  /* assert_exists("-"); */
-  /* assert_exists("*"); */
+  // Arithmetic.
+  assert_exists("+");
+  assert_exists("-");
+  assert_exists("*");
 }
 
 extern
