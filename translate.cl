@@ -1,6 +1,4 @@
 
-;; (convert "utils.fn" "utils.h")
-
 (defun concatenate-string (&rest strings)
   (apply #'concatenate 'string strings))
 
@@ -38,10 +36,28 @@
     (cond ((string= "nil" s) "NIL")
 	  (t (format nil "make_symbol(\"~a\")" s)))))
 
-(defun convert (in-file out-file)
+(defun c-include (basename)
+  (format nil "#include \"~a.h\"~%" basename))
+
+(defun c-vardecl (basename value)
+  (format nil "extern~%oop ~a_decls = ~a;~%"
+	  basename value))
+
+;; Converts the fn-file with the given basename into a
+;; c-file.
+(defun convert (basename)
   (with-open-file (out
-		   out-file
+		   (format nil "~a.c" basename)
 		   :direction :output
 		   :if-exists :supersede)
-    (with-open-file (in in-file)
-      (format out (translate (read in))))))
+    (with-open-file (in (format nil "~a.fn" basename))
+      (format out
+	      "~a~%~a~a~%~a"
+	      (c-include basename)
+	      (c-include "cons")
+	      (c-include "value")
+	      (c-vardecl basename
+			 (translate (read in)))))))
+
+;; (convert "utils")
+
