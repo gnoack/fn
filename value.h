@@ -2,6 +2,8 @@
 #ifndef _VALUE_H_
 #define _VALUE_H_ 1
 
+#include <stdlib.h>
+
 typedef unsigned int uint;
 
 typedef char bool;
@@ -11,9 +13,10 @@ typedef char bool;
 
 #define NIL ((oop) (uint) 0L)
 
-#define CHECK(x, msg)                              \
-  if (!(x)) {                                      \
-    printf("%s:%s: %s", __FILE__, __LINE__, msg);  \
+#define CHECK(x, msg)                                \
+  if (!(x)) {                                        \
+    printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
+    exit(1);                                         \
   }
 
 struct cons_s;

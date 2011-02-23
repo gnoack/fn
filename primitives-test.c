@@ -23,6 +23,12 @@ TEST(primitives_existence) {
   assert_exists("+");
   assert_exists("-");
   assert_exists("*");
+  // Equality.
+  assert_exists("eq");
+  // Testers.
+  assert_exists("cons?");
+  assert_exists("char?");
+  assert_exists("number?");
 }
 
 extern

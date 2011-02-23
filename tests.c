@@ -3,12 +3,15 @@
 #include "value.h"
 #include "eval.h"
 #include "symbols.h"
+#include "utils-test.h"
+#include "env-test.h"
 #include "primitives.h"
 #include "string-interning-test.h"
 #include "cons-test.h"
 #include "strings-test.h"
 #include "parser-test.h"
 #include "primitives-test.h"
+#include "carcdr.h"
 
 #include <stdio.h>
 
@@ -54,7 +57,7 @@ void assert_nil(const char* filename,
 		oop value) {
   init_assert();
   if (!is_nil(value)) {
-    fail(filename, line, "Expected true, got false.");
+    fail(filename, line, "Expected nil.");
   }
 }
 
@@ -67,7 +70,27 @@ void assert_eq(const char* filename,
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
     // TODO: Use nice object representation instead!
-    printf("expected %d, got %d\n", a.smallint, b.smallint);
+    printf("  Expected: ");
+    print_value(a);
+    printf("       Got: ");
+    print_value(b);
+  }
+}
+
+extern
+void run_lisp_tests(oop decls, oop tests) {
+  while (!is_nil(decls)) {
+    eval_global(car(decls));
+
+    decls = cdr(decls);
+  }
+  while (!is_nil(tests)) {
+    oop test = car(tests);
+    printf("Test: ");
+    print_value(test);
+    ASSERT_EQ(symbols._true, eval_global(test));
+
+    tests = cdr(tests);
   }
 }
 
@@ -88,6 +111,8 @@ int main(int argc, char* argv) {
   strings_tests();
   parser_tests();
   primitives_tests();
+  utils_tests();
+  env_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

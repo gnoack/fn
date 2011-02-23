@@ -13,7 +13,12 @@
 oop global_env;
 
 void register_globally_oop(oop key, oop value) {
-  global_env = make_env(key, value, global_env);
+  // This is needed for recursion!
+  if (is_nil(global_env)) {
+    global_env = make_env(key, value, global_env);
+  } else {
+    env_put(global_env, key, value);
+  }
 }
 
 // Registers a lisp value under a global variable name.
@@ -99,12 +104,15 @@ extern
 oop eval(oop program, oop env) {
   printf("eval: ");
   print_value(program);
-  if (is_smallint(program) || is_nil(program)) {
+  if (is_smallint(program) || is_nil(program) || is_char(program)) {
     return program;
   } else if (is_symbol(program)) {
     // TODO: Proper error handling.
     CHECK(env_haskey(env, program), "Unknown symbol.");
-    return env_lookup(env, program);
+    oop item = env_lookup(env, program);
+    printf(" --> ");
+    print_value(item);
+    return item;
   }
   CHECK(is_cons(program), "What is this? I can't evaluate it!");
   oop command = car(program);

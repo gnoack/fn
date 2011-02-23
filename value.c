@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "eval.h"
 #include "value.h"
 #include "cons.h"
 #include "string-interning.h"
@@ -88,8 +89,12 @@ char get_char(oop v) {
 
 // Prints values, for debugging.
 void print_value_internal(oop v) {
-  if (is_smallint(v)) {
+  if (value_eq(v, global_env)) {
+    printf("[global-env]");
+  } else if (is_smallint(v)) {
     printf("%d", get_smallint(v));
+  } else if (is_char(v)) {
+    printf("\\%c", get_char(v));
   } else if (is_symbol(v)) {
     printf("%s", v.symbol);
   } else if (is_nil(v)) {

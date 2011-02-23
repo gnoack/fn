@@ -1,0 +1,29 @@
+(
+
+(eq 3 (+ 1 2))
+(eq 65 (char->num #\A))
+(eq 3 (digit->int #\3))
+
+; AND
+(eq true (and true true))
+(eq false (and true false))
+(eq false (and false true))
+(eq false (and false false))
+
+; Map
+(eql (cons 2 (cons 3 nil))
+     (cons 2 (cons 3 nil)))
+
+(eql (cons 3 (cons 4 nil))
+     (map (lambda (x) (+ 1 x))
+	  (cons 2 (cons 3 nil))))
+
+; Reduce
+; TODO: This is broken.
+(eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
+
+;; TODO: "123" is converted to (\1 \2 \3), and
+;;   eval tries to interpret it!
+;(eql 123 (string->int "123"))
+
+)

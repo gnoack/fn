@@ -19,6 +19,7 @@ oop fn_lambda_list(oop fn) { return cadr(fn); }
 oop fn_body(oop fn) { return caddr(fn); }
 oop fn_env(oop fn) { return cadddr(fn); }
 bool is_lisp_procedure(oop fn) {
+  CHECK(is_cons(fn), "Must be cons to be a composite procedure.");
   return value_eq(symbols._lisp_procedure_marker, car(fn));
 }
 

@@ -5,6 +5,17 @@
 
 #include "env.h"
 
+void env_put(oop env, oop key, oop value) {
+  CHECK(is_cons(env), "Can't add to empty environment.");
+  if (value_eq(caar(env), key)) {
+    set_rest(car(env), value);
+  } else if (is_nil(cdr(env))) {
+    set_rest(env, make_env(key, value, NIL));
+  } else {
+    env_put(cdr(env), key, value);
+  }
+}
+
 oop make_env(oop key, oop value, oop env) {
   return make_cons(make_cons(key, value), env);
 }

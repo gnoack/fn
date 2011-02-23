@@ -19,6 +19,12 @@ extern
 oop rest(oop cons);
 
 extern
+void set_first(oop cons, oop value);
+
+extern
+void set_rest(oop cons, oop value);
+
+extern
 oop length(oop list);
 
 extern

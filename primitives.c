@@ -5,6 +5,7 @@
 
 #include "eval.h"
 #include "cons.h"
+#include "symbols.h"
 #include "carcdr.h"
 
 void check_argument_number(oop args, int expected) {
@@ -73,6 +74,30 @@ oop primitive_mul(oop args) {
   return make_smallint(get_smallint(car(args)) - get_smallint(cadr(args)));
 }
 
+oop lisp_bool(bool b) {
+  return b ? symbols._true : symbols._false;
+}
+
+oop primitive_eq(oop args) {
+  check_argument_number(args, 2);
+  return lisp_bool(value_eq(car(args), cadr(args)));
+}
+
+oop primitive_cons_p(oop args) {
+  check_argument_number(args, 1);
+  return lisp_bool(is_cons(car(args)));
+}
+
+oop primitive_char_p(oop args) {
+  check_argument_number(args, 1);
+  return lisp_bool(is_char(car(args)));
+}
+
+oop primitive_number_p(oop args) {
+  check_argument_number(args, 1);
+  return lisp_bool(is_smallint(car(args)));
+}
+
 void init_primitives() {
   register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
@@ -82,4 +107,8 @@ void init_primitives() {
   register_globally_fn("+", primitive_add);
   register_globally_fn("-", primitive_sub);
   register_globally_fn("*", primitive_mul);
+  register_globally_fn("eq", primitive_eq);
+  register_globally_fn("cons?", primitive_cons_p);
+  register_globally_fn("char?", primitive_char_p);
+  register_globally_fn("number?", primitive_number_p);
 }

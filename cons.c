@@ -28,6 +28,18 @@ oop rest(oop cons) {
 }
 
 extern
+void set_rest(oop cons, oop value) {
+  CHECK(is_cons(cons), "must be a cons for setting the cdr");
+  cons.cons->rest = value;
+}
+
+extern
+void set_first(oop cons, oop value) {
+  CHECK(is_cons(cons), "must be a cons for setting the car");
+  cons.cons->first = value;
+}
+
+extern
 unsigned int length_int(oop list) {
   if (is_cons(list)) {
     return length_int(rest(list)) + 1;

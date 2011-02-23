@@ -4,8 +4,9 @@
 ;; + -
 
 (
-(def nil? (lambda x
-  (eq? nil sequence)))
+
+(def nil? (lambda (x)
+	    (eq nil x)))
 
 (def map (lambda (proc sequence)
 	   (if (nil? sequence)
@@ -13,13 +14,29 @@
 	       (cons (proc (first sequence))
 		     (map proc (rest sequence))))))
 
-(def digit->int (lambda digit)
-  (- (char->num digit) (char->num #\0)))
+(def reduce (lambda (proc list start)
+	      (if (nil? list)
+		  start
+		  (reduce proc
+			  (rest list)
+			  (proc start (first list))))))
 
-(def parse-int (lambda (str)
-		 (reduce (lambda (init next)
-			   (+ (* 10 init) next))
-			 (map digit->int str)
-			 0)))
+(def digit->int (lambda (digit)
+		  (- (char->num digit) (char->num #\0))))
+
+(def string->int (lambda (str)
+		   (reduce (lambda (init next)
+			     (+ (* 10 init) next))
+			   (map digit->int str)
+			   0)))
+
+(def and (lambda (a b)
+	   (if a b false)))
+
+(def eql (lambda (a b)
+	   (if (and (cons? a) (cons? b))
+	       (and (eql (first a) (first b))
+		    (eql (rest a) (rest b)))
+	       (eq a b))))
 
 )
