@@ -47,4 +47,10 @@
 	      (nth (rest seq) (- n 1)))
 	  nil)))  ; Nothing found.
 
+(def length
+    (lambda (seq)
+      (if (cons? seq)
+	  (+ 1 (length (cdr seq)))
+	  0)))
+
 )
