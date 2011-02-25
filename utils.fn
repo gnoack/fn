@@ -53,4 +53,28 @@
 	  (+ 1 (length (rest seq)))
 	  0)))
 
+;; Reversing sequences.
+(def _reverse
+    (lambda (seq acc)
+      (if (cons? seq)
+	  (_reverse (rest seq)
+		    (cons (first seq) acc))
+	  acc)))
+
+(def reverse
+    (lambda (seq) (_reverse seq nil)))
+
+;; Integer to string conversion.
+(def _hex-digits "0123456789abcef")
+(def _int->string
+    (lambda (n base)
+      (if (eq n 0)
+	  (list)
+	  (cons (nth _hex-digits (mod n base))
+		(_int->string (/ n base) base)))))
+
+(def int->string
+    (lambda (n base)
+      (reverse (_int->string n base))))
+
 )

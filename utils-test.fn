@@ -24,6 +24,7 @@
 ;; Primitives
 (eq 12 (* 3 4))
 (eq 3 (- 10 7))
+
 ; Division.
 (eq 3 (/ 12 4))
 (eq 3 (/ 13 4))
@@ -41,5 +42,10 @@
 (eq 3 (nth (list 1 2 3 4 5) 2))
 (eq #\d (nth "abcdefg" 3))
 (eq 6 (length "abcdef"))
+(eql "abc" (reverse "cba"))
+
+; Integer coding
+(eql "1" (int->string 1 10))
+(eql "123" (int->string 123 10))
 
 )
