@@ -50,7 +50,7 @@
 (def length
     (lambda (seq)
       (if (cons? seq)
-	  (+ 1 (length (cdr seq)))
+	  (+ 1 (length (rest seq)))
 	  0)))
 
 )
