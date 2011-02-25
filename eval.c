@@ -43,7 +43,7 @@ void init_eval() {
 // Evaluation.
 
 oop eval_if(oop sexp, oop env) {
-  CHECK(length_int(sexp) == 4, "Must have size of 4");
+  CHECK(length_int(sexp) == 4, "If-expression must have size of 4");
   oop condition = cadr(sexp);
   oop then_branch = caddr(sexp);
   oop else_branch = cadddr(sexp);
@@ -110,7 +110,7 @@ oop eval(oop program, oop env) {
     // TODO: Proper error handling.
     CHECK(env_haskey(env, program), "Unknown symbol.");
     oop item = env_lookup(env, program);
-    printf(" --> ");
+    printf("      = ");
     print_value(item);
     return item;
   }
@@ -127,6 +127,10 @@ oop eval(oop program, oop env) {
     return eval_let(program, env);
   }
   // Otherwise, it must be a function application.
-  return apply(map_eval(program, env));
+  oop result = apply(map_eval(program, env));
+  print_value(program);
+  printf("         --> ");
+  print_value(result);
+  return result;
 }
 
