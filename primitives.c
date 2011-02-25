@@ -98,6 +98,11 @@ oop primitive_number_p(oop args) {
   return lisp_bool(is_smallint(car(args)));
 }
 
+oop primitive_list(oop args) {
+  // Any argument number accepted, of course. :)
+  return args;
+}
+
 void init_primitives() {
   register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
@@ -111,4 +116,5 @@ void init_primitives() {
   register_globally_fn("cons?", primitive_cons_p);
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
+  register_globally_fn("list", primitive_list);
 }

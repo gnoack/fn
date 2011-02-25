@@ -2,9 +2,12 @@
 #include "tests.h"
 
 #include "eval.h"
+#include "cons.h"
 #include "env.h"
 #include "primitives.h"
+#include "carcdr.h"
 
+#define I make_smallint
 #define S make_symbol
 
 void assert_exists(const char* string) {
@@ -29,9 +32,20 @@ TEST(primitives_existence) {
   assert_exists("cons?");
   assert_exists("char?");
   assert_exists("number?");
+  // List.
+  assert_exists("list");
+}
+
+TEST(primitives_list) {
+  oop result = eval_global(LIST(S("list"), I(1),
+				LIST(S("+"), I(2), I(3))));
+  ASSERT_TRUE(2 == length_int(result));
+  ASSERT_EQ(I(1), car(result));
+  ASSERT_EQ(I(5), cadr(result));
 }
 
 extern
 void primitives_tests() {
   TESTRUN(primitives_existence);
+  TESTRUN(primitives_list);
 }
