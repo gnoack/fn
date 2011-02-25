@@ -19,11 +19,14 @@
 	  (cons 2 (cons 3 nil))))
 
 ; Reduce
-; TODO: This is broken.
 (eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
+
+; Primitives
+(eq 12 (* 3 4))
+(eq 3 (- 10 7))
 
 ;; TODO: "123" is converted to (\1 \2 \3), and
 ;;   eval tries to interpret it!
-;(eql 123 (string->int "123"))
+(eql 123 (string->int "123"))
 
 )

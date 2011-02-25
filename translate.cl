@@ -26,7 +26,8 @@
   (format nil "make_smallint(~aL)" int))
 
 (defun translate-string (str)
-  (format nil "make_string(\"~a\")" str))
+  (format nil "LIST(make_symbol(\"list\"), ~{~a~^, ~})"
+	  (map 'list #'translate-char str)))
 
 (defun translate-char (ch)
   (format nil "make_char('~a')" ch))

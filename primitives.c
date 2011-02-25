@@ -71,7 +71,7 @@ oop primitive_mul(oop args) {
   check_argument_number(args, 2);
   CHECK(is_smallint(car(args)), "Must be a number");
   CHECK(is_smallint(cadr(args)), "Must be a number");
-  return make_smallint(get_smallint(car(args)) - get_smallint(cadr(args)));
+  return make_smallint(get_smallint(car(args)) * get_smallint(cadr(args)));
 }
 
 oop lisp_bool(bool b) {
