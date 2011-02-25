@@ -39,4 +39,12 @@
 		    (eql (rest a) (rest b)))
 	       (eq a b))))
 
+(def nth
+    (lambda (seq n)
+      (if (cons? seq)
+	  (if (eq n 0)
+	      (first seq)
+	      (nth (rest seq) (- n 1)))
+	  nil)))  ; Nothing found.
+
 )

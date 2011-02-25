@@ -74,6 +74,20 @@ oop primitive_mul(oop args) {
   return make_smallint(get_smallint(car(args)) * get_smallint(cadr(args)));
 }
 
+oop primitive_div(oop args) {
+  check_argument_number(args, 2);
+  CHECK(is_smallint(car(args)), "Must be a number");
+  CHECK(is_smallint(cadr(args)), "Must be a number");
+  return make_smallint(get_smallint(car(args)) / get_smallint(cadr(args)));
+}
+
+oop primitive_mod(oop args) {
+  check_argument_number(args, 2);
+  CHECK(is_smallint(car(args)), "Must be a number");
+  CHECK(is_smallint(cadr(args)), "Must be a number");
+  return make_smallint(get_smallint(car(args)) % get_smallint(cadr(args)));
+}
+
 oop lisp_bool(bool b) {
   return b ? symbols._true : symbols._false;
 }
@@ -112,6 +126,8 @@ void init_primitives() {
   register_globally_fn("+", primitive_add);
   register_globally_fn("-", primitive_sub);
   register_globally_fn("*", primitive_mul);
+  register_globally_fn("/", primitive_div);
+  register_globally_fn("mod", primitive_mod);
   register_globally_fn("eq", primitive_eq);
   register_globally_fn("cons?", primitive_cons_p);
   register_globally_fn("char?", primitive_char_p);

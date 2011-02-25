@@ -21,12 +21,24 @@
 ; Reduce
 (eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
 
-; Primitives
+;; Primitives
 (eq 12 (* 3 4))
 (eq 3 (- 10 7))
+; Division.
+(eq 3 (/ 12 4))
+(eq 3 (/ 13 4))
+(eq 3 (/ 14 4))
+(eq 3 (/ 15 4))
+(eq 0 (mod 12 4))
+(eq 1 (mod 13 4))
+(eq 2 (mod 14 4))
+(eq 3 (mod 15 4))
 
-;; TODO: "123" is converted to (\1 \2 \3), and
-;;   eval tries to interpret it!
-(eql 123 (string->int "123"))
+; Integer parsing.
+(eq 123 (string->int "123"))
+
+; Lists
+(eq 3 (nth (list 1 2 3 4 5) 2))
+(eq #\d (nth "abcdefg" 3))
 
 )
