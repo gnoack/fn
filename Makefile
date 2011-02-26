@@ -34,8 +34,11 @@ tests: tests-bin
 tests-bin: $(ALLOBJECTS)
 	$(CC) $(CFLAGS) -o tests-bin $(ALLOBJECTS)
 
-utils.c utils-test.c: utils.fn utils-test.fn
+utils.c: utils.fn
 	sbcl --load translate.cl utils
+
+utils-test.c: utils-test.fn
+	sbcl --load translate.cl utils-test
 
 clean:
 	rm -rf utils-test.c utils.c

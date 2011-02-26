@@ -44,46 +44,71 @@
   (format nil "oop ~a_decls() { return ~a; }~%~%"
 	  basename value))
 
-;; Converts the fn-file with the given basename into a
-;; c-file.
-(defun convert (basename testp)
-  (if testp
-      (let* ((file-basename (format nil "~a-test" basename))
-	     (var-basename (format nil "~a_test" basename))
-	     (suffix (format nil "void ~a_tests() {~%  run_lisp_tests(~a_decls(), ~a_decls());~%}~%"
-			     basename basename var-basename)))
-	(actual-convert file-basename
-			var-basename
-			(concatenate 'string
-				     (c-include "tests")
-				     (c-include basename))
-			suffix))
-      (actual-convert basename basename "" "")))
+(defun make-test-formatter (basename)
+  (let ((test-basename (format nil "~a-test" basename))
+	(var-basename (format nil "~a_test" basename)))
+    #'(lambda (outstream cdecls)
+	(format outstream
+		"~a~%~%~a~a~%~a~a~a~%~a~%~avoid ~a_tests() {~%  run_lisp_tests(~a_decls(), ~a_decls());~%}~%"
+		"// Auto-generated."
+		(c-include test-basename)
+		(c-include basename)
+		(c-include "cons")
+		(c-include "value")
+		(c-include "strings")
+		(c-include "tests")
+		(c-vardecl var-basename
+			   cdecls)
+		basename
+		basename
+		var-basename))))
 
-(defun actual-convert (file-basename var-basename extra-includes suffix)
+(defun make-prod-formatter (basename)
+  #'(lambda (outstream cdecls)
+      (format outstream
+	      "~a~%~a~%~a~a~%~a~%~a"
+	      "// Auto-generated."
+	      (c-include basename)
+	      (c-include "cons")
+	      (c-include "value")
+	      (c-include "strings")
+	      (c-vardecl basename
+			 cdecls))))
+
+(defun actual-convert (formatter file-basename)
   (format t " * Converting ~a.fn…~%" file-basename)
   (with-open-file (out
 		   (format nil "~a.c" file-basename)
 		   :direction :output
 		   :if-exists :supersede)
     (with-open-file (in (format nil "~a.fn" file-basename))
-      (format out
-	      "~a~%~a~a~a~a~%~a~a~%"
-	      (c-include file-basename)
-	      (c-include "cons")
-	      (c-include "value")
-	      (c-include "strings")
-	      extra-includes
-	      (c-vardecl var-basename
-			 (translate (read in)))
-	      suffix))))
+      (apply formatter
+	     (list out
+		   (translate (read in)))))))
 
-;; (convert "utils" "")
+
+(defun convert-prod (basename)
+  (actual-convert (make-prod-formatter basename)
+		  basename))
+
+(defun suffix? (str suffix)
+  (string= suffix
+	   (subseq str (- (length str) (length suffix)))))
+
+(defun strip-suffix (str suffix)
+  (if (suffix? str suffix)
+      (subseq str 0 (- (length str) (length suffix)))
+      str))
+
+(defun convert-test (basename)
+  (actual-convert
+   (make-test-formatter (strip-suffix basename "-test"))
+   basename))
 
 (dolist (basename (cdr sb-ext:*posix-argv*))
-  (format t "Processing ~a…~%" basename)
-  (convert basename nil)
-  (convert basename t))
+  (if (suffix? basename "-test")
+      (convert-test basename)
+      (convert-prod basename)))
 
 (quit :unix-status 0)
 
