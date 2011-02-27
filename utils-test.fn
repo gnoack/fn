@@ -1,6 +1,6 @@
 (
 
-(eq 3 (+ 1 2))
+;; Character conversion, back and forth.
 (eq 65 (char->num #\A))
 (eq 3 (digit->int #\3))
 
@@ -22,6 +22,7 @@
 (eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
 
 ;; Primitives
+(eq 3 (+ 1 2))
 (eq 12 (* 3 4))
 (eq 3 (- 10 7))
 
