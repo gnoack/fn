@@ -117,6 +117,7 @@ int main(int argc, char* argv) {
   parser_tests();
   primitives_tests();
   utils_tests();
+  lang_tests();
   env_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
