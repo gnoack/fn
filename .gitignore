@@ -1,0 +1,6 @@
+*.o
+*.fasl
+utils.c
+utils-test.c
+tests-bin
+
