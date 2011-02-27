@@ -49,17 +49,15 @@
 	(var-basename (format nil "~a_test" basename)))
     #'(lambda (outstream cdecls)
 	(format outstream
-		"~a~%~%~a~a~%~a~a~a~%~a~%~avoid ~a_tests() {~%  run_lisp_tests(~a_decls(), ~a_decls());~%}~%"
+		"~a~%~%~a~%~a~a~a~%~a~%~avoid ~a_tests() {~%  run_lisp_tests(~a_decls());~%}~%"
 		"// Auto-generated."
 		(c-include test-basename)
-		(c-include basename)
 		(c-include "cons")
 		(c-include "value")
 		(c-include "strings")
 		(c-include "tests")
 		(c-vardecl var-basename
 			   cdecls)
-		basename
 		basename
 		var-basename))))
 
@@ -76,7 +74,7 @@
 			 cdecls))))
 
 (defun actual-convert (formatter file-basename)
-  (format t " * Converting ~a.fn…~%" file-basename)
+  (format t " * Converting ~a.fn...~%" file-basename)
   (with-open-file (out
 		   (format nil "~a.c" file-basename)
 		   :direction :output
@@ -92,8 +90,10 @@
 		  basename))
 
 (defun suffix? (str suffix)
-  (string= suffix
-	   (subseq str (- (length str) (length suffix)))))
+  (and (<= (length suffix) (length str))
+       (string= suffix
+		(subseq str (- (length str)
+			       (length suffix))))))
 
 (defun strip-suffix (str suffix)
   (if (suffix? str suffix)
@@ -105,10 +105,11 @@
    (make-test-formatter (strip-suffix basename "-test"))
    basename))
 
-(dolist (basename (cdr sb-ext:*posix-argv*))
-  (if (suffix? basename "-test")
-      (convert-test basename)
-      (convert-prod basename)))
+(defun run ()
+  (dolist (basename (cdr sb-ext:*posix-argv*))
+    (if (suffix? basename "-test")
+	(convert-test basename)
+	(convert-prod basename)))
+  (quit :unix-status 0))
 
-(quit :unix-status 0)
 

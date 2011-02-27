@@ -135,3 +135,11 @@ oop eval(oop program, oop env) {
   return result;
 }
 
+extern
+void load_decls(oop decls) {
+  while (!is_nil(decls)) {
+    eval_global(car(decls));
+
+    decls = cdr(decls);
+  }
+}

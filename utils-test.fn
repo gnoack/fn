@@ -1,6 +1,6 @@
 (
 
-;; Character conversion, back and forth.
+; Character conversion, back and forth.
 (eq 65 (char->num #\A))
 (eq 3 (digit->int #\3))
 

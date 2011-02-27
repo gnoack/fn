@@ -13,6 +13,9 @@
 #include "primitives-test.h"
 #include "carcdr.h"
 
+#include "lang.h"
+#include "utils.h"
+
 #include <stdio.h>
 
 unsigned int assertion_count = 0;
@@ -78,12 +81,7 @@ void assert_eq(const char* filename,
 }
 
 extern
-void run_lisp_tests(oop decls, oop tests) {
-  while (!is_nil(decls)) {
-    eval_global(car(decls));
-
-    decls = cdr(decls);
-  }
+void run_lisp_tests(oop tests) {
   while (!is_nil(tests)) {
     oop test = car(tests);
     printf("Test: ");
@@ -98,6 +96,8 @@ void init() {
   init_symbols();
   init_eval();
   init_primitives();
+  load_decls(lang_decls());
+  load_decls(utils_decls());
 }
 
 int main(int argc, char* argv) {

@@ -20,5 +20,8 @@ void register_globally_fn(const char* name, function fn);
 extern
 void init_eval();
 
+extern
+void load_decls(oop decls);
+
 #define __EVAL_H__ 0
 #endif // __EVAL_H__

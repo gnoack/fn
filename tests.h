@@ -47,5 +47,5 @@ void assert_nil(const char* filename,
 #define TESTRUN(name) name();
 
 extern
-void run_lisp_tests(oop decls, oop tests);
+void run_lisp_tests(oop tests);
 
