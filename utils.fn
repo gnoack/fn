@@ -30,6 +30,9 @@
 			   (map digit->int str)
 			   0)))
 
+(def not (lambda (a)
+	   (if a false true)))
+
 (def and (lambda (a b)
 	   (if a b false)))
 

@@ -48,9 +48,13 @@ lang.c: lang.fn
 lang-test.c: lang-test.fn
 	sbcl --load translate.cl --eval "(run)" lang-test
 
+primitives-test.c: primitives-test.fn
+	sbcl --load translate.cl --eval "(run)" primitives-test
+
 clean:
 	rm -rf utils-test.c utils.c
 	rm -rf lang-test.c lang.c
+	rm -rf primitives-test.c
 	rm -rf tests-bin
 	rm -rf *.o
 	rm -rf *~

@@ -1,0 +1,49 @@
+
+(
+
+;; Cons, first, rest
+(eq 3 (first (cons 3 4)))
+(eq 4 (rest (cons 3 4)))
+
+;; Character conversion
+(eq 65 (char->num #\A))
+(eq #\A (num->char 65))
+
+;; Arithmetic primitives.
+(eq 3 (+ 1 2))
+(eq 12 (* 3 4))
+(eq 3 (- 10 7))
+
+;; Division.
+(eq 3 (/ 12 4))
+(eq 3 (/ 13 4))
+(eq 3 (/ 14 4))
+(eq 3 (/ 15 4))
+(eq 0 (mod 12 4))
+(eq 1 (mod 13 4))
+(eq 2 (mod 14 4))
+(eq 3 (mod 15 4))
+
+;; Primitive type predicates
+; cons?
+(cons? (cons 1 2))
+(cons? "foo")  ; Strings are lists, too.
+(not (cons? #\a))
+(not (cons? 1))
+; char?
+(char? #\a)
+(not (char? (cons 1 2)))
+(not (char? 2))
+(not (char? "foo"))
+; number?
+(number? 3)
+(not (number? (cons 1 2)))
+(not (number? "foo"))
+(not (number? #\a))
+
+;; List
+(eq 2 (length (list 1 2)))
+(eq 5 (nth (list 5 6) 0))
+(eq 6 (nth (list 5 6) 1))
+
+)

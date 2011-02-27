@@ -5,4 +5,5 @@ utils-test.c
 tests-bin
 lang.c
 lang-test.c
+primitives-test.c
 
