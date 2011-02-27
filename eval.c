@@ -103,17 +103,12 @@ oop map_eval(oop list, oop env) {
 
 extern
 oop eval(oop program, oop env) {
-  printf("eval: ");
-  print_value(program);
   if (is_smallint(program) || is_nil(program) || is_char(program)) {
     return program;
   } else if (is_symbol(program)) {
     // TODO: Proper error handling.
     CHECKV(env_haskey(env, program), program, "Unknown symbol.");
-    oop item = env_lookup(env, program);
-    printf("      = ");
-    print_value(item);
-    return item;
+    return env_lookup(env, program);
   }
   CHECKV(is_cons(program), program, "What is this? I can't evaluate it!");
   oop command = car(program);
@@ -128,11 +123,7 @@ oop eval(oop program, oop env) {
     return eval_let(program, env);
   }
   // Otherwise, it must be a function application.
-  oop result = apply(map_eval(program, env));
-  print_value(program);
-  printf("         --> ");
-  print_value(result);
-  return result;
+  return apply(map_eval(program, env));
 }
 
 extern

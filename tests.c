@@ -84,9 +84,14 @@ extern
 void run_lisp_tests(oop tests) {
   while (!is_nil(tests)) {
     oop test = car(tests);
-    printf("Test: ");
-    print_value(test);
-    ASSERT_EQ(symbols._true, eval_global(test));
+    oop result = eval_global(test);
+    init_assert();
+    if (!value_eq(symbols._true, result)) {
+      fail("from lisp", 0, "Expected true for expression:");
+      print_value(test);
+      printf("  --> ");
+      print_value(result);
+    }
 
     tests = cdr(tests);
   }
