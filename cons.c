@@ -17,25 +17,25 @@ oop make_cons(oop car, oop cdr) {
 
 extern
 oop first(oop cons) {
-  CHECK(is_cons(cons), "must be a cons for caring");
+  CHECKV(is_cons(cons), cons, "must be a cons for caring");
   return cons.cons->first;
 }
 
 extern
 oop rest(oop cons) {
-  CHECK(is_cons(cons), "must be a cons for cdring");
+  CHECKV(is_cons(cons), cons, "must be a cons for cdring");
   return cons.cons->rest;
 }
 
 extern
 void set_rest(oop cons, oop value) {
-  CHECK(is_cons(cons), "must be a cons for setting the cdr");
+  CHECKV(is_cons(cons), cons, "must be a cons for setting the cdr");
   cons.cons->rest = value;
 }
 
 extern
 void set_first(oop cons, oop value) {
-  CHECK(is_cons(cons), "must be a cons for setting the car");
+  CHECKV(is_cons(cons), cons, "must be a cons for setting the car");
   cons.cons->first = value;
 }
 
@@ -44,7 +44,7 @@ unsigned int length_int(oop list) {
   if (is_cons(list)) {
     return length_int(rest(list)) + 1;
   } else {
-    CHECK(is_nil(list), "This is not a list");
+    CHECKV(is_nil(list), list, "Was expecting nil.");
     return 0;
   }
 }

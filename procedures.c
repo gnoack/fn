@@ -19,7 +19,7 @@ oop fn_lambda_list(oop fn) { return cadr(fn); }
 oop fn_body(oop fn) { return caddr(fn); }
 oop fn_env(oop fn) { return cadddr(fn); }
 bool is_lisp_procedure(oop fn) {
-  CHECK(is_cons(fn), "Must be cons to be a composite procedure.");
+  CHECKV(is_cons(fn), fn, "Must be cons to be a composite procedure.");
   return value_eq(symbols._lisp_procedure_marker, car(fn));
 }
 
@@ -29,7 +29,7 @@ bool is_lisp_procedure(oop fn) {
 // Helper for apply_lisp_procedure below.
 oop destructure_lambda_list(oop ll, oop args, oop env) {
   if (is_nil(ll)) {
-    CHECK(is_nil(args), "Too many arguments in function call.");
+    CHECKV(is_nil(args), args, "Too many arguments in function call.");
     return env;
   } else {
     CHECK(!is_nil(args), "Need more arguments in function call.");

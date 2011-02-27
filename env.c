@@ -6,7 +6,7 @@
 #include "env.h"
 
 void env_put(oop env, oop key, oop value) {
-  CHECK(is_cons(env), "Can't add to empty environment.");
+  CHECK(is_cons(env), "Can't mutate empty environment for now.");
   if (value_eq(caar(env), key)) {
     set_rest(car(env), value);
   } else if (is_nil(cdr(env))) {

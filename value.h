@@ -19,6 +19,14 @@ typedef char bool;
     exit(1);                                         \
   }
 
+#define CHECKV(x, value, msg)                        \
+  if (!(x)) {                                        \
+    printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
+    printf("Offending value: ");                     \
+    print_value(value);                              \
+    exit(1);                                         \
+  }
+
 struct cons_s;
 
 typedef union value_u {

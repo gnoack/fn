@@ -78,12 +78,12 @@ bool is_char(oop v) {
 }
 
 uint get_smallint(oop v) {
-  CHECK(is_smallint(v), "Must be a smallint.");
+  CHECKV(is_smallint(v), v, "Must be a smallint.");
   return v.smallint >> 1;
 }
 
 char get_char(oop v) {
-  CHECK(is_char(v), "Must be a character.");
+  CHECKV(is_char(v), v, "Must be a character.");
   return (char) ((v.smallint - char_start) >> 2);
 }
 
@@ -100,7 +100,7 @@ void print_value_internal(oop v) {
   } else if (is_nil(v)) {
     printf("nil");
   } else {
-    CHECK(is_cons(v), "Can only be cons");
+    CHECK(is_cons(v), "Must be cons.");
     printf("(");
     while (!is_nil(v)) {
       // is_cons(v) holds.

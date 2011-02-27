@@ -9,7 +9,7 @@
 #include "carcdr.h"
 
 void check_argument_number(oop args, int expected) {
-  CHECK(length_int(args) == expected, "Argument number");
+  CHECKV(length_int(args) == expected, args, "Argument number");
 }
 
 oop primitive_cons(oop args) {
@@ -29,13 +29,13 @@ oop primitive_rest(oop args) {
 
 oop primitive_char_to_num(oop args) {
   check_argument_number(args, 1);
-  CHECK(is_char(car(args)), "Must be a char");
+  CHECKV(is_char(car(args)), car(args), "Must be a char");
   return make_smallint(get_char(car(args)));
 }
 
 oop primitive_num_to_char(oop args) {
   check_argument_number(args, 1);
-  CHECK(is_smallint(car(args)), "Must be a smallint");
+  CHECKV(is_smallint(car(args)), car(args), "Must be a smallint");
   return make_char(get_smallint(car(args)));
 }
 
@@ -61,30 +61,30 @@ oop primitive_add(oop args) {
 oop primitive_sub(oop args) {
   // TODO: Allow more arguments.
   check_argument_number(args, 2);
-  CHECK(is_smallint(car(args)), "Must be a number");
-  CHECK(is_smallint(cadr(args)), "Must be a number");
+  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
+  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
   return make_smallint(get_smallint(car(args)) - get_smallint(cadr(args)));
 }
 
 oop primitive_mul(oop args) {
   // TODO: Allow more arguments.
   check_argument_number(args, 2);
-  CHECK(is_smallint(car(args)), "Must be a number");
-  CHECK(is_smallint(cadr(args)), "Must be a number");
+  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
+  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
   return make_smallint(get_smallint(car(args)) * get_smallint(cadr(args)));
 }
 
 oop primitive_div(oop args) {
   check_argument_number(args, 2);
-  CHECK(is_smallint(car(args)), "Must be a number");
-  CHECK(is_smallint(cadr(args)), "Must be a number");
+  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
+  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
   return make_smallint(get_smallint(car(args)) / get_smallint(cadr(args)));
 }
 
 oop primitive_mod(oop args) {
   check_argument_number(args, 2);
-  CHECK(is_smallint(car(args)), "Must be a number");
-  CHECK(is_smallint(cadr(args)), "Must be a number");
+  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
+  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
   return make_smallint(get_smallint(car(args)) % get_smallint(cadr(args)));
 }
 

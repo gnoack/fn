@@ -43,7 +43,7 @@ void init_eval() {
 // Evaluation.
 
 oop eval_if(oop sexp, oop env) {
-  CHECK(length_int(sexp) == 4, "If-expression must have size of 4");
+  CHECKV(length_int(sexp) == 4, sexp, "If-expression must have size of 4");
   oop condition = cadr(sexp);
   oop then_branch = caddr(sexp);
   oop else_branch = cadddr(sexp);
@@ -51,19 +51,20 @@ oop eval_if(oop sexp, oop env) {
   if (value_eq(condition_result, symbols._true)) {
     return eval(then_branch, env);
   } else {
-    CHECK(value_eq(condition_result, symbols._false),
+    CHECKV(value_eq(condition_result, symbols._false),
+	   condition_result,
 	  "Need true or false as condition value.");
     return eval(else_branch, env);
   }
 }
 
 oop eval_let(oop sexp, oop env) {
-  CHECK(value_eq(symbols._let, car(sexp)), "Must be a let form.");
-  CHECK(length_int(sexp) == 3, "Bad let form length.");
+  CHECKV(value_eq(symbols._let, car(sexp)), sexp, "Must be a let form.");
+  CHECKV(length_int(sexp) == 3, sexp, "Bad let form length.");
   oop bindings = cadr(sexp);
   while (!is_nil(bindings)) {
     oop binding = car(bindings);
-    CHECK(length_int(binding) == 2, "Bad binding length.");
+    CHECKV(length_int(binding) == 2, binding, "Bindings need length 2.");
     env = make_env(car(binding), eval(cadr(binding), env), env);
     bindings = cdr(bindings);
   }
@@ -108,13 +109,13 @@ oop eval(oop program, oop env) {
     return program;
   } else if (is_symbol(program)) {
     // TODO: Proper error handling.
-    CHECK(env_haskey(env, program), "Unknown symbol.");
+    CHECKV(env_haskey(env, program), program, "Unknown symbol.");
     oop item = env_lookup(env, program);
     printf("      = ");
     print_value(item);
     return item;
   }
-  CHECK(is_cons(program), "What is this? I can't evaluate it!");
+  CHECKV(is_cons(program), program, "What is this? I can't evaluate it!");
   oop command = car(program);
   if (value_eq(command, symbols._if)) return eval_if(program, env);
   if (value_eq(command, symbols._lambda)) {
