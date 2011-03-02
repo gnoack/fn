@@ -2,6 +2,7 @@
 #ifndef _VALUE_H_
 #define _VALUE_H_ 1
 
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef unsigned int uint;
