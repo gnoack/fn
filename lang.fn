@@ -1,6 +1,13 @@
 
 (
 
-;; Nothing for now.
+;; Simple definitions for comparison.
+
+(def <= integer<=)
+
+(def <
+    (lambda (x y)
+      (and (<= x y)
+	   (not (eq x y)))))
 
 )

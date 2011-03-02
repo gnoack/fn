@@ -1,4 +1,7 @@
 
 (
-;; Empty for now.
+;; Don't forget to use eql.
+(eql 123 (read "123"))
+(eql "abc" (read "\"abc\""))
+;(eql "foo" (read "\"foo\""))
 )

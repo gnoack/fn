@@ -5,6 +5,7 @@
 #include "symbols.h"
 #include "utils-test.h"
 #include "env-test.h"
+#include "parser.h"
 #include "primitives.h"
 #include "string-interning-test.h"
 #include "cons-test.h"
@@ -103,6 +104,7 @@ void init() {
   init_primitives();
   load_decls(lang_decls());
   load_decls(utils_decls());
+  load_decls(parser_decls());
 }
 
 int main(int argc, char* argv) {

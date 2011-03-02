@@ -92,6 +92,13 @@ oop lisp_bool(bool b) {
   return b ? symbols._true : symbols._false;
 }
 
+oop primitive_le(oop args) {
+  check_argument_number(args, 2);
+  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
+  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
+  return lisp_bool(get_smallint(car(args)) <= get_smallint(cadr(args)));
+}
+
 oop primitive_eq(oop args) {
   check_argument_number(args, 2);
   return lisp_bool(value_eq(car(args), cadr(args)));
@@ -128,6 +135,7 @@ void init_primitives() {
   register_globally_fn("*", primitive_mul);
   register_globally_fn("/", primitive_div);
   register_globally_fn("mod", primitive_mod);
+  register_globally_fn("integer<=", primitive_le);
   register_globally_fn("eq", primitive_eq);
   register_globally_fn("cons?", primitive_cons_p);
   register_globally_fn("char?", primitive_char_p);
