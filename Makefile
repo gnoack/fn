@@ -30,31 +30,29 @@ TESTOBJECTS = \
 
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
+LISPTARGETS = \
+	lang.c \
+	lang-test.c \
+	utils.c \
+	utils-test.c \
+	primitives-test.c
+
+CLFLAGS = --noinform --noprint --disable-debugger
+LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
+
+%.c: %.fn
+	$(LISP) $*
+
 tests: tests-bin
 	./tests-bin
 
-tests-bin: $(ALLOBJECTS)
+tests-bin: $(LISPTARGETS) $(ALLOBJECTS)
+	@echo $(LISPSOURCES)
 	$(CC) $(CFLAGS) -o tests-bin $(ALLOBJECTS)
 
-utils.c: utils.fn
-	sbcl --load translate.cl --eval "(run)" utils
-
-utils-test.c: utils-test.fn
-	sbcl --load translate.cl --eval "(run)" utils-test
-
-lang.c: lang.fn
-	sbcl --load translate.cl --eval "(run)" lang
-
-lang-test.c: lang-test.fn
-	sbcl --load translate.cl --eval "(run)" lang-test
-
-primitives-test.c: primitives-test.fn
-	sbcl --load translate.cl --eval "(run)" primitives-test
 
 clean:
-	rm -rf utils-test.c utils.c
-	rm -rf lang-test.c lang.c
-	rm -rf primitives-test.c
+	rm -rf $(LISPTARGETS)
 	rm -rf tests-bin
 	rm -rf *.o
 	rm -rf *~
