@@ -31,11 +31,13 @@ TESTOBJECTS = \
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
 LISPTARGETS = \
-	lang.c \
 	lang-test.c \
-	utils.c \
+	lang.c \
+	parser-test.c \
+	parser.c \
+	primitives-test.c \
 	utils-test.c \
-	primitives-test.c
+	utils.c \
 
 CLFLAGS = --noinform --noprint --disable-debugger
 LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
@@ -46,7 +48,7 @@ LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
 tests: tests-bin
 	./tests-bin
 
-tests-bin: $(LISPTARGETS) $(ALLOBJECTS)
+tests-bin: $(ALLOBJECTS)
 	@echo $(LISPSOURCES)
 	$(CC) $(CFLAGS) -o tests-bin $(ALLOBJECTS)
 
