@@ -1,20 +1,24 @@
 
 #include "tests.h"
-#include "value.h"
+
 #include "eval.h"
-#include "symbols.h"
-#include "utils-test.h"
-#include "env-test.h"
+#include "lang.h"
+#include "macros.h"
 #include "primitives.h"
-#include "string-interning-test.h"
+#include "symbols.h"
+#include "utils.h"
+#include "value.h"
+
 #include "cons-test.h"
-#include "strings-test.h"
+#include "env-test.h"
+#include "macros-test.h"
 #include "parser-test.h"
 #include "primitives-test.h"
-#include "carcdr.h"
+#include "string-interning-test.h"
+#include "strings-test.h"
+#include "utils-test.h"
 
-#include "lang.h"
-#include "utils.h"
+#include "carcdr.h"
 
 #include <stdio.h>
 
@@ -103,6 +107,7 @@ void init() {
   init_primitives();
   load_decls(lang_decls());
   load_decls(utils_decls());
+  load_decls(macros_decls());
 }
 
 int main(int argc, char* argv) {
@@ -119,6 +124,7 @@ int main(int argc, char* argv) {
   utils_tests();
   lang_tests();
   env_tests();
+  macros_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

@@ -85,6 +85,11 @@ oop eval_lambda(oop program, oop env) {
 			env);
 }
 
+oop eval_quote(oop program, oop env) {
+  CHECKV(length_int(program) == 2, program, "quote has only one argument.");
+  return cadr(program);  // Quote.
+}
+
 extern
 oop eval_global(oop program) {
   return eval(program, global_env);
@@ -121,6 +126,9 @@ oop eval(oop program, oop env) {
   }
   if (value_eq(command, symbols._let)) {
     return eval_let(program, env);
+  }
+  if (value_eq(command, symbols._quote)) {
+    return eval_quote(program, env);
   }
   // Otherwise, it must be a function application.
   return apply(map_eval(program, env));

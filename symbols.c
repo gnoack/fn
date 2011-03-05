@@ -14,6 +14,7 @@ void init_symbols() {
   symbols._let = make_symbol("let");
   symbols._true = make_symbol("true");
   symbols._false = make_symbol("false");
+  symbols._quote = make_symbol("quote");
   symbols._native_procedure_marker = make_symbol("native");
   symbols._lisp_procedure_marker = make_symbol("procedure");
   initialized = YES;

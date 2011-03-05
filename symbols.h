@@ -8,6 +8,7 @@ typedef struct {
   oop _let;
   oop _true;
   oop _false;
+  oop _quote;
   oop _native_procedure_marker;
   oop _lisp_procedure_marker;
 } symbols_t;

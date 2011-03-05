@@ -6,6 +6,7 @@ OBJECTS = \
 	env.o \
 	eval.o \
 	lang.o \
+	macros.o \
 	parser.o \
 	primitives.o \
 	procedures.o \
@@ -20,6 +21,7 @@ TESTOBJECTS = \
 	env-test.o \
 	eval-test.o \
 	lang-test.o \
+	macros-test.o \
 	parser-test.o \
 	primitives-test.o \
 	string-interning-test.o \
@@ -47,9 +49,7 @@ tests: tests-bin
 	./tests-bin
 
 tests-bin: $(LISPTARGETS) $(ALLOBJECTS)
-	@echo $(LISPSOURCES)
 	$(CC) $(CFLAGS) -o tests-bin $(ALLOBJECTS)
-
 
 clean:
 	rm -rf $(LISPTARGETS)
