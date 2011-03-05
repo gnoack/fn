@@ -36,6 +36,9 @@
 (def and (lambda (a b)
 	   (if a b false)))
 
+(def or (lambda (a b)
+	  (if a true b)))
+
 (def eql (lambda (a b)
 	   (if (and (cons? a) (cons? b))
 	       (and (eql (first a) (first b))
@@ -79,5 +82,27 @@
 (def int->string
     (lambda (n base)
       (reverse (_int->string n base))))
+
+;; Association lists.
+(def acons
+    (lambda (key value list)
+      (cons (cons key value) list)))
+
+(def lookup
+    (lambda (key alist)
+      (if (nil? alist)
+	  false
+	  (if (eq key (first (first alist)))
+	      (rest (first alist))
+	      (lookup key (rest alist))))))
+
+(def pairlis
+    (lambda (keys values)
+      (if (or (nil? keys)
+	      (nil? values))
+	  '()
+	  (acons (first keys)
+		 (first values)
+		 (pairlis (rest keys) (rest values))))))
 
 )
