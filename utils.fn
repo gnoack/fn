@@ -5,56 +5,52 @@
 
 (
 
-(def digit->int (lambda (digit)
-		  (- (char->num digit) (char->num #\0))))
+(defn digit->int (digit)
+  (- (char->num digit) (char->num #\0)))
 
-(def string->int (lambda (str)
-		   (reduce (lambda (init next)
-			     (+ (* 10 init) next))
-			   (map digit->int str)
-			   0)))
+(defn string->int (str)
+  (reduce (lambda (init next)
+	    (+ (* 10 init) next))
+	  (map digit->int str)
+	  0))
 
-(def eql (lambda (a b)
-	   (if (and (cons? a) (cons? b))
-	       (and (eql (first a) (first b))
-		    (eql (rest a) (rest b)))
-	       (eq a b))))
+(defn eql (a b)
+  (if (and (cons? a) (cons? b))
+      (and (eql (first a) (first b))
+	   (eql (rest a) (rest b)))
+      (eq a b)))
 
-(def nth
-    (lambda (seq n)
-      (if (cons? seq)
-	  (if (eq n 0)
-	      (first seq)
-	      (nth (rest seq) (- n 1)))
-	  nil)))  ; Nothing found.
+(defn nth (seq n)
+  (if (cons? seq)
+      (if (eq n 0)
+	  (first seq)
+	  (nth (rest seq) (- n 1)))
+      nil))  ; Nothing found.
 
-(def length
-    (lambda (seq)
-      (if (cons? seq)
-	  (+ 1 (length (rest seq)))
-	  0)))
+(defn length (seq)
+  (if (cons? seq)
+      (+ 1 (length (rest seq)))
+      0))
 
 ;; Reversing sequences.
-(def _reverse
-    (lambda (seq acc)
-      (if (cons? seq)
-	  (_reverse (rest seq)
-		    (cons (first seq) acc))
-	  acc)))
+(defn _reverse (seq acc)
+  (if (cons? seq)
+      (_reverse (rest seq)
+		(cons (first seq) acc))
+      acc))
 
-(def reverse
-    (lambda (seq) (_reverse seq nil)))
+(defn reverse (seq)
+  (_reverse seq nil))
 
 ;; Integer to string conversion.
 (def _hex-digits "0123456789abcef")
-(def _int->string
-    (lambda (n base)
-      (if (eq n 0)
-	  (list)
-	  (cons (nth _hex-digits (mod n base))
-		(_int->string (/ n base) base)))))
+(defn _int->string (n base)
+  (if (eq n 0)
+      (list)
+      (cons (nth _hex-digits (mod n base))
+	    (_int->string (/ n base) base))))
 
-(def int->string
-    (lambda (n base)
-      (reverse (_int->string n base))))
+(defn int->string (n base)
+  (reverse (_int->string n base)))
+
 )

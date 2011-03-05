@@ -81,4 +81,8 @@
   (if (nil? ps) p
       (list 'if p true (cons 'or ps))))
 
+(defmacro defn (name lambda-list body)
+  ;; `(def ,name (lambda ,lambda-list ,body))
+  (list 'def name
+	(list 'lambda lambda-list body)))
 )
