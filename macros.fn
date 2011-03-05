@@ -12,29 +12,15 @@
 ;;    and define it so that it adds a macro to the *macros* alist, in
 ;;    doubt by overriding.  (We need an implementation of alists for
 ;;    that.)
-(def macroexpand-cond
-    (lambda (e)
-      (reduce (lambda (start item)
-		(let ((condition (first item))
-		      (case (first (rest item))))
-		  (list 'if condition case start)))
-	      (reverse e)
-	      '(error "No match."))))
-
-(def macroexpand
-    (lambda (e)
-      (if (eq 'cond (first e))
-	  (macroexpand-cond (rest e))
-	  e)))
 
 (def macroexpand-defmacro
     (lambda (e)
       (let ((macroname (first e))
 	    (lambda-list (first (rest e)))
 	    (body (first (rest (rest e)))))
-	;; `(def *macro* (acons ,macroname
+	;; `(def *macros* (acons ,macroname
 	;; 		     (lambda ,lambda-list ,body) *macros*))
-	(list 'def '*macro*
+	(list 'def '*macros*
 	      (list 'acons (list 'quote macroname)
 		    (list 'lambda lambda-list body) '*macros*)))))
 
@@ -75,4 +61,18 @@
 		      (cons x (map macroexpand-rec xs))))))))
 	  e)))
 
+;; 'macroexpand' is special in that the evaluator transforms any
+;; expression with it before evaluating it.  This only happens though,
+;; if macroexpand is actually defined.  As long as it's not defined,
+;; no transformation is done.
+(def macroexpand
+    (lambda (e) (macroexpand-rec e)))
+
+(defmacro cond (e)
+  (reduce (lambda (start item)
+	    (let ((condition (first item))
+		  (case (first (rest item))))
+	      (list 'if condition case start)))
+	  (reverse e)
+	  '(error "No match.")))
 )

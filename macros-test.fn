@@ -1,4 +1,8 @@
 (
+
+; (defmacro _foo (x) 1)
+; (eq 1 (_foo 'bar))
+
 (eql '(if a a-case
       (if b b-case
       (if c c-case
@@ -11,7 +15,7 @@
 ;; Does the hand-written defmacro
 ;; macro work?
 (eql
- '(def *macro*
+ '(def *macros*
      (acons 'and
 	    (lambda (x)
 	      (list 'if (first x)

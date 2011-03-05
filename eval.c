@@ -92,6 +92,12 @@ oop eval_quote(oop program, oop env) {
 
 extern
 oop eval_global(oop program) {
+  if (env_haskey(global_env, symbols._macroexpand)) {
+    oop macroexpand_fn = env_lookup(global_env,
+				    symbols._macroexpand);
+    program = apply(make_cons(macroexpand_fn,
+			      make_cons(program, NIL)));
+  }
   return eval(program, global_env);
 }
 
