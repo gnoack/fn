@@ -1,8 +1,4 @@
 
-;; Relying on first, rest, cons
-;; Relying on char->num num->char
-;; + -
-
 (
 
 (defn digit->int (digit)
