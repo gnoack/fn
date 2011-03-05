@@ -7,4 +7,20 @@
       '(cond (a a-case)
              (b b-case)
              (c c-case))))
+
+;; Does the hand-written defmacro
+;; macro work?
+(eql
+ '(def *macro*
+     (acons 'and
+	    (lambda (x)
+	      (list 'if (first x)
+		    (first (rest x))
+		    'false))
+	    *macros*))
+ (macroexpand-rec
+  '(defmacro and (x)
+    (list 'if (first x)
+          (first (rest x))
+          'false))))
 )

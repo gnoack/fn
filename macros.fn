@@ -18,12 +18,61 @@
 		(let ((condition (first item))
 		      (case (first (rest item))))
 		  (list 'if condition case start)))
-	      (reverse (rest e))
+	      (reverse e)
 	      '(error "No match."))))
 
 (def macroexpand
     (lambda (e)
       (if (eq 'cond (first e))
-	  (macroexpand-cond e)
+	  (macroexpand-cond (rest e))
 	  e)))
+
+(def macroexpand-defmacro
+    (lambda (e)
+      (let ((macroname (first e))
+	    (lambda-list (first (rest e)))
+	    (body (first (rest (rest e)))))
+	;; `(def *macro* (acons ,macroname
+	;; 		     (lambda ,lambda-list ,body) *macros*))
+	(list 'def '*macro*
+	      (list 'acons (list 'quote macroname)
+		    (list 'lambda lambda-list body) '*macros*)))))
+
+(def *macros*
+    (acons 'defmacro
+	   macroexpand-defmacro '()))
+
+(def me-lambda-rec
+    (lambda (xs)
+      (list 'lambda
+	    (first xs)  ; lambda-list
+	    (macroexpand-rec (first (rest xs))))))  ; body
+
+(def me-let-rec
+    (lambda (xs)
+      (list 'let
+	    (map (lambda (binding)
+		   (cons (first binding)
+			 (macroexpand-rec (rest binding))))
+		 (first xs))  ; bindings
+	    (macroexpand-rec (first (rest xs))))))
+
+(def false? (lambda (f) (eq false f)))
+
+;; CAN'T USE ANY MACROS ITSELF!
+; if, def are handled by regular function application rules
+(def macroexpand-rec
+    (lambda (e)
+      (if (cons? e)
+	  (let ((x (first e))
+		(xs (rest e)))
+	    (if (eq x 'quote) e  ; just leave it
+	    (if (eq x 'lambda) (me-lambda-rec xs)
+	    (if (eq x 'let) (me-let-rec xs)
+		(let ((expand (lookup x *macros*)))
+		  (if (not (false? expand))
+		      (macroexpand-rec (expand xs))
+		      (cons x (map macroexpand-rec xs))))))))
+	  e)))
+
 )
