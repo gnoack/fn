@@ -1,8 +1,5 @@
 (
 
-; (defmacro _foo (x) 1)
-; (eq 1 (_foo 'bar))
-
 (eql '(if a a-case
       (if b b-case
       (if c c-case
@@ -29,7 +26,7 @@
           'false))))
 
 (eql
- '(if a (if b c))
+ '(if a (if b c false) false)
  (macroexpand '(and a b c)))
 
 (eql 'a (macroexpand '(and a)))

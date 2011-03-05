@@ -75,7 +75,7 @@
 
 (defmacro and (p &rest ps)
   (if (nil? ps) p
-      (list 'if p (cons 'and ps))))
+      (list 'if p (cons 'and ps) false)))
 
 (defmacro or (p &rest ps)
   (if (nil? ps) p

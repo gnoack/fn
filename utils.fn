@@ -14,11 +14,10 @@
 			   (map digit->int str)
 			   0)))
 
-;; TODO: Remove _and in favor of and.
 (def eql (lambda (a b)
-	   (if (_and (cons? a) (cons? b))
-	       (_and (eql (first a) (first b))
-		     (eql (rest a) (rest b)))
+	   (if (and (cons? a) (cons? b))
+	       (and (eql (first a) (first b))
+		    (eql (rest a) (rest b)))
 	       (eq a b))))
 
 (def nth
