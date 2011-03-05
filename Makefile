@@ -33,11 +33,13 @@ TESTOBJECTS = \
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
 LISPTARGETS = \
-	lang.c \
 	lang-test.c \
-	utils.c \
+	lang.c \
+	macros-test.c \
+	macros.c \
+	primitives-test.c \
 	utils-test.c \
-	primitives-test.c
+	utils.c \
 
 CLFLAGS = --noinform --noprint --disable-debugger
 LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
