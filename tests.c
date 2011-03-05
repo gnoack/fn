@@ -106,8 +106,8 @@ void init() {
   init_eval();
   init_primitives();
   load_decls(lang_decls());
-  load_decls(utils_decls());
   load_decls(macros_decls());
+  load_decls(utils_decls());
 }
 
 int main(int argc, char* argv) {

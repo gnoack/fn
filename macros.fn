@@ -14,15 +14,12 @@
 ;;    that.)
 
 (def macroexpand-defmacro
-    (lambda (e)
-      (let ((macroname (first e))
-	    (lambda-list (first (rest e)))
-	    (body (first (rest (rest e)))))
-	;; `(def *macros* (acons ,macroname
-	;; 		     (lambda ,lambda-list ,body) *macros*))
-	(list 'def '*macros*
-	      (list 'acons (list 'quote macroname)
-		    (list 'lambda lambda-list body) '*macros*)))))
+    (lambda (macroname lambda-list body)
+      ;; `(def *macros* (acons ,macroname
+      ;; 		     (lambda ,lambda-list ,body) *macros*))
+      (list 'def '*macros*
+	    (list 'acons (list 'quote macroname)
+		  (list 'lambda lambda-list body) '*macros*))))
 
 (def *macros*
     (acons 'defmacro
@@ -57,7 +54,7 @@
 	    (if (eq x 'let) (me-let-rec xs)
 		(let ((expand (lookup x *macros*)))
 		  (if (not (false? expand))
-		      (macroexpand-rec (expand xs))
+		      (macroexpand-rec (apply expand xs))
 		      (cons x (map macroexpand-rec xs))))))))
 	  e)))
 
@@ -68,11 +65,20 @@
 (def macroexpand
     (lambda (e) (macroexpand-rec e)))
 
-(defmacro cond (e)
+(defmacro cond (&rest pairs)
   (reduce (lambda (start item)
 	    (let ((condition (first item))
 		  (case (first (rest item))))
 	      (list 'if condition case start)))
-	  (reverse e)
+	  (reverse pairs)
 	  '(error "No match.")))
+
+(defmacro and (p &rest ps)
+  (if (nil? ps) p
+      (list 'if p (cons 'and ps))))
+
+(defmacro or (p &rest ps)
+  (if (nil? ps) p
+      (list 'if p true (cons 'or ps))))
+
 )

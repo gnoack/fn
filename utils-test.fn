@@ -1,24 +1,5 @@
 (
 
-; TODO: OR
-
-; AND
-(eq true (and true true))
-(eq false (and true false))
-(eq false (and false true))
-(eq false (and false false))
-
-; Map
-(eql (cons 2 (cons 3 nil))
-     (cons 2 (cons 3 nil)))
-
-(eql (cons 3 (cons 4 nil))
-     (map (lambda (x) (+ 1 x))
-	  (cons 2 (cons 3 nil))))
-
-; Reduce
-(eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
-
 ; Integer parsing.
 (eq 123 (string->int "123"))
 
@@ -35,24 +16,5 @@
 (eql "1" (int->string 1 10))
 (eql "123" (int->string 123 10))
 
-; Alists
-(eql (list (cons 'a 1))
-     (acons 'a 1 '()))
-
-(eql (list (cons 'a 1)
-	   (cons 'b 2))
-     (acons 'a 1 (acons 'b 2 '())))
-
-(eql (list (cons 'a 1)
-	   (cons 'b 2)
-	   (cons 'c 3))
-     (pairlis '(a b c)
-	      '(1 2 3)))
-
-(eq 2 (lookup 'b (pairlis '(a b c)
-			  '(1 2 3))))
-
-(eq false (lookup 'z (pairlis '(a b c)
-			      '(1 2 3))))
 )
 

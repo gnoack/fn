@@ -117,6 +117,11 @@ oop primitive_list(oop args) {
   return args;
 }
 
+oop primitive_apply(oop args) {
+  check_argument_number(args, 2);
+  return apply(make_cons(car(args), cadr(args)));
+}
+
 void init_primitives() {
   register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
@@ -133,4 +138,5 @@ void init_primitives() {
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
   register_globally_fn("list", primitive_list);
+  register_globally_fn("apply", primitive_apply);
 }

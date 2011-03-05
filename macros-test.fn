@@ -27,4 +27,15 @@
     (list 'if (first x)
           (first (rest x))
           'false))))
+
+(eql
+ '(if a (if b c))
+ (macroexpand '(and a b c)))
+
+(eql 'a (macroexpand '(and a)))
+
+(eql
+ '(if a true (if b true c))
+ (macroexpand '(or a b c)))
+
 )

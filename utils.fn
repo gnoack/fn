@@ -5,22 +5,6 @@
 
 (
 
-(def nil? (lambda (x)
-	    (eq nil x)))
-
-(def map (lambda (proc sequence)
-	   (if (nil? sequence)
-	       sequence
-	       (cons (proc (first sequence))
-		     (map proc (rest sequence))))))
-
-(def reduce (lambda (proc list start)
-	      (if (nil? list)
-		  start
-		  (reduce proc
-			  (rest list)
-			  (proc start (first list))))))
-
 (def digit->int (lambda (digit)
 		  (- (char->num digit) (char->num #\0))))
 
@@ -30,19 +14,11 @@
 			   (map digit->int str)
 			   0)))
 
-(def not (lambda (a)
-	   (if a false true)))
-
-(def and (lambda (a b)
-	   (if a b false)))
-
-(def or (lambda (a b)
-	  (if a true b)))
-
+;; TODO: Remove _and in favor of and.
 (def eql (lambda (a b)
-	   (if (and (cons? a) (cons? b))
-	       (and (eql (first a) (first b))
-		    (eql (rest a) (rest b)))
+	   (if (_and (cons? a) (cons? b))
+	       (_and (eql (first a) (first b))
+		     (eql (rest a) (rest b)))
 	       (eq a b))))
 
 (def nth
@@ -82,27 +58,4 @@
 (def int->string
     (lambda (n base)
       (reverse (_int->string n base))))
-
-;; Association lists.
-(def acons
-    (lambda (key value list)
-      (cons (cons key value) list)))
-
-(def lookup
-    (lambda (key alist)
-      (if (nil? alist)
-	  false
-	  (if (eq key (first (first alist)))
-	      (rest (first alist))
-	      (lookup key (rest alist))))))
-
-(def pairlis
-    (lambda (keys values)
-      (if (or (nil? keys)
-	      (nil? values))
-	  '()
-	  (acons (first keys)
-		 (first values)
-		 (pairlis (rest keys) (rest values))))))
-
 )
