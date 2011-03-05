@@ -3,6 +3,8 @@
 utils.c
 utils-test.c
 tests-bin
+macros.c
+macros-test.c
 lang.c
 lang-test.c
 primitives-test.c
