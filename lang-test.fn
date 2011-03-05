@@ -38,6 +38,9 @@
 	   (cons 2 (cons 3 nil)))
      '((1) 2 3))
 
+(eql (list 1 2 3)
+     ((lambda (&rest rest) rest) 1 2 3))
+
 ;; def -- already tested in utils
 ;; evaluation in environments
 
