@@ -6,17 +6,6 @@
   (:documentation
    "Translates an input program into a C-readable form."))
 
-;; (defun translate (input)
-;;   #!+sb-doc
-;;   "Translates an input program into a C-readable form."
-;;   (cond ((eq nil input) "NIL")
-;; 	((listp input) (translate-list input))
-;; 	((numberp input) (translate-int input))
-;; 	((stringp input) (translate-string input))
-;; 	((symbolp input) (translate-symbol input))
-;; 	((characterp input) (translate-char input))
-;; 	(t (string input))))
-
 (defmethod translate ((item (eql nil)))
   "NIL")
 

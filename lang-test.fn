@@ -41,9 +41,4 @@
 ;; def -- already tested in utils
 ;; evaluation in environments
 
-
-;; TODO: Tests for: Cond.
-
-;; Primitives...
-
 )
