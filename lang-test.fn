@@ -34,6 +34,9 @@
 (eq #\a '#\a)
 (eql (cons 1 (cons 2 (cons 3 nil)))
      '(1 2 3))
+(eql (cons (cons 1 nil)
+	   (cons 2 (cons 3 nil)))
+     '((1) 2 3))
 
 ;; def -- already tested in utils
 ;; evaluation in environments
