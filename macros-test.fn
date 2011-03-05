@@ -1,3 +1,10 @@
 (
-;; Empty for now.
+(eql '(if a a-case
+      (if b b-case
+      (if c c-case
+            (error "No match."))))
+     (macroexpand
+      '(cond (a a-case)
+             (b b-case)
+             (c c-case))))
 )

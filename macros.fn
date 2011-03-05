@@ -1,3 +1,29 @@
 (
-;; Empty for now.
+;; MACROS
+
+;; Global variable *macros* stores an alist of all macros to be
+;; applied to expressions before evaluation.  A macro is a lambda of
+;; an expression and it's stored in the alist with the macro name as
+;; key.
+
+;; To bootstrap this:
+;;  * introduce the *macros* alist using def,
+;;  * introduce the defmacro macro ('defmacro . (lambda (e) ...))
+;;    and define it so that it adds a macro to the *macros* alist, in
+;;    doubt by overriding.  (We need an implementation of alists for
+;;    that.)
+(def macroexpand-cond
+    (lambda (e)
+      (reduce (lambda (start item)
+		(let ((condition (first item))
+		      (case (first (rest item))))
+		  (list 'if condition case start)))
+	      (reverse (rest e))
+	      '(error "No match."))))
+
+(def macroexpand
+    (lambda (e)
+      (if (eq 'cond (first e))
+	  (macroexpand-cond e)
+	  e)))
 )
