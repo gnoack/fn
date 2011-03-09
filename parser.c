@@ -1,24 +1,10 @@
-
+// Auto-generated.
 #include "parser.h"
 
- // TODO: Rm dependency when real parsing is written.
-#include "carcdr.h"
+#include "cons.h"
+#include "value.h"
+
 #include "strings.h"
 
-bool is_digit(oop character) {
-  return TO_BOOL(isdigit(get_char(character)));
-}
+oop parser_decls() { return LIST(LIST(make_symbol("def"), make_symbol("digit?"), LIST(make_symbol("lambda"), LIST(make_symbol("c")), LIST(make_symbol("_and"), LIST(make_symbol("<="), LIST(make_symbol("char->num"), make_char('0')), LIST(make_symbol("char->num"), make_symbol("c"))), LIST(make_symbol("<="), LIST(make_symbol("char->num"), make_symbol("c")), LIST(make_symbol("char->num"), make_char('9')))))), LIST(make_symbol("def"), make_symbol("read"), LIST(make_symbol("lambda"), LIST(make_symbol("in")), LIST(make_symbol("let"), LIST(LIST(make_symbol("c"), LIST(make_symbol("first"), make_symbol("in"))), LIST(make_symbol("cs"), LIST(make_symbol("rest"), make_symbol("in")))), LIST(make_symbol("if"), LIST(make_symbol("digit?"), make_symbol("c")), LIST(make_symbol("string->int"), make_symbol("in")), LIST(make_symbol("list"), make_char('a'), make_char('b'), make_char('c'))))))); }
 
-// Converts a digit representation of an integer to a smallint.
-oop parse_integer(oop input) {
-  return make_smallint(123);
-}
-
-extern
-oop parse_sexpr(oop input) {
-  if (is_digit(car(input))) {
-    return parse_integer(input);
-  } else {
-    return make_symbol(c_string(input));
-  }
-}

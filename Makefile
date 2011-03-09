@@ -37,6 +37,8 @@ LISPTARGETS = \
 	lang.c \
 	macros-test.c \
 	macros.c \
+	parser-test.c \
+	parser.c \
 	primitives-test.c \
 	utils-test.c \
 	utils.c \

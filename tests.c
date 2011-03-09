@@ -1,11 +1,14 @@
 
 #include "tests.h"
 
+#include "env-test.h"
 #include "eval.h"
 #include "lang.h"
 #include "macros.h"
+#include "parser.h"
 #include "primitives.h"
 #include "symbols.h"
+#include "utils-test.h"
 #include "utils.h"
 #include "value.h"
 
@@ -108,6 +111,7 @@ void init() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
+  load_decls(parser_decls());
 }
 
 int main(int argc, char* argv) {

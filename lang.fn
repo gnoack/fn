@@ -41,6 +41,16 @@
 	      (rest (first alist))
 	      (lookup key (rest alist))))))
 
+
+;; Simple definitions for comparison.
+
+(def <= integer<=)
+
+(def <
+    (lambda (x y)
+      (_and (<= x y)
+	    (not (eq x y)))))
+
 (def pairlis
     (lambda (keys values)
       (if (_or (nil? keys)

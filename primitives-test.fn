@@ -24,6 +24,10 @@
 (eq 2 (mod 14 4))
 (eq 3 (mod 15 4))
 
+;; Comparison
+(integer<= 1 2)
+(integer<= 42 42)
+
 ;; Primitive type predicates
 ; cons?
 (cons? (cons 1 2))
