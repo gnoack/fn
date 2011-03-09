@@ -16,7 +16,7 @@
 (eql "1" (int->string 1 10))
 (eql "123" (int->string 123 10))
 
-;; Primitives...
+;; Comparisons
 (<= 1 2)
 (<= 2 2)
 (not (<= 2 1))
@@ -27,7 +27,8 @@
 (not (< 3 4 1))
 (not (< 1 1 2))
 (<= 1 1 2)
-
+(char<= #\a #\a #\b #\c)
+(not (char<= #\a #\c #\b))
 
 )
 

@@ -51,8 +51,13 @@
 
 
 ;; Ordering operators.
+
 (defn <= (&rest args)
   (sequence-ordered? integer<= args))
+
+(defn char<= (&rest args)
+  (sequence-ordered? integer<=
+		     (map char->num args)))
 
 (defn binary< (x y)
   (_and (<= x y)

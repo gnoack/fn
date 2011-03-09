@@ -41,9 +41,6 @@
 	      (rest (first alist))
 	      (lookup key (rest alist))))))
 
-
-;; Simple definitions for comparison.
-
 (def pairlis
     (lambda (keys values)
       (if (_or (nil? keys)

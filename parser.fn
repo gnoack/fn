@@ -2,9 +2,7 @@
 (
 
 (defn digit? (c)
-  (<= (char->num #\0)
-      (char->num c)
-      (char->num #\9)))
+  (char<= #\0 c #\9))
 
 (defn read (in)
   (let ((c (first in))
