@@ -94,12 +94,4 @@
 (eq false (lookup 'z (pairlis '(a b c)
 			      '(1 2 3))))
 
-;; Primitives...
-(<= 1 2)
-(<= 2 2)
-(not (<= 2 1))
-(< 1 2)
-(not (< 2 2))
-(not (< 2 1))
-
 )

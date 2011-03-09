@@ -49,4 +49,28 @@
 (defn int->string (n base)
   (reverse (_int->string n base)))
 
+
+;; Ordering operators.
+(defn <= (&rest args)
+  (sequence-ordered? integer<= args))
+
+(defn binary< (x y)
+  (_and (<= x y)
+	(not (eq x y))))
+
+(defn < (&rest args)
+  (sequence-ordered? binary< args))
+
+
+;; Checks that for each pair of neighbor
+;; elements a, b in the sequence,
+;; (in-order? a b) holds.
+(defn sequence-ordered? (in-order? seq)
+  (cond ((nil? seq) true)
+	((nil? (rest seq)) true)
+	(true 
+	 (and (in-order? (first seq)
+			 (first (rest seq)))
+	      (sequence-ordered?
+	       in-order? (rest seq))))))
 )

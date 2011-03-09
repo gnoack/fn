@@ -1,17 +1,15 @@
 
 (
 
-(def digit?
-    (lambda (c)
-      ;; TODO: Use 3-arg <= when supported.
-      (_and (<= (char->num #\0) (char->num c))
-	    (<= (char->num c) (char->num #\9)))))
+(defn digit? (c)
+  (<= (char->num #\0)
+      (char->num c)
+      (char->num #\9)))
 
-(def read
-    (lambda (in)
-      (let ((c (first in))
-	    (cs (rest in)))
-	(if (digit? c)
-	    (string->int in)
-	    "abc"))))
+(defn read (in)
+  (let ((c (first in))
+	(cs (rest in)))
+    (if (digit? c)
+	(string->int in)
+	"abc")))
 )
