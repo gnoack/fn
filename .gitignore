@@ -1,11 +1,13 @@
 *.o
 *.fasl
-utils.c
-utils-test.c
-tests-bin
-macros.c
-macros-test.c
-lang.c
 lang-test.c
+lang.c
+macros-test.c
+macros.c
+parser-test.c
+parser.c
 primitives-test.c
+tests-bin
+utils-test.c
+utils.c
 

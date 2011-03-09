@@ -4,4 +4,7 @@
 (eql 123 (read "123"))
 (eql "abc" (read "\"abc\""))
 ;(eql "foo" (read "\"foo\""))
+
+(eql (cons "foo" "-bar")
+     (consume-while "foo-bar" alpha?))
 )

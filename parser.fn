@@ -4,6 +4,19 @@
 (defn digit? (c)
   (char<= #\0 c #\9))
 
+(defn alpha? (c)
+  (char<= #\a c #\z))
+
+(defn consume-while (seq want?)
+  (cond ((nil? seq) (cons nil nil))
+	((want? (first seq))
+	 (let ((result
+		(consume-while (rest seq) want?)))
+	   (cons
+	    (cons (first seq) (first result))
+	    (rest result))))
+	(true (cons nil seq))))
+
 (defn read (in)
   (let ((c (first in))
 	(cs (rest in)))
