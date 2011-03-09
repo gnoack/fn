@@ -7,6 +7,9 @@
 (defn alpha? (c)
   (char<= #\a c #\z))
 
+(defn doublequote? (c)
+  (eq #\" c))
+
 (defn consume-while (seq want?)
   (cond ((nil? seq) (cons nil nil))
 	((want? (first seq))
@@ -17,10 +20,25 @@
 	    (rest result))))
 	(true (cons nil seq))))
 
+(defn not-doublequote? (c)
+  (not (doublequote? c)))
+
+(defn read-string (input)
+  (let ((x (consume-while input not-doublequote?)))
+    (cons (first x)
+	  ; next character must be a doublequote.
+	  (read (rest (rest x))))))
+
+(defn read-integer (input)
+  (let ((x (consume-while input digit?)))
+    (cons (string->int (first x))
+	  (read (rest x)))))
+
 (defn read (in)
-  (let ((c (first in))
-	(cs (rest in)))
-    (if (digit? c)
-	(string->int in)
-	"abc")))
+  (if (nil? in)
+      '()
+      (let ((c (first in))
+	    (cs (rest in)))
+	(cond ((digit? c) (read-integer in))
+	      ((doublequote? c) (read-string cs))))))
 )
