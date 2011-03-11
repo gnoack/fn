@@ -1,0 +1,100 @@
+
+(
+;; Transcribed from the paper
+;; 'Parsing Expression Grammars' by Bryan Ford.
+
+(defn empty? (x)
+  (nil? x))
+
+(def peg-empty
+    (lambda (input win lose)
+      (if (empty? input)
+	  (win '() nil)
+	  (lose "Empty expected, got " input))))
+
+(defn peg-terminal (predicate?)
+  (lambda ((x &rest xs) win lose)
+    (if (predicate? x)
+	(win x xs)
+	(lose "Predicate not matching, got " x))))
+
+;; We assume peg2 yields a list as win result.
+(defn peg-seq2 (peg1 peg2)
+  (lambda (input win lose)
+    (peg1 input
+	  (lambda (result1 rest1)
+	    (peg2 rest1
+		  (lambda (result2 rest2)
+		    (win (cons result1 result2)
+			 rest2))
+		  lose))
+	  lose)))
+
+(defn peg-winseq (input win lose)
+  (win '() input))
+
+(defn peg-alwaysfail (input win lose)
+  (lose "Fail."))
+
+(defn peg-seq (&rest ps)
+  (reduce-right peg-seq2
+		ps
+		peg-winseq))
+
+(defn peg-alt2 (peg1 peg2)
+  (lambda (input win lose)
+    (peg1 input
+	  win
+	  (lambda (&rest failure-reason)
+	    (peg2 input win lose)))))
+
+(defn peg-alt (&rest ps)
+  (reduce-right peg-alt2
+		ps
+		peg-alwaysfail))
+
+(defn peg-*er (peg input win lose)
+  (peg input
+       (lambda (result rest)
+	 (peg-*er peg
+		  rest
+		  (lambda (result+ rest+)
+		    (win (cons result result+)
+			 rest+))
+		  (lambda (&args failure-reason)
+		    (win (list result) rest))))
+       (lambda (&args failure-reason)
+	 (win '() input))))
+
+(defn peg-* (peg)
+  (lambda (input win lose)
+    (peg-*er peg input win lose)))
+
+(defn peg-not (peg)
+  (lambda (input win lose)
+    (peg input
+	 (lambda (result rest)
+	   (lose "Should not match."))
+	 (lambda (&rest failure-reason)
+	   (win nil input)))))
+
+; Reducing. (a (b (c end)))
+(defn reduce-right (combine seq end)
+  (if (nil? seq)
+      end
+      (combine (first seq)
+	       (reduce-right combine
+			     (rest seq)
+			     end))))
+
+;; PEG utilities
+(defn ->true (&rest args) true)
+(defn ->false (&rest args) false)
+
+(defn parses? (peg input)
+  (peg input ->true ->false))
+
+(defn parse-fail? (peg input)
+  (not (parses? peg input)))
+
+)

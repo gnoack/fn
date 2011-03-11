@@ -6,6 +6,7 @@
 #include "lang.h"
 #include "macros.h"
 #include "parser.h"
+#include "pegs.h"
 #include "primitives.h"
 #include "symbols.h"
 #include "utils-test.h"
@@ -16,6 +17,7 @@
 #include "env-test.h"
 #include "macros-test.h"
 #include "parser-test.h"
+#include "pegs-test.h"
 #include "primitives-test.h"
 #include "string-interning-test.h"
 #include "strings-test.h"
@@ -111,6 +113,7 @@ void init() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
+  load_decls(pegs_decls());
   load_decls(parser_decls());
 }
 
@@ -123,12 +126,13 @@ int main(int argc, char* argv) {
   eval_tests();
   value_tests();
   strings_tests();
-  parser_tests();
   primitives_tests();
   utils_tests();
   lang_tests();
   env_tests();
   macros_tests();
+  parser_tests();
+  pegs_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

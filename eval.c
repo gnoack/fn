@@ -114,6 +114,7 @@ oop map_eval(oop list, oop env) {
 
 extern
 oop eval(oop program, oop env) {
+  //print_value(program);
   if (is_smallint(program) || is_nil(program) || is_char(program)) {
     return program;
   } else if (is_symbol(program)) {

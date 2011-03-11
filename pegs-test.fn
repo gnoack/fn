@@ -1,0 +1,87 @@
+(
+; Reducing, should move to utils.
+(eql (cons (cons (cons nil 'a) 'b) 'c)
+     (reduce cons (list 'a 'b 'c) nil))
+
+(eql (list 'a 'b 'c)
+     (reduce-right cons (list 'a 'b 'c) nil))
+
+
+; Some helper defs
+(->true  ; we need true for all top-level exprs.
+ (defn eq-peg (x)
+   (peg-terminal (lambda (y) (eq x y))))
+
+ (def peg-a (eq-peg 'a))
+ (def peg-b (eq-peg 'b))
+ (def peg-c (eq-peg 'c)))
+
+
+; PEG terminal, success
+(eql (list 'a '(b c))
+     (peg-a '(a b c) list '*error*))
+
+; PEG terminal, failure
+(parse-fail?
+ (peg-terminal ->false)
+ '(a b c))
+
+; PEG-*
+(eql (list '(a a a) '(b c))
+     ((peg-* peg-a) '(a a a b c) list '*error*))
+
+(eql (list '() '(b c))
+     ((peg-* peg-a) '(b c) list '*error*))
+
+; PEG empty
+(eql (list '() '())
+     (peg-empty '() list '*error*))
+
+(parse-fail? peg-empty '(a b c))
+
+; PEG-seq
+
+(eql (list '(a b) '(c d e))
+     ((peg-seq2 peg-a
+		(peg-seq2 peg-b peg-winseq))
+      '(a b c d e)
+      list '*error*))
+
+(eql (list '(a b) '(c d e))
+     ((peg-seq peg-a peg-b)
+      '(a b c d e)
+      list '*error*))
+
+;; PEG alt
+(eql (list 'a '(b c))
+     ((peg-alt2 peg-a peg-b)
+      '(a b c)
+      list '*error*))
+
+(eql (list 'b '(b c))
+     ((peg-alt2 peg-a peg-b)
+      '(b b c)
+      list '*error*))
+
+(eql (list 'a '(b c))
+     ((peg-alt2 peg-a  ; priority.
+		(peg-seq peg-a peg-b))
+      '(a b c)
+      list '*error*))
+
+
+(eql (list 'a '(b c))
+     ((peg-alt peg-a  ; priority
+	       (peg-seq peg-a peg-b))
+      '(a b c)
+      list '*error*))
+
+(eql (list '(a b) '(c))
+     ((peg-alt peg-c  ; no match
+	       (peg-seq peg-a peg-b)  ; priority
+	       (peg-seq peg-a peg-b peg-c))
+      '(a b c)
+      list '*error*))
+
+;; TODO: Test PEG-not
+)
