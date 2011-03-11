@@ -32,7 +32,13 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
     CHECKV(is_nil(args), args, "Too many arguments in function call.");
     return env;
   } else {
-    if (value_eq(car(ll), symbols._rest)) {
+    if (is_cons(car(ll))) {
+      // Nested destructuring
+      CHECK(!is_nil(args), "Need more arguments in function call.");
+      return destructure_lambda_list(
+	  cdr(ll), cdr(args),
+	  destructure_lambda_list(car(ll), car(args), env));
+    } else if (value_eq(car(ll), symbols._rest)) {
       // &rest binds to a list of all remaining arguments.
       CHECK(is_cons(cdr(ll)), "Need variable identifier after &rest");
       CHECK(is_nil(cddr(ll)), "Only one variable identifier after &rest");

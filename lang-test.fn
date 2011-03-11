@@ -94,4 +94,10 @@
 (eq false (lookup 'z (pairlis '(a b c)
 			      '(1 2 3))))
 
+;; Destructure lambda lists
+(eql (list "foo" "bar" "baz")
+     ((lambda ((f o o &rest bar) baz)
+	(list (list f o o) bar baz))
+      "foobar" "baz"))
+
 )
