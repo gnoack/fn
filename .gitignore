@@ -1,13 +1,15 @@
-*.o
 *.fasl
+*.o
+*~
 lang-test.c
 lang.c
 macros-test.c
 macros.c
 parser-test.c
 parser.c
+pegs-test.c
+pegs.c
 primitives-test.c
 tests-bin
 utils-test.c
 utils.c
-
