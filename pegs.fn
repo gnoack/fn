@@ -13,10 +13,13 @@
 	  (lose "Empty expected, got " input))))
 
 (defn peg-terminal (predicate?)
-  (lambda ((x &rest xs) win lose)
-    (if (predicate? x)
-	(win x xs)
-	(lose "Predicate not matching, got " x))))
+  (lambda (input win lose)
+    (if (empty? input)
+	(lose "Wanted input, got nothing.")
+	(let ((x (first input)))
+	  (if (predicate? x)
+	      (win x (rest input))
+	      (lose "Predicate not matching, got " x))))))
 
 ;; We assume peg2 yields a list as win result.
 (defn peg-seq2 (peg1 peg2)
@@ -61,9 +64,9 @@
 		  (lambda (result+ rest+)
 		    (win (cons result result+)
 			 rest+))
-		  (lambda (&args failure-reason)
+		  (lambda (&rest failure-reason)
 		    (win (list result) rest))))
-       (lambda (&args failure-reason)
+       (lambda (&rest failure-reason)
 	 (win '() input))))
 
 (defn peg-* (peg)

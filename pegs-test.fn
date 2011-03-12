@@ -26,6 +26,10 @@
  (peg-terminal ->false)
  '(a b c))
 
+(parse-fail?
+  (peg-terminal ->true)
+  '())  ; empty input
+
 ; PEG-*
 (eql (list '(a a a) '(b c))
      ((peg-* peg-a) '(a a a b c) list '*error*))
