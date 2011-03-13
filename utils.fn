@@ -1,6 +1,14 @@
 
 (
 
+; TODO: Test.
+(defn second (list)
+  (first (rest list)))
+
+(defn third (list)
+  (first (rest (rest list))))
+
+
 (defn digit->int (digit)
   (- (char->num digit) (char->num #\0)))
 

@@ -21,7 +21,10 @@
 	  (map 'list #'translate str)))
 
 (defmethod translate ((ch character))
-  (format nil "make_char('~a')" ch))
+  (format nil "make_char('~a')"
+	  (cond ((char-equal ch #\\) "\\\\")
+		((char-equal ch #\') "\\'")
+		(t ch))))
 
 (defmethod translate ((sym symbol))
   (let ((s (string-downcase (string sym))))

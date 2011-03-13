@@ -10,9 +10,12 @@
   (and (char? c)
        (char<= #\a c #\z)))
 
-(defn doublequote? (c)
-  (and (char? c)
-       (eq #\" c)))
+(defn char-predicate (x)
+  (lambda (c)
+    (and (char? c)
+	 (eq x c))))
+(def doublequote? (char-predicate #\"))
+(def backslash? (char-predicate #\\))
 
 ;;; ==================================
 ;;; Grammar
@@ -22,11 +25,22 @@
 (def _any (peg-terminal ->true))
 (def _digit (peg-terminal digit?))
 (def _alpha (peg-terminal alpha?))
+(def _dblquote (peg-terminal doublequote?))
+(def _backslash (peg-terminal backslash?))
 
 ;; Rules
 (def _integer (peg=> (peg+ _digit) string->int))
+(def _string-char (peg=> (peg-seq (peg-not _dblquote)
+				  (peg-not _backslash)
+				  _any)
+			 third))
+				  
+(def _string (peg=> (peg-seq _dblquote
+			     (peg* _string-char)
+			     _dblquote)
+		    second))
 (def _atom (peg-alt _integer
-		    ;_string  ;; TODO
+		    _string
 		    ))
 (def _expr _atom)
 
