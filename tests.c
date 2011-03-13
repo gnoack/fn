@@ -131,8 +131,8 @@ int main(int argc, char* argv) {
   lang_tests();
   env_tests();
   macros_tests();
-  parser_tests();
   pegs_tests();
+  parser_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

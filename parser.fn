@@ -1,44 +1,44 @@
 
 (
 
+;; Predicates on characters.
 (defn digit? (c)
-  (char<= #\0 c #\9))
+  (and (char? c)
+       (char<= #\0 c #\9)))
 
 (defn alpha? (c)
-  (char<= #\a c #\z))
+  (and (char? c)
+       (char<= #\a c #\z)))
 
 (defn doublequote? (c)
-  (eq #\" c))
+  (and (char? c)
+       (eq #\" c)))
 
-(defn consume-while (seq want?)
-  (cond ((nil? seq) (cons nil nil))
-	((want? (first seq))
-	 (let ((result
-		(consume-while (rest seq) want?)))
-	   (cons
-	    (cons (first seq) (first result))
-	    (rest result))))
-	(true (cons nil seq))))
+;;; ==================================
+;;; Grammar
+;;; ==================================
 
-(defn not-doublequote? (c)
-  (not (doublequote? c)))
+;; Terminals
+(def _any (peg-terminal ->true))
+(def _digit (peg-terminal digit?))
+(def _alpha (peg-terminal alpha?))
 
-(defn read-string (input)
-  (let ((x (consume-while input not-doublequote?)))
-    (cons (first x)
-	  ; next character must be a doublequote.
-	  (read (rest (rest x))))))
+;; Rules
+(def _integer (peg=> (peg+ _digit) string->int))
+(def _atom (peg-alt _integer
+		    ;_string  ;; TODO
+		    ))
+(def _expr _atom)
 
-(defn read-integer (input)
-  (let ((x (consume-while input digit?)))
-    (cons (string->int (first x))
-	  (read (rest x)))))
+;; Def
+(def _lisp_grammar _expr)
 
+
+;; Public interface.
+;; Returns a list of result, rest.
 (defn read (in)
-  (if (nil? in)
-      '()
-      (let ((c (first in))
-	    (cs (rest in)))
-	(cond ((digit? c) (read-integer in))
-	      ((doublequote? c) (read-string cs))))))
+  (_lisp_grammar in
+		 list
+		 (lambda (&rest failure-reason)
+		   (cons '*error* failure-reason))))
 )

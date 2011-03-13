@@ -30,12 +30,18 @@
   (peg-terminal ->true)
   '())  ; empty input
 
-; PEG-*
+; PEG*
 (eql (list '(a a a) '(b c))
-     ((peg-* peg-a) '(a a a b c) list '*error*))
+     ((peg* peg-a) '(a a a b c) list '*error*))
 
 (eql (list '() '(b c))
-     ((peg-* peg-a) '(b c) list '*error*))
+     ((peg* peg-a) '(b c) list '*error*))
+
+; PEG+
+(eql (list '(a a) '(b c))
+     ((peg+ peg-a) '(a a b c) list '*error*))
+
+(parse-fail? (peg+ peg-a) '(b c))
 
 ; PEG empty
 (eql (list '() '())
