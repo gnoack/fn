@@ -45,8 +45,13 @@
 			     _dblquote)
 		    second))
 
+(def _character (peg=> (peg-seq _backslash
+				_escapedchar)
+		       second))
+
 (def _atom (peg-alt _integer
-		    _string))
+		    _string
+		    _character))
 
 (def _expr _atom)
 

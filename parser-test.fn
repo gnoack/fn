@@ -15,4 +15,10 @@
 (eql (list "\"x\\" '())
      (read "\"\\\"x\\\\\""))
 
+; A character.
+(eql (list #\a '())
+     (read "\\a"))
+
+(eql (list #\' '())
+     (read "\\\\'"))
 )
