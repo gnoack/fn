@@ -1,12 +1,12 @@
 
 (
 ;; Don't forget to use eql.
-(eql (list 123)
+(eql (list 123 '())
      (read "123"))
-(read "123")
 
-;(eql (list "abc")
+;(eql (list "abc" '())
 ;     (read "\"abc\""))
+
 ;(eql (list "foo")
 ;     (read "\"foo\""))
 
