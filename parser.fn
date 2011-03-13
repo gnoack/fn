@@ -30,18 +30,24 @@
 
 ;; Rules
 (def _integer (peg=> (peg+ _digit) string->int))
+
+(def _escapedchar
+    (peg-alt (peg=> (peg-seq _backslash _any)
+		    second)
+	     _any))
+
 (def _string-char (peg=> (peg-seq (peg-not _dblquote)
-				  (peg-not _backslash)
-				  _any)
-			 third))
+				  _escapedchar)
+			 second))
 				  
 (def _string (peg=> (peg-seq _dblquote
 			     (peg* _string-char)
 			     _dblquote)
 		    second))
+
 (def _atom (peg-alt _integer
-		    _string
-		    ))
+		    _string))
+
 (def _expr _atom)
 
 ;; Def

@@ -9,4 +9,10 @@
 
 (eql (list "foo" '())
      (read "\"foo\""))
+
+;; A string containing a doublequote, an 'x'
+;; and a backslash.
+(eql (list "\"x\\" '())
+     (read "\"\\\"x\\\\\""))
+
 )
