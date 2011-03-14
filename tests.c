@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "pegs.h"
 #include "primitives.h"
+#include "strings.h"
 #include "symbols.h"
 #include "utils-test.h"
 #include "utils.h"
@@ -117,8 +118,18 @@ void init() {
   load_decls(parser_decls());
 }
 
-int main(int argc, char* argv) {
+int main(int argc, char* argv[]) {
   init();
+  if (argc > 1) {
+    printf("%s:\n", argv[1]);
+    oop cmd = make_string(argv[1]);
+    oop sexpr = eval_global(LIST(make_symbol("read-all"),
+				 LIST(make_symbol("quote"), cmd)));
+    print_value(sexpr);
+    printf("==> ");
+    print_value(eval_global(sexpr));
+    exit(0);
+  }
   printf("Test execution:\n");
   /* Register tests here. */
   cons_tests();

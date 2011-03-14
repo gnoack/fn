@@ -101,4 +101,8 @@
 		 list
 		 (lambda (&rest failure-reason)
 		   (cons '*error* failure-reason))))
+
+(defn read-all (in)
+  (first (read in)))
+
 )
