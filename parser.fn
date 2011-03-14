@@ -14,8 +14,17 @@
   (lambda (c)
     (and (char? c)
 	 (eq x c))))
+
 (def doublequote? (char-predicate #\"))
 (def backslash? (char-predicate #\\))
+
+(defn whitespace? (c)
+  (or (eq c #\Tab)
+      (eq c #\Newline)
+      (eq c #\Space)))
+
+(defn peg= (item)
+  (peg-terminal (lambda (x) (eq x item))))
 
 ;;; ==================================
 ;;; Grammar
@@ -27,6 +36,13 @@
 (def _alpha (peg-terminal alpha?))
 (def _dblquote (peg-terminal doublequote?))
 (def _backslash (peg-terminal backslash?))
+(def _whitespace (peg-terminal whitespace?))
+(def _openparen (peg= #\())
+(def _closeparen (peg= #\)))
+
+;; Indirection.
+(defn _expr (input win lose)
+  (_expr1 input win lose))
 
 ;; Rules
 (def _integer (peg=> (peg+ _digit) string->int))
@@ -49,11 +65,30 @@
 				_escapedchar)
 		       second))
 
-(def _atom (peg-alt _integer
-		    _string
-		    _character))
+(def _anything_but_separator
+    (peg=> (peg-seq (peg-not (peg-alt _whitespace
+				      _openparen
+				      _closeparen))
+		    _any)
+	   second))
 
-(def _expr _atom)
+(def _symbol (peg=> (peg+ _anything_but_separator)
+		    string->symbol))
+
+(def _whitespaces (peg* _whitespace))
+
+(def _sexpression (peg=> (peg-seq _openparen
+				  (peg* _expr)
+				  _closeparen)
+			 second))
+
+(def _expr1 (peg=> (peg-seq _whitespaces
+			    (peg-alt _sexpression
+				     _integer
+				     _string
+				     _character
+				     _symbol))
+		   second))
 
 ;; Def
 (def _lisp_grammar _expr)

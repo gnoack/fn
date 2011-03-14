@@ -9,6 +9,11 @@
 (eq 65 (char->num #\A))
 (eq #\A (num->char 65))
 
+;; Symbol conversion.
+(eq 'quuux
+    (string->symbol "quuux"))
+; TODO: symbol->string?
+
 ;; Arithmetic primitives.
 (eq 3 (+ 1 2))
 (eq 12 (* 3 4))

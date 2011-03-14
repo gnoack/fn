@@ -5,6 +5,7 @@
 
 #include "eval.h"
 #include "cons.h"
+#include "strings.h"
 #include "symbols.h"
 #include "carcdr.h"
 
@@ -37,6 +38,13 @@ oop primitive_num_to_char(oop args) {
   check_argument_number(args, 1);
   CHECKV(is_smallint(car(args)), car(args), "Must be a smallint");
   return make_char(get_smallint(car(args)));
+}
+
+oop primitive_string_to_symbol(oop args) {
+  check_argument_number(args, 1);
+  CHECKV(is_cons(car(args)) || is_nil(car(args)),
+	 car(args), "Must be a string");
+  return make_symbol(c_string(car(args)));
 }
 
 // Integer addition.
@@ -135,6 +143,7 @@ void init_primitives() {
   register_globally_fn("rest", primitive_rest);
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
+  register_globally_fn("string->symbol", primitive_string_to_symbol);
   register_globally_fn("+", primitive_add);
   register_globally_fn("-", primitive_sub);
   register_globally_fn("*", primitive_mul);
