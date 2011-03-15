@@ -30,4 +30,12 @@
 	   '())
      (read "(if (< 0 1) (+ 2 1) \\a)"))
 
+(eql (list '(abc (quote 123))
+	   '())
+     (read "(abc '123)"))
+
+(eql (list '(backquote
+	     (a (unquote b) (unquote-list c) d))
+	   '())
+     (read "`(a ,b ,@c d)"))
 )

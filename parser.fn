@@ -15,9 +15,6 @@
     (and (char? c)
 	 (eq x c))))
 
-(def doublequote? (char-predicate #\"))
-(def backslash? (char-predicate #\\))
-
 (defn whitespace? (c)
   (or (eq c #\Tab)
       (eq c #\Newline)
@@ -34,37 +31,51 @@
 (def _any (peg-terminal ->true))
 (def _digit (peg-terminal digit?))
 (def _alpha (peg-terminal alpha?))
-(def _dblquote (peg-terminal doublequote?))
-(def _backslash (peg-terminal backslash?))
 (def _whitespace (peg-terminal whitespace?))
+
+(def _dblquote (peg= #\"))
+(def _backslash (peg= #\\))
 (def _openparen (peg= #\())
 (def _closeparen (peg= #\)))
+(def _quote (peg= #\'))
+(def _comma (peg= #\,))
+(def _backquote (peg= #\`))
+(def _at (peg= #\@))
 
 ;; Indirection.
 (defn _expr (input win lose)
   (_expr1 input win lose))
 
 ;; Rules
+
+;; _integer ::= _digit+:ds  ==> (string->int ds)
 (def _integer (peg=> (peg+ _digit) string->int))
 
+;; _escapedchar ::= '\' _any:e  ==> e
+;;                | _any
 (def _escapedchar
     (peg-alt (peg=> (peg-seq _backslash _any)
 		    second)
 	     _any))
 
+;; _string-char ::= ~'"' _escapedchar:c  ==> c
 (def _string-char (peg=> (peg-seq (peg-not _dblquote)
 				  _escapedchar)
 			 second))
-				  
+
+;; _string ::= '"' _string-char*:cs '"'  ==> cs
 (def _string (peg=> (peg-seq _dblquote
 			     (peg* _string-char)
 			     _dblquote)
 		    second))
 
+;; _character ::= '\' _escapedchar:c  ==> c
 (def _character (peg=> (peg-seq _backslash
 				_escapedchar)
 		       second))
 
+;; _anything_but_separator
+;;     ::= ~(_whitespace | '(' | ')') _any:e ==> e
 (def _anything_but_separator
     (peg=> (peg-seq (peg-not (peg-alt _whitespace
 				      _openparen
@@ -72,18 +83,44 @@
 		    _any)
 	   second))
 
+;; _symbol
+;;     ::= _anything_but_separator+:x ==> (string->symbol x)
 (def _symbol (peg=> (peg+ _anything_but_separator)
 		    string->symbol))
 
+;; _whitespaces ::= _whitespace*
 (def _whitespaces (peg* _whitespace))
 
+;; _sexpression ::= '(' _expr*:es ')'  ==> es
 (def _sexpression (peg=> (peg-seq _openparen
 				  (peg* _expr)
 				  _closeparen)
 			 second))
 
+;; _prefix_expr ::= '\'' _expr:e     ==> `(quote ,e)
+;;                | '`' _expr:e      ==> `(backquote ,e)
+;;                | ',' '@' _expr:e  ==> `(unquote-list ,e)
+;;                | ',' _expr:e      ==> `(unquote ,e)
+(def _prefix_expr
+    (peg-alt
+     (peg=> (peg-seq _quote _expr)
+	    (lambda (x) (list 'quote (second x))))
+     (peg=> (peg-seq _backquote _expr)
+	    (lambda (x) (list 'backquote (second x))))
+     (peg=> (peg-seq _comma _at _expr)
+	    (lambda (x) (list 'unquote-list (third x))))
+     (peg=> (peg-seq _comma _expr)
+	    (lambda (x) (list 'unquote (second x))))))
+
+;; _expr1 ::= _whitespaces ( _prefix_expr
+;;                         | _sexpression
+;;                         | _integer
+;;                         | _string
+;;                         | _character
+;;                         | _symbol ):e  ==> e
 (def _expr1 (peg=> (peg-seq _whitespaces
-			    (peg-alt _sexpression
+			    (peg-alt _prefix_expr
+				     _sexpression
 				     _integer
 				     _string
 				     _character
