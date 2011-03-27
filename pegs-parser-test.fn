@@ -1,2 +1,11 @@
 (
+(eql (list '(peg-seq (peg= #\x)) '())
+     (_pp_expr "\"x\"" list '*error*))
+
+(eql (list '(peg-seq (peg= #\")) '())
+     (_pp_expr "\"\\\"\"" list '*error*))
+
+(eql (list '(peg= (quote foo)) '())
+     (_pp_expr "\'foo" list '*error*))
+
 )

@@ -1,2 +1,26 @@
 (
+;; Everything is prefixed _PP, to avoid namespace collisions.
+
+(defn identity (x) x)
+
+(def _pp_singlequote (peg= #\'))
+
+(def _pp_string-expr
+    (peg=> _string  ; like in Lisp
+	   (lambda (chars)
+	     ;; `(peg-seq ,@(map (lambda (ch) `(peg= ,ch)) chars)))
+	     (cons 'peg-seq
+		   (map (lambda (ch) (list 'peg= ch))
+			chars)))))
+
+(def _pp_symbol-expr
+    (peg=> (peg-seq _pp_singlequote
+		    _symbol)  ; like in Lisp
+	   (lambda (result)
+	     ;; `(peg= (quote ,(second result)))
+	     (list 'peg= (list 'quote (second result))))))
+
+;; An individual parsing expression.
+(def _pp_expr (peg-alt _pp_string-expr
+		       _pp_symbol-expr))
 )

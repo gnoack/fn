@@ -30,6 +30,7 @@
   (format nil "make_char('~a')"
 	  (cond ((char-equal ch #\\) "\\\\")
 		((char-equal ch #\') "\\'")
+		((char-equal ch #\") "\\\"")
 		((char-equal ch #\Tab) "\\t")
 		((char-equal ch #\Newline) "\\n")
 		(t ch))))
