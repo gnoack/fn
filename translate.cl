@@ -1,6 +1,12 @@
 
-(defun concatenate-string (&rest strings)
-  (apply #'concatenate 'string strings))
+(defun sanitize (str)
+  "Replaces funny characters with an underscore."
+  (map 'string
+       (lambda (ch)
+	 (if (alpha-char-p ch)
+	     ch
+	     #\_))
+       str))
 
 (defgeneric translate (input)
   (:documentation
@@ -43,7 +49,7 @@
 
 (defun c-vardecl (basename value)
   (format nil "oop ~a_decls() { return ~a; }~%~%"
-	  basename value))
+	  (sanitize basename) value))
 
 (defun make-test-formatter (basename)
   (let ((test-basename (format nil "~a-test" basename))
@@ -59,8 +65,8 @@
 		(c-include "tests")
 		(c-vardecl var-basename
 			   cdecls)
-		basename
-		var-basename))))
+		(sanitize basename)
+		(sanitize var-basename)))))
 
 (defun make-prod-formatter (basename)
   #'(lambda (outstream cdecls)

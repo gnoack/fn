@@ -8,6 +8,7 @@ OBJECTS = \
 	lang.o \
 	macros.o \
 	parser.o \
+	pegs-parser.o \
 	pegs.o \
 	primitives.o \
 	procedures.o \
@@ -24,6 +25,7 @@ TESTOBJECTS = \
 	lang-test.o \
 	macros-test.o \
 	parser-test.o \
+	pegs-parser-test.o \
 	pegs-test.o \
 	primitives-test.o \
 	string-interning-test.o \
@@ -41,6 +43,8 @@ LISPTARGETS = \
 	macros.c \
 	parser-test.c \
 	parser.c \
+	pegs-parser-test.c \
+	pegs-parser.c \
 	pegs-test.c \
 	pegs.c \
 	primitives-test.c \

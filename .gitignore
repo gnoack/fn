@@ -7,6 +7,8 @@ macros-test.c
 macros.c
 parser-test.c
 parser.c
+pegs-parser-test.c
+pegs-parser.c
 pegs-test.c
 pegs.c
 primitives-test.c
