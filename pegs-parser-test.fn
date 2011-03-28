@@ -27,4 +27,11 @@
 	   '())
      (_pp_expr2 "\'x:a \'y:b \'z:c => (list c b a)" list '*error*))
 
+(eql (list '(peg-let ((a (peg= (quote x)))
+		      (_ (peg= (quote y)))
+		      (c (peg-seq (peg= #\c))))
+	       (list a c))
+	   '())
+     (_pp_expr2 "\'x:a \'y \"c\":c => (list a c)" list '*error*))
+
 )
