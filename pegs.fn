@@ -94,6 +94,15 @@
 	   (win (transform result) rest))
 	 lose)))
 
+(defmacro peg-let (bindings action)
+  ;; `(peg=> (peg-seq ,@(map second bindings))
+  ;;         (lambda ,(map first bindings)
+  ;;           ,action))
+  (list 'peg=>
+	(cons 'peg-seq (map second bindings))
+	(list 'lambda (map first bindings)
+	      action)))
+
 ; Reducing. (a (b (c end)))
 (defn reduce-right (combine seq end)
   (if (nil? seq)
