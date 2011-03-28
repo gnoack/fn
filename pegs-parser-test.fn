@@ -57,4 +57,14 @@
      (_pp_expr1 "\'aa:a \'bb:b => (cons a b) | \"=>\" \'cc:c => c | \'d"
 		list '*error*))
 
+;; TODO: peg*,+:   Rename _pp_expr3 to _pp_expr4, then
+;;   _pp_expr3 ::= _pp_expr4:e "+"   => `(peg+ ,e)
+;;               | _pp_expr4:e "*"   => `(peg* ,e)
+;;               | _pp_expr4:e       => e
+
+;; TODO: Rules:    identifier "::=" expr1
+;;   _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
+
+;; TODO: Grammar:  "meta" identifier "{" rule*:rs "}"
+
 )
