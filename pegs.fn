@@ -94,14 +94,19 @@
 	   (win (transform result) rest))
 	 lose)))
 
+(defn applicator (fun)
+  (lambda (arglist)
+    (apply fun arglist)))
+
 (defmacro peg-let (bindings action)
   ;; `(peg=> (peg-seq ,@(map second bindings))
   ;;         (lambda ,(map first bindings)
   ;;           ,action))
   (list 'peg=>
 	(cons 'peg-seq (map second bindings))
-	(list 'lambda (map first bindings)
-	      action)))
+	(list 'applicator
+	      (list 'lambda (map first bindings)
+		    action))))
 
 ; Reducing. (a (b (c end)))
 (defn reduce-right (combine seq end)

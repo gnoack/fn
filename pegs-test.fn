@@ -95,8 +95,8 @@
 
 (eql '(peg=>
        (peg-seq (peg= #\a) (peg= #\b) (peg= #\c))
-       (lambda (a b c)
-	 (list c b a)))
+       (applicator (lambda (a b c)
+		     (list c b a))))
      (macroexpand '(peg-let ((a (peg= #\a))
 			     (b (peg= #\b))
 			     (c (peg= #\c)))
