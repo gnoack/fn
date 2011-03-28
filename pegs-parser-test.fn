@@ -34,4 +34,10 @@
 	   '())
      (_pp_expr2 "\'x:a \'y \"c\":c => (list a c)" list '*error*))
 
+(eql (list '(peg-seq (peg= (quote x))
+		     (peg= (quote y))
+		     (peg-seq (peg= #\c)))
+           '())
+     (_pp_expr2 "\'x \'y \"c\"" list '*error*))
+
 )

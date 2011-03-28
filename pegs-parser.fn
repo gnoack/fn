@@ -66,11 +66,20 @@
 	      (v _pp_bindingvar))
       (list v e)))
 
+(def _pp_action_sequence
+    (peg-let ((bindings (peg-listof _pp_binding
+				    _pp_optional_whitespaces))
+	      (_ (_pp_token _pp_arrow))
+	      (action _lisp_grammar))
+      (list 'peg-let bindings action)))
+
+(def _pp_sequence
+    (peg=> (peg+ (_pp_token _pp_expr3))
+	   (lambda (x) (cons 'peg-seq x))))
+
 ;; An action with bound variables.
-(def _pp_expr2 (peg-let ((bindings (peg-listof _pp_binding
-					       _pp_optional_whitespaces))
-			 (_ (_pp_token _pp_arrow))
-			 (action _lisp_grammar))
-		 (list 'peg-let bindings action)))
+(def _pp_expr2
+    (peg-alt _pp_action_sequence
+	     _pp_sequence))
 
 )
