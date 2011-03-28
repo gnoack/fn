@@ -82,4 +82,9 @@
     (peg-alt _pp_action_sequence
 	     _pp_sequence))
 
+(def _pp_expr1
+    (peg=> (peg-listof _pp_expr2 (_pp_token (peg= #\|)))
+	   (lambda (x)
+	     (cons 'peg-alt x))))
+
 )
