@@ -62,7 +62,7 @@
 	     (peg=> _pp_epsilon
 		    (lambda (x) '_))))
 
-;; Combinator
+;; Parser for a list of items separated by a separator.
 (defn peg-listof (item sep)
   (peg-let ((a item)
 	    (as (peg* (peg=> (peg-seq sep item)

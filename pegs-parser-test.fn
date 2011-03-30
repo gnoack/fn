@@ -63,10 +63,15 @@
 (eql (list '(peg+ (peg= 'foo)) '())
      (_pp_expr3 "\'foo+" list '*error*))
 
-;; TODO: peg*,+:   Rename _pp_expr3 to _pp_expr4, then
-;;   _pp_expr3 ::= _pp_expr4:e "+"   => `(peg+ ,e)
-;;               | _pp_expr4:e "*"   => `(peg* ,e)
-;;               | _pp_expr4:e       => e
+;; Tests expression nesting and precedence.
+(eql (list '(peg-alt
+	      (peg-let ((a (peg* (peg-seq (peg= #\a) (peg= #\b))))
+			(b (peg+ (peg= 'cd))))
+	        (list a b))
+	      (peg-seq (peg= 'foo) (peg= 'bar)))
+	   '())
+     (_pp_expr1 "\"ab\"*:a \'cd+:b => (list a b) | \'foo \'bar"
+		list '*error*))
 
 ;; TODO: Rules:    identifier "::=" expr1
 ;;   _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
