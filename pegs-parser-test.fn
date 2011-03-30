@@ -57,6 +57,12 @@
      (_pp_expr1 "\'aa:a \'bb:b => (cons a b) | \"=>\" \'cc:c => c | \'d"
 		list '*error*))
 
+(eql (list '(peg* (peg= 'foo)) '())
+     (_pp_expr3 "\'foo*" list '*error*))
+
+(eql (list '(peg+ (peg= 'foo)) '())
+     (_pp_expr3 "\'foo+" list '*error*))
+
 ;; TODO: peg*,+:   Rename _pp_expr3 to _pp_expr4, then
 ;;   _pp_expr3 ::= _pp_expr4:e "+"   => `(peg+ ,e)
 ;;               | _pp_expr4:e "*"   => `(peg* ,e)

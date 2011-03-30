@@ -31,11 +31,26 @@
 	     (list 'peg= (list 'quote (second result))))))
 
 ;; An individual parsing expression.
-(def _pp_expr3 (peg-alt _pp_string-expr
+(def _pp_expr4 (peg-alt _pp_string-expr
 			_pp_symbol-expr))
 
 ;; Just parse nothing, always succeeds.
 (def _pp_epsilon (peg-seq))
+
+(def _pp_plus_expr
+    (peg-let ((e _pp_expr4)
+	      (_ (peg= #\+)))
+       (list 'peg+ e)))
+
+(def _pp_star_expr
+    (peg-let ((e _pp_expr4)
+	      (_ (peg= #\*)))
+       (list 'peg* e)))
+
+(def _pp_expr3
+    (peg-alt _pp_plus_expr
+	     _pp_star_expr
+	     _pp_expr4))
 
 ;; _pp_bindingvar ::=
 ;;     ':' _symbol:s  => s
