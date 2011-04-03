@@ -72,6 +72,8 @@ oop eval_let(oop sexp, oop env) {
   return eval(body, env);
 }
 
+// TODO: Should register in current env only.
+// TODO: Registering multiple variables at once.
 oop eval_def(oop program, oop env) {
   oop symbol = cadr(program);
   oop value = eval(caddr(program), env);
