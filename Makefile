@@ -10,6 +10,7 @@ OBJECTS = \
 	parser.o \
 	pegs-parser.o \
 	pegs.o \
+	pprint.o \
 	primitives.o \
 	procedures.o \
 	string-interning.o \
@@ -27,6 +28,7 @@ TESTOBJECTS = \
 	parser-test.o \
 	pegs-parser-test.o \
 	pegs-test.o \
+	pprint-test.o \
 	primitives-test.o \
 	string-interning-test.o \
 	strings-test.o \
@@ -47,6 +49,8 @@ LISPTARGETS = \
 	pegs-parser.c \
 	pegs-test.c \
 	pegs.c \
+	pprint-test.c \
+	pprint.c \
 	primitives-test.c \
 	utils-test.c \
 	utils.c \

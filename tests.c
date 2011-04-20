@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "pegs-parser.h"
 #include "pegs.h"
+#include "pprint.h"
 #include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
@@ -21,6 +22,7 @@
 #include "parser-test.h"
 #include "pegs-parser-test.h"
 #include "pegs-test.h"
+#include "pprint-test.h"
 #include "primitives-test.h"
 #include "string-interning-test.h"
 #include "strings-test.h"
@@ -119,6 +121,7 @@ void init() {
   load_decls(pegs_decls());
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
+  load_decls(pprint_decls());
 }
 
 int main(int argc, char* argv[]) {
@@ -148,6 +151,7 @@ int main(int argc, char* argv[]) {
   pegs_tests();
   parser_tests();
   pegs_parser_tests();
+  pprint_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

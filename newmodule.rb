@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 if ARGV.empty?
+  puts 'Usage: newmodule.rb MODULENAME'
   exit(0)
 end
 
