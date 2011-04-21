@@ -68,4 +68,10 @@
 ; Apply
 (eql (list 1 2 3)
      (apply list (list 1 2 3)))
+
+; Writeout
+; Prints its argument and returns it.
+
+; Commented out for nicer output...
+; (eql "foo" (writeout "foo"))
 )

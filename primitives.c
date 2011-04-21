@@ -148,6 +148,15 @@ oop primitive_apply(oop args) {
   return apply(make_cons(car(args), cadr(args)));
 }
 
+/* Attention: has side effect of printing, returns argument. */
+oop primitive_write_out(oop args) {
+  check_argument_number(args, 1);
+  CHECKV(is_cons(car(args)) || is_nil(car(args)), car(args),
+	 "Must be list of characters (string)");
+  printf("%s\n", c_string(car(args)));
+  return car(args);
+}
+
 void init_primitives() {
   register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
@@ -169,4 +178,5 @@ void init_primitives() {
   register_globally_fn("symbol?", primitive_symbol_p);
   register_globally_fn("list", primitive_list);
   register_globally_fn("apply", primitive_apply);
+  register_globally_fn("writeout", primitive_write_out);
 }
