@@ -1,0 +1,51 @@
+(
+; TODO: Move this predicate somewhere to the primitives...
+(defn all? (list)
+  (reduce (lambda (a b) (and a b)) list true))
+
+(defn string? (str)
+  (and (cons? str)
+       (all? (map char? str))))
+
+(defn char-escape (ch)
+  (cond ((eq ch #\") "\\\"")
+	(true (list ch))))
+
+(defn pprint-string (str)
+  (string-concat "\"" (apply string-concat (map char-escape str)) "\""))
+
+(defn pprint-list (item)
+  (string-concat "(" (string-join (map pprint item) " ") ")"))
+
+(defn pprint-char (ch)
+  (string-concat "\\" (char-escape ch)))
+
+(defn pprint (item)
+  (cond ((number? item) (int->string item 10))
+	((string? item) (pprint-string item))
+	((nil? item) "nil")
+	((cons? item) (pprint-list item))  ; must go after string for now.
+	((char? item) (pprint-char item))
+	((symbol? item) (symbol->string item))
+	(true (error "Don't know item"))))
+
+
+; String functions...
+
+(defn string-join (strings delimiter)
+  (if (cons? strings)
+      (apply string-concat
+	     (cons (first strings)
+		   (map (lambda (s) (string-concat delimiter s))
+			(rest strings))))
+      '()))
+
+(defn string-concat-binary (str1 str2)
+  (if (nil? str1)
+      str2
+      (cons (first str1) (string-concat-binary (rest str1) str2))))
+
+; TODO: Reuse this for list concatenation as well.
+(defn string-concat (&rest strings)
+  (reduce-right string-concat-binary strings '()))
+)

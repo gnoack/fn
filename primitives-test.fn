@@ -10,9 +10,8 @@
 (eq #\A (num->char 65))
 
 ;; Symbol conversion.
-(eq 'quuux
-    (string->symbol "quuux"))
-; TODO: symbol->string?
+(eq 'quuux (string->symbol "quuux"))
+(eql "quuux" (symbol->string 'quuux))
 
 ;; Arithmetic primitives.
 (eq 3 (+ 1 2))
@@ -39,16 +38,25 @@
 (cons? "foo")  ; Strings are lists, too.
 (not (cons? #\a))
 (not (cons? 1))
+(not (cons? 'foo))
 ; char?
 (char? #\a)
 (not (char? (cons 1 2)))
 (not (char? 2))
 (not (char? "foo"))
+(not (char? 'foo))
 ; number?
 (number? 3)
 (not (number? (cons 1 2)))
 (not (number? "foo"))
 (not (number? #\a))
+(not (number? 'foo))
+;; symbol?
+(symbol? 'something)
+(not (symbol? (cons 1 2)))
+(not (symbol? "xyz"))
+(not (symbol? #\a))
+(not (symbol? 3))
 
 ;; List
 

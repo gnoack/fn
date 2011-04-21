@@ -78,12 +78,17 @@ bool is_char(oop v) {
 }
 
 uint get_smallint(oop v) {
-  CHECKV(is_smallint(v), v, "Must be a smallint.");
+  CHECKV(is_smallint(v), v, "Must be a smallint");
   return v.smallint >> 1;
 }
 
+const char* get_symbol(oop v) {
+  CHECKV(is_symbol(v), v, "Must be a symbol");
+  return v.symbol;
+}
+
 char get_char(oop v) {
-  CHECKV(is_char(v), v, "Must be a character.");
+  CHECKV(is_char(v), v, "Must be a character");
   return (char) ((v.smallint - char_start) >> 2);
 }
 

@@ -11,6 +11,8 @@ pegs-parser-test.c
 pegs-parser.c
 pegs-test.c
 pegs.c
+pprint-test.c
+pprint.c
 primitives-test.c
 tests-bin
 utils-test.c

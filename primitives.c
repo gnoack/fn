@@ -47,6 +47,12 @@ oop primitive_string_to_symbol(oop args) {
   return make_symbol(c_string(car(args)));
 }
 
+oop primitive_symbol_to_string(oop args) {
+  check_argument_number(args, 1);
+  CHECKV(is_symbol(car(args)), car(args), "Must be a symbol");
+  return make_string(get_symbol(car(args)));
+}
+
 // Integer addition.
 oop primitive_add(oop args) {
   // TODO: Pretty inaccurate. This works on smallints only.
@@ -127,6 +133,11 @@ oop primitive_number_p(oop args) {
   return lisp_bool(is_smallint(car(args)));
 }
 
+oop primitive_symbol_p(oop args) {
+  check_argument_number(args, 1);
+  return lisp_bool(is_symbol(car(args)));
+}
+
 oop primitive_list(oop args) {
   // Any argument number accepted, of course. :)
   return args;
@@ -144,6 +155,7 @@ void init_primitives() {
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
   register_globally_fn("string->symbol", primitive_string_to_symbol);
+  register_globally_fn("symbol->string", primitive_symbol_to_string);
   register_globally_fn("+", primitive_add);
   register_globally_fn("-", primitive_sub);
   register_globally_fn("*", primitive_mul);
@@ -154,6 +166,7 @@ void init_primitives() {
   register_globally_fn("cons?", primitive_cons_p);
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
+  register_globally_fn("symbol?", primitive_symbol_p);
   register_globally_fn("list", primitive_list);
   register_globally_fn("apply", primitive_apply);
 }

@@ -74,6 +74,9 @@ extern
 char get_char(oop v);
 
 extern
+const char* get_symbol(oop v);
+
+extern
 bool value_eq(oop a, oop b);
 
 /** For debugging. */
