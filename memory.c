@@ -5,6 +5,7 @@
 #include "memory.h"
 
 extern oop mem_alloc(uint amount) {
+  CHECK(amount > 0, "Allocated memory regions need to be larger than 0.");
   oop value;
   value.mem = malloc(sizeof(oop) * amount);
   return value;

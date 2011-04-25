@@ -3,11 +3,12 @@
 
 #include "primitives.h"
 
-#include "eval.h"
+#include "carcdr.h"
 #include "cons.h"
+#include "eval.h"
+#include "memory.h"
 #include "strings.h"
 #include "symbols.h"
-#include "carcdr.h"
 
 void check_argument_number(oop args, int expected) {
   CHECKV(length_int(args) == expected, args, "Argument number");
@@ -26,6 +27,26 @@ oop primitive_first(oop args) {
 oop primitive_rest(oop args) {
   check_argument_number(args, 1);
   return rest(car(args));
+}
+
+/* UNSAFE */
+oop primitive_mem_make(oop args) {
+  uint size = length_int(args);
+  oop result = mem_alloc(size);
+  uint i;
+  for (i = 0; i < size; i++) {
+    mem_set(result, i, first(args));
+    args = rest(args);
+  }
+  return result;
+}
+
+/* UNSAFE, except for index == 0. */
+oop primitive_mem_get(oop args) {
+  check_argument_number(args, 2);
+  oop obj = first(args);
+  oop index = first(rest(args));
+  return mem_get(obj, get_smallint(index));
 }
 
 oop primitive_char_to_num(oop args) {
@@ -161,6 +182,8 @@ void init_primitives() {
   register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
+  register_globally_fn("$make", primitive_mem_make);
+  register_globally_fn("$get", primitive_mem_get);
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
   register_globally_fn("string->symbol", primitive_string_to_symbol);

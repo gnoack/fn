@@ -8,6 +8,9 @@ extern
 oop make_cons(oop car, oop cdr);
 
 extern
+bool is_cons(oop v);
+
+extern
 oop first(oop cons);
 
 extern

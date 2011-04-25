@@ -60,7 +60,7 @@ extern
 bool is_symbol(oop v);
 
 extern
-bool is_cons(oop v);
+bool is_mem(oop v);
 
 extern
 bool is_char(oop v);

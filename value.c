@@ -42,7 +42,7 @@ bool value_eq(oop a, oop b) {
     return TO_BOOL(a.symbol == b.symbol);
   } else if (is_smallint(a) && is_smallint(b)) {
     return TO_BOOL(a.smallint == b.smallint);
-  } else if (is_cons(a) && is_cons(a)) {
+  } else if (is_mem(a) && is_mem(a)) {
     return TO_BOOL(a.mem == b.mem);
   } else if (is_char(a) && is_char(b)) {
     return TO_BOOL(a.mem == b.mem);
@@ -68,7 +68,7 @@ bool is_symbol(oop v) {
   return is_interned(v.symbol);
 }
 
-bool is_cons(oop v) {
+bool is_mem(oop v) {
   return !is_smallint(v) && !is_symbol(v) && !is_nil(v) && !is_char(v);
 }
 

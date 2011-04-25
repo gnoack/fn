@@ -17,6 +17,14 @@ oop make_cons(oop car, oop cdr) {
 }
 
 extern
+bool is_cons(oop v) {
+  if (!is_mem(v)) {
+    return NO;
+  }
+  return value_eq(symbols._cons, mem_get(v, 0));
+}
+
+extern
 oop first(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for caring");
   return mem_get(cons, 1);
