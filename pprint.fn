@@ -1,7 +1,4 @@
 (
-; TODO: Move this predicate somewhere to the primitives...
-(defn all? (list)
-  (reduce (lambda (a b) (and a b)) list true))
 
 (defn string? (str)
   (and (cons? str)

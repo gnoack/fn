@@ -41,5 +41,9 @@
 (eql "foobarbaz" (string-concat "foo" "bar" "baz"))
 (eql '() (string-concat))
 
+(all? (list true true true))
+(not (all? (list true true false)))
+(all? (list))
+
 )
 

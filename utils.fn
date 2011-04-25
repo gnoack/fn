@@ -110,4 +110,8 @@
 (defn ->true (&rest args) true)
 (defn ->false (&rest args) false)
 
+;; True iff the list contains only true.
+(defn all? (list)
+  (reduce (lambda (a b) (and a b)) list true))
+
 )
