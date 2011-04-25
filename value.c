@@ -32,8 +32,8 @@ oop make_char(const char c) {
   return a;
 }
 
-/* Value identity.  Returns true for equal integers and string as
- * well.  (This works because string values are always interned.)
+/* Value identity.  Returns true for equal integers and symbols as
+ * well.  (This works because symbols are always interned.)
  */
 bool value_eq(oop a, oop b) {
   // TODO(gnoack): Consider TO_BOOL(a.smallint == a.smallint),
