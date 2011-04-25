@@ -2,41 +2,42 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "malloc.h"
+#include "memory.h"
 #include "cons.h"
 #include "value.h"
+#include "symbols.h"
 
 extern
 oop make_cons(oop car, oop cdr) {
-  oop cons;
-  cons.cons = malloc(sizeof(cons_t));
-  cons.cons->first = car;
-  cons.cons->rest = cdr;
+  oop cons = mem_alloc(3);
+  mem_set(cons, 0, symbols._cons);
+  mem_set(cons, 1, car);
+  mem_set(cons, 2, cdr);
   return cons;
 }
 
 extern
 oop first(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for caring");
-  return cons.cons->first;
+  return mem_get(cons, 1);
 }
 
 extern
 oop rest(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for cdring");
-  return cons.cons->rest;
+  return mem_get(cons, 2);
 }
 
 extern
 void set_rest(oop cons, oop value) {
   CHECKV(is_cons(cons), cons, "must be a cons for setting the cdr");
-  cons.cons->rest = value;
+  mem_set(cons, 2, value);
 }
 
 extern
 void set_first(oop cons, oop value) {
   CHECKV(is_cons(cons), cons, "must be a cons for setting the car");
-  cons.cons->first = value;
+  mem_set(cons, 1, value);
 }
 
 extern
@@ -80,8 +81,9 @@ oop make_list(oop first, ...) {
   va_start(ap, first);
   oop arg = va_arg(ap, oop);
   while (!is_end_marker(arg)) {
-    currcons.cons->rest = make_cons(arg, NIL);
-    currcons = currcons.cons->rest;
+    oop nextcons = make_cons(arg, NIL);
+    set_rest(currcons, nextcons);
+    currcons = nextcons;
 
     arg = va_arg(ap, oop);
   }

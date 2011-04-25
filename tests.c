@@ -12,13 +12,13 @@
 #include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
-#include "utils-test.h"
 #include "utils.h"
 #include "value.h"
 
 #include "cons-test.h"
 #include "env-test.h"
 #include "macros-test.h"
+#include "memory-test.h"
 #include "parser-test.h"
 #include "pegs-parser-test.h"
 #include "pegs-test.h"
@@ -143,6 +143,7 @@ int main(int argc, char* argv[]) {
   eval_tests();
   value_tests();
   strings_tests();
+  memory_tests();
   primitives_tests();
   utils_tests();
   lang_tests();

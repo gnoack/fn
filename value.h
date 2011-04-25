@@ -28,16 +28,14 @@ typedef char bool;
     exit(1);                                         \
   }
 
-struct cons_s;
-
 typedef union value_u {
   /* A smallint if the least significant bit is set.
    * Actual integer value is then oop.smallint >> 1.
    */
   uint smallint;
 
-  /* Pointer to a data structure. */
-  struct cons_s* cons;
+  /* Pointer to a series of values. */
+  union value_u* mem;
 
   /* Pointer to a symbol. */
   const char* symbol;

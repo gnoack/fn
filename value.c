@@ -43,9 +43,9 @@ bool value_eq(oop a, oop b) {
   } else if (is_smallint(a) && is_smallint(b)) {
     return TO_BOOL(a.smallint == b.smallint);
   } else if (is_cons(a) && is_cons(a)) {
-    return TO_BOOL(a.cons == b.cons);
+    return TO_BOOL(a.mem == b.mem);
   } else if (is_char(a) && is_char(b)) {
-    return TO_BOOL(a.cons == b.cons);
+    return TO_BOOL(a.mem == b.mem);
   } else if (is_nil(a) && is_nil(b)) {
     return YES;
   } else {

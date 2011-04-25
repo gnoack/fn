@@ -4,11 +4,6 @@
 
 #include "value.h"
 
-typedef struct cons_s {
-  union value_u first;
-  union value_u rest;
-} cons_t;
-
 extern
 oop make_cons(oop car, oop cdr);
 

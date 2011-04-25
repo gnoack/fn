@@ -19,5 +19,6 @@ void init_symbols() {
   symbols._macroexpand = make_symbol("macroexpand");
   symbols._native_procedure_marker = make_symbol("native");
   symbols._lisp_procedure_marker = make_symbol("procedure");
+  symbols._cons = make_symbol("cons");
   initialized = YES;
 }

@@ -7,6 +7,7 @@ OBJECTS = \
 	eval.o \
 	lang.o \
 	macros.o \
+	memory.o \
 	parser.o \
 	pegs-parser.o \
 	pegs.o \
@@ -25,6 +26,7 @@ TESTOBJECTS = \
 	eval-test.o \
 	lang-test.o \
 	macros-test.o \
+	memory-test.o \
 	parser-test.o \
 	pegs-parser-test.o \
 	pegs-test.o \
