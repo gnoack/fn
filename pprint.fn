@@ -11,24 +11,27 @@
   (cond ((eq ch #\") "\\\"")
 	(true (list ch))))
 
-(defn pprint-string (str)
-  (string-concat "\"" (apply string-concat (map char-escape str)) "\""))
+(defgeneric pprint (item))
 
-(defn pprint-list (item)
+(defmethod pprint ((cons? item))
   (string-concat "(" (string-join (map pprint item) " ") ")"))
 
-(defn pprint-char (ch)
+; must go after cons for now, because generics don't support method
+; ordering yet and string? is currently a subtype of cons?.
+(defmethod pprint ((string? str))
+  (string-concat "\"" (apply string-concat (map char-escape str)) "\""))
+
+(defmethod pprint ((char? ch))
   (string-concat "\\" (char-escape ch)))
 
-(defn pprint (item)
-  (cond ((number? item) (int->string item 10))
-	((string? item) (pprint-string item))
-	((nil? item) "nil")
-	((cons? item) (pprint-list item))  ; must go after string for now.
-	((char? item) (pprint-char item))
-	((symbol? item) (symbol->string item))
-	(true (error "Don't know item"))))
+(defmethod pprint ((number? num))
+  (int->string num 10))
 
+(defmethod pprint ((nil? x))
+  "nil")
+
+(defmethod pprint ((symbol? sym))
+  (symbol->string sym))
 
 ; String functions...
 
