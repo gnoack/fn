@@ -30,5 +30,16 @@
 (char<= #\a #\a #\b #\c)
 (not (char<= #\a #\c #\b))
 
+; Reducing
+(eql (cons (cons (cons nil 'a) 'b) 'c)
+     (reduce cons (list 'a 'b 'c) nil))
+
+(eql (list 'a 'b 'c)
+     (reduce-right cons (list 'a 'b 'c) nil))
+
+;; String concat
+(eql "foobarbaz" (string-concat "foo" "bar" "baz"))
+(eql '() (string-concat))
+
 )
 

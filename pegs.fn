@@ -108,19 +108,7 @@
 	      (list 'lambda (map first bindings)
 		    action))))
 
-; Reducing. (a (b (c end)))
-(defn reduce-right (combine seq end)
-  (if (nil? seq)
-      end
-      (combine (first seq)
-	       (reduce-right combine
-			     (rest seq)
-			     end))))
-
 ;; PEG utilities
-(defn ->true (&rest args) true)
-(defn ->false (&rest args) false)
-
 (defn parses? (peg input)
   (peg input ->true ->false))
 

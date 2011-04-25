@@ -8,6 +8,7 @@ OBJECTS = \
 	lang.o \
 	macros.o \
 	memory.o \
+	objects.o \
 	parser.o \
 	pegs-parser.o \
 	pegs.o \
@@ -27,6 +28,7 @@ TESTOBJECTS = \
 	lang-test.o \
 	macros-test.o \
 	memory-test.o \
+	objects-test.o \
 	parser-test.o \
 	pegs-parser-test.o \
 	pegs-test.o \
@@ -45,6 +47,8 @@ LISPTARGETS = \
 	lang.c \
 	macros-test.c \
 	macros.c \
+	objects-test.c \
+	objects.c \
 	parser-test.c \
 	parser.c \
 	pegs-parser-test.c \

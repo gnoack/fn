@@ -5,6 +5,7 @@
 #include "eval.h"
 #include "lang.h"
 #include "macros.h"
+#include "objects.h"
 #include "parser.h"
 #include "pegs-parser.h"
 #include "pegs.h"
@@ -19,6 +20,7 @@
 #include "env-test.h"
 #include "macros-test.h"
 #include "memory-test.h"
+#include "objects-test.h"
 #include "parser-test.h"
 #include "pegs-parser-test.h"
 #include "pegs-test.h"
@@ -118,6 +120,7 @@ void init() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
+  load_decls(objects_decls());
   load_decls(pegs_decls());
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
@@ -153,6 +156,7 @@ int main(int argc, char* argv[]) {
   parser_tests();
   pegs_parser_tests();
   pprint_tests();
+  objects_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

@@ -1,0 +1,37 @@
+(
+
+(eql (list 0 1 2 3 4 5 6) (range 7))
+
+;(%accessor-defn 'foobar 2 'foo?)
+
+;(%define-struct 'bible (list 'book1 'book2))
+
+(->true
+ (defstruct book (title author))
+ (def example-book
+     (make-book "Hackers and Painters" "Paul Graham")))
+
+(book? example-book)
+(not (book? (cons 1 2)))
+(not (cons? example-book))
+
+(eql "Hackers and Painters" (title example-book))
+(eql "Paul Graham" (author example-book))
+
+(eq '*foobar-generic-spec*
+    (%generic-spec-name 'foobar))
+
+(->true
+ (defgeneric my-nickname (item))
+ (defmethod my-nickname ((cons? item))
+   'consomatic)
+ (defmethod my-nickname ((book? item))
+   'bookomatics)
+)
+
+(eq 'consomatic (my-nickname (cons 1 2)))
+(eq 'bookomatics (my-nickname example-book))
+
+
+
+)

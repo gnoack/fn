@@ -1,11 +1,4 @@
 (
-; Reducing, should move to utils.
-(eql (cons (cons (cons nil 'a) 'b) 'c)
-     (reduce cons (list 'a 'b 'c) nil))
-
-(eql (list 'a 'b 'c)
-     (reduce-right cons (list 'a 'b 'c) nil))
-
 
 ; Some helper defs
 (->true  ; we need true for all top-level exprs.

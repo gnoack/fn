@@ -40,12 +40,4 @@
 			(rest strings))))
       '()))
 
-(defn string-concat-binary (str1 str2)
-  (if (nil? str1)
-      str2
-      (cons (first str1) (string-concat-binary (rest str1) str2))))
-
-; TODO: Reuse this for list concatenation as well.
-(defn string-concat (&rest strings)
-  (reduce-right string-concat-binary strings '()))
 )

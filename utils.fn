@@ -86,4 +86,28 @@
 			 (first (rest seq)))
 	      (sequence-ordered?
 	       in-order? (rest seq))))))
+
+; Right-reducing. (a (b (c end)))
+(defn reduce-right (combine seq end)
+  (if (nil? seq)
+      end
+      (combine (first seq)
+	       (reduce-right combine
+			     (rest seq)
+			     end))))
+
+;; String concatenation
+(defn string-concat-binary (str1 str2)
+  (if (nil? str1)
+      str2
+      (cons (first str1) (string-concat-binary (rest str1) str2))))
+
+; TODO: Reuse this for list concatenation as well.
+(defn string-concat (&rest strings)
+  (reduce-right string-concat-binary strings '()))
+
+;; Always return true (false).
+(defn ->true (&rest args) true)
+(defn ->false (&rest args) false)
+
 )

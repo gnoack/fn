@@ -10,6 +10,5 @@
 (eql "a b c" (string-join (list "a" "b" "c") " "))
 (eql '() (string-join (list) " "))
 (eql "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
-(eql "foobarbaz" (string-concat "foo" "bar" "baz"))
 
 )

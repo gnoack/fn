@@ -4,6 +4,7 @@
 #include "eval.h"
 #include "value.h"
 #include "cons.h"
+#include "memory.h"
 #include "string-interning.h"
 
 // Characters are mapped to char_start in memory;
@@ -104,8 +105,7 @@ void print_value_internal(oop v) {
     printf("%s", v.symbol);
   } else if (is_nil(v)) {
     printf("nil");
-  } else {
-    CHECK(is_cons(v), "Must be cons.");
+  } else if (is_cons(v)) {
     printf("(");
     while (!is_nil(v)) {
       // is_cons(v) holds.
@@ -123,6 +123,11 @@ void print_value_internal(oop v) {
       }
     }
     printf(")");
+  } else {
+    CHECK(is_mem(v), "Must be an allocated object.");
+    printf("#[a ");
+    print_value_internal(mem_get(v, 0));
+    printf(" object]");
   }
 }
 

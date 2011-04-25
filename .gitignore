@@ -5,6 +5,8 @@ lang-test.c
 lang.c
 macros-test.c
 macros.c
+objects-test.c
+objects.c
 parser-test.c
 parser.c
 pegs-parser-test.c
