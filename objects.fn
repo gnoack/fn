@@ -1,22 +1,5 @@
 (
 
-(defn %range (size acc)
-  (if (eq size 0)
-      (cons 0 acc)
-      (%range (- size 1) (cons size acc))))
-
-(defn range (size)
-  (%range (- size 1) '()))
-
-(defn map2 (proc l1 l2)
-  (cond ((and (cons? l1) (cons? l2))
-	 (cons (proc (first l1) (first l2))
-	       (map2 proc (rest l1) (rest l2))))
-	((or (nil? l1) (nil? l2))
-	 '())
-	(true
-	 (error "Should not happen -- this was not a list."))))
-
 (defn %accessor-defn (fieldname index tester)
   (list 'defn fieldname (list 'obj)
 	(list 'if (list tester 'obj)

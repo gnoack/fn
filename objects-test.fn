@@ -1,11 +1,5 @@
 (
 
-(eql (list 0 1 2 3 4 5 6) (range 7))
-
-;(%accessor-defn 'foobar 2 'foo?)
-
-;(%define-struct 'bible (list 'book1 'book2))
-
 (->true
  (defstruct book (title author))
  (def example-book
@@ -31,7 +25,5 @@
 
 (eq 'consomatic (my-nickname (cons 1 2)))
 (eq 'bookomatics (my-nickname example-book))
-
-
 
 )
