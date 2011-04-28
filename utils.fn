@@ -136,4 +136,9 @@
 	(true
 	 (error "Should not happen -- this was not a list."))))
 
+(defn list? (potential-list)
+  (or (nil? potential-list)
+      (and (cons? potential-list)
+	   (list? (rest potential-list)))))
+
 )

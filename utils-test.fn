@@ -8,6 +8,10 @@
 (eq #\d (nth "abcdefg" 3))
 (eq 6 (length "abcdef"))
 (eql "abc" (reverse "cba"))
+(list? '(1 2 3))
+(list? '())
+(not (list? 1))
+(not (list? (cons 1 2)))
 
 ; Digit to int
 (eq 3 (digit->int #\3))
