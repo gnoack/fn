@@ -20,6 +20,7 @@
   (apply $make (list-of-size capacity)))
 
 
+;; TODO: Use an @type instead.
 (def %array-marker 'array)
 
 ;; An array is a fixed-size, tagged, modifiable data object.
