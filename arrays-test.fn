@@ -1,3 +1,7 @@
 
 (
+
+(array? (make-array 3))
+(eq 3 (array-capacity (make-array 3)))
+
 )

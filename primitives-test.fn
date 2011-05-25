@@ -81,9 +81,9 @@
 
 (eq 'b ($get ($make 'a 'b 'c) 1))
 
-(->true
- (def alphabet ($make 'a 'b 'c 'd 'e 'f))
- ($set alphabet 3 'surprise))
-(eq 'surprise ($get alphabet 3))
+(progn
+  (def alphabet ($make 'a 'b 'c 'd 'e 'f))
+  ($set alphabet 3 'surprise)
+  (eq 'surprise ($get alphabet 3)))
 
 )

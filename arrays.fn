@@ -1,3 +1,40 @@
 
 (
+
+;; TODO: Move these to a deeper level of the language.
+(defn last (l)
+  (if (nil? (rest l))
+      (first l)
+      (last (rest l))))
+
+(defn progn (&rest args)
+  (last args))
+
+;; TODO: Make $alloc a primitive and implement $make on top?
+(defn list-of-size (capacity)
+  (if (eq 0 capacity)
+      '()
+      (cons nil (list-of-size (- capacity 1)))))
+
+(defn $alloc (capacity)
+  (apply $make (list-of-size capacity)))
+
+
+(def %array-marker 'array)
+
+;; An array is a fixed-size, tagged, modifiable data object.
+(defn make-array (capacity)
+  (let ((result ($alloc (+ 2 capacity))))
+    (progn
+      ($set result 0 %array-marker)
+      ($set result 1 capacity)
+      result)))
+
+(defn array-capacity (array)
+  ($get array 1))
+
+(defn array? (value)
+  (and (mem? value)
+       (eq %array-marker ($get value 0))))
+
 )
