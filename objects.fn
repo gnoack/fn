@@ -6,6 +6,7 @@
 	      (list '$get 'obj index)
 	      (list 'error))))
 
+;; TODO: Use regular @-prefixed type as type tag!
 (defn %define-struct (name fields)
   (let ((namestr (symbol->string name)))
     ;; `(->true
