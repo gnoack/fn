@@ -1,6 +1,7 @@
 
 #include "tests.h"
 
+#include "arrays.h"
 #include "env-test.h"
 #include "eval.h"
 #include "lang.h"
@@ -16,6 +17,7 @@
 #include "utils.h"
 #include "value.h"
 
+#include "arrays-test.h"
 #include "cons-test.h"
 #include "env-test.h"
 #include "macros-test.h"
@@ -117,6 +119,7 @@ void init() {
   init_symbols();
   init_eval();
   init_primitives();
+  load_decls(arrays_decls());
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
@@ -157,6 +160,7 @@ int main(int argc, char* argv[]) {
   pegs_parser_tests();
   pprint_tests();
   objects_tests();
+  arrays_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

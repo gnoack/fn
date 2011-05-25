@@ -2,6 +2,7 @@
 CFLAGS = -g
 HEADERS = *.h
 OBJECTS = \
+	arrays.o \
 	cons.o \
 	env.o \
 	eval.o \
@@ -22,6 +23,7 @@ OBJECTS = \
 	value.o \
 
 TESTOBJECTS = \
+	arrays-test.o \
 	cons-test.o \
 	env-test.o \
 	eval-test.o \
@@ -43,6 +45,8 @@ TESTOBJECTS = \
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 
 LISPTARGETS = \
+	arrays-test.c \
+	arrays.c \
 	lang-test.c \
 	lang.c \
 	macros-test.c \

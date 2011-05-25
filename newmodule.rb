@@ -40,8 +40,9 @@ if lisp_mode
     newline
 
   files << ["#{modname}.h",
-            guard(newline + "extern" +
-                  newline + "void #{modname}_decls();" +
+            guard(newline + mkinclude("value")
+                  newline + "extern" +
+                  newline + "oop #{modname}_decls();" +
                   newline,
                   "_#{modname.upcase}_H_")]
   files << ["#{modname}.fn", empty_lisp_file]

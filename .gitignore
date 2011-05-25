@@ -1,6 +1,8 @@
 *.fasl
 *.o
 *~
+arrays-test.c
+arrays.c
 lang-test.c
 lang.c
 macros-test.c
