@@ -124,4 +124,33 @@
 		(cons 'list type-specs)
 		(list 'lambda lambda-list body)))))
 
+;; Types
+
+;; The type type links to itself: @type = ($make @type type?)
+(def @type ($make 'foo 'bar))
+(defn type? (x)
+  (eq (type-of x) @type))
+($set @type 0 @type)
+($set @type 1 type?)
+
+(def @mem ($make @type mem?))
+
+; @cons must be created early for consing,
+; so we need some retroactive patching.
+;(def @cons ($make @type cons?))
+($set @cons 0 @type)
+($set @cons 1 cons?)
+
+(def @smallint ($make @type number?))
+(def @character ($make @type char?))
+(def @symbol ($make @type symbol?))
+(def @nil ($make @type nil?))
+
+(defn type-of (x)
+  (cond ((number? x) @smallint)
+	((char? x) @character)
+	((symbol? x) @symbol)
+	((nil? x) @nil)
+	((mem? x) ($get x 0))))
+
 )

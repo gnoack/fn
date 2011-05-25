@@ -1,5 +1,6 @@
 (
 
+;; Structs
 (->true
  (defstruct book (title author))
  (def example-book
@@ -15,15 +16,25 @@
 (eq '*foobar-generic-spec*
     (%generic-spec-name 'foobar))
 
+;; Generic methods
 (->true
  (defgeneric my-nickname (item))
  (defmethod my-nickname ((cons? item))
    'consomatic)
  (defmethod my-nickname ((book? item))
-   'bookomatics)
-)
+   'bookomatics))
 
 (eq 'consomatic (my-nickname (cons 1 2)))
 (eq 'bookomatics (my-nickname example-book))
+
+;; Types
+;; Anything has a type, even types have a type, namely @type.
+(eq @type (type-of @type))
+(eq @cons (type-of (cons 'a 'b)))
+(eq @type (type-of (type-of (cons 'a 'b))))
+(eq @smallint (type-of 12))
+(eq @character (type-of #\b))
+(eq @nil (type-of nil))
+(eq @symbol (type-of 'foobar))
 
 )

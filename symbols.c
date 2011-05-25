@@ -1,6 +1,6 @@
 
 #include "value.h"
-
+#include "memory.h"
 #include "symbols.h"
 
 symbols_t symbols;
@@ -19,6 +19,8 @@ void init_symbols() {
   symbols._macroexpand = make_symbol("macroexpand");
   symbols._native_procedure_marker = make_symbol("native");
   symbols._lisp_procedure_marker = make_symbol("procedure");
-  symbols._cons = make_symbol("cons");
+  // TODO: This is not actually a symbol, but a type.
+  // The @cons type is finished when types are initialized.
+  symbols._cons = mem_alloc(2);
   initialized = YES;
 }

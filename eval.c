@@ -38,6 +38,7 @@ void init_eval() {
   global_env = NIL;
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
+  register_globally("@cons", symbols._cons);
 }
 
 // Evaluation.

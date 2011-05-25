@@ -82,7 +82,7 @@
 ; (eql "foo" (writeout "foo"))
 
 ;; UNSAFE functions for memory region allocation.
-(cons? ($make 'cons 1 2))
+(cons? ($make @cons 1 2))
 (not (cons? ($make 'blubb 1 2)))
 
 (eq 'b ($get ($make 'a 'b 'c) 1))
