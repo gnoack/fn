@@ -50,4 +50,14 @@
 		 (first values)
 		 (pairlis (rest keys) (rest values))))))
 
+;; cons, cons?
+(def cons
+    (lambda (car cdr)	
+      ($make 'cons car cdr)))
+
+(def cons?
+    (lambda (value)
+      (if (mem? value)
+	  (eq 'cons ($get value 0))
+	  false)))
 )

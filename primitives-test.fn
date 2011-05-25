@@ -39,6 +39,12 @@
 (not (cons? #\a))
 (not (cons? 1))
 (not (cons? 'foo))
+; mem?
+(mem? (cons 1 2))
+(mem? "foo")  ; Strings are lists, too.
+(not (mem? #\a))
+(not (mem? 1))
+(not (mem? 'foo))
 ; char?
 (char? #\a)
 (not (char? (cons 1 2)))

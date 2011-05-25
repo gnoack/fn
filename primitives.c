@@ -14,11 +14,6 @@ void check_argument_number(oop args, int expected) {
   CHECKV(length_int(args) == expected, args, "Argument number");
 }
 
-oop primitive_cons(oop args) {
-  check_argument_number(args, 2);
-  return make_cons(car(args), cadr(args));
-}
-
 oop primitive_first(oop args) {
   check_argument_number(args, 1);
   return first(car(args));
@@ -150,12 +145,6 @@ oop primitive_eq(oop args) {
   return lisp_bool(value_eq(car(args), cadr(args)));
 }
 
-// TODO: Implement cons? in terms of mem?
-oop primitive_cons_p(oop args) {
-  check_argument_number(args, 1);
-  return lisp_bool(is_cons(car(args)));
-}
-
 oop primitive_mem_p(oop args) {
   check_argument_number(args, 1);
   return lisp_bool(is_mem(car(args)));
@@ -196,7 +185,6 @@ oop primitive_write_out(oop args) {
 }
 
 void init_primitives() {
-  register_globally_fn("cons", primitive_cons);
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
   register_globally_fn("$make", primitive_mem_make);
@@ -214,7 +202,6 @@ void init_primitives() {
   register_globally_fn("integer<=", primitive_le);
   register_globally_fn("eq", primitive_eq);
   register_globally_fn("mem?", primitive_mem_p);
-  register_globally_fn("cons?", primitive_cons_p);
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
   register_globally_fn("symbol?", primitive_symbol_p);
