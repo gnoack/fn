@@ -146,6 +146,10 @@
 (def @symbol ($make @type symbol?))
 (def @nil ($make @type nil?))
 
+;; Hardcoded for half-primitive values like integers,
+;; characters, nil and so forth.  For higher-level,
+;; memory-allocated values, the value at position 0
+;; is used as type.
 (defn type-of (x)
   (cond ((number? x) @smallint)
 	((char? x) @character)
