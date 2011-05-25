@@ -77,7 +77,13 @@
 
 ;; UNSAFE functions for memory region allocation.
 (cons? ($make 'cons 1 2))
+(not (cons? ($make 'blubb 1 2)))
+
 (eq 'b ($get ($make 'a 'b 'c) 1))
 
-(not (cons? ($make 'blubb 1 2)))
+(->true
+ (def alphabet ($make 'a 'b 'c 'd 'e 'f))
+ ($set alphabet 3 'surprise))
+(eq 'surprise ($get alphabet 3))
+
 )

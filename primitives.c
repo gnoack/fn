@@ -45,8 +45,19 @@ oop primitive_mem_make(oop args) {
 oop primitive_mem_get(oop args) {
   check_argument_number(args, 2);
   oop obj = first(args);
-  oop index = first(rest(args));
+  oop index = cadr(args);
   return mem_get(obj, get_smallint(index));
+}
+
+/* UNSAFE, except for index == 0.
+ * This is an imperative function.  Avoid.
+ */
+oop primitive_mem_set(oop args) {
+  check_argument_number(args, 3);
+  oop obj = car(args);
+  oop index = cadr(args);
+  oop value = caddr(args);
+  return mem_set(obj, get_smallint(index), value);
 }
 
 oop primitive_char_to_num(oop args) {
@@ -184,6 +195,7 @@ void init_primitives() {
   register_globally_fn("rest", primitive_rest);
   register_globally_fn("$make", primitive_mem_make);
   register_globally_fn("$get", primitive_mem_get);
+  register_globally_fn("$set", primitive_mem_set);
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
   register_globally_fn("string->symbol", primitive_string_to_symbol);
