@@ -4,4 +4,11 @@
 (array? (make-array 3))
 (eq 3 (array-capacity (make-array 3)))
 
+(let ((obj (make-array 3)))
+  (progn
+    (set obj 0 'a)
+    (set obj 1 'b)
+    (set obj 2 'c)
+    (eq 'b (get obj 1))))
+
 )
