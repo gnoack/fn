@@ -8,6 +8,15 @@
 (defn third (list)
   (first (rest (rest list))))
 
+;; Appending
+
+(defn append (a &rest as)
+  (if (nil? as) a
+      (if (nil? a)
+	  (apply append as)
+	  (cons (first a)
+		(apply append
+		       (cons (rest a) as))))))
 
 (defn digit->int (digit)
   (- (char->num digit) (char->num #\0)))

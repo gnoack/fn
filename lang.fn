@@ -9,7 +9,6 @@
 (def _or (lambda (a b)
 	  (if a true b)))
 
-
 ;; Nil?
 (def nil? (lambda (x)
 	    (eq nil x)))

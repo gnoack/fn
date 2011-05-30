@@ -1,5 +1,17 @@
 (
 
+
+; Appending lists
+(eql (list 'a 'b 'c 'd 'e)
+     (append (list 'a 'b 'c)
+	     (list 'd 'e)))
+
+(eql (list 'a 'b)
+     (append '() (list 'a 'b)))
+
+(eql (list 'a 'b)
+     (append (list 'a 'b) '()))
+
 ; Integer parsing.
 (eq 123 (string->int "123"))
 
