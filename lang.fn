@@ -20,12 +20,20 @@
 	       (cons (proc (first sequence))
 		     (map proc (rest sequence))))))
 
+;; Reduce
 (def reduce (lambda (proc list start)
 	      (if (nil? list)
 		  start
 		  (reduce proc
 			  (rest list)
 			  (proc start (first list))))))
+
+;; Reversing sequences.
+(def %xcons (lambda (l r)
+	     (cons r l)))
+
+(def reverse (lambda (seq)
+	       (reduce %xcons seq nil)))
 
 ;; Association lists.
 (def acons

@@ -35,4 +35,24 @@
  '(if a true (if b true c))
  (macroexpand '(or a b c)))
 
+;; Backquote
+(eql '(quote x)
+     (macroexpand '(backquote x)))
+
+(eql '(append (list 'x))
+     (macroexpand '(backquote (x))))
+
+(eql '(append (list x))
+     (macroexpand '(backquote ((unquote x)))))
+
+(eql '(append xs)
+     (macroexpand '(backquote ((unquote-list xs)))))
+
+(eql
+ '(append (list 'foo) (list bar))
+ (macroexpand '(backquote (foo (unquote bar)))))
+
+(eql
+ '(append (list 'foo) (list 1 2 3) (list 'bar))
+ (macroexpand '(backquote (foo (unquote-list (list 1 2 3)) bar))))
 )

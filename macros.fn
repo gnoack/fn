@@ -85,4 +85,46 @@
   ;; `(def ,name (lambda ,lambda-list ,body))
   (list 'def name
 	(list 'lambda lambda-list body)))
+
+;;; ***********************************************************
+;;; Backquote implementation
+;;; ***********************************************************
+
+(defn smatcher (symbol)
+  (lambda (e)
+    (and (cons? e)
+	 (eq symbol (first e)))))
+
+(def comma-expr? (smatcher 'unquote))
+(def comma-at-expr? (smatcher 'unquote-list))
+
+(defmacro backquote (expr)
+  (if (list? expr)
+      (cons 'append (map backquote-splice expr))
+      (list 'quote expr)))
+
+(defn backquote-splice (expr)
+  (cond ((comma-expr? expr)    (list 'list (second expr)))
+	((comma-at-expr? expr) (second expr))
+	(true                  (list 'list (list 'backquote expr)))))
+
+;;; *******************************************************************
+;;; drap for debugging
+;;; *******************************************************************
+;; TODO: Move this somewhere else!
+
+;; Helper for debugging-wrap below.
+(defn %awriteout (&rest args)
+  (writeout (apply append args)))
+
+;; Wraps a method to print out its arguments.
+(defn debugging-wrap (func-symbol func)
+  (lambda (&rest args)
+    (second (list (%awriteout "Called " (pprint (cons func-symbol args)))
+		  (apply func args)))))
+
+;; Call like (drap macroexpand) for instance to log method calls.
+(defmacro dwrap (sym)
+  (list 'def sym (list 'debugging-wrap (list 'quote sym) sym)))
+
 )

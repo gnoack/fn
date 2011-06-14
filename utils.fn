@@ -45,16 +45,6 @@
       (+ 1 (length (rest seq)))
       0))
 
-;; Reversing sequences.
-(defn _reverse (seq acc)
-  (if (cons? seq)
-      (_reverse (rest seq)
-		(cons (first seq) acc))
-      acc))
-
-(defn reverse (seq)
-  (_reverse seq nil))
-
 ;; Integer to string conversion.
 (def _hex-digits "0123456789abcef")
 (defn _int->string (n base)

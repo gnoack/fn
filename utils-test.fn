@@ -19,7 +19,6 @@
 (eq 3 (nth (list 1 2 3 4 5) 2))
 (eq #\d (nth "abcdefg" 3))
 (eq 6 (length "abcdef"))
-(eql "abc" (reverse "cba"))
 (list? '(1 2 3))
 (list? '())
 (not (list? 1))

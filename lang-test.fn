@@ -72,7 +72,10 @@
 	  (cons 2 (cons 3 nil))))
 
 ; Reduce
-(eq 6 (reduce + (cons 1 (cons 2 (cons 3 nil))) 0))
+(eq 6 (reduce + (list 1 2 3) 0))
+
+;; Reverse
+(eql "abc" (reverse "cba"))
 
 ; Alists
 (eql (list (cons 'a 1))
