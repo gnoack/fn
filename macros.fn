@@ -109,7 +109,7 @@
 	(true                  (list 'list (list 'backquote expr)))))
 
 ;;; *******************************************************************
-;;; drap for debugging
+;;; wrap for debugging
 ;;; *******************************************************************
 ;; TODO: Move this somewhere else!
 
