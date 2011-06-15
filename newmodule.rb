@@ -40,7 +40,7 @@ if lisp_mode
     newline
 
   files << ["#{modname}.h",
-            guard(newline + mkinclude("value"),
+            guard(newline + mkinclude("value") +
                   newline + "extern" +
                   newline + "oop #{modname}_decls();" +
                   newline,
