@@ -28,6 +28,9 @@ typedef char bool;
     exit(1);                                         \
   }
 
+#define CHECKNUMBER(value) \
+  CHECKV(is_smallint(value), value, "Must be a number");
+
 typedef union value_u {
   /* A smallint if the least significant bit is set.
    * Actual integer value is then oop.smallint >> 1.

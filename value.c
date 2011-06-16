@@ -16,7 +16,7 @@ oop make_smallint(uint i) {
   oop a;
   a.smallint = (i << 1) | 1L;
   CHECK(a.smallint >> 1 == i, "Integer doesn't fit into smallint.");
-  CHECK(is_smallint(a), "Couldn't produce a smallint.");
+  CHECKV(is_smallint(a), a, "Couldn't produce a smallint.");
   return a;
 }
 
@@ -79,7 +79,7 @@ bool is_char(oop v) {
 }
 
 uint get_smallint(oop v) {
-  CHECKV(is_smallint(v), v, "Must be a smallint");
+  CHECKNUMBER(v);
   return v.smallint >> 1;
 }
 

@@ -73,7 +73,7 @@ oop primitive_char_to_num(oop args) {
 
 oop primitive_num_to_char(oop args) {
   PARSE_ONE_ARG(i);
-  CHECKV(is_smallint(i), i, "Must be a smallint");
+  CHECKNUMBER(i);
   return make_char(get_smallint(i));
 }
 
@@ -111,30 +111,30 @@ oop primitive_add(oop args) {
 oop primitive_sub(oop args) {
   // TODO: Allow more arguments.
   PARSE_TWO_ARGS(a, b);
-  CHECKV(is_smallint(a), a, "Must be a number");
-  CHECKV(is_smallint(b), b, "Must be a number");
+  CHECKNUMBER(a);
+  CHECKNUMBER(b);
   return make_smallint(get_smallint(a) - get_smallint(b));
 }
 
 oop primitive_mul(oop args) {
   // TODO: Allow more arguments.
   PARSE_TWO_ARGS(a, b);
-  CHECKV(is_smallint(a), a, "Must be a number");
-  CHECKV(is_smallint(b), b, "Must be a number");
+  CHECKNUMBER(a);
+  CHECKNUMBER(b);
   return make_smallint(get_smallint(a) * get_smallint(b));
 }
 
 oop primitive_div(oop args) {
   PARSE_TWO_ARGS(a, b);
-  CHECKV(is_smallint(a), a, "Must be a number");
-  CHECKV(is_smallint(b), b, "Must be a number");
+  CHECKNUMBER(a);
+  CHECKNUMBER(b);
   return make_smallint(get_smallint(a) / get_smallint(b));
 }
 
 oop primitive_mod(oop args) {
   PARSE_TWO_ARGS(a, b);
-  CHECKV(is_smallint(a), a, "Must be a number");
-  CHECKV(is_smallint(b), b, "Must be a number");
+  CHECKNUMBER(a);
+  CHECKNUMBER(b);
   return make_smallint(get_smallint(a) % get_smallint(b));
 }
 
@@ -145,8 +145,8 @@ oop lisp_bool(bool b) {
 
 oop primitive_le(oop args) {
   PARSE_TWO_ARGS(a, b);
-  CHECKV(is_smallint(a), a, "Must be a number");
-  CHECKV(is_smallint(b), b, "Must be a number");
+  CHECKNUMBER(a);
+  CHECKNUMBER(b);
   return lisp_bool(get_smallint(a) <= get_smallint(b));
 }
 
