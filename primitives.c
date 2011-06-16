@@ -14,14 +14,29 @@ void check_argument_number(oop args, int expected) {
   CHECKV(length_int(args) == expected, args, "Argument number");
 }
 
+#define PARSE_ONE_ARG(first_arg) \
+  check_argument_number(args, 1);   \
+  oop first_arg = first(args);      \
+
+#define PARSE_TWO_ARGS(first_arg, second_arg) \
+  check_argument_number(args, 2);   \
+  oop first_arg = first(args);      \
+  oop second_arg = cadr(args);    \
+
+#define PARSE_THREE_ARGS(first_arg, second_arg, third_arg) \
+  check_argument_number(args, 3);   \
+  oop first_arg = first(args);      \
+  oop second_arg = cadr(args);    \
+  oop third_arg = caddr(args);      \
+
 oop primitive_first(oop args) {
-  check_argument_number(args, 1);
-  return first(car(args));
+  PARSE_ONE_ARG(cons_cell);
+  return first(cons_cell);
 }
 
 oop primitive_rest(oop args) {
-  check_argument_number(args, 1);
-  return rest(car(args));
+  PARSE_ONE_ARG(cons_cell);
+  return rest(cons_cell);
 }
 
 /* UNSAFE */
@@ -38,9 +53,7 @@ oop primitive_mem_make(oop args) {
 
 /* UNSAFE, except for index == 0. */
 oop primitive_mem_get(oop args) {
-  check_argument_number(args, 2);
-  oop obj = first(args);
-  oop index = cadr(args);
+  PARSE_TWO_ARGS(obj, index);
   return mem_get(obj, get_smallint(index));
 }
 
@@ -48,36 +61,32 @@ oop primitive_mem_get(oop args) {
  * This is an imperative function.  Avoid.
  */
 oop primitive_mem_set(oop args) {
-  check_argument_number(args, 3);
-  oop obj = car(args);
-  oop index = cadr(args);
-  oop value = caddr(args);
+  PARSE_THREE_ARGS(obj, index, value);
   return mem_set(obj, get_smallint(index), value);
 }
 
 oop primitive_char_to_num(oop args) {
-  check_argument_number(args, 1);
-  CHECKV(is_char(car(args)), car(args), "Must be a char");
-  return make_smallint(get_char(car(args)));
+  PARSE_ONE_ARG(c);
+  CHECKV(is_char(c), c, "Must be a char");
+  return make_smallint(get_char(c));
 }
 
 oop primitive_num_to_char(oop args) {
-  check_argument_number(args, 1);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a smallint");
-  return make_char(get_smallint(car(args)));
+  PARSE_ONE_ARG(i);
+  CHECKV(is_smallint(i), i, "Must be a smallint");
+  return make_char(get_smallint(i));
 }
 
 oop primitive_string_to_symbol(oop args) {
-  check_argument_number(args, 1);
-  CHECKV(is_cons(car(args)) || is_nil(car(args)),
-	 car(args), "Must be a string");
-  return make_symbol(c_string(car(args)));
+  PARSE_ONE_ARG(str);
+  CHECKV(is_cons(str) || is_nil(str), str, "Must be a string");
+  return make_symbol(c_string(str));
 }
 
 oop primitive_symbol_to_string(oop args) {
-  check_argument_number(args, 1);
-  CHECKV(is_symbol(car(args)), car(args), "Must be a symbol");
-  return make_string(get_symbol(car(args)));
+  PARSE_ONE_ARG(sym);
+  CHECKV(is_symbol(sym), sym, "Must be a symbol");
+  return make_string(get_symbol(sym));
 }
 
 // Integer addition.
@@ -101,69 +110,61 @@ oop primitive_add(oop args) {
 //   support negative numbers yet..
 oop primitive_sub(oop args) {
   // TODO: Allow more arguments.
-  check_argument_number(args, 2);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
-  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
-  return make_smallint(get_smallint(car(args)) - get_smallint(cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  CHECKV(is_smallint(a), a, "Must be a number");
+  CHECKV(is_smallint(b), b, "Must be a number");
+  return make_smallint(get_smallint(a) - get_smallint(b));
 }
 
 oop primitive_mul(oop args) {
   // TODO: Allow more arguments.
-  check_argument_number(args, 2);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
-  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
-  return make_smallint(get_smallint(car(args)) * get_smallint(cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  CHECKV(is_smallint(a), a, "Must be a number");
+  CHECKV(is_smallint(b), b, "Must be a number");
+  return make_smallint(get_smallint(a) * get_smallint(b));
 }
 
 oop primitive_div(oop args) {
-  check_argument_number(args, 2);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
-  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
-  return make_smallint(get_smallint(car(args)) / get_smallint(cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  CHECKV(is_smallint(a), a, "Must be a number");
+  CHECKV(is_smallint(b), b, "Must be a number");
+  return make_smallint(get_smallint(a) / get_smallint(b));
 }
 
 oop primitive_mod(oop args) {
-  check_argument_number(args, 2);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
-  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
-  return make_smallint(get_smallint(car(args)) % get_smallint(cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  CHECKV(is_smallint(a), a, "Must be a number");
+  CHECKV(is_smallint(b), b, "Must be a number");
+  return make_smallint(get_smallint(a) % get_smallint(b));
 }
 
+// Helper function for predicate primitives.
 oop lisp_bool(bool b) {
   return b ? symbols._true : symbols._false;
 }
 
 oop primitive_le(oop args) {
-  check_argument_number(args, 2);
-  CHECKV(is_smallint(car(args)), car(args), "Must be a number");
-  CHECKV(is_smallint(cadr(args)), cadr(args), "Must be a number");
-  return lisp_bool(get_smallint(car(args)) <= get_smallint(cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  CHECKV(is_smallint(a), a, "Must be a number");
+  CHECKV(is_smallint(b), b, "Must be a number");
+  return lisp_bool(get_smallint(a) <= get_smallint(b));
 }
 
 oop primitive_eq(oop args) {
-  check_argument_number(args, 2);
-  return lisp_bool(value_eq(car(args), cadr(args)));
+  PARSE_TWO_ARGS(a, b);
+  return lisp_bool(value_eq(a, b));
 }
 
-oop primitive_mem_p(oop args) {
-  check_argument_number(args, 1);
-  return lisp_bool(is_mem(car(args)));
+#define UNARY_PREDICATE(name, c_tester) \
+oop name(oop args) {     \
+  PARSE_ONE_ARG(value);                 \
+  return lisp_bool(c_tester(value));    \
 }
 
-oop primitive_char_p(oop args) {
-  check_argument_number(args, 1);
-  return lisp_bool(is_char(car(args)));
-}
-
-oop primitive_number_p(oop args) {
-  check_argument_number(args, 1);
-  return lisp_bool(is_smallint(car(args)));
-}
-
-oop primitive_symbol_p(oop args) {
-  check_argument_number(args, 1);
-  return lisp_bool(is_symbol(car(args)));
-}
+UNARY_PREDICATE(primitive_mem_p, is_mem);
+UNARY_PREDICATE(primitive_char_p, is_char);
+UNARY_PREDICATE(primitive_number_p, is_smallint);
+UNARY_PREDICATE(primitive_symbol_p, is_symbol);
 
 oop primitive_list(oop args) {
   // Any argument number accepted, of course. :)
