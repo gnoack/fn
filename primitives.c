@@ -14,19 +14,19 @@ void check_argument_number(oop args, int expected) {
   CHECKV(length_int(args) == expected, args, "Argument number");
 }
 
-#define PARSE_ONE_ARG(first_arg) \
+#define PARSE_ONE_ARG(first_arg)    \
   check_argument_number(args, 1);   \
   oop first_arg = first(args);      \
 
 #define PARSE_TWO_ARGS(first_arg, second_arg) \
   check_argument_number(args, 2);   \
   oop first_arg = first(args);      \
-  oop second_arg = cadr(args);    \
+  oop second_arg = cadr(args);      \
 
 #define PARSE_THREE_ARGS(first_arg, second_arg, third_arg) \
   check_argument_number(args, 3);   \
   oop first_arg = first(args);      \
-  oop second_arg = cadr(args);    \
+  oop second_arg = cadr(args);      \
   oop third_arg = caddr(args);      \
 
 oop primitive_first(oop args) {
