@@ -1,3 +1,23 @@
 
 (
+
+;;; Prettyprinting
+
+(defn x86-label-inst? (instruction)
+  (and (cons? instruction) (eq (first instruction) '%)))
+
+(defn x86-prettyprint-instruction (instruction)
+  (cond
+    ((cons? instruction)
+     (append (if (x86-label-inst? instruction)
+		 " "
+		 "   ")
+	     (pprint instruction)
+	     (list #\Newline)))
+    (true
+     (error "Bad instruction, can't prettyprint."))))
+
+(defn x86-prettyprint (instructions)
+  (apply append (map x86-prettyprint-instruction instructions)))
+
 )

@@ -11,7 +11,10 @@
 (defgeneric pprint (item))
 
 (defmethod pprint ((cons? item))
-  (string-concat "(" (string-join (map pprint item) " ") ")"))
+  (if (and (eq 'quote (first item))
+	   (eq 2 (length item)))
+      (string-concat "'" (pprint (second item)))
+      (string-concat "(" (string-join (map pprint item) " ") ")")))
 
 ; must go after cons for now, because generics don't support method
 ; ordering yet and string? is currently a subtype of cons?.

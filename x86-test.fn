@@ -1,3 +1,16 @@
 
 (
+
+(eql
+ " (% 'foobar)
+"
+ (x86-prettyprint '((% 'foobar))))
+
+(eql
+ "   (call 'foobar)
+   (xor (@ 4 temp) val)
+"
+ (x86-prettyprint '((call 'foobar)
+		    (xor (@ 4 TEMP) VAL))))
+
 )
