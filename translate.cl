@@ -3,7 +3,7 @@
   "Replaces funny characters with an underscore."
   (map 'string
        (lambda (ch)
-	 (if (alpha-char-p ch)
+	 (if (alphanumericp ch)
 	     ch
 	     #\_))
        str))
