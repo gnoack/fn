@@ -17,8 +17,10 @@
 #include "utils.h"
 #include "value.h"
 #include "x86.h"
+#include "compiler.h"
 
 #include "arrays-test.h"
+#include "compiler-test.h"
 #include "cons-test.h"
 #include "env-test.h"
 #include "macros-test.h"
@@ -131,6 +133,7 @@ void init() {
   load_decls(pegs_parser_decls());
   load_decls(pprint_decls());
   load_decls(x86_decls());
+  load_decls(compiler_decls());
 }
 
 int main(int argc, char* argv[]) {
@@ -165,6 +168,7 @@ int main(int argc, char* argv[]) {
   objects_tests();
   arrays_tests();
   x86_tests();
+  compiler_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
