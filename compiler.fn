@@ -1,3 +1,12 @@
 
 (
+
+(defn map-letexprs (fn e)
+  (list 'let
+	(map (lambda (x) (list (first x)
+			       (fn (second x))))
+	     (second e))
+	(third e)))
+
+
 )
