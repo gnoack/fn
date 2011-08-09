@@ -3,6 +3,8 @@
 *~
 arrays-test.c
 arrays.c
+compiler-test.c
+compiler.c
 lang-test.c
 lang.c
 macros-test.c
@@ -21,3 +23,5 @@ primitives-test.c
 tests-bin
 utils-test.c
 utils.c
+x86-test.c
+x86.c

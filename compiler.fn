@@ -8,5 +8,33 @@
 	     (second e))
 	(third e)))
 
+(defn let? (e) (and (cons? e) (eq (first e) 'let)))
+(defn lambda? (e) (and (cons? e) (eq (first e) 'lambda)))
+(defn if? (e) (and (cons? e) (eq (first e) 'if)))
+(defn def? (e) (and (cons? e) (eq (first e) 'def)))
+(defn quote? (e) (and (cons? e) (eq (first e) 'quote)))
+
+(defn traverse-expr (e recurse)
+  (cond
+    ((let? e)
+     (map-letexprs recurse
+		   (list 'let (second e) (recurse (third e)))))
+    ((lambda? e)
+     (list 'lambda (second e) (recurse (third e))))
+    ((if? e)
+     (cons 'if (map recurse (rest e))))
+    ((def? e)
+     (list 'def (second e) (recurse (third e))))
+    ((quote? e)
+     (list 'quote (recurse (second quote))))
+    ((cons? e)
+     (map recurse e))
+    (true e)))
+
+;; Replace the free variable v1 in e with v2.
+(defn replace-var (e v1 v2)
+  (cond
+    ((eq e v1) v2)
+    (true (traverse-expr e (lambda (x) (replace-var x v1 v2))))))
 
 )

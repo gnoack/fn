@@ -9,4 +9,8 @@
                           (y 5))
                       (+ x y))))
 
+(eql '(+ 9 y)
+     (replace-var '(+ x y) 'x 9))
+
+;; TODO: Don't replace beyond an x-redefining let or lambda
 )
