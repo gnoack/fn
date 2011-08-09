@@ -1,6 +1,7 @@
 
 (
 
+;; TODO: Newline in strings?
 (eql
  " (% 'foobar)
 "
@@ -11,6 +12,7 @@
    (xor (@ 4 temp) val)
 "
  (x86-prettyprint '((call 'foobar)
-		    (xor (@ 4 TEMP) VAL))))
+		    (xor (@ 4 temp) val))))
+
 
 )
