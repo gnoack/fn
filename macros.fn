@@ -120,8 +120,11 @@
 ;; Wraps a method to print out its arguments.
 (defn debugging-wrap (func-symbol func)
   (lambda (&rest args)
-    (second (list (%awriteout "Called " (pprint (cons func-symbol args)))
-		  (apply func args)))))
+    (progn (%awriteout "Called " (pprint (cons func-symbol args)))
+	   (let ((result (apply func args)))
+	     (progn
+	       (%awriteout "  ==> " (pprint result))
+	       result)))))
 
 ;; Call like (drap macroexpand) for instance to log method calls.
 (defmacro dwrap (sym)

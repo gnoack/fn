@@ -14,5 +14,20 @@
  (x86-prettyprint '((call 'foobar)
 		    (xor (@ 4 temp) val))))
 
+(eql '() (list-union '() '()))
+(eql '(a b c) (list-union '(a b c) '()))
+(eql '(a b c) (list-union '(a b) '(c)))
+(eql '(a b c) (list-union '() '(a b c)))
+
+(eql '(b) (list-difference '(a b c) '(c a)))
+(eql '(a b c) (list-difference '(a b c) '(d e)))
+(eql '() (list-difference '() '(a b c)))
+(eql '(a b c) (list-difference '(a b c) '()))
+
+;; Instruction sequences
+(let ((s (make-instruction-sequence '(a b) '(trg)
+				    '((and trg a b)))))
+  (equal-instruction-sequence?
+   s (append-instruction-sequences-2 s empty-instruction-sequence)))
 
 )

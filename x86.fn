@@ -1,6 +1,61 @@
 
 (
 
+;; A sequence of instructions that keeps track of the registers whose values
+;; it needs and the registers whose values it writes.  Concatenatable.
+(defstruct instruction-sequence
+  (registers-needed registers-modified statements))
+
+(def empty-instruction-sequence
+    (make-instruction-sequence '() '() '()))
+
+(defn append-instruction-sequences-2 (seq1 seq2)
+  (make-instruction-sequence
+   (list-union (registers-needed seq1)
+	       (list-difference (registers-needed seq2) (registers-modified seq1)))
+   (list-union (registers-modified seq1)
+	       (registers-modified seq2))
+   (append (statements seq1) (statements seq2))))
+
+(defn equal-instruction-sequence? (seq1 seq2)
+  (and (eql (registers-needed seq1) (registers-needed seq2))
+       (eql (registers-modified seq1) (registers-modified seq2))
+       (eql (statements seq1) (statements seq2))))
+
+;; Print an instruction sequence for debugging.
+(defn print-is (seq)
+  (->true
+   (writeout (append "Regs needed:   " (pprint (registers-needed seq))))
+   (writeout (append "Regs modified: " (pprint (registers-modified seq))))
+   (writeout "Statements:")
+   (writeout (x86-prettyprint (statements seq)))))
+
+;; TODO: Move these generic list operations to utils.fn
+(defn member? (l item)
+  (if (empty? l)
+      false
+      (if (eq item (first l))
+	  true
+	  (member? (rest l) item))))
+
+(defn remove-item (l item)
+  (if (empty? l)
+      l
+      (if (eq item (first l))
+	  (remove-item (rest l) item)
+	  (cons (first l) (remove-item (rest l) item)))))
+
+(defn list-difference (l1 l2)
+  (reduce remove-item l2 l1))
+
+(defn add-item-if-needed (l item)
+  (if (member? l item)
+      l
+      (cons item l)))
+
+(defn list-union (l1 l2)
+  (reduce add-item-if-needed (reverse l1) l2))
+
 ;;; Prettyprinting
 
 (defn %x86-label-inst? (instruction)

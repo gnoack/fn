@@ -76,6 +76,7 @@
 
 ;; Reverse
 (eql "abc" (reverse "cba"))
+(eql '(a b c) (reverse '(c b a)))
 
 ; Alists
 (eql (list (cons 'a 1))
