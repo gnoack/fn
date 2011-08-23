@@ -8,11 +8,11 @@
 	     (second e))
 	(third e)))
 
-(defn let? (e) (and (cons? e) (eq (first e) 'let)))
-(defn lambda? (e) (and (cons? e) (eq (first e) 'lambda)))
-(defn if? (e) (and (cons? e) (eq (first e) 'if)))
-(defn def? (e) (and (cons? e) (eq (first e) 'def)))
-(defn quote? (e) (and (cons? e) (eq (first e) 'quote)))
+(def let? (smatcher 'let))
+(def lambda? (smatcher 'lambda))
+(def if? (smatcher 'if))
+(def def? (smatcher 'def))
+(def quote? (smatcher 'quote))
 
 (defn traverse-expr (e recurse)
   (cond
