@@ -142,10 +142,14 @@
 ($set @cons 0 @type)
 ($set @cons 1 cons?)
 
-(def @smallint ($make @type number?))
-(def @character ($make @type char?))
-(def @symbol ($make @type symbol?))
-(def @nil ($make @type nil?))
+(defmacro deftype (name tester)
+  (list 'def name
+	(list '$make '@type tester)))
+
+(deftype @smallint number?)
+(deftype @character char?)
+(deftype @symbol symbol?)
+(deftype @nil nil?)
 
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
