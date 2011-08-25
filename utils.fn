@@ -113,6 +113,10 @@
 (defn all? (list)
   (reduce (lambda (a b) (and a b)) list true))
 
+;; True iff the list contains true at least once.
+(defn any? (list)
+  (reduce (lambda (a b) (or a b)) list false))
+
 ;; Range
 ;; TODO: This is not an entirely well-thought implementation.
 (defn %range (size acc)

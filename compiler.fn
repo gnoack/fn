@@ -1,12 +1,18 @@
 
 (
 
-(defn map-letexprs (fn e)
+(defn map-letdefinitions (fn e)
   (list 'let
 	(map (lambda (x) (list (first x)
 			       (fn (second x))))
 	     (second e))
 	(third e)))
+
+(defn map-letbody (fn e)
+  (list 'let (second e) (fn (third e))))
+
+(defn map-letexprs (fn e)
+  (map-letdefinitions fn (map-letbody fn e)))
 
 (def let? (smatcher 'let))
 (def lambda? (smatcher 'lambda))
@@ -17,8 +23,7 @@
 (defn traverse-expr (e recurse)
   (cond
     ((let? e)
-     (map-letexprs recurse
-		   (list 'let (second e) (recurse (third e)))))
+     (map-letexprs recurse e))
     ((lambda? e)
      (list 'lambda (second e) (recurse (third e))))
     ((if? e)
@@ -31,10 +36,20 @@
      (map recurse e))
     (true e)))
 
+(defn defines-var? (letexpr var)
+  (any? (map (lambda (definition-clause)
+	       (eq var (first definition-clause)))
+	     (second letexpr))))
+
 ;; Replace the free variable v1 in e with v2.
 (defn replace-var (e v1 v2)
-  (cond
-    ((eq e v1) v2)
-    (true (traverse-expr e (lambda (x) (replace-var x v1 v2))))))
+  (let ((recurse (lambda (x) (replace-var x v1 v2))))
+    (cond
+      ((eq e v1) v2)
+      ((let? e)
+       (if (defines-var? e v1)
+           (map-letdefinitions recurse e)
+           (map-letexprs recurse e)))
+      (true (traverse-expr e recurse)))))
 
 )
