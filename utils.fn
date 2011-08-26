@@ -8,6 +8,9 @@
 (defn third (list)
   (first (rest (rest list))))
 
+(defn fourth (list)
+  (first (rest (rest (rest list)))))
+
 ;; Appending
 
 (defn append (a &rest as)

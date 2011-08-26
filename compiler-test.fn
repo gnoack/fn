@@ -53,4 +53,20 @@
        pop
        call 2)     ; 2 arguments
      (compile '(x 42 99) %xyz-env))
+
+(->true (def global-label-counter 1000))
+(eql '(load-var 1
+       push
+       pop
+       jump-if-true true-branch-1001
+       ; False branch
+       load-value 0
+       push
+       jump after-if-1002
+       ; True branch
+       label true-branch-1001
+       load-value 10
+       push
+       label after-if-1002)
+     (compile '(if x 10 0) %xyz-env))
 )
