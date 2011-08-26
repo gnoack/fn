@@ -8,10 +8,10 @@
 /* This is an intentionally simple implementation of string
    interning. */
 
-// 4 kb of interned strings should be enough for now.
+// TODO: Unlimited space for interned strings.
 char* interned_strings = NULL;
 
-#define INTERNED_DB_SIZE (4 * 1024)
+#define INTERNED_DB_SIZE (8 * 1024)
 
 bool matches(const char* a, const char* b) {
   return TO_BOOL(strcmp(a, b) == 0);

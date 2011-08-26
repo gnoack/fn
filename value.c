@@ -126,7 +126,12 @@ void print_value_internal(oop v) {
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     printf("#[a ");
-    print_value_internal(mem_get(v, 0));
+    oop next = mem_get(v, 0);
+    if (value_eq(v, next)) {
+      printf("recursively defined");
+    } else {
+      print_value_internal(next);
+    }
     printf(" object]");
   }
 }

@@ -52,4 +52,44 @@
            (map-letexprs recurse e)))
       (true (traverse-expr e recurse)))))
 
+(defn dispatch-clause->cond-clause (clause)
+  (list (list 'eq (first clause) 'selector)
+	(list 'lambda (second clause) (third clause))))
+
+(defmacro dispatcher (&rest defs)
+  (list 'lambda (list 'selector '&rest 'args)
+	(list 'apply
+	      (cons 'cond (map dispatch-clause->cond-clause defs))
+	      'args)))
+
+;; Static variable environment
+(def empty-env
+  (dispatcher
+   ('prettyprint () "[]")
+   ('immediate-size () 0)
+   ('immediate-position (var) (error var " undefined in env"))
+   ('defines-immediately? (x) false)))
+
+(defn env-with-var (env var)
+  (dispatcher
+   ('prettyprint ()
+       (append (symbol->string var) "::" (env 'prettyprint)))
+   ('immediate-size () (+ 1 (env 'immediate-size)))
+   ('immediate-position (x)
+       (if (eq var x)
+	   0
+	   (+ 1 (env 'immediate-position x))))
+   ('defines-immediately? (x)
+       (or (eq var x)
+           (env 'defines-immediately? x)))))
+
+(defn env-with-vars (env &rest vars)
+  (reduce env-with-var vars env))
+
+(defn env-generate-read (env var)
+  (if (env 'defines-immediately? var)
+      (list 'load-arg (- (env 'immediate-size)
+                         (env 'immediate-position var)))
+      (error var "not defined immediately")))
+
 )
