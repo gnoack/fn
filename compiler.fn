@@ -88,8 +88,25 @@
 
 (defn env-generate-read (env var)
   (if (env 'defines-immediately? var)
-      (list 'load-arg (- (env 'immediate-size)
+      (list 'load-var (- (env 'immediate-size)
                          (env 'immediate-position var)))
-      (error var "not defined immediately")))
+      (error var " not defined immediately")))
+
+(defn compile (expr environment)
+  (cond
+    ((symbol? expr)
+     (append (env-generate-read environment expr)
+	     (list 'push)))
+    ((list? expr)
+     (append (apply append
+    		    (map (lambda (e)
+    			   (compile e environment))
+    			 (reverse expr)))
+    	     (list 'pop
+    		   'call (- (length expr) 1))))
+    ((number? expr)
+      (list 'load-value expr
+	    'push))))
+
 
 )

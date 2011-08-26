@@ -185,6 +185,12 @@ oop primitive_write_out(oop args) {
   return car(args);
 }
 
+oop primitive_kill_lisp(oop args) {
+  PARSE_ONE_ARG(exit_status);
+  CHECKNUMBER(exit_status);
+  exit(get_smallint(exit_status));
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -209,4 +215,5 @@ void init_primitives() {
   register_globally_fn("list", primitive_list);
   register_globally_fn("apply", primitive_apply);
   register_globally_fn("writeout", primitive_write_out);
+  register_globally_fn("kill-lisp", primitive_kill_lisp);
 }

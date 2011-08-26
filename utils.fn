@@ -144,4 +144,9 @@
       (and (cons? potential-list)
            (list? (rest potential-list)))))
 
+(defn error (&rest args)
+  (progn
+    (apply awriteout
+	   (cons "*ERROR*: " (map pprint args)))
+    (kill-lisp 1)))
 )
