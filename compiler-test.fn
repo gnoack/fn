@@ -77,4 +77,15 @@
        load-var 1
        push)
      (compile '(let ((x 42)) x) %e))
+
+;; variables shadow existing variables with same name,
+;; but the outer variables are still visible in the let clauses.
+(eql '(load-var 1
+       push
+       pop
+       save-var 4
+       load-var 4
+       push)
+     (compile '(let ((x x)) x) %xyz-env))
+
 )
