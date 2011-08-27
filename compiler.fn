@@ -94,6 +94,12 @@
                          (env 'immediate-position var)))
       (error var " not defined immediately")))
 
+(defn env-generate-write (env var)
+  (if (env 'defines-immediately? var)
+      (list 'save-var (- (env 'immediate-size)
+			 (env 'immediate-position var)))
+      (error var " not defined immediately")))
+
 ;; Increased for each call to gensym.
 (def global-label-counter 100)
 (defn gensym (prefix)
@@ -119,6 +125,18 @@
 		     'label true-branch-label)
 	       (compile (third expr) environment)   ; True-branch
 	       (list 'label after-if-label))))
+    ((let? expr)
+     (let ((environment2
+	    (apply env-with-vars
+		   (cons environment (map first (second expr))))))
+       (append (apply append
+		      (map (lambda (let-clause)
+			     (append (compile (second let-clause) environment)
+				     (list 'pop)
+				     (env-generate-write environment2
+							 (first let-clause))))
+			   (second expr)))
+	       (compile (third expr) environment2))))
     ((list? expr)
      (append (apply append
     		    (map (lambda (e)

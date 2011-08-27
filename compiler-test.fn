@@ -69,4 +69,12 @@
        push
        label after-if-1002)
      (compile '(if x 10 0) %xyz-env))
+
+(eql '(load-value 42
+       push
+       pop
+       save-var 1
+       load-var 1
+       push)
+     (compile '(let ((x 42)) x) %e))
 )
