@@ -16,10 +16,6 @@
 (eql '(+ 42 (let ((x 34)) x))
      (replace-var '(+ x (let ((x 34)) x)) 'x 42))
 
-; Dispatcher
-;; ((dispatcher
-;;   ('foo () true)) 'foo)
-
 ;; Variable environments
 (->true
  (def %e empty-env)
