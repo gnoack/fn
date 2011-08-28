@@ -162,4 +162,34 @@
 	((nil? x) @nil)
 	((mem? x) ($get x 0))))
 
+
+
+;;;; *****************************************
+;;;; Simple OO using symbol-based dispatching.
+;;;; *****************************************
+
+(defn dispatch-clause->cond-clause (clause)
+  (list (list 'eq (first clause) 'selector)
+	(list 'lambda (second clause) (third clause))))
+
+;; Constructs an object with identity and able to receive messages.
+(defmacro dispatcher (name &rest defs)
+  ;; `(labels ((,name (lambda (selector &rest args)
+  ;;                    (apply (cond ,(map dispatch-clause->cond-clause defs))
+  ;;                           args))))
+  ;;    ,name)
+  (list 'labels
+	(list (list name
+		    (list 'lambda (list 'selector '&rest 'args)
+			  (list 'apply
+				(cons 'cond (map dispatch-clause->cond-clause defs))
+				'args))))
+	name))
+
+;; Like apply, but for sending messages.
+(defn send (receiver message arguments)
+  (apply receiver (cons message arguments)))
+
+
+
 )
