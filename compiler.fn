@@ -110,23 +110,19 @@
 			    "-"
 			    (int->string global-label-counter 10)))))
 
-(defn compile (expr environment)
-  (cond
-    ((symbol? expr)
-     (append (env-generate-read environment expr)
-	     (list 'push)))
-    ((if? expr)
-     (let ((true-branch-label (gensym "true-branch"))
-	   (after-if-label (gensym "after-if")))
-       (append (compile (second expr) environment)  ; Condition
-	       (list 'pop
-		     'jump-if-true true-branch-label)
-	       (compile (fourth expr) environment)  ; False-branch
-	       (list 'jump after-if-label
-		     'label true-branch-label)
-	       (compile (third expr) environment)   ; True-branch
-	       (list 'label after-if-label))))
-    ((let? expr)
+(defn compile-if (expr environment)
+  (let ((true-branch-label (gensym "true-branch"))
+	(after-if-label (gensym "after-if")))
+    (append (compile (second expr) environment)  ; Condition
+	    (list 'pop
+		  'jump-if-true true-branch-label)
+	    (compile (fourth expr) environment)  ; False-branch
+	    (list 'jump after-if-label
+		  'label true-branch-label)
+	    (compile (third expr) environment)   ; True-branch
+	    (list 'label after-if-label))))
+
+(defn compile-let (expr environment)
      (let ((environment2
 	    (send environment 'with-vars (map first (second expr)))))
        (append (apply append
@@ -137,16 +133,29 @@
 							 (first let-clause))))
 			   (second expr)))
 	       (compile (third expr) environment2))))
-    ((list? expr)
-     (append (apply append
-    		    (map (lambda (e)
-    			   (compile e environment))
-    			 (reverse expr)))
-    	     (list 'pop
-    		   'call (- (length expr) 1))))
-    ((number? expr)
-      (list 'load-value expr
-	    'push))))
 
+(defn compile-application (expr environment)
+  (append (apply append
+		 (map (lambda (e)
+			(compile e environment))
+		      (reverse expr)))
+	  (list 'pop
+		'call (- (length expr) 1))))
+
+(defn compile-variable-read (expr environment)
+  (append (env-generate-read environment expr)
+	  (list 'push)))
+
+(defn compile-number-literal (expr environment)
+  (list 'load-value expr
+	'push))
+
+(defn compile (expr environment)
+  (cond
+    ((symbol? expr)  (compile-variable-read expr environment))
+    ((if? expr)      (compile-if expr environment))
+    ((let? expr)     (compile-let expr environment))
+    ((list? expr)    (compile-application expr environment))
+    ((number? expr)  (compile-number-literal expr environment))))
 
 )
