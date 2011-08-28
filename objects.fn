@@ -1,48 +1,5 @@
 (
 
-(defn %accessor-defn (fieldname index tester)
-  (list 'defn fieldname (list 'obj)
-	(list 'if (list tester 'obj)
-	      (list '$get 'obj index)
-	      (list 'error))))
-
-;; TODO: Use regular @-prefixed type as type tag!
-(defn %define-struct (name fields)
-  (let ((namestr (symbol->string name)))
-    ;; `(->true
-    ;;    (defn
-    ;;      ,(string->symbol (append "make-" namestr))
-    ;;      ,fields
-    ;;      ($make (quote ,name) ,@fields))
-    ;;    (defn
-    ;;      ,(string->symbol (append namestr "?"))
-    ;;      (obj)
-    ;;      (eq (quote ,name) ($get obj 0)))
-    ;;    (->true ,@(map2 (lambda (fieldname index)
-    ;;                       (%accessor-defn fieldname (+1 index)
-    ;;                       (string->symbol (append namestr "?")))
-    ;;                    fields (range (length fields)))))
-    (list '->true
-	  (list 'defn
-		(string->symbol (append "make-" namestr))
-		fields
-		(cons '$make (cons (list 'quote name) fields)))
-	  (list 'defn
-		(string->symbol (append namestr "?"))
-		(list 'obj)
-		(list 'eq (list 'quote name) (list '$get 'obj 0)))
-	  (cons '->true
-		(map2 (lambda (fieldname index)
-			(%accessor-defn
-			 fieldname (+ 1 index)
-			 (string->symbol (append namestr "?"))))
-			fields (range (length fields))))
-	  )))
-
-(defmacro defstruct (name fields)
-  (%define-struct name fields))
-
-
 ;;;; ********************************
 ;;;; Types
 ;;;; ********************************

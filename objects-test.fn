@@ -1,19 +1,5 @@
 (
 
-;; Structs
-(->true
- (defstruct book (title author))
- (def example-book
-     (make-book "Hackers and Painters" "Paul Graham")))
-
-(book? example-book)
-(not (book? (cons 1 2)))
-(not (cons? example-book))
-
-(eql "Hackers and Painters" (title example-book))
-(eql "Paul Graham" (author example-book))
-
-
 ;; Types
 ;; Anything has a type, even types have a type, namely @type.
 (eq @type (type-of @type))
