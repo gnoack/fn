@@ -42,90 +42,10 @@
 (defmacro defstruct (name fields)
   (%define-struct name fields))
 
-;;; GENERICS
 
-(defn %generic-spec-name (function-name)
-  (string->symbol
-   (append "*" (symbol->string function-name) "-generic-spec*")))
-
-(defstruct generic-spec
-  (%generic-function-name %generic-argnum %generic-methodlist))
-
-(defstruct method-spec
-  (%method-required-types %method-procedure))
-
-;; TODO: Types need to be predicates for this.
-(defn %types-match? (types args)
-  (all? (map2 (lambda (type? arg)
-		(type? arg))
-	      types args)))
-
-(defn %generic-apply-inner (methods args)
-  (if (cons? methods)
-      (if (%types-match? (%method-required-types (first methods)) args)
-	  (apply (%method-procedure (first methods)) args)
-	  (%generic-apply-inner (rest methods) args))
-      (error "No method implementation matching " args)))
-
-(defn %generic-apply (generic-spec &rest args)
-  (if (eq (%generic-argnum generic-spec) (length args))
-      (%generic-apply-inner (%generic-methodlist generic-spec) args)
-      (error "Argument list " args
-	     " has bad length for generic function "
-	     (%generic-function-name generic-spec))))
-
-(defn %register-method (old-spec type-specs proc)
-  ;; TODO: Methods should be placed in-order.
-  (make-generic-spec
-   (%generic-function-name old-spec)
-   (%generic-argnum old-spec)
-   (cons (make-method-spec type-specs proc)
-	 (%generic-methodlist old-spec))))
-
-(defn %method-arg-with-explicit-type? (arg)
-  (and (cons? arg) (cons? (rest arg))))
-
-(defn %extract-type-spec (arg)
-  (cond ((symbol? arg) ->true)
-	((%method-arg-with-explicit-type? arg) (first arg))
-	(true (error "Unknown type spec in " arg))))
-
-(defn %extract-type-specs (method-args)
-  (map %extract-type-spec method-args))
-
-(defn %extract-lambda-list-item (arg)
-  (cond ((symbol? arg) arg)
-	((%method-arg-with-explicit-type? arg) (first (rest arg)))
-	(true (error "Unknown type spec in " arg))))
-
-(defn %extract-lambda-list (method-args)
-  (map %extract-lambda-list-item method-args))
-
-(defmacro defgeneric (function-name args)
-  (list '->true
-	(list 'def (%generic-spec-name function-name)
-	      (list 'make-generic-spec
-		    (list 'quote function-name)
-		    (length args)  ; TODO: Varargs?
-		    (list 'list)))
-	(list 'defn function-name args
-	      (cons '%generic-apply
-		    (cons (%generic-spec-name function-name)
-			  args)))))
-
-(defmacro defmethod (function-name method-args body)
-  (let ((type-specs (%extract-type-specs method-args))
-	(lambda-list (%extract-lambda-list method-args))
-	(generic-spec-name (%generic-spec-name function-name)))
-    ;; `(%register-method ,generic-spec ,type-specs
-    ;;                    (lambda ,lambda-list ,body))
-    (list 'def generic-spec-name
-	  (list '%register-method
-		generic-spec-name
-		(cons 'list type-specs)
-		(list 'lambda lambda-list body)))))
-
-;; Types
+;;;; ********************************
+;;;; Types
+;;;; ********************************
 
 ;; The type type links to itself: @type = ($make @type type?)
 (def @type ($make 'foo 'bar))

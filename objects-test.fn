@@ -13,19 +13,6 @@
 (eql "Hackers and Painters" (title example-book))
 (eql "Paul Graham" (author example-book))
 
-(eq '*foobar-generic-spec*
-    (%generic-spec-name 'foobar))
-
-;; Generic methods
-(->true
- (defgeneric my-nickname (item))
- (defmethod my-nickname ((cons? item))
-   'consomatic)
- (defmethod my-nickname ((book? item))
-   'bookomatics))
-
-(eq 'consomatic (my-nickname (cons 1 2)))
-(eq 'bookomatics (my-nickname example-book))
 
 ;; Types
 ;; Anything has a type, even types have a type, namely @type.
