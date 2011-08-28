@@ -93,6 +93,16 @@ oop eval_quote(oop program, oop env) {
   return cadr(program);  // Quote.
 }
 
+/* Primitive $set!, modifies an existing variable in the environment. */
+oop eval_set(oop program, oop env) {
+  CHECKV(length_int(program) == 3, program, "$set! needs two arguments.");
+  oop symbol = cadr(program);
+  CHECKV(env_haskey(env, symbol), symbol, "Symbol not present in environment.");
+  oop new_value = eval(caddr(program), env);
+  env_put(env, symbol, new_value);
+  return new_value;
+}
+
 extern
 oop eval_global(oop program) {
   if (env_haskey(global_env, symbols._macroexpand)) {
@@ -127,7 +137,9 @@ oop eval(oop program, oop env) {
   }
   CHECKV(is_cons(program), program, "What is this? I can't evaluate it!");
   oop command = car(program);
-  if (value_eq(command, symbols._if)) return eval_if(program, env);
+  if (value_eq(command, symbols._if)) {
+    return eval_if(program, env);
+  }
   if (value_eq(command, symbols._lambda)) {
     return eval_lambda(program, env);
   }
@@ -139,6 +151,9 @@ oop eval(oop program, oop env) {
   }
   if (value_eq(command, symbols._quote)) {
     return eval_quote(program, env);
+  }
+  if (value_eq(command, symbols._set)) {
+    return eval_set(program, env);
   }
   // Otherwise, it must be a function application.
   return apply(map_eval(program, env));

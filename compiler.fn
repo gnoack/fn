@@ -59,6 +59,9 @@
 ;; TODO: The dispatcher has no self reference and can't
 ;;   dispatch on himself.
 (defmacro dispatcher (&rest defs)
+  ;; `(lambda (selector &rest args)
+  ;;    (apply (cond ,(map dispatch-clause->cond-clause defs))
+  ;;           args))
   (list 'lambda (list 'selector '&rest 'args)
 	(list 'apply
 	      (cons 'cond (map dispatch-clause->cond-clause defs))

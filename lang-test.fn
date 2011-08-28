@@ -29,6 +29,12 @@
 ;; simple let
 (eq 3 (let ((x 3)) x))
 
+;; let with setting inside
+(eq 4 (let ((x 3))
+	(progn
+	  ($set! x 4)
+	  x)))
+
 ;; Quote
 (eq 3 '3)
 (eq #\a '#\a)

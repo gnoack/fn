@@ -13,6 +13,7 @@ typedef struct {
   oop _macroexpand;
   oop _native_procedure_marker;
   oop _lisp_procedure_marker;
+  oop _set;
   oop _cons;
 } symbols_t;
 

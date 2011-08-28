@@ -19,6 +19,7 @@ void init_symbols() {
   symbols._macroexpand = make_symbol("macroexpand");
   symbols._native_procedure_marker = make_symbol("native");
   symbols._lisp_procedure_marker = make_symbol("procedure");
+  symbols._set = make_symbol("$set!");
   // TODO: This is not actually a symbol, but a type.
   // The @cons type is finished when types are initialized.
   symbols._cons = mem_alloc(2);
