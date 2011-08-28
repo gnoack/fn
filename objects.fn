@@ -11,8 +11,6 @@
 ($set @type 0 @type)
 ($set @type 1 type?)
 
-(def @mem ($make @type mem?))
-
 ; @cons must be created early for consing,
 ; so we need some retroactive patching.
 ;(def @cons ($make @type cons?))
@@ -23,6 +21,7 @@
   (list 'def name
 	(list '$make '@type tester)))
 
+(deftype @mem mem?)
 (deftype @smallint number?)
 (deftype @character char?)
 (deftype @symbol symbol?)
@@ -46,6 +45,8 @@
 ;;;; *****************************************
 
 (defn dispatch-clause->cond-clause (clause)
+  ;; `((eq ,(first clause) selector)
+  ;;   (lambda ,(second clause) ,(third clause))))
   (list (list 'eq (first clause) 'selector)
 	(list 'lambda (second clause) (third clause))))
 
