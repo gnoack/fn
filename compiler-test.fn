@@ -32,9 +32,9 @@
 ; x shadows the old x.
 (eq 5 ((%xyz-env 'with-vars 'a 'x) 'immediate-size))
 
-(eql '(load-var 1) (env-generate-read %xyz-env 'x))
-(eql '(load-var 2) (env-generate-read %xyz-env 'y))
-(eql '(load-var 3) (env-generate-read %xyz-env 'z))
+(eql '(load-var 1) (%xyz-env 'generate-read 'x))
+(eql '(load-var 2) (%xyz-env 'generate-read 'y))
+(eql '(load-var 3) (%xyz-env 'generate-read 'z))
 
 (eql '(load-value 123
        push)

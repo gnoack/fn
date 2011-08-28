@@ -76,28 +76,33 @@
 
 ;; Static variable environment
 (def empty-env
-  (dispatcher
-   self
-   ('prettyprint () "[]")
-   ('with-vars (&rest vars) (env-with-vars self vars))
-   ('immediate-size () 0)
+  (dispatcher self
+   ('prettyprint ()           "[]")
+   ('with-vars (&rest vars)   (env-with-vars self vars))
+   ('immediate-size ()        0)
    ('immediate-position (var) (error var " undefined in env"))
-   ('defines-immediately? (x) false)))
+   ('defines-immediately? (x) false)
+   ('generate-read (x)        (env-generate-read self x))
+   ('generate-write (x)       (env-generate-write self x))))
 
 (defn env-with-var (env var)
-  (dispatcher
-   self
+  (dispatcher self
    ('prettyprint ()
        (append (symbol->string var) "::" (env 'prettyprint)))
-   ('with-vars (&rest vars) (env-with-vars self vars))
-   ('immediate-size () (+ 1 (env 'immediate-size)))
+   ('defines-immediately? (x)
+       (or (eq var x)
+           (env 'defines-immediately? x)))
+   ;; Size and position
    ('immediate-position (x)
        (if (eq var x)
 	   0
 	   (+ 1 (env 'immediate-position x))))
-   ('defines-immediately? (x)
-       (or (eq var x)
-           (env 'defines-immediately? x)))))
+   ('immediate-size ()       (+ 1 (env 'immediate-size)))
+   ;; Construction
+   ('with-vars (&rest vars)  (env-with-vars self vars))
+   ;; Code generation
+   ('generate-read (x)       (env-generate-read self x))
+   ('generate-write (x)      (env-generate-write self x))))
 
 (defn env-with-vars (env vars)
   (reduce env-with-var vars env))
