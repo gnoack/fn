@@ -11,31 +11,31 @@
   (let ((namestr (symbol->string name)))
     ;; `(->true
     ;;    (defn
-    ;;      ,(string->symbol (string-concat "make-" namestr))
+    ;;      ,(string->symbol (append "make-" namestr))
     ;;      ,fields
     ;;      ($make (quote ,name) ,@fields))
     ;;    (defn
-    ;;      ,(string->symbol (string-concat namestr "?"))
+    ;;      ,(string->symbol (append namestr "?"))
     ;;      (obj)
     ;;      (eq (quote ,name) ($get obj 0)))
     ;;    (->true ,@(map2 (lambda (fieldname index)
     ;;                       (%accessor-defn fieldname (+1 index)
-    ;;                       (string->symbol (string-concat namestr "?")))
+    ;;                       (string->symbol (append namestr "?")))
     ;;                    fields (range (length fields)))))
     (list '->true
 	  (list 'defn
-		(string->symbol (string-concat "make-" namestr))
+		(string->symbol (append "make-" namestr))
 		fields
 		(cons '$make (cons (list 'quote name) fields)))
 	  (list 'defn
-		(string->symbol (string-concat namestr "?"))
+		(string->symbol (append namestr "?"))
 		(list 'obj)
 		(list 'eq (list 'quote name) (list '$get 'obj 0)))
 	  (cons '->true
 		(map2 (lambda (fieldname index)
 			(%accessor-defn
 			 fieldname (+ 1 index)
-			 (string->symbol (string-concat namestr "?"))))
+			 (string->symbol (append namestr "?"))))
 			fields (range (length fields))))
 	  )))
 
@@ -46,7 +46,7 @@
 
 (defn %generic-spec-name (function-name)
   (string->symbol
-   (string-concat "*" (symbol->string function-name) "-generic-spec*")))
+   (append "*" (symbol->string function-name) "-generic-spec*")))
 
 (defstruct generic-spec
   (%generic-function-name %generic-argnum %generic-methodlist))

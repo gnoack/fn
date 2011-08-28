@@ -13,7 +13,11 @@
 
 ;; Appending
 
-(defn append (a &rest as)
+(defn append (&rest as)
+  (if (nil? as) as
+      (apply append-inner as)))
+
+(defn append-inner (a &rest as)
   (if (nil? as) a
       (if (nil? a)
 	  (apply append as)
@@ -97,16 +101,6 @@
 	       (reduce-right combine
 			     (rest seq)
 			     end))))
-
-;; String concatenation
-(defn string-concat-binary (str1 str2)
-  (if (nil? str1)
-      str2
-      (cons (first str1) (string-concat-binary (rest str1) str2))))
-
-; TODO: Reuse this for list concatenation as well.
-(defn string-concat (&rest strings)
-  (reduce-right string-concat-binary strings '()))
 
 ;; Always return true (false).
 (defn ->true (&rest args) true)

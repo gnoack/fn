@@ -12,6 +12,8 @@
 (eql (list 'a 'b)
      (append (list 'a 'b) '()))
 
+(eql '() (append))
+
 ; Integer parsing.
 (eq 123 (string->int "123"))
 
@@ -51,10 +53,6 @@
 
 (eql (list 'a 'b 'c)
      (reduce-right cons (list 'a 'b 'c) nil))
-
-;; String concat
-(eql "foobarbaz" (string-concat "foo" "bar" "baz"))
-(eql '() (string-concat))
 
 ;; All-predicate
 (all? (list true true true))

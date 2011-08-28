@@ -8,38 +8,27 @@
   (cond ((eq ch #\") "\\\"")
 	(true (list ch))))
 
-(defgeneric pprint (item))
-
-(defmethod pprint ((cons? item))
-  (if (and (eq 'quote (first item))
-	   (eq 2 (length item)))
-      (string-concat "'" (pprint (second item)))
-      (string-concat "(" (string-join (map pprint item) " ") ")")))
-
-; must go after cons for now, because generics don't support method
-; ordering yet and string? is currently a subtype of cons?.
-(defmethod pprint ((string? str))
-  (string-concat "\"" (apply string-concat (map char-escape str)) "\""))
-
-(defmethod pprint ((char? ch))
-  (string-concat "\\" (char-escape ch)))
-
-(defmethod pprint ((number? num))
-  (int->string num 10))
-
-(defmethod pprint ((nil? x))
-  "nil")
-
-(defmethod pprint ((symbol? sym))
-  (symbol->string sym))
+(defn pprint (item)
+  (cond ((string? item) (append "\""
+				(apply append (map char-escape item))
+				"\""))
+        ((cons? item)   (if (and (eq 'quote (first item))
+				 (eq 2 (length item)))
+			    (append "'" (pprint (second item)))
+			    (append "(" (string-join (map pprint item) " ") ")")))
+	((char? item)   (append "\\" (char-escape item)))
+	((number? item) (int->string item 10))
+	((nil? item)    "nil")
+	((symbol? item) (symbol->string item))
+	(true           (error "Don't know how to print this."))))
 
 ; String functions...
 
 (defn string-join (strings delimiter)
   (if (cons? strings)
-      (apply string-concat
+      (apply append
 	     (cons (first strings)
-		   (map (lambda (s) (string-concat delimiter s))
+		   (map (lambda (s) (append delimiter s))
 			(rest strings))))
       '()))
 
