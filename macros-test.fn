@@ -55,4 +55,26 @@
 (eql
  '(append (list 'foo) (list 1 2 3) (list 'bar))
  (macroexpand '(backquote (foo (unquote-list (list 1 2 3)) bar))))
+
+;; Labels (letrec)
+(eql
+ '(let ((odd? '*undefined*)
+	(even? '*undefined*))
+   (progn
+     ($set! odd?  (lambda (x) (if (eq 0 x) false
+				  (even? (- x 1)))))
+     ($set! even? (lambda (x) (if (eq 0 x) true
+				  (odd? (- x 1)))))
+     (odd? 7)))
+ (macroexpand '(labels ((odd?  (lambda (x) (if (eq 0 x) false
+					       (even? (- x 1)))))
+			(even? (lambda (x) (if (eq 0 x) true
+					       (odd? (- x 1))))))
+		(odd? 7))))
+
+(labels ((odd?  (lambda (x) (if (eq 0 x) false
+				(even? (- x 1)))))
+	 (even? (lambda (x) (if (eq 0 x) true
+				(odd? (- x 1))))))
+  (odd? 7))
 )

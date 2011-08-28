@@ -130,4 +130,24 @@
 (defmacro dwrap (sym)
   (list 'def sym (list 'debugging-wrap (list 'quote sym) sym)))
 
+;; Like let, but variable values are evaluated in an environment where
+;; the newly defined variables already exist.  This allows for mutual
+;; recursion between functions.  See SICP, page 390.
+(defmacro labels (bindings body)
+  ;; `(let ,(map (lambda (binding) `(,(first binding) '*undefined*))
+  ;; 	         bindings)
+  ;;    (progn
+  ;;      ,@(map (lambda (binding)
+  ;; 		   `($set! (first binding) (second binding)))
+  ;;             bindings)
+  ;;      ,body))
+  (list 'let (map (lambda (binding)
+		    (list (first binding) ''*undefined*))
+		  bindings)
+	(append (list 'progn)
+		(map (lambda (binding)
+		       (list '$set! (first binding) (second binding)))
+		     bindings)
+		(list body))))
+
 )
