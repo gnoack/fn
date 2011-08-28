@@ -38,21 +38,22 @@
   (and (mem? value)
        (eq %array-marker ($get value 0))))
 
-;; Generic getting of items from collection objects by key.
-;; An array is very much the same as a map where the keys are
-;; integers.
-(defgeneric get (object key))
+(defmacro with-asserts (asserts body)
+  (reduce (lambda (a b)
+	    (list 'if a b
+		  (list 'error '"Assertion failed: "
+			a)))
+	  asserts
+	  body))
 
 ;; TODO: Bounds checking
-(defmethod get ((array? array) (number? n))
-  ($get array (+ 2 n)))
+(defn get (array n)
+  (with-asserts ((array? array))
+    ($get array (+ 2 n))))
 
-(defgeneric set (object key value))
-
-(defmethod set ((array? array) (number? n) (->true value))
-  (if (< n (array-capacity array))
-      ($set array (+ 2 n) value)
-      (error "Index " n " out of bounds for array of size "
-	     (array-capacity array))))
+(defn set (array n value)
+  (with-asserts ((array? array)
+		 (< n (array-capacity array)))
+    ($set array (+ 2 n) value)))
 
 )
