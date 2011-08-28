@@ -19,7 +19,7 @@
     ;;      (obj)
     ;;      (eq (quote ,name) ($get obj 0)))
     ;;    (->true ,@(map2 (lambda (fieldname index)
-    ;;                       (&accessor-defn fieldname (+1 index)
+    ;;                       (%accessor-defn fieldname (+1 index)
     ;;                       (string->symbol (string-concat namestr "?")))
     ;;                    fields (range (length fields)))))
     (list '->true
