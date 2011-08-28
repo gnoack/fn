@@ -52,6 +52,11 @@
            (map-letexprs recurse e)))
       (true (traverse-expr e recurse)))))
 
+
+;;;; *****************************************
+;;;; Simple OO using symbol-based dispatching.
+;;;; *****************************************
+
 (defn dispatch-clause->cond-clause (clause)
   (list (list 'eq (first clause) 'selector)
 	(list 'lambda (second clause) (third clause))))
@@ -73,6 +78,8 @@
 ;; Like apply, but for sending messages.
 (defn send (receiver message arguments)
   (apply receiver (cons message arguments)))
+
+
 
 ;; Static variable environment
 (def empty-env
