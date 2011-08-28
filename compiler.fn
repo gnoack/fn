@@ -56,20 +56,24 @@
   (list (list 'eq (first clause) 'selector)
 	(list 'lambda (second clause) (third clause))))
 
-;; TODO: The dispatcher has no self reference and can't
-;;   dispatch on himself.
-(defmacro dispatcher (&rest defs)
-  ;; `(lambda (selector &rest args)
-  ;;    (apply (cond ,(map dispatch-clause->cond-clause defs))
-  ;;           args))
-  (list 'lambda (list 'selector '&rest 'args)
-	(list 'apply
-	      (cons 'cond (map dispatch-clause->cond-clause defs))
-	      'args)))
+;; Constructs an object with identity and able to receive messages.
+(defmacro dispatcher (name &rest defs)
+  ;; `(labels ((,name (lambda (selector &rest args)
+  ;;                    (apply (cond ,(map dispatch-clause->cond-clause defs))
+  ;;                           args))))
+  ;;    ,name)
+  (list 'labels
+	(list (list name
+		    (list 'lambda (list 'selector '&rest 'args)
+			  (list 'apply
+				(cons 'cond (map dispatch-clause->cond-clause defs))
+				'args))))
+	name))
 
 ;; Static variable environment
 (def empty-env
   (dispatcher
+   self
    ('prettyprint () "[]")
    ('immediate-size () 0)
    ('immediate-position (var) (error var " undefined in env"))
@@ -77,6 +81,7 @@
 
 (defn env-with-var (env var)
   (dispatcher
+   self
    ('prettyprint ()
        (append (symbol->string var) "::" (env 'prettyprint)))
    ('immediate-size () (+ 1 (env 'immediate-size)))
