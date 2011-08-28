@@ -67,6 +67,4 @@
 (defn send (receiver message arguments)
   (apply receiver (cons message arguments)))
 
-
-
 )
