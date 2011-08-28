@@ -101,7 +101,7 @@
 			 (env 'immediate-position var)))
       (error var " not defined immediately")))
 
-;; Increased for each call to gensym.
+;; Gensym for generating unused symbols.
 (def global-label-counter 100)
 (defn gensym (prefix)
   (progn
@@ -109,6 +109,8 @@
     (string->symbol (append prefix
 			    "-"
 			    (int->string global-label-counter 10)))))
+
+;;; Compilation
 
 (defn compile-if (expr environment)
   (let ((true-branch-label (gensym "true-branch"))
