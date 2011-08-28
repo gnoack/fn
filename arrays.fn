@@ -38,14 +38,6 @@
   (and (mem? value)
        (eq %array-marker ($get value 0))))
 
-(defmacro with-asserts (asserts body)
-  (reduce (lambda (a b)
-	    (list 'if a b
-		  (list 'error '"Assertion failed: "
-			a)))
-	  asserts
-	  body))
-
 ;; TODO: Bounds checking
 (defn get (array n)
   (with-asserts ((array? array))

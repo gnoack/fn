@@ -150,4 +150,13 @@
 		     bindings)
 		(list body))))
 
+;; Example: (with-asserts ((number? n)) (+ 1 n))
+(defmacro with-asserts (asserts body)
+  (reduce (lambda (b assertion)
+	    (list 'if assertion b
+		  (list 'error '"Assertion failed: "
+			(list 'pprint (list 'quote assertion)))))
+	  asserts
+	  body))
+
 )

@@ -77,4 +77,9 @@
 	 (even? (lambda (x) (if (eq 0 x) true
 				(odd? (- x 1))))))
   (odd? 7))
+
+(eql '(if (number? n)
+       (+ 1 n)
+       (error "Assertion failed: " (pprint '(number? n))))
+     (macroexpand '(with-asserts ((number? n)) (+ 1 n))))
 )
