@@ -70,11 +70,16 @@
 				'args))))
 	name))
 
+;; Like apply, but for sending messages.
+(defn send (receiver message arguments)
+  (apply receiver (cons message arguments)))
+
 ;; Static variable environment
 (def empty-env
   (dispatcher
    self
    ('prettyprint () "[]")
+   ('with-vars (&rest vars) (env-with-vars self vars))
    ('immediate-size () 0)
    ('immediate-position (var) (error var " undefined in env"))
    ('defines-immediately? (x) false)))
@@ -84,6 +89,7 @@
    self
    ('prettyprint ()
        (append (symbol->string var) "::" (env 'prettyprint)))
+   ('with-vars (&rest vars) (env-with-vars self vars))
    ('immediate-size () (+ 1 (env 'immediate-size)))
    ('immediate-position (x)
        (if (eq var x)
@@ -93,7 +99,7 @@
        (or (eq var x)
            (env 'defines-immediately? x)))))
 
-(defn env-with-vars (env &rest vars)
+(defn env-with-vars (env vars)
   (reduce env-with-var vars env))
 
 (defn env-generate-read (env var)
@@ -135,8 +141,7 @@
 	       (list 'label after-if-label))))
     ((let? expr)
      (let ((environment2
-	    (apply env-with-vars
-		   (cons environment (map first (second expr))))))
+	    (send environment 'with-vars (map first (second expr)))))
        (append (apply append
 		      (map (lambda (let-clause)
 			     (append (compile (second let-clause) environment)

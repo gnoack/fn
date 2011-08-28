@@ -19,7 +19,7 @@
 ;; Variable environments
 (->true
  (def %e empty-env)
- (def %xyz-env (env-with-vars empty-env 'x 'y 'z)))
+ (def %xyz-env (empty-env 'with-vars 'x 'y 'z)))
 
 (not (%e 'defines-immediately? 'x))
 (%xyz-env 'defines-immediately? 'x)
@@ -30,7 +30,7 @@
 (eq 3 (%xyz-env 'immediate-size))
 
 ; x shadows the old x.
-(eq 5 ((env-with-vars %xyz-env 'a 'x) 'immediate-size))
+(eq 5 ((%xyz-env 'with-vars 'a 'x) 'immediate-size))
 
 (eql '(load-var 1) (env-generate-read %xyz-env 'x))
 (eql '(load-var 2) (env-generate-read %xyz-env 'y))
