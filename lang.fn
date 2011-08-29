@@ -67,4 +67,10 @@
       (if (mem? value)
 	  (eq @cons ($get value 0))
 	  false)))
+
+;; TODO: Make procedures regular allocated objects.
+(def procedure?
+    (lambda (value)
+      (if (cons? value)
+          (eq 'procedure (first value)))))
 )

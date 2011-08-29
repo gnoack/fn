@@ -110,4 +110,9 @@
 	(list (list f o o) bar baz))
       "foobar" "baz"))
 
+;; Procedure predicate.
+(eq false (procedure? 123))
+(eq false (procedure? (cons 1 2)))
+(procedure (lambda () 123))
+
 )
