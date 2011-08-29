@@ -6,6 +6,7 @@
 #include "eval.h"
 #include "lang.h"
 #include "macros.h"
+#include "maps.h"
 #include "objects.h"
 #include "parser.h"
 #include "pegs-parser.h"
@@ -24,6 +25,7 @@
 #include "cons-test.h"
 #include "env-test.h"
 #include "macros-test.h"
+#include "maps-test.h"
 #include "memory-test.h"
 #include "objects-test.h"
 #include "parser-test.h"
@@ -128,6 +130,7 @@ void init() {
   load_decls(utils_decls());
   load_decls(objects_decls());
   load_decls(arrays_decls());
+  load_decls(maps_decls());
   load_decls(pegs_decls());
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
@@ -167,6 +170,7 @@ int main(int argc, char* argv[]) {
   pprint_tests();
   objects_tests();
   arrays_tests();
+  maps_tests();
   x86_tests();
   compiler_tests();
   /* Summing up. */
