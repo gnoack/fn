@@ -65,7 +65,7 @@
 	name))
 
 ;; Like apply, but for sending messages.
-(defn send (receiver message arguments)
+(defn send-apply (receiver message arguments)
   (apply receiver (cons message arguments)))
 
 )

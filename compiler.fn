@@ -126,7 +126,7 @@
 
 (defn compile-let (expr environment)
      (let ((environment2
-	    (send environment 'with-vars (map first (second expr)))))
+	    (send-apply environment 'with-vars (map first (second expr)))))
        (append (apply append
 		      (map (lambda (let-clause)
 			     (append (compile (second let-clause) environment)

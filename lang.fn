@@ -72,5 +72,6 @@
 (def procedure?
     (lambda (value)
       (if (cons? value)
-          (eq 'procedure (first value)))))
+          (eq 'procedure (first value))
+          false)))
 )
