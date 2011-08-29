@@ -126,16 +126,6 @@
       (list)
       (%range (- size 1) '())))
 
-;; Map2, maps objects of two lists at once.
-(defn map2 (proc l1 l2)
-  (cond ((and (cons? l1) (cons? l2))
-	 (cons (proc (first l1) (first l2))
-	       (map2 proc (rest l1) (rest l2))))
-	((or (nil? l1) (nil? l2))
-	 '())
-	(true
-	 (error "Should not happen -- this was not a list."))))
-
 (defn list? (potential-list)
   (or (nil? potential-list)
       (and (cons? potential-list)

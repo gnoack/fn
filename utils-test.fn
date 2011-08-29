@@ -64,13 +64,5 @@
 (eql (list) (range 0))
 (eql (list 0) (range 1))
 
-;; Map2
-(eql (list (cons 'a 1)
-	   (cons 'b 2)
-	   (cons 'c 3))
-     (map2 cons
-	   (list 'a 'b 'c)
-	   (list 1 2 3)))
-
 )
 
