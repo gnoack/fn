@@ -1,3 +1,23 @@
 
 (
+
+;; Linked map implementation for keys that are comparable with eq.
+
+(def empty-map
+  (dispatcher self
+    ('contains? (key)  false)
+    ('empty? ()        true)
+    ('put (key value)  (linked-map self key value))
+    ('get (key)        (error key "not present."))))
+
+(defn linked-map (base-map my-key my-value)
+  (dispatcher self
+    ('contains? (key)  (or (eq key my-key)
+                           (send base-map 'contains? key)))
+    ('empty? ()        false)
+    ('put (key value)  (linked-map self key value))
+    ('get (key)        (if (eq key my-key)
+                           my-value
+                           (send base-map 'get key)))))
+
 )

@@ -1,3 +1,21 @@
 
 (
+
+(not (empty-map 'contains? 'key))
+(empty-map 'empty?)
+; get with error can't be tested without crash.
+
+(->true (def %testmap
+            (send (send (send empty-map
+                              'put 'a 1)
+                        'put 'b 2)
+                  'put 'c 3)))
+
+(send %testmap 'contains? 'b)
+(not (send %testmap 'contains? 'd))
+(not (send %testmap 'empty?))
+(eq 1 (send %testmap 'get 'a))
+(eq 2 (send %testmap 'get 'b))
+(eq 3 (send %testmap 'get 'c))
+
 )
