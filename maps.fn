@@ -3,6 +3,8 @@
 
 ;; Linked map implementation for keys that are comparable with eq.
 
+;; TODO: 'put should override existing keys.
+;; TODO: If needed, implement: 'remove, 'size.
 (def empty-map
   (dispatcher self
     ('contains? (key)  false)
