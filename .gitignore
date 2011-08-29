@@ -9,6 +9,8 @@ lang-test.c
 lang.c
 macros-test.c
 macros.c
+maps-test.c
+maps.c
 objects-test.c
 objects.c
 parser-test.c
