@@ -64,8 +64,13 @@
 				'args))))
 	name))
 
+(defn send (receiver message &rest arguments)
+  (if (procedure? receiver)
+      (apply receiver (cons message arguments))
+      (error "Not a receiver.")))
+
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)
-  (apply receiver (cons message arguments)))
+  (apply send (cons receiver (cons message arguments))))
 
 )

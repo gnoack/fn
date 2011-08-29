@@ -10,4 +10,8 @@
 (eq @nil (type-of nil))
 (eq @symbol (type-of 'foobar))
 
+(send (dispatcher self
+        ('foo () true)
+        ('bar () false)) 'foo)
+
 )
