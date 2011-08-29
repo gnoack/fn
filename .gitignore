@@ -5,6 +5,8 @@ arrays-test.c
 arrays.c
 compiler-test.c
 compiler.c
+dispatcher-test.c
+dispatcher.c
 lang-test.c
 lang.c
 macros-test.c

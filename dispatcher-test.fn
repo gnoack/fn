@@ -1,0 +1,8 @@
+
+(
+
+(send (dispatcher self
+        ('foo () true)
+        ('bar () false)) 'foo)
+
+)

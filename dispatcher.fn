@@ -1,0 +1,28 @@
+
+(
+
+;;;; *****************************************
+;;;; Simple OO using symbol-based dispatching.
+;;;; *****************************************
+
+(defn dispatch-clause->cond-clause (clause)
+  ;; `((eq ,(first clause) selector)
+  ;;   (lambda ,(second clause) ,(third clause))))
+  (list (list 'eq (first clause) 'selector)
+	(list 'lambda (second clause) (third clause))))
+
+;; Constructs an object with identity and able to receive messages.
+(defmacro dispatcher (name &rest defs)
+  ;; `(labels ((,name (lambda (selector &rest args)
+  ;;                    (apply (cond ,(map dispatch-clause->cond-clause defs))
+  ;;                           args))))
+  ;;    ,name)
+  (list 'labels
+	(list (list name
+		    (list 'lambda (list 'selector '&rest 'args)
+			  (list 'apply
+				(cons 'cond (map dispatch-clause->cond-clause defs))
+				'args))))
+	name))
+
+)
