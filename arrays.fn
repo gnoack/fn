@@ -1,15 +1,6 @@
 
 (
 
-;; TODO: Move these to a deeper level of the language.
-(defn last (l)
-  (if (nil? (rest l))
-      (first l)
-      (last (rest l))))
-
-(defn progn (&rest args)
-  (last args))
-
 ;; TODO: Make $alloc a primitive and implement $make on top?
 (defn list-of-size (capacity)
   (if (eq 0 capacity)

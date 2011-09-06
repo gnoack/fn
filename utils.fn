@@ -11,6 +11,15 @@
 (defn fourth (list)
   (first (rest (rest (rest list)))))
 
+(def last (lambda (l)
+            (if (nil? (rest l))
+                (first l)
+                (last (rest l)))))
+
+;; Progn
+(def progn (lambda (&rest args)
+             (last args)))
+
 ;; Appending
 
 (defn append (&rest as)

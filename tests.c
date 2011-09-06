@@ -130,10 +130,10 @@ void init() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
-  load_decls(arrays_decls());
   load_decls(dispatcher_decls());
   load_decls(maps_decls());
   load_decls(objects_decls());
+  load_decls(arrays_decls());
   load_decls(pegs_decls());
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
