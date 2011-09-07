@@ -10,33 +10,34 @@
 (defn $alloc (capacity)
   (apply $make (list-of-size capacity)))
 
+;; Type
+(defn array? (value)
+  (eq @array (type-of value)))
 
-;; TODO: Use an @type instead.
-(def %array-marker 'array)
+(deftype @array array?)
 
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)
   (let ((result ($alloc (+ 2 capacity))))
     (progn
-      ($set result 0 %array-marker)
+      ($set result 0 @array)
       ($set result 1 capacity)
       result)))
 
-(defn array-capacity (array)
+(defn %array-capacity (array)
   ($get array 1))
 
-(defn array? (value)
-  (and (mem? value)
-       (eq %array-marker ($get value 0))))
+(defm @array 'get (n)
+  (with-asserts ((number? n)
+		 (< n (send self 'size)))
+    ($get self (+ 2 n))))
 
-;; TODO: Bounds checking
-(defn get (array n)
-  (with-asserts ((array? array))
-    ($get array (+ 2 n))))
+(defm @array 'set! (n value)
+  (with-asserts ((number? n)
+		 (< n (send self 'size)))
+    ($set self (+ 2 n) value)))
 
-(defn set (array n value)
-  (with-asserts ((array? array)
-		 (< n (array-capacity array)))
-    ($set array (+ 2 n) value)))
+(defm @array 'size ()
+  ($get self 1))
 
 )

@@ -41,8 +41,6 @@
 	((mem? x) ($get x 0))))
 
 
-
-
 ;;; Method definition
 
 (defn install-method! (type selector method)

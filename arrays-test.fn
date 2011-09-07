@@ -2,13 +2,13 @@
 (
 
 (array? (make-array 3))
-(eq 3 (array-capacity (make-array 3)))
+(eq 3 (send (make-array 3) 'size))
 
 (let ((obj (make-array 3)))
   (progn
-    (set obj 0 'a)
-    (set obj 1 'b)
-    (set obj 2 'c)
-    (eq 'b (get obj 1))))
+    (send obj 'set! 0 'a)
+    (send obj 'set! 1 'b)
+    (send obj 'set! 2 'c)
+    (eq 'b (send obj 'get 1))))
 
 )
