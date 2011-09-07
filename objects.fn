@@ -4,30 +4,29 @@
 ;;;; Types
 ;;;; ********************************
 
-;; The type type links to itself: @type = ($make @type type? empty-map)
-(def @type ($make 1 2 3))
+;; The type type links to itself: @type = ($make @type empty-map)
+(def @type ($make 1 2))
+($set @type 0 @type)
+($set @type 1 empty-map)
 (defn type? (x)
   (eq (type-of x) @type))
-($set @type 0 @type)
-($set @type 1 type?)
-($set @type 2 empty-map)
 
 ; @cons must be created early for consing,
 ; so we need some retroactive patching.
 ;(def @cons ($make @type cons? empty-map))
 ($set @cons 0 @type)
-($set @cons 1 cons?)
-($set @cons 2 empty-map)
+($set @cons 1 empty-map)
 
-(defmacro deftype (name tester)
+;; TODO: Supertypes?
+(defmacro deftype (name)
   (list 'def name
-	(list '$make '@type tester 'empty-map)))
+	(list '$make '@type 'empty-map)))
 
-(deftype @mem mem?)
-(deftype @smallint number?)
-(deftype @character char?)
-(deftype @symbol symbol?)
-(deftype @nil nil?)
+(deftype @mem)
+(deftype @smallint)
+(deftype @character)
+(deftype @symbol)
+(deftype @nil)
 
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
@@ -44,8 +43,8 @@
 ;;; Method definition
 
 (defn install-method! (type selector method)
-  ($set type 2
-        (send ($get type 2) 'put selector method)))
+  ($set type 1
+        (send ($get type 1) 'put selector method)))
 
 (defmacro defm (type selector args body)
   ;; `(install-method! ,type ,selector
@@ -57,7 +56,7 @@
 ;;; Message sending
 
 (defn %method-for-type (type selector)
-  (send ($get type 2) 'get selector))
+  (send ($get type 1) 'get selector))
 
 (defn send (receiver message &rest arguments)
   (if (procedure? receiver)

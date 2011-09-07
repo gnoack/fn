@@ -11,10 +11,10 @@
   (apply $make (list-of-size capacity)))
 
 ;; Type
+(deftype @array)
+
 (defn array? (value)
   (eq @array (type-of value)))
-
-(deftype @array array?)
 
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)
