@@ -49,6 +49,7 @@ unsigned int failure_count = 0;
 
 void init_assert() {
   printf(".");
+  fflush(stdout);
   assertion_count++;
 }
 
