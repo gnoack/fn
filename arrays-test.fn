@@ -1,7 +1,6 @@
 
 (
 
-(array? (make-array 3))
 (eq 3 (send (make-array 3) 'size))
 
 (let ((obj (make-array 3)))

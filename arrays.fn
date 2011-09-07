@@ -13,9 +13,6 @@
 ;; Type
 (deftype @array)
 
-(defn array? (value)
-  (eq @array (type-of value)))
-
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)
   (let ((result ($alloc (+ 2 capacity))))
@@ -23,9 +20,6 @@
       ($set result 0 @array)
       ($set result 1 capacity)
       result)))
-
-(defn %array-capacity (array)
-  ($get array 1))
 
 (defm @array 'get (n)
   (with-asserts ((number? n)
