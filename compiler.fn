@@ -102,12 +102,27 @@
   (list 'load-value expr
         'push))
 
+;; TODO: Support for variable length argument lists.
+(def lambda-list second)
+(def lambda-body third)
+(defn compile-lambda (expr environment)
+  (let ((lambda-entry-label (gensym "lambda-entry"))
+        (after-lambda-label (gensym "after-lambda")))
+    (append (list 'make-lambda lambda-entry-label
+                  'push
+                  'jump after-lambda-label
+                  'label lambda-entry-label)
+            (compile (lambda-body expr)
+                     (send environment 'linked-with-vars (lambda-list expr)))
+            (list 'return
+                  'label after-lambda-label))))
+
 ;; TODO: Implement let by transforming it to a lambda.
-;; TODO: Implement lambda by chaining environments.
 (defn compile (expr environment)
   (cond
     ((symbol? expr)  (compile-variable-read expr environment))
     ((if? expr)      (compile-if expr environment))
+    ((lambda? expr)  (compile-lambda expr environment))
     ((list? expr)    (compile-application expr environment))
     ((number? expr)  (compile-number-literal expr environment))))
 

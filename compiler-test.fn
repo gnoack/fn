@@ -54,4 +54,23 @@
        label after-if-1002)
      (compile '(if x 10 0) %xyz-env))
 
+(->true (def global-label-counter 1000))
+(eql '(make-lambda lambda-entry-1001
+       push
+       jump after-lambda-1002
+       ; -- this is where the lambda starts
+       label lambda-entry-1001
+       read-var 1 1    ; b
+       push
+       read-var 0 0    ; x
+       push
+       read-global-var +
+       push
+       pop
+       call 2
+       return
+       ;; -- this is where the lambda ends
+       label after-lambda-1002)
+     (compile '(lambda (x) (+ x b)) %abz-env))
+
 )
