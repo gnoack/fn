@@ -1,52 +1,12 @@
 
 (
 
-;;; TODO: Delete the whole traversal code, it is probably not needed.
-(defn map-letdefinitions (fn e)
-  (list 'let
-        (map (lambda (x) (list (first x)
-                               (fn (second x))))
-             (second e))
-        (third e)))
-
-(defn map-letbody (fn e)
-  (list 'let (second e) (fn (third e))))
-
-(defn map-letexprs (fn e)
-  (map-letdefinitions fn (map-letbody fn e)))
-
+;; Recognizing s-expressions.
 (def let? (smatcher 'let))
 (def lambda? (smatcher 'lambda))
 (def if? (smatcher 'if))
 (def def? (smatcher 'def))
 (def quote? (smatcher 'quote))
-
-(defn traverse-expr (e recurse)
-  (cond
-    ((let? e)     (map-letexprs recurse e))
-    ((lambda? e)  (list 'lambda (second e) (recurse (third e))))
-    ((if? e)      (cons 'if (map recurse (rest e))))
-    ((def? e)     (list 'def (second e) (recurse (third e))))
-    ((quote? e)   (list 'quote (recurse (second quote))))
-    ((cons? e)    (map recurse e))
-    (true         e)))
-
-(defn defines-var? (letexpr var)
-  (any? (map (lambda (definition-clause)
-               (eq var (first definition-clause)))
-             (second letexpr))))
-
-;; Replace the free variable v1 in e with v2.
-(defn replace-var (e v1 v2)
-  (let ((recurse (lambda (x) (replace-var x v1 v2))))
-    (cond
-      ((eq e v1) v2)
-      ((let? e)
-       (if (defines-var? e v1)
-           (map-letdefinitions recurse e)
-           (map-letexprs recurse e)))
-      (true (traverse-expr e recurse)))))
-
 
 
 ;; Accessing elements in lists.
