@@ -4,10 +4,10 @@
 ;;; TODO: Delete the whole traversal code, it is probably not needed.
 (defn map-letdefinitions (fn e)
   (list 'let
-	(map (lambda (x) (list (first x)
-			       (fn (second x))))
-	     (second e))
-	(third e)))
+        (map (lambda (x) (list (first x)
+                               (fn (second x))))
+             (second e))
+        (third e)))
 
 (defn map-letbody (fn e)
   (list 'let (second e) (fn (third e))))
@@ -23,24 +23,18 @@
 
 (defn traverse-expr (e recurse)
   (cond
-    ((let? e)
-     (map-letexprs recurse e))
-    ((lambda? e)
-     (list 'lambda (second e) (recurse (third e))))
-    ((if? e)
-     (cons 'if (map recurse (rest e))))
-    ((def? e)
-     (list 'def (second e) (recurse (third e))))
-    ((quote? e)
-     (list 'quote (recurse (second quote))))
-    ((cons? e)
-     (map recurse e))
-    (true e)))
+    ((let? e)     (map-letexprs recurse e))
+    ((lambda? e)  (list 'lambda (second e) (recurse (third e))))
+    ((if? e)      (cons 'if (map recurse (rest e))))
+    ((def? e)     (list 'def (second e) (recurse (third e))))
+    ((quote? e)   (list 'quote (recurse (second quote))))
+    ((cons? e)    (map recurse e))
+    (true         e)))
 
 (defn defines-var? (letexpr var)
   (any? (map (lambda (definition-clause)
-	       (eq var (first definition-clause)))
-	     (second letexpr))))
+               (eq var (first definition-clause)))
+             (second letexpr))))
 
 ;; Replace the free variable v1 in e with v2.
 (defn replace-var (e v1 v2)
@@ -70,16 +64,16 @@
 (defn env-with-var (env var)
   (dispatcher self
    ('prettyprint ()
-       (append (symbol->string var) "::" (env 'prettyprint)))
+       (append (symbol->string var) "::" (send env 'prettyprint)))
    ('defines-immediately? (x)
        (or (eq var x)
-           (env 'defines-immediately? x)))
+           (send env 'defines-immediately? x)))
    ;; Size and position
    ('immediate-position (x)
        (if (eq var x)
-	   0
-	   (+ 1 (env 'immediate-position x))))
-   ('immediate-size ()       (+ 1 (env 'immediate-size)))
+           0
+           (+ 1 (env 'immediate-position x))))
+   ('immediate-size ()       (+ 1 (send env 'immediate-size)))
    ;; Construction
    ('with-vars (&rest vars)  (env-with-vars self vars))
    ;; Code generation
@@ -91,14 +85,14 @@
 
 (defn env-generate-read (env var)
   (if (env 'defines-immediately? var)
-      (list 'load-var (- (env 'immediate-size)
-                         (env 'immediate-position var)))
+      (list 'load-var (- (send env 'immediate-size)
+                         (send env 'immediate-position var)))
       (error var " not defined immediately")))
 
 (defn env-generate-write (env var)
   (if (env 'defines-immediately? var)
-      (list 'save-var (- (env 'immediate-size)
-			 (env 'immediate-position var)))
+      (list 'save-var (- (send env 'immediate-size)
+                         (send env 'immediate-position var)))
       (error var " not defined immediately")))
 
 ;; Gensym for generating unused symbols.
@@ -107,50 +101,50 @@
   (progn
     (def global-label-counter (+ 1 global-label-counter))
     (string->symbol (append prefix
-			    "-"
-			    (int->string global-label-counter 10)))))
+                            "-"
+                            (int->string global-label-counter 10)))))
 
 ;;; Compilation
 
 (defn compile-if (expr environment)
   (let ((true-branch-label (gensym "true-branch"))
-	(after-if-label (gensym "after-if")))
+        (after-if-label (gensym "after-if")))
     (append (compile (second expr) environment)  ; Condition
-	    (list 'pop
-		  'jump-if-true true-branch-label)
-	    (compile (fourth expr) environment)  ; False-branch
-	    (list 'jump after-if-label
-		  'label true-branch-label)
-	    (compile (third expr) environment)   ; True-branch
-	    (list 'label after-if-label))))
+            (list 'pop
+                  'jump-if-true true-branch-label)
+            (compile (fourth expr) environment)  ; False-branch
+            (list 'jump after-if-label
+                  'label true-branch-label)
+            (compile (third expr) environment)   ; True-branch
+            (list 'label after-if-label))))
 
 (defn compile-let (expr environment)
      (let ((environment2
-	    (send-apply environment 'with-vars (map first (second expr)))))
+            (send-apply environment 'with-vars (map first (second expr)))))
        (append (apply append
-		      (map (lambda (let-clause)
-			     (append (compile (second let-clause) environment)
-				     (list 'pop)
-				     (env-generate-write environment2
-							 (first let-clause))))
-			   (second expr)))
-	       (compile (third expr) environment2))))
+                      (map (lambda (let-clause)
+                             (append (compile (second let-clause) environment)
+                                     (list 'pop)
+                                     (env-generate-write environment2
+                                                         (first let-clause))))
+                           (second expr)))
+               (compile (third expr) environment2))))
 
 (defn compile-application (expr environment)
   (append (apply append
-		 (map (lambda (e)
-			(compile e environment))
-		      (reverse expr)))
-	  (list 'pop
-		'call (- (length expr) 1))))
+                 (map (lambda (e)
+                        (compile e environment))
+                      (reverse expr)))
+          (list 'pop
+                'call (- (length expr) 1))))
 
 (defn compile-variable-read (expr environment)
   (append (env-generate-read environment expr)
-	  (list 'push)))
+          (list 'push)))
 
 (defn compile-number-literal (expr environment)
   (list 'load-value expr
-	'push))
+        'push))
 
 (defn compile (expr environment)
   (cond
