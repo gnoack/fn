@@ -3,11 +3,10 @@
 
 ;; Variable environments
 (->true
- (def %e global-env)
- (def %xyz-env (%e 'linked-with-vars (list 'x 'y 'z)))
+ (def %xyz-env (global-env 'linked-with-vars (list 'x 'y 'z)))
  (def %abz-env (%xyz-env 'linked-with-vars (list 'a 'b 'z))))
 
-(eql "GLOBAL" (send %e 'prettyprint))
+(eql "GLOBAL" (send global-env 'prettyprint))
 (eql "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
 (eql '(read-var 0 0) (send %xyz-env 'generate-read 'x))
@@ -34,7 +33,11 @@
 
 (eql '(load-value 123
        push)
-     (pcompile 123 %e))
+     (pcompile 123 global-env))
+
+(eql (list 'load-value #\a
+           'push)
+     (pcompile #\a global-env))
 
 (eql '(load-value 99
        push

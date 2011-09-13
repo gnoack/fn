@@ -99,7 +99,7 @@
   (append (send environment 'generate-read expr)
           (list 'push)))
 
-(defn compile-number-literal (expr environment)
+(defn compile-literal (expr environment)
   (list 'load-value expr
         'push))
 
@@ -155,6 +155,7 @@
     ((def? expr)     (compile-def expr environment))
     (($set!? expr)   (compile-$set! expr environment))
     ((list? expr)    (compile-application expr environment))
-    ((number? expr)  (compile-number-literal expr environment))))
+    ((number? expr)  (compile-literal expr environment))
+    ((char? expr)    (compile-literal expr environment))))
 
 )
