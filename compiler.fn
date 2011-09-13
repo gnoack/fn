@@ -148,14 +148,15 @@
 
 (defn compile (expr environment)
   (cond
+    ((number? expr)  (compile-literal expr environment))
+    ((char? expr)    (compile-literal expr environment))
+    ((quote? expr)   (compile-literal (second expr) environment))
     ((symbol? expr)  (compile-variable-read expr environment))
     ((if? expr)      (compile-if expr environment))
     ((lambda? expr)  (compile-lambda expr environment))
     ((let? expr)     (compile-let expr environment))
     ((def? expr)     (compile-def expr environment))
     (($set!? expr)   (compile-$set! expr environment))
-    ((list? expr)    (compile-application expr environment))
-    ((number? expr)  (compile-literal expr environment))
-    ((char? expr)    (compile-literal expr environment))))
+    ((list? expr)    (compile-application expr environment))))
 
 )

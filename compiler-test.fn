@@ -39,6 +39,10 @@
            'push)
      (pcompile #\a global-env))
 
+(eql '(load-value (+ 1 2 3)
+       push)
+     (pcompile '(quote (+ 1 2 3)) global-env))
+
 (eql '(load-value 99
        push
        load-value 42
