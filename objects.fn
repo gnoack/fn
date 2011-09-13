@@ -67,4 +67,8 @@
 (defn send-apply (receiver message arguments)
   (apply send (cons receiver (cons message arguments))))
 
+(defn sender (message)
+  (lambda (receiver &rest args)
+    (send-apply receiver message args)))
+
 )

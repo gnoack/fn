@@ -18,23 +18,26 @@
 
 ;; Variable environments
 (->true
- (def %e empty-env)
- (def %xyz-env (empty-env 'with-vars 'x 'y 'z)))
+ (def %e global-env)
+ (def %xyz-env (%e 'linked-with-vars (list 'x 'y 'z)))
+ (def %abz-env (%xyz-env 'linked-with-vars (list 'a 'b 'z))))
 
-(not (%e 'defines-immediately? 'x))
-(%xyz-env 'defines-immediately? 'x)
-(%xyz-env 'defines-immediately? 'z)
-(not (%xyz-env 'defines-immediately? 'notthere))
+(eql "GLOBAL" (send %e 'prettyprint))
+(eql "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
-(eq 0 (%e 'immediate-size))
-(eq 3 (%xyz-env 'immediate-size))
+(eql '(read-var 0 0) (send %xyz-env 'generate-read 'x))
+(eql '(read-var 0 1) (send %xyz-env 'generate-read 'y))
+(eql '(read-var 0 2) (send %xyz-env 'generate-read 'z))
+(eql '(read-global-var foo) (send %xyz-env 'generate-read 'foo))
 
-; x shadows the old x.
-(eq 5 ((%xyz-env 'with-vars 'a 'x) 'immediate-size))
+(eql '(read-var 0 0) (send %abz-env 'generate-read 'a))
+(eql '(read-var 0 1) (send %abz-env 'generate-read 'b))
+(eql '(read-var 0 2) (send %abz-env 'generate-read 'z))  ; Shadows z in xyz-env
+(eql '(read-var 1 0) (send %abz-env 'generate-read 'x))
+(eql '(read-var 1 1) (send %abz-env 'generate-read 'y))
 
-(eql '(load-var 1) (%xyz-env 'generate-read 'x))
-(eql '(load-var 2) (%xyz-env 'generate-read 'y))
-(eql '(load-var 3) (%xyz-env 'generate-read 'z))
+(eql '(write-var 1 1) (send %abz-env 'generate-write 'y))
+(eql '(write-var 0 2) (send %abz-env 'generate-write 'z))
 
 (eql '(load-value 123
        push)
@@ -44,14 +47,14 @@
        push
        load-value 42
        push
-       load-var 1  ; first var
+       read-var 0 0  ; first var
        push
        pop
        call 2)     ; 2 arguments
      (compile '(x 42 99) %xyz-env))
 
 (->true (def global-label-counter 1000))
-(eql '(load-var 1
+(eql '(read-var 0 0
        push
        pop
        jump-if-true true-branch-1001
@@ -65,23 +68,5 @@
        push
        label after-if-1002)
      (compile '(if x 10 0) %xyz-env))
-
-(eql '(load-value 42
-       push
-       pop
-       save-var 1
-       load-var 1
-       push)
-     (compile '(let ((x 42)) x) %e))
-
-;; variables shadow existing variables with same name,
-;; but the outer variables are still visible in the let clauses.
-(eql '(load-var 1
-       push
-       pop
-       save-var 4
-       load-var 4
-       push)
-     (compile '(let ((x x)) x) %xyz-env))
 
 )

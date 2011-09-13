@@ -49,51 +49,59 @@
 
 
 
+;; Accessing elements in lists.
+(defm @cons 'contains? (v)
+  (or (eq v (first self))
+      (send (rest self) 'contains? v)))
 
-;; Static variable environment
-(def empty-env
-  (dispatcher self
-   ('prettyprint ()           "[]")
-   ('with-vars (&rest vars)   (env-with-vars self vars))
-   ('immediate-size ()        0)
-   ('immediate-position (var) (error var " undefined in env"))
-   ('defines-immediately? (x) false)
-   ('generate-read (x)        (env-generate-read self x))
-   ('generate-write (x)       (env-generate-write self x))))
+(defm @nil 'contains? (v)
+  false)
 
-(defn env-with-var (env var)
+(defm @cons 'index-of (v)
+  (if (eq v (first self))
+      0
+      (+ 1 (send (rest self) 'index-of v))))
+
+(def contains? (sender 'contains?))
+(def index-of (sender 'index-of))
+
+
+;;; Static variable environment
+
+(defn %globalop (op)
+  (cond ((eq op 'write-var) 'write-global-var)
+        ((eq op 'read-var)  'read-global-var)
+        (true               (error "Unknown variable access mode: " op))))
+
+(def global-env
   (dispatcher self
-   ('prettyprint ()
-       (append (symbol->string var) "::" (send env 'prettyprint)))
-   ('defines-immediately? (x)
-       (or (eq var x)
-           (send env 'defines-immediately? x)))
-   ;; Size and position
-   ('immediate-position (x)
-       (if (eq var x)
-           0
-           (+ 1 (env 'immediate-position x))))
-   ('immediate-size ()       (+ 1 (send env 'immediate-size)))
+   ('prettyprint ()                "GLOBAL")
+
    ;; Construction
-   ('with-vars (&rest vars)  (env-with-vars self vars))
+   ('linked-with-vars (vars)       (linked-env-with-vars self vars))
+
    ;; Code generation
-   ('generate-read (x)       (env-generate-read self x))
-   ('generate-write (x)      (env-generate-write self x))))
+   ('generate-access (depth op x)  (list (%globalop op) x))
+   ('generate-read (x)             (send self 'generate-access 0 'read-var x))
+   ('generate-write (x)            (send self 'generate-access 0 'write-var x))
+))
 
-(defn env-with-vars (env vars)
-  (reduce env-with-var vars env))
+(defn linked-env-with-vars (next-env my-vars)
+  (dispatcher self
+   ('prettyprint ()                (append (pprint my-vars) "::"
+                                           (send next-env 'prettyprint)))
 
-(defn env-generate-read (env var)
-  (if (env 'defines-immediately? var)
-      (list 'load-var (- (send env 'immediate-size)
-                         (send env 'immediate-position var)))
-      (error var " not defined immediately")))
+   ;; Construction
+   ('linked-with-vars (vars)       (linked-env-with-vars self vars))
 
-(defn env-generate-write (env var)
-  (if (env 'defines-immediately? var)
-      (list 'save-var (- (send env 'immediate-size)
-                         (send env 'immediate-position var)))
-      (error var " not defined immediately")))
+   ;; Code generation
+   ('generate-access (depth op x)  (if (contains? my-vars x)
+                                       (list op depth (index-of my-vars x))
+                                       (send next-env 'generate-access (+ 1 depth) op x)))
+   ('generate-read (x)             (send self 'generate-access 0 'read-var x))
+   ('generate-write (x)            (send self 'generate-access 0 'write-var x))
+))
+
 
 ;; Gensym for generating unused symbols.
 (def global-label-counter 100)
@@ -118,18 +126,6 @@
             (compile (third expr) environment)   ; True-branch
             (list 'label after-if-label))))
 
-(defn compile-let (expr environment)
-     (let ((environment2
-            (send-apply environment 'with-vars (map first (second expr)))))
-       (append (apply append
-                      (map (lambda (let-clause)
-                             (append (compile (second let-clause) environment)
-                                     (list 'pop)
-                                     (env-generate-write environment2
-                                                         (first let-clause))))
-                           (second expr)))
-               (compile (third expr) environment2))))
-
 (defn compile-application (expr environment)
   (append (apply append
                  (map (lambda (e)
@@ -139,18 +135,19 @@
                 'call (- (length expr) 1))))
 
 (defn compile-variable-read (expr environment)
-  (append (env-generate-read environment expr)
+  (append (send environment 'generate-read expr)
           (list 'push)))
 
 (defn compile-number-literal (expr environment)
   (list 'load-value expr
         'push))
 
+;; TODO: Implement let by transforming it to a lambda.
+;; TODO: Implement lambda by chaining environments.
 (defn compile (expr environment)
   (cond
     ((symbol? expr)  (compile-variable-read expr environment))
     ((if? expr)      (compile-if expr environment))
-    ((let? expr)     (compile-let expr environment))
     ((list? expr)    (compile-application expr environment))
     ((number? expr)  (compile-number-literal expr environment))))
 
