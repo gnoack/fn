@@ -117,12 +117,18 @@
             (list 'return
                   'label after-lambda-label))))
 
+(defn compile-def (expr environment)
+  (append (compile (third expr) environment)
+          (list 'pop)
+          (send global-env 'generate-write (second expr))))
+
 ;; TODO: Implement let by transforming it to a lambda.
 (defn compile (expr environment)
   (cond
     ((symbol? expr)  (compile-variable-read expr environment))
     ((if? expr)      (compile-if expr environment))
     ((lambda? expr)  (compile-lambda expr environment))
+    ((def? expr)     (compile-def expr environment))
     ((list? expr)    (compile-application expr environment))
     ((number? expr)  (compile-number-literal expr environment))))
 

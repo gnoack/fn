@@ -73,4 +73,10 @@
        label after-lambda-1002)
      (compile '(lambda (x) (+ x b)) %abz-env))
 
+(eql '(load-value 5
+       push
+       pop
+       write-global-var foo)
+     (compile '(def foo 5) %xyz-env))
+
 )
