@@ -7,6 +7,7 @@
 (def if? (smatcher 'if))
 (def def? (smatcher 'def))
 (def quote? (smatcher 'quote))
+(def $set!? (smatcher '$set!))
 
 
 ;; Accessing elements in lists.
@@ -138,6 +139,13 @@
 (defn compile-let (expr environment)
   (compile (transform-let->lambda expr) environment))
 
+(defn compile-$set! (expr environment)
+  (let ((variable   (second expr))
+        (value-expr (third expr)))
+    (append (compile value-expr environment)
+            (list 'pop)
+            (send environment 'generate-write variable))))
+
 (defn compile (expr environment)
   (cond
     ((symbol? expr)  (compile-variable-read expr environment))
@@ -145,6 +153,7 @@
     ((lambda? expr)  (compile-lambda expr environment))
     ((let? expr)     (compile-let expr environment))
     ((def? expr)     (compile-def expr environment))
+    (($set!? expr)   (compile-$set! expr environment))
     ((list? expr)    (compile-application expr environment))
     ((number? expr)  (compile-number-literal expr environment))))
 

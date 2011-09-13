@@ -91,4 +91,10 @@
 (eql (pcompile '((lambda (x y) (+ x y)) 1 2) global-env)
      (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
+(eql '(load-value 42
+       push
+       pop
+       write-global-var meaning-of-life)
+     (pcompile '($set! meaning-of-life 42) global-env))
+
 )
