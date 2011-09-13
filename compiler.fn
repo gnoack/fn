@@ -122,12 +122,28 @@
           (list 'pop)
           (send global-env 'generate-write (second expr))))
 
-;; TODO: Implement let by transforming it to a lambda.
+;; Transforming
+(def let-clauses second)
+(def let-body third)
+(defn let-variables (e) (map first (let-clauses e)))
+(defn let-expressions (e) (map second (let-clauses e)))
+(defn transform-let->lambda (expr)
+  ;; `((lambda ,(let-variables expr) ,(let-body expr))
+  ;;   ,@(let-expressions expr))
+  (cons (list 'lambda
+              (let-variables expr)
+              (let-body expr))
+        (let-expressions expr)))
+
+(defn compile-let (expr environment)
+  (compile (transform-let->lambda expr) environment))
+
 (defn compile (expr environment)
   (cond
     ((symbol? expr)  (compile-variable-read expr environment))
     ((if? expr)      (compile-if expr environment))
     ((lambda? expr)  (compile-lambda expr environment))
+    ((let? expr)     (compile-let expr environment))
     ((def? expr)     (compile-def expr environment))
     ((list? expr)    (compile-application expr environment))
     ((number? expr)  (compile-number-literal expr environment))))

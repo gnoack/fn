@@ -24,9 +24,17 @@
 (eql '(write-var 1 1) (send %abz-env 'generate-write 'y))
 (eql '(write-var 0 2) (send %abz-env 'generate-write 'z))
 
+(->true
+ ;; Predictable version of compile
+ ;; where the generated gensyms are always the same.
+ (defn pcompile (expr env)
+   (progn
+     ($set! global-label-counter 1000)
+     (compile expr env))))
+
 (eql '(load-value 123
        push)
-     (compile 123 %e))
+     (pcompile 123 %e))
 
 (eql '(load-value 99
        push
@@ -36,9 +44,8 @@
        push
        pop
        call 2)     ; 2 arguments
-     (compile '(x 42 99) %xyz-env))
+     (pcompile '(x 42 99) %xyz-env))
 
-(->true (def global-label-counter 1000))
 (eql '(read-var 0 0
        push
        pop
@@ -52,9 +59,8 @@
        load-value 10
        push
        label after-if-1002)
-     (compile '(if x 10 0) %xyz-env))
+     (pcompile '(if x 10 0) %xyz-env))
 
-(->true (def global-label-counter 1000))
 (eql '(make-lambda lambda-entry-1001
        push
        jump after-lambda-1002
@@ -71,12 +77,18 @@
        return
        ;; -- this is where the lambda ends
        label after-lambda-1002)
-     (compile '(lambda (x) (+ x b)) %abz-env))
+     (pcompile '(lambda (x) (+ x b)) %abz-env))
 
 (eql '(load-value 5
        push
        pop
        write-global-var foo)
-     (compile '(def foo 5) %xyz-env))
+     (pcompile '(def foo 5) %xyz-env))
+
+(eql '((lambda (x y) (+ x y)) 1 2)
+     (transform-let->lambda '(let ((x 1) (y 2)) (+ x y))))
+
+(eql (pcompile '((lambda (x y) (+ x y)) 1 2) global-env)
+     (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
 )
