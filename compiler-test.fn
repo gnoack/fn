@@ -5,9 +5,9 @@
             (y 8))
        (+ x y))
      (map-letdefinitions (lambda (x) (+ 3 x))
-			 '(let ((x 1)
-				(y 5))
-			   (+ x y))))
+                         '(let ((x 1)
+                                (y 5))
+                           (+ x y))))
 
 (eql '(+ 9 y)
      (replace-var '(+ x y) 'x 9))
