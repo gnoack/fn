@@ -70,5 +70,11 @@
 (not (all? (list true true false)))
 (all? (list))
 
+;; Any-predicate
+(any? (list true false false))
+(any? (list false false true))
+(not (any? (list false false false)))
+(not (any? (list)))
+
 )
 

@@ -1,24 +1,18 @@
 
 (
 
-; TODO: Test.
-(defn second (list)
-  (first (rest list)))
+(defn second (list)  (first (rest list)))
+(defn third (list)   (first (rest (rest list))))
+(defn fourth (list)  (first (rest (rest (rest list)))))
 
-(defn third (list)
-  (first (rest (rest list))))
-
-(defn fourth (list)
-  (first (rest (rest (rest list)))))
-
-(def last (lambda (l)
-            (if (nil? (rest l))
-                (first l)
-                (last (rest l)))))
+(defn last (l)
+  (if (nil? (rest l))
+      (first l)
+      (last (rest l))))
 
 ;; Progn
-(def progn (lambda (&rest args)
-             (last args)))
+(defn progn (&rest args)
+  (last args))
 
 ;; Appending
 
