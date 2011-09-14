@@ -93,11 +93,10 @@ oop primitive_symbol_to_string(oop args) {
 oop primitive_add(oop args) {
   // TODO: Pretty inaccurate. This works on smallints only.
   uint i = 0;
-  while (!is_nil(args)) {
+  for (; !is_nil(args); args = cdr(args)) {
     oop arg = car(args);
     CHECKV(is_smallint(arg), arg, "Only smallints can be added for now.");
     i += get_smallint(arg);
-    args = cdr(args);
   }
   return make_smallint(i);
 }

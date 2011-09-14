@@ -123,18 +123,6 @@
 (defn any? (list)
   (reduce (lambda (a b) (or a b)) list false))
 
-;; Range
-;; TODO: This is not an entirely well-thought implementation.
-(defn %range (size acc)
-  (if (eq size 0)
-      (cons 0 acc)
-      (%range (- size 1) (cons size acc))))
-
-(defn range (size)
-  (if (eq size 0)
-      (list)
-      (%range (- size 1) '())))
-
 (defn list? (potential-list)
   (or (nil? potential-list)
       (and (cons? potential-list)
