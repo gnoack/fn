@@ -15,6 +15,7 @@
 
 ;; Arithmetic primitives.
 (eq 3 (+ 1 2))
+(eq 10 (+ 1 2 3 4))
 (eq 12 (* 3 4))
 (eq 3 (- 10 7))
 
@@ -63,13 +64,6 @@
 (not (symbol? "xyz"))
 (not (symbol? #\a))
 (not (symbol? 3))
-
-;; List
-
-; TODO: Can be implemented in-lisp now.
-(eq 2 (length (list 1 2)))
-(eq 5 (nth (list 5 6) 0))
-(eq 6 (nth (list 5 6) 1))
 
 ; Apply
 (eql (list 1 2 3)

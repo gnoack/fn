@@ -95,11 +95,7 @@ oop primitive_add(oop args) {
   uint i = 0;
   while (!is_nil(args)) {
     oop arg = car(args);
-    // TODO: How to do proper in-lisp error handling?
-    if (!is_smallint(arg)) {
-      printf("Warning: Trying to int-add bad value: ");
-      print_value(arg);
-    }
+    CHECKV(is_smallint(arg), arg, "Only smallints can be added for now.");
     i += get_smallint(arg);
     args = cdr(args);
   }

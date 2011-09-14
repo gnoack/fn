@@ -26,8 +26,12 @@
 
 ; Lists
 (eq 3 (nth (list 1 2 3 4 5) 2))
+(eq 5 (nth (list 5 6) 0))
+(eq 6 (nth (list 5 6) 1))
 (eq #\d (nth "abcdefg" 3))
 (eq 6 (length "abcdef"))
+(eq 2 (length (list 1 2)))
+
 (list? '(1 2 3))
 (list? '())
 (not (list? 1))
