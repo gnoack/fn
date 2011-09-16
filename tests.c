@@ -26,6 +26,7 @@
 #include "cons-test.h"
 #include "dispatcher-test.h"
 #include "env-test.h"
+#include "interpreter-test.h"
 #include "macros-test.h"
 #include "maps-test.h"
 #include "memory-test.h"
@@ -128,6 +129,7 @@ void init() {
   init_symbols();
   init_eval();
   init_primitives();
+  init_interpreter();
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
@@ -157,6 +159,7 @@ int main(int argc, char* argv[]) {
   }
   printf("Test execution:\n");
   /* Register tests here. */
+  interpreter_tests();
   cons_tests();
   interning_tests();
   eval_tests();

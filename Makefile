@@ -8,6 +8,7 @@ OBJECTS = \
 	dispatcher.o \
 	env.o \
 	eval.o \
+	interpreter.o \
 	lang.o \
 	macros.o \
 	maps.o \
@@ -33,6 +34,7 @@ TESTOBJECTS = \
 	dispatcher-test.o \
 	env-test.o \
 	eval-test.o \
+	interpreter-test.o \
 	lang-test.o \
 	macros-test.o \
 	maps-test.o \
