@@ -8,6 +8,19 @@ extern void init_interpreter();
 extern void stack_push(oop value);
 extern oop stack_pop();
 
+// Frame
+extern
+oop make_frame(unsigned int argnum,
+	       unsigned char* retptr,
+	       oop retfrm,
+	       oop next_frame);
+
+extern
+void set_var(oop frame, unsigned int index, oop value);
+
+extern
+oop get_var(oop frame, unsigned int index);
+
 typedef struct {
   oop reg_acc;
   oop reg_frm;
