@@ -27,7 +27,7 @@ typedef struct {
   unsigned char* ip;
 } interpreter_state_t;
 
-extern interpreter_state_t interpreter_state;
+extern interpreter_state_t state;
 
 // Bytecodes
 #define BC_HALT 0
