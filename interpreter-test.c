@@ -1,6 +1,7 @@
 
 #include "value.h"
 #include "memory.h"
+#include "symbols.h"
 
 #include "tests.h"
 
@@ -18,9 +19,9 @@ TEST(stack_simple) {
 
 TEST(interpret_load_value) {
   init_interpreter();
-  unsigned char code[] = {
-    BC_LOAD_VALUE, 0x11, 0x00, 0x00, 0x00,  // I(8)
-    BC_HALT
+  oop code[] = {
+    symbols._bc_load_value, I(8),
+    symbols._bc_halt
   };
   state.ip = code;
   interpret();
@@ -35,17 +36,17 @@ TEST(interpret_load_var) {
   set_var(inner_frame, 3, I(42));
   state.reg_frm = inner_frame;
 
-  unsigned char code_a[] = {
-    BC_LOAD_VAR, 0x00, 0x03,
-    BC_HALT
+  oop code_a[] = {
+    symbols._bc_load_var, I(0), I(3),
+    symbols._bc_halt
   };
   state.ip = code_a;
   interpret();
   ASSERT_EQ(I(42), state.reg_acc);
 
-  unsigned char code_b[] = {
-    BC_LOAD_VAR, 0x01, 0x02,
-    BC_HALT
+  oop code_b[] = {
+    symbols._bc_load_var, I(1), I(2),
+    symbols._bc_halt
   };
   state.ip = code_b;
   interpret();
@@ -57,12 +58,12 @@ TEST(interpret_write_var) {
   oop frame = make_frame(3, NULL, NIL, NIL);
   state.reg_frm = frame;
 
-  unsigned char code_a[] = {
-    BC_LOAD_VALUE, 0x11, 0x00, 0x00, 0x00,
-    BC_WRITE_VAR, 0x00, 0x01,
-    BC_HALT
+  oop code[] = {
+    symbols._bc_load_value, I(8),
+    symbols._bc_write_var, I(0), I(1),
+    symbols._bc_halt
   };
-  state.ip = code_a;
+  state.ip = code;
   ASSERT_EQ(NIL, get_var(frame, 1));
   interpret();
   ASSERT_EQ(I(8), get_var(frame, 1));
@@ -73,15 +74,15 @@ TEST(interpret_make_lambda) {
   oop frame = make_frame(3, NULL, NIL, NIL);
   state.reg_frm = frame;
 
-  unsigned char code[] = {
-    BC_MAKE_LAMBDA, 0x00, 0x11, 0x22, 0x33,
-    BC_HALT
+  oop code[] = {
+    symbols._bc_make_lambda, I(12345),
+    symbols._bc_halt
   };
   state.ip = code;
   interpret();
   oop result = state.reg_acc;
   ASSERT_EQ(frame, mem_get(result, 1));
-  ASSERT_TRUE(0x33221100 == mem_get(result, 2).smallint);
+  ASSERT_EQ(I(12345), mem_get(result, 2));
 }
 
 extern void interpreter_tests() {

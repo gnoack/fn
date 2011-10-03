@@ -1,6 +1,7 @@
 
 #include "value.h"
 #include "memory.h"
+#include "symbols.h"
 
 #include "interpreter.h"
 
@@ -67,64 +68,49 @@ oop get_var(oop frame, unsigned int index) {
   return mem_get(frame, 5 + index);
 }
 
-// Reading from the instruction stream
-unsigned char read_byte() {
-  unsigned char result = *(state.ip);
+oop read_oop() {
+  oop result = *state.ip;
   state.ip++;
   return result;
 }
 
-oop read_oop() {
-  oop* ptr = (oop*) state.ip;
-  oop result = *ptr;
-  ptr++;
-  state.ip = (unsigned char*) ptr;
-  return result;
-}
+#define OPEQ(name) value_eq(operation, symbols._bc_ ## name)
 
 // Interpreter
 extern void interpret() {
   for (;;) {
-    unsigned char operation = read_byte();
-    switch (operation) {
-    case BC_HALT:
+    oop operation = read_oop();
+    if (OPEQ(halt)) {
       return;
-    case BC_LOAD_VALUE:
+    } else if (OPEQ(load_value)) {
       state.reg_acc = read_oop();
-      break;
-    case BC_PUSH:
+    } else if (OPEQ(push)) {
       stack_push(state.reg_acc);
-      break;
-    case BC_POP:
+    } else if (OPEQ(pop)) {
       state.reg_acc = stack_pop();
-      break;
-    case BC_LOAD_VAR:
-      {
-	unsigned int depth = read_byte();
-	unsigned int index = read_byte();
-	oop frame = nth_frame(state.reg_frm, depth);
-	state.reg_acc = get_var(frame, index);
-      }
-      break;
-    case BC_WRITE_VAR:
-      {
-	unsigned int depth = read_byte();
-	unsigned int index = read_byte();
-	oop frame = nth_frame(state.reg_frm, depth);
-	set_var(frame, index, state.reg_acc);
-      }
-      break;
-    case BC_MAKE_LAMBDA:
-      {
-	state.reg_acc = mem_alloc(3);
-	mem_set(state.reg_acc, 0, NIL);  // TODO: Marker
-	mem_set(state.reg_acc, 1, state.reg_frm);
-	mem_set(state.reg_acc, 2, read_oop());
-      }
-      break;
-    default:
-      printf("Unknown byte code: %02x\n", operation);
+    } else if (OPEQ(load_var)) {
+      unsigned int depth = get_smallint(read_oop());
+      unsigned int index = get_smallint(read_oop());
+      oop frame = nth_frame(state.reg_frm, depth);
+      state.reg_acc = get_var(frame, index);
+    } else if (OPEQ(write_var)) {
+      unsigned int depth = get_smallint(read_oop());
+      unsigned int index = get_smallint(read_oop());
+      oop frame = nth_frame(state.reg_frm, depth);
+      set_var(frame, index, state.reg_acc);
+    } else if (OPEQ(make_lambda)) {
+      state.reg_acc = mem_alloc(3);
+      mem_set(state.reg_acc, 0, NIL);  // TODO: Marker
+      mem_set(state.reg_acc, 1, state.reg_frm);
+      mem_set(state.reg_acc, 2, read_oop());
+    } else {
+      // TODO: Implement CALL, RETURN, global variables (R/W).
+      printf("Unknown byte code:\n");
+      print_value(operation);
       exit(1);
     }
   }
 }
+
+#undef OPEQ
+
