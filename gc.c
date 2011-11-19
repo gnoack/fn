@@ -178,7 +178,16 @@ void traverse_object_graph(oop current) {
   current_region->enumerate_refs(current, &traverse_object_graph);
 }
 
+boolean should_skip_gc() {
+  uint fill = object_memory.free_new - object_memory.new_space;
+  uint size = object_memory.upper_new - object_memory.new_space;
+  return TO_BOOL((100*fill / size) < 70);
+}
+
 oop garbage_collect(oop root) {
+  if (should_skip_gc()) {
+    return root;
+  }
   //object_print_fill("before");
   // TODO: Only one root?
   primitive_region.on_gc_start();
