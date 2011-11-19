@@ -13,11 +13,11 @@ char* interned_strings = NULL;
 
 #define INTERNED_DB_SIZE (8 * 1024)
 
-bool matches(const char* a, const char* b) {
+boolean matches(const char* a, const char* b) {
   return TO_BOOL(strcmp(a, b) == 0);
 }
 
-bool is_last(const char* s) {
+boolean is_last(const char* s) {
   return TO_BOOL(s[0] == '\0');
 }
 
@@ -49,7 +49,7 @@ const char* intern_string(const char* s) {
   return curr;
 }
 
-bool is_interned(const char* s) {
+boolean is_interned(const char* s) {
   if (interned_strings == NULL) {
     return NO; // Nothing is interned yet.
   }

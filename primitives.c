@@ -134,7 +134,7 @@ oop primitive_mod(oop args) {
 }
 
 // Helper function for predicate primitives.
-oop lisp_bool(bool b) {
+oop lisp_bool(boolean b) {
   return b ? symbols._true : symbols._false;
 }
 

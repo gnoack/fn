@@ -18,7 +18,7 @@ oop make_procedure(oop lambda_list, oop body, oop env) {
 oop fn_lambda_list(oop fn) { return cadr(fn); }
 oop fn_body(oop fn) { return caddr(fn); }
 oop fn_env(oop fn) { return cadddr(fn); }
-bool is_lisp_procedure(oop fn) {
+boolean is_lisp_procedure(oop fn) {
   CHECKV(is_cons(fn), fn, "Must be cons to be a composite procedure.");
   return value_eq(symbols._lisp_procedure_marker, car(fn));
 }
@@ -63,7 +63,7 @@ oop make_native_fn(function c_function) {
 	      make_smallint((uint) c_function));
 }
 
-bool is_native_fn(oop fn) {
+boolean is_native_fn(oop fn) {
   return value_eq(car(fn), symbols._native_procedure_marker);
 }
 

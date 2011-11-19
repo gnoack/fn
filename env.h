@@ -7,7 +7,7 @@
  */
 // Empty environment is nil.
 extern oop make_env(oop key, oop value, oop env);
-extern bool env_haskey(oop env, oop key);
+extern boolean env_haskey(oop env, oop key);
 extern oop env_lookup(oop env, oop key);
 
 /* Manipulates an environment. */

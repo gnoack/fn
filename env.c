@@ -20,7 +20,7 @@ oop make_env(oop key, oop value, oop env) {
   return make_cons(make_cons(key, value), env);
 }
 
-bool env_haskey(oop env, oop key) {
+boolean env_haskey(oop env, oop key) {
   while (!is_nil(env)) {
     if (value_eq(key, caar(env))) {
       return YES;

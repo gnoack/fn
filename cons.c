@@ -17,7 +17,7 @@ oop make_cons(oop car, oop cdr) {
 }
 
 extern
-bool is_cons(oop v) {
+boolean is_cons(oop v) {
   if (!is_mem(v)) {
     return NO;
   }
@@ -65,7 +65,7 @@ oop length(oop list) {
 
 
 oop the_end_marker;
-bool initialized_marker = NO;
+boolean initialized_marker = NO;
 
 extern
 oop end_marker() {
@@ -76,7 +76,7 @@ oop end_marker() {
   return the_end_marker;
 }
 
-bool is_end_marker(oop v) {
+boolean is_end_marker(oop v) {
   return value_eq(end_marker(), v);
 }
 

@@ -7,7 +7,7 @@
 
 typedef unsigned int uint;
 
-typedef char bool;
+typedef char boolean;
 #define YES 1
 #define NO 0
 #define TO_BOOL(b) ((b) ? YES : NO)
@@ -54,19 +54,19 @@ extern
 oop make_char(const char c);
 
 extern
-bool is_nil(oop a);
+boolean is_nil(oop a);
 
 extern
-bool is_smallint(oop v);
+boolean is_smallint(oop v);
 
 extern
-bool is_symbol(oop v);
+boolean is_symbol(oop v);
 
 extern
-bool is_mem(oop v);
+boolean is_mem(oop v);
 
 extern
-bool is_char(oop v);
+boolean is_char(oop v);
 
 extern
 uint get_smallint(oop v);
@@ -78,7 +78,7 @@ extern
 const char* get_symbol(oop v);
 
 extern
-bool value_eq(oop a, oop b);
+boolean value_eq(oop a, oop b);
 
 /** For debugging. */
 extern

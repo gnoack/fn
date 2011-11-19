@@ -36,7 +36,7 @@ oop make_char(const char c) {
 /* Value identity.  Returns true for equal integers and symbols as
  * well.  (This works because symbols are always interned.)
  */
-bool value_eq(oop a, oop b) {
+boolean value_eq(oop a, oop b) {
   // TODO(gnoack): Consider TO_BOOL(a.smallint == a.smallint),
   //   we don't need these types.
   if (is_symbol(a) && is_symbol(b)) {
@@ -57,23 +57,23 @@ bool value_eq(oop a, oop b) {
 // TODO(gnoack): Reduce the is_* to a function that returns the
 //   primitive type from the value.  This would ensure a value
 //   can have only one type.
-bool is_nil(oop a) {
+boolean is_nil(oop a) {
   return TO_BOOL(a.smallint == 0L);
 }
 
-bool is_smallint(oop v) {
+boolean is_smallint(oop v) {
   return TO_BOOL(((v.smallint) & 1) != 0);
 }
 
-bool is_symbol(oop v) {
+boolean is_symbol(oop v) {
   return is_interned(v.symbol);
 }
 
-bool is_mem(oop v) {
+boolean is_mem(oop v) {
   return !is_smallint(v) && !is_symbol(v) && !is_nil(v) && !is_char(v);
 }
 
-bool is_char(oop v) {
+boolean is_char(oop v) {
   return TO_BOOL(char_start <= v.smallint &&
 		 v.smallint < char_start + (256 << 2));
 }

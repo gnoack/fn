@@ -4,4 +4,4 @@ extern
 const char* intern_string(const char* s);
 
 extern
-bool is_interned(const char* s);
+boolean is_interned(const char* s);

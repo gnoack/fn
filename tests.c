@@ -6,6 +6,7 @@
 #include "dispatcher.h"
 #include "env-test.h"
 #include "eval.h"
+#include "gc.h"
 #include "lang.h"
 #include "macros.h"
 #include "maps.h"
@@ -26,6 +27,7 @@
 #include "cons-test.h"
 #include "dispatcher-test.h"
 #include "env-test.h"
+#include "gc-test.h"
 #include "interpreter-test.h"
 #include "macros-test.h"
 #include "maps-test.h"
@@ -65,7 +67,7 @@ void fail(const char* filename,
 extern
 void assert_true(const char* filename,
 		 unsigned int line,
-		 bool b) {
+		 boolean b) {
   init_assert();
   if (!b) {
     fail(filename, line, "Expected true, got false.");
@@ -75,7 +77,7 @@ void assert_true(const char* filename,
 extern
 void assert_false(const char* filename,
 		  unsigned int line,
-		  bool b) {
+		  boolean b) {
   init_assert();
   if (b) {
     fail(filename, line, "Expected false, got true.");
@@ -159,6 +161,7 @@ int main(int argc, char* argv[]) {
   }
   printf("Test execution:\n");
   /* Register tests here. */
+  gc_tests();
   interpreter_tests();
   cons_tests();
   interning_tests();

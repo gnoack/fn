@@ -6,7 +6,7 @@
 symbols_t symbols;
 
 void init_symbols() {
-  static bool initialized = NO;
+  static boolean initialized = NO;
   if (initialized) return;
   symbols._if = make_symbol("if");
   symbols._def = make_symbol("def");

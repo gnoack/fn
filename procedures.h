@@ -17,7 +17,7 @@ extern oop fn_body(oop fn);
 extern oop fn_env(oop fn);
 
 // True if it's a lisp procedure.
-extern bool is_lisp_procedure(oop fn);
+extern boolean is_lisp_procedure(oop fn);
 
 
 
@@ -30,7 +30,7 @@ extern bool is_lisp_procedure(oop fn);
 typedef oop (*function)(oop args);
 
 extern oop make_native_fn(function c_function);
-extern bool is_native_fn(oop fn);
+extern boolean is_native_fn(oop fn);
 extern oop native_fn_apply(oop fn, oop args);
 
 

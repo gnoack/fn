@@ -33,7 +33,7 @@ void register_globally_fn(const char* name, function fn) {
 }
 
 void init_eval() {
-  static bool initialized = NO;
+  static boolean initialized = NO;
   if (initialized) return;
   global_env = NIL;
   register_globally("true", symbols._true);
