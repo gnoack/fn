@@ -1,9 +1,12 @@
 
+#include <strings.h>
+
 #include "value.h"
 #include "gc.h"
 
 typedef struct {
-  // TODO: Start GC, Stop GC hook methods.
+  void (*on_gc_start)();
+  void (*on_gc_stop)();
   void (*save)(oop obj);
   boolean (*is_saved)(oop obj);
   oop (*update)(oop obj);
@@ -19,16 +22,18 @@ region_t* region(oop obj);
 void save_noop(oop obj) { /* Not needed. */ }
 boolean is_saved_always_true(oop obj) { return YES; }
 oop identity(oop obj) { return obj; }
-void update_all_refs_noop() { /* No-op. */ }
+void noop() { /* No-op. */ }
 void enumerate_refs_none(oop obj, void (*callback)(oop ref)) { /* None */ }
 
 region_t primitive_region;
 
 void primitive_region_init() {
+  primitive_region.on_gc_start = noop;
+  primitive_region.on_gc_stop = noop;
   primitive_region.save = save_noop;
   primitive_region.is_saved = is_saved_always_true;
   primitive_region.update = identity;
-  primitive_region.update_all_refs = update_all_refs_noop;
+  primitive_region.update_all_refs = noop;
   primitive_region.enumerate_refs = enumerate_refs_none;
 }
 
@@ -42,6 +47,17 @@ struct {
 } object_memory;
 
 region_t object_region;
+
+void object_on_gc_start() {
+  // Swap half-spaces.
+  uint size = object_memory.upper_new - object_memory.new_space;
+  oop* tmp = object_memory.new_space;
+  object_memory.new_space = object_memory.old_space;
+  object_memory.old_space = tmp;
+  object_memory.free_new = object_memory.new_space;
+  object_memory.upper_new = object_memory.new_space + size;
+  bzero(object_memory.new_space, sizeof(oop) * size);
+}
 
 // Allocate in new space.
 oop object_alloc(uint size) {
@@ -109,8 +125,11 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
 void object_region_init(uint size) {
   object_memory.old_space = (oop*) malloc(sizeof(oop) * size);
   object_memory.new_space = (oop*) malloc(sizeof(oop) * size);
+  bzero(object_memory.new_space, sizeof(oop) * size);
   object_memory.free_new = object_memory.new_space;
   object_memory.upper_new = object_memory.free_new + size;
+  object_region.on_gc_start = object_on_gc_start;
+  object_region.on_gc_stop = noop;
   object_region.save = object_save;
   object_region.is_saved = object_is_saved;
   object_region.update = object_update;
@@ -146,10 +165,15 @@ void traverse_object_graph(oop current) {
 }
 
 oop garbage_collect(oop root) {
-  // TODO: Only one root? :-)  Sounds reasonable to me...
-  // * Tell regions that GC is starting.
-  // * Traverse roots
+  // TODO: Only one root?
+  primitive_region.on_gc_start();
+  object_region.on_gc_start();
+  // Traverse roots
   traverse_object_graph(root);
-  // * Tell regions to update all refs.
-  // * Tell regions that GC is stopping.
+  // Tell regions to update all refs.
+  primitive_region.update_all_refs();
+  object_region.update_all_refs();
+  // Tell regions that the collection has finished.
+  primitive_region.on_gc_stop();
+  object_region.on_gc_stop();
 }
