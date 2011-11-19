@@ -125,9 +125,11 @@ void run_lisp_tests(oop tests) {
 
     tests = cdr(tests);
   }
+  global_env = garbage_collect(global_env);
 }
 
 void init() {
+  init_gc();
   init_symbols();
   init_eval();
   init_primitives();

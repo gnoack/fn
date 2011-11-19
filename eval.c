@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "gc.h"
 #include "cons.h"
 #include "value.h"
 #include "carcdr.h"
@@ -166,4 +167,5 @@ void load_decls(oop decls) {
 
     decls = cdr(decls);
   }
+  global_env = garbage_collect(global_env);
 }

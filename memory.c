@@ -3,12 +3,11 @@
 
 #include "value.h"
 #include "memory.h"
+#include "gc.h"
 
 extern oop mem_alloc(uint amount) {
   CHECK(amount > 0, "Allocated memory regions need to be larger than 0.");
-  oop value;
-  value.mem = calloc(amount, sizeof(oop));
-  return value;
+  return object_alloc(amount);
 }
 
 extern oop mem_set(oop target, uint index, oop value) {

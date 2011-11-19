@@ -15,6 +15,9 @@ extern
 oop eval(oop program, oop env);
 
 extern
+void register_globally(const char* name, oop value);
+
+extern
 void register_globally_fn(const char* name, function fn);
 
 extern
