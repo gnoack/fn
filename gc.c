@@ -62,7 +62,8 @@ void object_save(oop obj) {
   // Move.
   uint size = get_smallint(obj.mem[-1]);
   oop newobj = object_alloc(size);
-  for (uint i = 0; i < size; i++) {
+  uint i;
+  for (i = 0; i < size; i++) {
     newobj.mem[i] = obj.mem[i];
   }
 
@@ -73,7 +74,7 @@ void object_save(oop obj) {
 
 // True if obj references a broken heart.
 boolean object_is_saved(oop obj) {
-  return TO_BOOL(obj.mem[-1] == NIL);
+  return is_nil(obj.mem[-1]);
 }
 
 oop object_update(oop obj) {
@@ -85,7 +86,8 @@ oop object_update(oop obj) {
 }
 
 void object_update_all_refs() {
-  for (oop* ptr = object_memory.new_space;
+  oop* ptr;
+  for (ptr = object_memory.new_space;
        ptr < object_memory.free_new;
        ptr++) {
     *ptr = region(*ptr)->update(*ptr);
@@ -98,7 +100,8 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
   // be different?
   obj = object_update(obj);
   uint size = get_smallint(obj.mem[-1]);
-  for (uint i = 0; i < size; i++) {
+  uint i;
+  for (i = 0; i < size; i++) {
     callback(obj.mem[i]);
   }
 }
