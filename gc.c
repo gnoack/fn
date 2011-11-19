@@ -135,14 +135,6 @@ void init_gc() {
   primitive_region_init();
 }
 
-oop garbage_collect(oop root) {
-  // TODO: Only one root? :-)  Sounds reasonable to me...
-  // * Tell regions that GC is starting.
-  // * Traverse roots
-  // * Tell regions to update all refs.
-  // * Tell regions that GC is stopping.
-}
-
 void traverse_object_graph(oop current) {
   region_t* current_region = region(current);
   if (current_region->is_saved(current)) {
@@ -151,4 +143,13 @@ void traverse_object_graph(oop current) {
 
   current_region->save(current);
   current_region->enumerate_refs(current, &traverse_object_graph);
+}
+
+oop garbage_collect(oop root) {
+  // TODO: Only one root? :-)  Sounds reasonable to me...
+  // * Tell regions that GC is starting.
+  // * Traverse roots
+  traverse_object_graph(root);
+  // * Tell regions to update all refs.
+  // * Tell regions that GC is stopping.
 }
