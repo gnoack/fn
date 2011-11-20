@@ -58,11 +58,6 @@ unsigned int length_int(oop list) {
   }
 }
 
-extern
-oop length(oop list) {
-  return make_smallint(length_int(list));
-}
-
 
 oop the_end_marker;
 boolean initialized_marker = NO;
