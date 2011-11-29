@@ -152,7 +152,6 @@ oop object_update(oop obj) {
 }
 
 void object_update_all_refs() {
-  // TODO: Extract to helper method.
   oop* ptr;
   for (ptr = object_memory.current.start;
        ptr < object_memory.current.free;

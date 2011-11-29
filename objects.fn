@@ -6,16 +6,16 @@
 
 ;; The type type links to itself: @type = ($make @type empty-map)
 (def @type ($make 1 2))
-($set @type 0 @type)
-($set @type 1 empty-map)
+($mem-set! @type 0 @type)
+($mem-set! @type 1 empty-map)
 (defn type? (x)
   (eq (type-of x) @type))
 
 ; @cons must be created early for consing,
 ; so we need some retroactive patching.
 ;(def @cons ($make @type cons? empty-map))
-($set @cons 0 @type)
-($set @cons 1 empty-map)
+($mem-set! @cons 0 @type)
+($mem-set! @cons 1 empty-map)
 
 ;; TODO: Supertypes?
 (defmacro deftype (name)
@@ -37,14 +37,14 @@
 	((char? x) @character)
 	((symbol? x) @symbol)
 	((nil? x) @nil)
-	((mem? x) ($get x 0))))
+	((mem? x) ($mem-get x 0))))
 
 
 ;;; Method definition
 
 (defn install-method! (type selector method)
-  ($set type 1
-        (send ($get type 1) 'put selector method)))
+  ($mem-set! type 1
+             (send ($mem-get type 1) 'put selector method)))
 
 (defmacro defm (type selector args body)
   ;; `(install-method! ,type ,selector
@@ -56,7 +56,7 @@
 ;;; Message sending
 
 (defn %method-for-type (type selector)
-  (send ($get type 1) 'get selector))
+  (send ($mem-get type 1) 'get selector))
 
 (defn send (receiver message &rest arguments)
   (if (procedure? receiver)

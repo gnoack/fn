@@ -65,7 +65,7 @@
 (def cons?
     (lambda (value)
       (if (mem? value)
-	  (eq @cons ($get value 0))
+	  (eq @cons ($mem-get value 0))
 	  false)))
 
 ;; TODO: Make procedures regular allocated objects.

@@ -17,21 +17,21 @@
 (defn make-array (capacity)
   (let ((result ($alloc (+ 2 capacity))))
     (progn
-      ($set result 0 @array)
-      ($set result 1 capacity)
+      ($mem-set! result 0 @array)
+      ($mem-set! result 1 capacity)
       result)))
 
 (defm @array 'get (n)
   (with-asserts ((number? n)
 		 (< n (send self 'size)))
-    ($get self (+ 2 n))))
+    ($mem-get self (+ 2 n))))
 
 (defm @array 'set! (n value)
   (with-asserts ((number? n)
 		 (< n (send self 'size)))
-    ($set self (+ 2 n) value)))
+    ($mem-set! self (+ 2 n) value)))
 
 (defm @array 'size ()
-  ($get self 1))
+  ($mem-get self 1))
 
 )

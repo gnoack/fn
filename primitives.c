@@ -190,8 +190,8 @@ void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
   register_globally_fn("$make", primitive_mem_make);
-  register_globally_fn("$get", primitive_mem_get);
-  register_globally_fn("$set", primitive_mem_set);
+  register_globally_fn("$mem-get", primitive_mem_get);
+  register_globally_fn("$mem-set!", primitive_mem_set);
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
   register_globally_fn("string->symbol", primitive_string_to_symbol);
