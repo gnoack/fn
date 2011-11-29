@@ -1,5 +1,5 @@
 
-#include <strings.h>
+#include <string.h>
 
 #include "value.h"
 #include "gc.h"
@@ -40,20 +40,24 @@ void primitive_region_init() {
 
 // ------------------------------------------------------------------
 
-struct {
-  // Pointer to next free location in "new" half-space.
-  oop* free_new;
-  // Size of a half-space in number of "oop"s contained.
+typedef struct {
+  oop* free;
+  oop* start;
+  oop* end;
   uint size;
-  // Lower and upper bounds of new half-space.
-  oop* new_space;
-  oop* upper_new;
-  // Lower and upper bounds of old half-space.
-  oop* old_space;
-  oop* upper_old;
-} object_memory;
+} half_space;
 
-region_t object_region;
+void half_space_init(half_space* space, uint size) {
+  space->start = (oop*) calloc(sizeof(oop), size);
+  space->end = space->start + size;
+  space->free = space->start;
+  space->size = size;
+}
+
+void half_space_clear(half_space* space) {
+  space->free = space->start;
+  bzero(space->start, sizeof(oop) * space->size);
+}
 
 // Helper to swap pointers into oop regions.
 void swap(oop** a, oop** b) {
@@ -62,28 +66,58 @@ void swap(oop** a, oop** b) {
   *b = tmp;
 }
 
+// Swaps two half-spaces.
+void half_space_swap(half_space* a, half_space* b) {
+  half_space tmp;
+  memcpy(&tmp, a, sizeof(half_space));
+  memcpy(a, b, sizeof(half_space));
+  memcpy(b, &tmp, sizeof(half_space));
+}
+
+oop half_space_alloc(half_space* space, uint size) {
+  oop result;
+  result.mem = space->free;
+  space->free += size;
+  if (space->free >= space->end) {
+    printf("Too little space in new half-space.");
+    exit(1);
+  }
+  return result;
+}
+
+boolean half_space_contains(half_space* space, oop obj) {
+  return TO_BOOL(space->start <= obj.mem && obj.mem <= space->end);
+}
+
+// Only for debugging.
+void half_space_print_fill(const half_space* space, const char* name) {
+  uint fill = space->free - space->start;
+  uint size = space->size;
+  printf("GC: %6s: Object fill: %d of %d (%d %%)\n",
+	 name, fill, size, 100*fill / size);
+}
+
+
+// ---------------------------------------------------------
+
+struct {
+  half_space current;
+  half_space old;
+} object_memory;
+
+region_t object_region;
+
+
 void object_on_gc_start() {
-  // Swap new and old half-space.
-  swap(&object_memory.new_space, &object_memory.old_space);
-  swap(&object_memory.upper_new, &object_memory.upper_old);
-  // Reset free pointer.
-  object_memory.free_new = object_memory.new_space;
-  // Clear new half-space.
-  bzero(object_memory.new_space, sizeof(oop) * object_memory.size);
+  half_space_swap(&object_memory.current, &object_memory.old);
+  half_space_clear(&object_memory.current);
 }
 
 // Allocate in new space.
 oop object_alloc(uint size) {
-  *(object_memory.free_new) = make_smallint(size);
-  object_memory.free_new++;
-
-  oop result;
-  result.mem = object_memory.free_new;
-  object_memory.free_new += size;
-  if (object_memory.free_new >= object_memory.upper_new) {
-    printf("Too little space in new half-space.");
-    exit(1);
-  }
+  oop result = half_space_alloc(&object_memory.current, size + 1);
+  result.mem[0] = make_smallint(size);
+  result.mem = result.mem + 1;
   return result;
 }
 
@@ -94,8 +128,7 @@ boolean object_is_saved(oop obj) {
 
 void object_save(oop obj) {
   CHECKV(!object_is_saved(obj), obj, "Must be unsaved.");
-  CHECKV(object_memory.old_space <= obj.mem
-	 && obj.mem < object_memory.upper_old,
+  CHECKV(half_space_contains(&object_memory.old, obj),
 	 obj, "Object must be in old half-space to be saved.");
   // Move.
   uint size = get_smallint(obj.mem[-1]);
@@ -121,8 +154,8 @@ oop object_update(oop obj) {
 void object_update_all_refs() {
   // TODO: Extract to helper method.
   oop* ptr;
-  for (ptr = object_memory.new_space;
-       ptr < object_memory.free_new;
+  for (ptr = object_memory.current.start;
+       ptr < object_memory.current.free;
        ptr++) {
     *ptr = region(*ptr)->update(*ptr);
   }
@@ -141,14 +174,8 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
 }
 
 void object_region_init(uint size) {
-  object_memory.size = size;
-  // New half-space.
-  object_memory.new_space = (oop*) calloc(sizeof(oop), size);
-  object_memory.upper_new = object_memory.new_space + size;
-  object_memory.free_new = object_memory.new_space;
-  // Old half-space.
-  object_memory.old_space = (oop*) malloc(sizeof(oop) * size);
-  object_memory.upper_old = object_memory.old_space + size;
+  half_space_init(&object_memory.current, size);
+  half_space_init(&object_memory.old, size);
   // Hooks.
   object_region.on_gc_start = object_on_gc_start;
   object_region.on_gc_stop = noop;
@@ -157,14 +184,6 @@ void object_region_init(uint size) {
   object_region.update = object_update;
   object_region.update_all_refs = object_update_all_refs;
   object_region.enumerate_refs = object_enumerate_refs;
-}
-
-// Only for debugging.
-void object_print_fill(const char* name) {
-  uint fill = object_memory.free_new - object_memory.new_space;
-  uint size = object_memory.size;
-  printf("GC: %6s: Object fill: %d of %d (%d %%)\n",
-	 name, fill, size, 100*fill / size);
 }
 
 // ------------------------------------------------------------------
@@ -195,15 +214,15 @@ void traverse_object_graph(oop current) {
 }
 
 boolean should_skip_gc() {
-  uint fill = object_memory.free_new - object_memory.new_space;
-  return TO_BOOL((100*fill / object_memory.size) < 75);
+  uint fill = object_memory.current.free - object_memory.current.start;
+  return TO_BOOL((100*fill / object_memory.current.size) < 75);
 }
 
 oop garbage_collect(oop root) {
   if (should_skip_gc()) {
     return root;
   }
-  // object_print_fill("before");
+  // object_print_fill(&object_memory->current, "before");
   // TODO: Only one root?
   primitive_region.on_gc_start();
   object_region.on_gc_start();
@@ -219,6 +238,6 @@ oop garbage_collect(oop root) {
   // Tell regions that the collection has finished.
   primitive_region.on_gc_stop();
   object_region.on_gc_stop();
-  // object_print_fill("after");
+  // object_print_fill(&object_memory->current, "after");
   return result;
 }
