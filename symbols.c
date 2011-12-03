@@ -1,4 +1,5 @@
 
+#include "gc.h"
 #include "value.h"
 #include "memory.h"
 #include "symbols.h"
@@ -23,6 +24,7 @@ void init_symbols() {
   // TODO: This is not actually a symbol, but a type.
   // The @cons type is finished when types are initialized.
   symbols._cons = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._cons);
 
   symbols._bc_halt = make_symbol("halt");
   symbols._bc_jump = make_symbol("jump");

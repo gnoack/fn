@@ -187,6 +187,24 @@ void object_region_init(uint size) {
 
 // ------------------------------------------------------------------
 
+#define MAX_PERSISTENT_REF_COUNT 4
+uint persistent_ref_count;
+oop** persistent_refs;
+
+void persistent_refs_init() {
+  persistent_refs = malloc(MAX_PERSISTENT_REF_COUNT * sizeof(oop*));
+  persistent_ref_count = 0;
+}
+
+void gc_register_persistent_ref(oop* place) {
+  CHECK(persistent_ref_count < MAX_PERSISTENT_REF_COUNT,
+	"Too many persistent references.");
+  persistent_refs[persistent_ref_count] = place;
+  persistent_ref_count++;
+}
+
+// ------------------------------------------------------------------
+
 // Region for object
 region_t* region(oop obj) {
   // Could be done by asking the regions.
@@ -200,6 +218,7 @@ region_t* region(oop obj) {
 void init_gc() {
   object_region_init(1 << 22);  // TODO: Enough?
   primitive_region_init();
+  persistent_refs_init();
 }
 
 void traverse_object_graph(oop current) {
@@ -217,11 +236,20 @@ boolean should_skip_gc() {
   return TO_BOOL((100*fill / object_memory.current.size) < 75);
 }
 
+// TODO: Move up to the other persistent ref things.
+void persistent_refs_update() {
+  uint i;
+  for (i = 0; i < persistent_ref_count; i++) {
+    oop* place = persistent_refs[i];
+    *place = region(*place)->update(*place);
+  }
+}
+
 oop garbage_collect(oop root) {
   if (should_skip_gc()) {
     return root;
   }
-  // object_print_fill(&object_memory->current, "before");
+  //half_space_print_fill(&object_memory.current, "before");
   // TODO: Only one root?
   primitive_region.on_gc_start();
   object_region.on_gc_start();
@@ -231,12 +259,11 @@ oop garbage_collect(oop root) {
   // Tell regions to update all refs.
   primitive_region.update_all_refs();
   object_region.update_all_refs();
-  // TODO: This hack makes the interpreter know the new location
-  // of the cons type.
-  symbols._cons = region(symbols._cons)->update(symbols._cons);
+  // Update persistent references.
+  persistent_refs_update();
   // Tell regions that the collection has finished.
   primitive_region.on_gc_stop();
   object_region.on_gc_stop();
-  // object_print_fill(&object_memory->current, "after");
+  //half_space_print_fill(&object_memory.current, "after");
   return result;
 }
