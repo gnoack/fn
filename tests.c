@@ -46,6 +46,8 @@
 #include "carcdr.h"
 
 #include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 unsigned int assertion_count = 0;
 unsigned int failure_count = 0;
@@ -149,16 +151,32 @@ void init() {
   load_decls(compiler_decls());
 }
 
-int main(int argc, char* argv[]) {
-  init();
-  if (argc > 1) {
-    printf("%s:\n", argv[1]);
-    oop cmd = make_string(argv[1]);
+void repl() {
+  char* input;
+  while (1) {
+    input = readline("fn> ");
+
+    if (input == NULL) {
+      puts("Goodbye.");
+      return;
+    }
+    if (*input) {
+      add_history(input);
+    }
+    oop cmd = make_string(input);
     oop sexpr = eval_global(LIST(make_symbol("read-all"),
 				 LIST(make_symbol("quote"), cmd)));
-    print_value(sexpr);
-    printf("==> ");
     print_value(eval_global(sexpr));
+    
+    free(input);
+  }
+}
+
+int main(int argc, char* argv[]) {
+  init();
+  if (argc <= 1 || strcmp(argv[1], "-t")) {
+    puts("FN " __DATE__ ".");
+    repl();
     exit(0);
   }
   printf("Test execution:\n");

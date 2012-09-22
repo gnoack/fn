@@ -1,4 +1,5 @@
 
+LIBS = -lreadline
 CFLAGS = -g
 HEADERS = *.h
 OBJECTS = \
@@ -92,11 +93,11 @@ LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
 %.c: %.fn
 	$(LISP) $*
 
-tests: tests-bin
-	./tests-bin
+tests: repl
+	./repl -t
 
-tests-bin: $(LISPTARGETS) $(ALLOBJECTS)
-	$(CC) $(CFLAGS) -o tests-bin $(ALLOBJECTS)
+repl: $(LISPTARGETS) $(ALLOBJECTS)
+	$(CC) $(CFLAGS) -o repl $(ALLOBJECTS) $(LIBS)
 
 clean:
 	rm -rf $(LISPTARGETS)
