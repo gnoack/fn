@@ -44,10 +44,10 @@ typedef struct {
   oop* free;
   oop* start;
   oop* end;
-  uint size;
+  fn_uint size;
 } half_space;
 
-void half_space_init(half_space* space, uint size) {
+void half_space_init(half_space* space, fn_uint size) {
   space->start = (oop*) calloc(sizeof(oop), size);
   space->end = space->start + size;
   space->free = space->start;
@@ -74,7 +74,7 @@ void half_space_swap(half_space* a, half_space* b) {
   memcpy(b, &tmp, sizeof(half_space));
 }
 
-oop half_space_alloc(half_space* space, uint size) {
+oop half_space_alloc(half_space* space, fn_uint size) {
   oop result;
   result.mem = space->free;
   space->free += size;
@@ -91,10 +91,10 @@ boolean half_space_contains(half_space* space, oop obj) {
 
 // Only for debugging.
 void half_space_print_fill(const half_space* space, const char* name) {
-  uint fill = space->free - space->start;
-  uint size = space->size;
+  fn_uint fill = space->free - space->start;
+  fn_uint size = space->size;
   printf("GC: %6s: Object fill: %d of %d (%d %%)\n",
-	 name, fill, size, 100*fill / size);
+	 name, (int) fill, (int) size, (int) (100*fill / size));
 }
 
 
@@ -114,7 +114,7 @@ void object_on_gc_start() {
 }
 
 // Allocate in new space.
-oop object_alloc(uint size) {
+oop object_alloc(fn_uint size) {
   oop result = half_space_alloc(&object_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
@@ -131,9 +131,9 @@ void object_save(oop obj) {
   CHECKV(half_space_contains(&object_memory.old, obj),
 	 obj, "Object must be in old half-space to be saved.");
   // Move.
-  uint size = get_smallint(obj.mem[-1]);
+  fn_uint size = get_smallint(obj.mem[-1]);
   oop newobj = object_alloc(size);
-  uint i;
+  fn_uint i;
   for (i = 0; i < size; i++) {
     newobj.mem[i] = obj.mem[i];
   }
@@ -165,14 +165,14 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
   // different regions here.  In other regions, the memory layout may
   // be different?
   obj = object_update(obj);
-  uint size = get_smallint(obj.mem[-1]);
-  uint i;
+  fn_uint size = get_smallint(obj.mem[-1]);
+  fn_uint i;
   for (i = 0; i < size; i++) {
     callback(obj.mem[i]);
   }
 }
 
-void object_region_init(uint size) {
+void object_region_init(fn_uint size) {
   half_space_init(&object_memory.current, size);
   half_space_init(&object_memory.old, size);
   // Hooks.
@@ -188,7 +188,7 @@ void object_region_init(uint size) {
 // ------------------------------------------------------------------
 
 #define MAX_PERSISTENT_REF_COUNT 4
-uint persistent_ref_count;
+fn_uint persistent_ref_count;
 oop** persistent_refs;
 
 void persistent_refs_init() {
@@ -232,13 +232,13 @@ void traverse_object_graph(oop current) {
 }
 
 boolean should_skip_gc() {
-  uint fill = object_memory.current.free - object_memory.current.start;
+  fn_uint fill = object_memory.current.free - object_memory.current.start;
   return TO_BOOL((100*fill / object_memory.current.size) < 75);
 }
 
 // TODO: Move up to the other persistent ref things.
 void persistent_refs_update() {
-  uint i;
+  fn_uint i;
   for (i = 0; i < persistent_ref_count; i++) {
     oop* place = persistent_refs[i];
     *place = region(*place)->update(*place);

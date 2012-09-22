@@ -60,7 +60,7 @@ oop apply_lisp_procedure(oop fn, oop args) {
 // Native procedures
 oop make_native_fn(function c_function) {
   return LIST(symbols._native_procedure_marker,
-	      make_smallint((uint) c_function));
+	      make_smallint((fn_uint) c_function));
 }
 
 boolean is_native_fn(oop fn) {

@@ -3,7 +3,7 @@
 #include "value.h"
 
 extern
-oop object_alloc(uint size);
+oop object_alloc(fn_uint size);
 
 extern
 void init_gc();

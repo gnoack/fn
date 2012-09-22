@@ -41,9 +41,9 @@ oop primitive_rest(oop args) {
 
 /* UNSAFE */
 oop primitive_mem_make(oop args) {
-  uint size = length_int(args);
+  fn_uint size = length_int(args);
   oop result = mem_alloc(size);
-  uint i;
+  fn_uint i;
   for (i = 0; i < size; i++) {
     mem_set(result, i, first(args));
     args = rest(args);
@@ -92,7 +92,7 @@ oop primitive_symbol_to_string(oop args) {
 // Integer addition.
 oop primitive_add(oop args) {
   // TODO: Pretty inaccurate. This works on smallints only.
-  uint i = 0;
+  fn_uint i = 0;
   for (; !is_nil(args); args = cdr(args)) {
     oop arg = car(args);
     CHECKV(is_smallint(arg), arg, "Only smallints can be added for now.");

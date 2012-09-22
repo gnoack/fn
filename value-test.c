@@ -31,10 +31,8 @@ TEST(identifying_char) {
 }
 
 TEST(value_size) {
-  // TODO(gnoack): Ugh, this is implementation-specific.
-  ASSERT_TRUE(4 == sizeof(oop));
-  ASSERT_TRUE(4 == sizeof(uint));
-  ASSERT_TRUE(4 == sizeof(char*));
+  ASSERT_TRUE(sizeof(oop) == sizeof(fn_uint));
+  ASSERT_TRUE(sizeof(oop) == sizeof(char*));
 }
 
 TEST(int_equality) {

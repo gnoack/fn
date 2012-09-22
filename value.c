@@ -10,9 +10,9 @@
 // Characters are mapped to char_start in memory;
 // the nth ASCII character corresponds to the value
 // char_start + (n << 2).
-uint char_start = 0xcccc0000;
+fn_uint char_start = 0xcccc0000;
 
-oop make_smallint(uint i) {
+oop make_smallint(fn_uint i) {
   oop a;
   a.smallint = (i << 1) | 1L;
   CHECK(a.smallint >> 1 == i, "Integer doesn't fit into smallint.");
@@ -29,7 +29,7 @@ oop make_symbol(const char* str) {
 
 oop make_char(const char c) {
   oop a;
-  a.smallint = char_start + ((uint)c << 2);
+  a.smallint = char_start + ((fn_uint)c << 2);
   return a;
 }
 
@@ -78,7 +78,7 @@ boolean is_char(oop v) {
 		 v.smallint < char_start + (256 << 2));
 }
 
-uint get_smallint(oop v) {
+fn_uint get_smallint(oop v) {
   CHECKNUMBER(v);
   return v.smallint >> 1;
 }
@@ -98,7 +98,7 @@ void print_value_internal(oop v) {
   if (value_eq(v, global_env)) {
     printf("[global-env]");
   } else if (is_smallint(v)) {
-    printf("%d", get_smallint(v));
+    printf("%d", (unsigned int) get_smallint(v));
   } else if (is_char(v)) {
     printf("\\%c", get_char(v));
   } else if (is_symbol(v)) {

@@ -2,17 +2,23 @@
 #ifndef _VALUE_H_
 #define _VALUE_H_ 1
 
+#include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef unsigned int uint;
+#if __WORDSIZE == 64
+  typedef uint64_t fn_uint;
+#else
+  typedef uint32_t fn_uint;
+#endif  // __WORDSIZE == 64
 
 typedef char boolean;
 #define YES 1
 #define NO 0
 #define TO_BOOL(b) ((b) ? YES : NO)
 
-#define NIL ((oop) (uint) 0L)
+#define NIL ((oop) (fn_uint) 0L)
 
 #define CHECK(x, msg)                                \
   if (!(x)) {                                        \
@@ -35,7 +41,7 @@ typedef union value_u {
   /* A smallint if the least significant bit is set.
    * Actual integer value is then oop.smallint >> 1.
    */
-  uint smallint;
+  fn_uint smallint;
 
   /* Pointer to a series of values. */
   union value_u* mem;
@@ -45,7 +51,7 @@ typedef union value_u {
 } oop;
 
 extern
-oop make_smallint(uint i);
+oop make_smallint(fn_uint i);
 
 extern
 oop make_symbol(const char* str);
@@ -69,7 +75,7 @@ extern
 boolean is_char(oop v);
 
 extern
-uint get_smallint(oop v);
+fn_uint get_smallint(oop v);
 
 extern
 char get_char(oop v);

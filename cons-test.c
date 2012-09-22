@@ -11,7 +11,7 @@ TEST(cons_simple_test) {
   ASSERT_EQ(b, rest(cons));
 }
 
-oop I(uint i) { return make_smallint(i); }
+oop I(fn_uint i) { return make_smallint(i); }
 
 TEST(cons_list_test) {
   oop l = make_list(I(1),
