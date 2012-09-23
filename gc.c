@@ -5,6 +5,7 @@
 #include "gc.h"
 #include "symbols.h"
 
+// TODO: enumerate_refs only calls traverse_object_graph.  Hardcode it?
 typedef struct {
   void (*on_gc_start)();
   void (*on_gc_stop)();
