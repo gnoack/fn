@@ -101,8 +101,7 @@ oop primitive_add(oop args) {
   return make_smallint(i);
 }
 
-// TODO: This gives very wrong values, because we don't
-//   support negative numbers yet..
+// TODO: This may crash, because we don't support negative numbers.
 oop primitive_sub(oop args) {
   // TODO: Allow more arguments.
   PARSE_TWO_ARGS(a, b);
