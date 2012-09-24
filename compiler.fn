@@ -30,9 +30,10 @@
 ;;; Static variable environment
 
 (defn %globalop (op)
-  (cond ((eq op 'write-var) 'write-global-var)
-        ((eq op 'read-var)  'read-global-var)
-        (true               (error "Unknown variable access mode: " op))))
+  (case op
+    ((write-var) 'write-global-var)
+    ((read-var)  'read-global-var)
+    (else        (error "Unknown variable access mode: " op))))
 
 (def global-env
   (dispatcher self
