@@ -18,13 +18,17 @@ void init_symbols() {
   symbols._quote = make_symbol("quote");
   symbols._rest = make_symbol("&rest");
   symbols._macroexpand = make_symbol("macroexpand");
-  symbols._native_procedure_marker = make_symbol("native");
-  symbols._lisp_procedure_marker = make_symbol("procedure");
   symbols._set = make_symbol("$set!");
-  // TODO: This is not actually a symbol, but a type.
-  // The @cons type is finished when types are initialized.
+  // TODO: These are not actually symbols, but types.
+  // The types are finished when types are initialized.
   symbols._cons = mem_alloc(2);
   gc_register_persistent_ref(&symbols._cons);
+  symbols._procedure = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._procedure);
+  symbols._native_procedure = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._native_procedure);
+  symbols._string = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._string);
 
   symbols._bc_halt = make_symbol("halt");
   symbols._bc_jump = make_symbol("jump");

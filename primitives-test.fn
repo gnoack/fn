@@ -87,7 +87,7 @@
   (eq 'surprise ($mem-get alphabet 3)))
 
 ;; UNSAFE functions for unsafe memory block allocation.
-($mem-block? ($make-mem-block 10))
+(mem-block? ($make-mem-block 10))
 
 (progn
   (def m ($make-mem-block 5))

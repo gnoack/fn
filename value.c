@@ -6,6 +6,7 @@
 #include "value.h"
 #include "cons.h"
 #include "memory.h"
+#include "procedures.h"
 #include "string-interning.h"
 
 // Characters are mapped to char_start in memory;
@@ -49,6 +50,8 @@ boolean value_eq(oop a, oop b) {
   } else if (is_char(a) && is_char(b)) {
     return TO_BOOL(a.mem == b.mem);
   } else if (is_nil(a) && is_nil(b)) {
+    return YES;
+  } else if (is_primitive_mem(a) && is_primitive_mem(b)) {
     return YES;
   } else {
     return NO;  // a and b have different types.
@@ -129,17 +132,16 @@ void print_value_internal(oop v) {
     }
     printf(")");
   } else if (is_primitive_mem(v)) {
-    printf("<PRIMITIVE-MEMORY #%08x>", v.mem);
+    printf("<PRIMITIVE-MEMORY #%08llx>", (unsigned long long) v.smallint);
+  } else if (is_lisp_procedure(v)) {
+    printf("<PROCEDURE ");
+    print_value_internal(fn_lambda_list(v));
+    printf(">");
+  } else if (is_native_fn(v)) {
+    printf("<NATIVE-PROCEDURE>");
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
-    printf("#[a ");
-    oop next = mem_get(v, 0);
-    if (value_eq(v, next)) {
-      printf("recursively defined");
-    } else {
-      print_value_internal(next);
-    }
-    printf(" object]");
+    printf("#[OBJECT]");
   }
 }
 

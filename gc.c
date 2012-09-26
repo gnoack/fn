@@ -200,7 +200,7 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
 
 // Only valid outside of GC run.
 extern boolean gc_is_object(oop obj) {
-  return TO_BOOL(half_space_contains(&object_memory.current, obj));
+  return half_space_contains(&object_memory.current, obj);
 }
 
 void object_region_init(fn_uint size) {
@@ -289,7 +289,7 @@ void primitive_memory_region_init(fn_uint size) {
  * updated when objects move in a GC run.
  */
 
-#define MAX_PERSISTENT_REF_COUNT 4
+#define MAX_PERSISTENT_REF_COUNT 8
 fn_uint persistent_ref_count;
 oop** persistent_refs;
 
@@ -312,9 +312,13 @@ region_t* region(oop obj) {
   // Could be done by asking the regions.
   if (is_smallint(obj) || is_char(obj) || is_symbol(obj) || is_nil(obj)) {
     return &immediate_region;
-  } else if (half_space_contains(&object_memory.old, obj)) {
+  } else if (half_space_contains(&object_memory.old, obj) ||
+             half_space_contains(&object_memory.current, obj)) {
     return &object_region;
   } else {
+    CHECK(half_space_contains(&primitive_memory.old, obj) ||
+          half_space_contains(&primitive_memory.current, obj),
+          "Must be an primitive object.");
     return &primitive_memory_region;
   }
 }

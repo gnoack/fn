@@ -17,6 +17,14 @@
 ($mem-set! @cons 0 @type)
 ($mem-set! @cons 1 empty-map)
 
+; Same procedure for @procedure.
+($mem-set! @procedure 0 @type)
+($mem-set! @procedure 1 empty-map)
+($mem-set! @native-procedure 0 @type)
+($mem-set! @native-procedure 1 empty-map)
+($mem-set! @string 0 @type)
+($mem-set! @string 1 empty-map)
+
 ;; TODO: Supertypes?
 (defmacro deftype (name)
   (list 'def name
@@ -27,6 +35,7 @@
 (deftype @character)
 (deftype @symbol)
 (deftype @nil)
+(deftype @mem-block)
 
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
@@ -37,6 +46,7 @@
 	((char? x) @character)
 	((symbol? x) @symbol)
 	((nil? x) @nil)
+        ((mem-block? x) @mem-block)
 	((mem? x) ($mem-get x 0))))
 
 
@@ -61,7 +71,8 @@
 (defn send (receiver message &rest arguments)
   (if (procedure? receiver)
       (apply receiver (cons message arguments))
-      (apply (%method-for-type (type-of receiver) message) (cons receiver arguments))))
+      (apply (%method-for-type (type-of receiver) message)
+             (cons receiver arguments))))
 
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)

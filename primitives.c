@@ -232,7 +232,7 @@ void init_primitives() {
   register_globally_fn("writeout", primitive_write_out);
   register_globally_fn("kill-lisp", primitive_kill_lisp);
   register_globally_fn("$make-mem-block", primitive_primitive_mem_alloc);
-  register_globally_fn("$mem-block?", primitive_mem_block_p);
+  register_globally_fn("mem-block?", primitive_mem_block_p);
   register_globally_fn("$mem-block-byte-get", primitive_primitive_mem_get);
   register_globally_fn("$mem-block-byte-set!", primitive_primitive_mem_set);
 }

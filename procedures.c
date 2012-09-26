@@ -7,20 +7,25 @@
 #include "symbols.h"
 #include "eval.h"
 #include "env.h"
+#include "memory.h"
 
 #include "procedures.h"
 
 // Lisp procedures and accessing them.
 oop make_procedure(oop lambda_list, oop body, oop env) {
-  return LIST(symbols._lisp_procedure_marker,
-	      lambda_list, body, env);
+  oop result = mem_alloc(4);
+  mem_set(result, 0, symbols._procedure);
+  mem_set(result, 1, lambda_list);
+  mem_set(result, 2, body);
+  mem_set(result, 3, env);
+  return result;
 }
-oop fn_lambda_list(oop fn) { return cadr(fn); }
-oop fn_body(oop fn) { return caddr(fn); }
-oop fn_env(oop fn) { return cadddr(fn); }
+oop fn_lambda_list(oop fn) { return mem_get(fn, 1); }
+oop fn_body(oop fn) { return mem_get(fn, 2); }
+oop fn_env(oop fn) { return mem_get(fn, 3); }
 boolean is_lisp_procedure(oop fn) {
-  CHECKV(is_cons(fn), fn, "Must be cons to be a composite procedure.");
-  return value_eq(symbols._lisp_procedure_marker, car(fn));
+  return TO_BOOL(is_mem(fn) &&
+                 value_eq(symbols._procedure, mem_get(fn, 0)));
 }
 
 // Given a lambda list and a argument vector,
@@ -59,16 +64,19 @@ oop apply_lisp_procedure(oop fn, oop args) {
 
 // Native procedures
 oop make_native_fn(function c_function) {
-  return LIST(symbols._native_procedure_marker,
-	      make_smallint((fn_uint) c_function));
+  oop result = mem_alloc(2);
+  mem_set(result, 0, symbols._native_procedure);
+  mem_set(result, 1, make_smallint((fn_uint) c_function));
+  return result;
 }
 
 boolean is_native_fn(oop fn) {
-  return value_eq(car(fn), symbols._native_procedure_marker);
+  return TO_BOOL(is_mem(fn) &&
+                 value_eq(mem_get(fn, 0), symbols._native_procedure));
 }
 
 function native_fn_function(oop fn) {
-  return (function)(get_smallint(cadr(fn)));
+  return (function)(get_smallint(mem_get(fn, 1)));
 }
 
 oop native_fn_apply(oop fn, oop args) {
@@ -85,9 +93,10 @@ oop apply(oop values) {
   oop fn = car(values);
   if (is_lisp_procedure(fn)) {
     return apply_lisp_procedure(fn, cdr(values));
-  } else if (is_native_fn(fn)) {
+  } else {
+    CHECKV(is_native_fn(fn), fn, "Must be a procedure for applying.");
     return native_fn_apply(fn, cdr(values));
   }
-  printf("Not a procedure.");
-  print_value(fn);
 }
+
+

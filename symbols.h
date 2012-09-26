@@ -11,10 +11,13 @@ typedef struct {
   oop _quote;
   oop _rest;
   oop _macroexpand;
-  oop _native_procedure_marker;
-  oop _lisp_procedure_marker;
   oop _set;
+
+  // Built-in types.
   oop _cons;
+  oop _procedure;
+  oop _native_procedure;
+  oop _string;
 
   // Bytecode.
   oop _bc_halt;
