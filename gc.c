@@ -5,41 +5,60 @@
 #include "gc.h"
 #include "symbols.h"
 
+
 // TODO: enumerate_refs only calls traverse_object_graph.  Hardcode it?
 typedef struct {
+  // Executed before a GC run.
   void (*on_gc_start)();
+  // Executed after a GC run.
   void (*on_gc_stop)();
+  // Rescue the object from deletion in this GC round.
   void (*save)(oop obj);
+  // True if the object is guaranteed to exist after the GC round.
   boolean (*is_saved)(oop obj);
+  // Returns the new pointer for the given pointer.
   oop (*update)(oop obj);
+  // Updates all object references within the memory region.
   void (*update_all_refs)();
+  // Enumerates all outgoing references of the given object.
   void (*enumerate_refs)(oop obj, void (*callback)(oop ref));
 } region_t;
 
 // Forward declaration.
 region_t* region(oop obj);
 
-// ------------------------------------------------------------------
-
+
+/*
+ * Immediate region.
+ *
+ * The immediate region handles immediate objects like characters and
+ * smallints, whose pointers don't change after a GC.  All objects of
+ * this type are automatically rescued into the next generation.
+ */
 void save_noop(oop obj) { /* Not needed. */ }
 boolean is_saved_always_true(oop obj) { return YES; }
 oop identity(oop obj) { return obj; }
 void noop() { /* No-op. */ }
 void enumerate_refs_none(oop obj, void (*callback)(oop ref)) { /* None */ }
 
-region_t primitive_region;
+region_t immediate_region;
 
-void primitive_region_init() {
-  primitive_region.on_gc_start = noop;
-  primitive_region.on_gc_stop = noop;
-  primitive_region.save = save_noop;
-  primitive_region.is_saved = is_saved_always_true;
-  primitive_region.update = identity;
-  primitive_region.update_all_refs = noop;
-  primitive_region.enumerate_refs = enumerate_refs_none;
+void immediate_region_init() {
+  immediate_region.on_gc_start = noop;
+  immediate_region.on_gc_stop = noop;
+  immediate_region.save = save_noop;
+  immediate_region.is_saved = is_saved_always_true;
+  immediate_region.update = identity;
+  immediate_region.update_all_refs = noop;
+  immediate_region.enumerate_refs = enumerate_refs_none;
 }
 
-// ------------------------------------------------------------------
+
+/*
+ * Half spaces.
+ *
+ * Half spaces are handlers for memory regions.
+ */
 
 typedef struct {
   oop* free;
@@ -75,6 +94,10 @@ void half_space_swap(half_space* a, half_space* b) {
   memcpy(b, &tmp, sizeof(half_space));
 }
 
+/*
+ * Allocate an object of the given size in the half space.
+ * This doesn't care about storing object size within the half space.
+ */
 oop half_space_alloc(half_space* space, fn_uint size) {
   oop result;
   result.mem = space->free;
@@ -98,8 +121,10 @@ void half_space_print_fill(const half_space* space, const char* name) {
 	 name, (int) fill, (int) size, (int) (100*fill / size));
 }
 
-
-// ---------------------------------------------------------
+
+/*
+ * Object memory.
+ */
 
 struct {
   half_space current;
@@ -115,7 +140,7 @@ void object_on_gc_start() {
 }
 
 // Allocate in new space.
-oop object_alloc(fn_uint size) {
+extern oop gc_object_alloc(fn_uint size) {
   oop result = half_space_alloc(&object_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
@@ -133,7 +158,7 @@ void object_save(oop obj) {
 	 obj, "Object must be in old half-space to be saved.");
   // Move.
   fn_uint size = get_smallint(obj.mem[-1]);
-  oop newobj = object_alloc(size);
+  oop newobj = gc_object_alloc(size);
   fn_uint i;
   for (i = 0; i < size; i++) {
     newobj.mem[i] = obj.mem[i];
@@ -173,6 +198,11 @@ void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
   }
 }
 
+// Only valid outside of GC run.
+extern boolean gc_is_object(oop obj) {
+  return TO_BOOL(half_space_contains(&object_memory.current, obj));
+}
+
 void object_region_init(fn_uint size) {
   half_space_init(&object_memory.current, size);
   half_space_init(&object_memory.old, size);
@@ -186,7 +216,78 @@ void object_region_init(fn_uint size) {
   object_region.enumerate_refs = object_enumerate_refs;
 }
 
-// ------------------------------------------------------------------
+
+// ---------------------------------------------------------
+
+/*
+ * Primitive memory.
+ *
+ * The most dangerous form of memory available.  Each oop in primitive
+ * memory is prepended with the object size before allocation.
+ */
+struct {
+  half_space current;
+  half_space old;
+} primitive_memory;
+
+void primitive_memory_on_gc_start() {
+  half_space_swap(&primitive_memory.current, &primitive_memory.old);
+  half_space_clear(&primitive_memory.current);
+}
+
+// Size in bytes
+extern oop gc_primitive_memory_alloc(fn_uint size) {
+  // Round up to oop size and express in number of oops.
+  size = ((size + sizeof(oop) - 1) & ~(sizeof(oop) - 1)) / sizeof(oop);
+  oop result = half_space_alloc(&primitive_memory.current, size + 1);
+  result.mem[0] = make_smallint(size);
+  result.mem = result.mem + 1;
+  return result;
+}
+
+void primitive_memory_save(oop obj) {
+  // Sharing the same is_saved method with the object allocator.
+  CHECKV(!object_is_saved(obj), obj, "Must be unsaved.");
+  CHECKV(half_space_contains(&primitive_memory.old, obj),
+	 obj, "Object must be in old half-space to be saved.");
+  // Move.
+  fn_uint size = get_smallint(obj.mem[-1]);
+  oop newobj = gc_primitive_memory_alloc(size);
+  fn_uint i;
+  for (i = 0; i < size; i++) {
+    newobj.mem[i] = obj.mem[i];
+  }
+
+  // Mark as broken heart.
+  obj.mem[-1] = NIL;
+  obj.mem[0] = newobj;
+}
+
+// Only valid outside of GC run.
+extern boolean gc_is_primitive_memory(oop obj) {
+  return TO_BOOL(half_space_contains(&primitive_memory.current, obj));
+}
+
+region_t primitive_memory_region;
+
+void primitive_memory_region_init(fn_uint size) {
+  half_space_init(&primitive_memory.current, size);
+  half_space_init(&primitive_memory.old, size);
+  // Hooks.
+  primitive_memory_region.on_gc_start = primitive_memory_on_gc_start;
+  primitive_memory_region.on_gc_stop = noop;
+  primitive_memory_region.save = primitive_memory_save;
+  primitive_memory_region.is_saved = object_is_saved;  // Shared.
+  primitive_memory_region.update = object_update;  // Shared.
+  primitive_memory_region.update_all_refs = noop;
+  primitive_memory_region.enumerate_refs = enumerate_refs_none;
+}
+
+
+/*
+ * Persistent references are references in C code that need to be
+ * updated when objects move in a GC run.
+ */
 
 #define MAX_PERSISTENT_REF_COUNT 4
 fn_uint persistent_ref_count;
@@ -206,19 +307,22 @@ void gc_register_persistent_ref(oop* place) {
 
 // ------------------------------------------------------------------
 
-// Region for object
+// Finds the region for an object
 region_t* region(oop obj) {
   // Could be done by asking the regions.
   if (is_smallint(obj) || is_char(obj) || is_symbol(obj) || is_nil(obj)) {
-    return &primitive_region;
-  } else {
+    return &immediate_region;
+  } else if (half_space_contains(&object_memory.old, obj)) {
     return &object_region;
+  } else {
+    return &primitive_memory_region;
   }
 }
 
 void init_gc() {
   object_region_init(1 << 22);  // TODO: Enough?
-  primitive_region_init();
+  primitive_memory_region_init(1 << 16);  // TODO: Enough?
+  immediate_region_init();
   persistent_refs_init();
 }
 
@@ -233,8 +337,10 @@ void traverse_object_graph(oop current) {
 }
 
 boolean should_skip_gc() {
-  fn_uint fill = object_memory.current.free - object_memory.current.start;
-  return TO_BOOL((100*fill / object_memory.current.size) < 75);
+  fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
+  fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
+  return TO_BOOL((100*obj_fill / object_memory.current.size) < 75 &&
+                 (100*pri_fill / primitive_memory.current.size) < 75);
 }
 
 // TODO: Move up to the other persistent ref things.
@@ -246,24 +352,27 @@ void persistent_refs_update() {
   }
 }
 
-oop garbage_collect(oop root) {
+oop gc_run(oop root) {
   if (should_skip_gc()) {
     return root;
   }
   //half_space_print_fill(&object_memory.current, "before");
   // TODO: Only one root?
-  primitive_region.on_gc_start();
+  primitive_memory_region.on_gc_start();
+  immediate_region.on_gc_start();
   object_region.on_gc_start();
   // Traverse roots
   traverse_object_graph(root);
   oop result = region(root)->update(root);
   // Tell regions to update all refs.
-  primitive_region.update_all_refs();
+  primitive_memory_region.update_all_refs();
+  immediate_region.update_all_refs();
   object_region.update_all_refs();
   // Update persistent references.
   persistent_refs_update();
   // Tell regions that the collection has finished.
-  primitive_region.on_gc_stop();
+  primitive_memory_region.on_gc_stop();
+  immediate_region.on_gc_stop();
   object_region.on_gc_stop();
   //half_space_print_fill(&object_memory.current, "after");
   return result;

@@ -50,44 +50,33 @@ typedef union value_u {
   const char* symbol;
 } oop;
 
-extern
-oop make_smallint(fn_uint i);
+extern oop make_smallint(fn_uint i);
 
-extern
-oop make_symbol(const char* str);
+extern oop make_symbol(const char* str);
 
-extern
-oop make_char(const char c);
+extern oop make_char(const char c);
 
-extern
-boolean is_nil(oop a);
+extern boolean is_nil(oop a);
 
-extern
-boolean is_smallint(oop v);
+extern boolean is_smallint(oop v);
 
-extern
-boolean is_symbol(oop v);
+extern boolean is_symbol(oop v);
 
-extern
-boolean is_mem(oop v);
+extern boolean is_mem(oop v);
 
-extern
-boolean is_char(oop v);
+extern boolean is_primitive_mem(oop v);
 
-extern
-fn_uint get_smallint(oop v);
+extern boolean is_char(oop v);
 
-extern
-char get_char(oop v);
+extern fn_uint get_smallint(oop v);
 
-extern
-const char* get_symbol(oop v);
+extern char get_char(oop v);
 
-extern
-boolean value_eq(oop a, oop b);
+extern const char* get_symbol(oop v);
+
+extern boolean value_eq(oop a, oop b);
 
 /** For debugging. */
-extern
-void print_value(oop v);
+extern void print_value(oop v);
 
 #endif // _VALUE_H_

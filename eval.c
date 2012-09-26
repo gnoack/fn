@@ -167,5 +167,5 @@ void load_decls(oop decls) {
 
     decls = cdr(decls);
   }
-  global_env = garbage_collect(global_env);
+  global_env = gc_run(global_env);
 }

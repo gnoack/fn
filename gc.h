@@ -2,11 +2,13 @@
 
 #include "value.h"
 
-extern
-oop object_alloc(fn_uint size);
+extern oop gc_object_alloc(fn_uint size);
+extern boolean gc_is_object(oop obj);
 
-extern
-void init_gc();
+extern oop gc_primitive_memory_alloc(fn_uint size);
+extern boolean gc_is_primitive_memory(oop obj);
+
+extern void init_gc();
 
 /*
  * Register a reference to be updated
@@ -16,7 +18,7 @@ extern
 void gc_register_persistent_ref(oop* place);
 
 extern
-oop garbage_collect(oop root);
+oop gc_run(oop root);
 
 #define _GC_H_ 0
 #endif  // _GC_H_

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "gc.h"
 #include "eval.h"
 #include "value.h"
 #include "cons.h"
@@ -70,7 +71,11 @@ boolean is_symbol(oop v) {
 }
 
 boolean is_mem(oop v) {
-  return !is_smallint(v) && !is_symbol(v) && !is_nil(v) && !is_char(v);
+  return gc_is_object(v);
+}
+
+boolean is_primitive_mem(oop v) {
+  return gc_is_primitive_memory(v);
 }
 
 boolean is_char(oop v) {
@@ -123,6 +128,8 @@ void print_value_internal(oop v) {
       }
     }
     printf(")");
+  } else if (is_primitive_mem(v)) {
+    printf("<PRIMITIVE-MEMORY #%08x>", v.mem);
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     printf("#[a ");
