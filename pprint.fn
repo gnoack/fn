@@ -1,35 +1,25 @@
 (
 
-(defn string? (str)
-  (and (cons? str)
-       (all? (map char? str))))
-
 (defn char-escape (ch)
   (cond ((eq ch #\") "\\\"")
-	(true (list ch))))
+	(true (list->string (list ch)))))
 
 (defn pprint (item)
-  (cond ((string? item) (append "\""
-				(apply append (map char-escape item))
-				"\""))
+  (cond ((string? item) (string-append "\""
+                                       (apply append
+                                              (map char-escape
+                                                   (string->list item)))
+                                       "\""))
         ((cons? item)   (if (and (eq 'quote (first item))
 				 (eq 2 (length item)))
-			    (append "'" (pprint (second item)))
-			    (append "(" (string-join (map pprint item) " ") ")")))
-	((char? item)   (append "\\" (char-escape item)))
+			    (string-append "'" (pprint (second item)))
+			    (string-append "("
+                                           (string-join (map pprint item) " ")
+                                           ")")))
+	((char? item)   (string-append "\\" (char-escape item)))
 	((number? item) (int->string item 10))
 	((nil? item)    "nil")
 	((symbol? item) (symbol->string item))
 	(true           (error "Don't know how to print this."))))
-
-; String functions...
-
-(defn string-join (strings delimiter)
-  (if (cons? strings)
-      (apply append
-	     (cons (first strings)
-		   (map (lambda (s) (append delimiter s))
-			(rest strings))))
-      '()))
 
 )

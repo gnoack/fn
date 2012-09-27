@@ -8,8 +8,4 @@
 (eql "foo" (pprint 'foo))
 (eql "nil" (pprint nil))
 
-(eql "a b c" (string-join (list "a" "b" "c") " "))
-(eql '() (string-join (list) " "))
-(eql "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
-
 )

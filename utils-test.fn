@@ -8,6 +8,18 @@
 (eq 6 (last '(1 2 3 4 5 6)))
 (eq 'result (progn 1 2 3 'result))
 
+; Strings
+(string= "abc" "abc")
+(not (string= "x" "y"))
+
+(eql (list #\a #\b #\c)
+     (string->list "abc"))
+
+(string= "a b c" (string-join (list "a" "b" "c") " "))
+(string= '() (string-join (list) " "))
+(string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
+
+
 ; Appending lists
 (eql (list 'a 'b 'c 'd 'e)
      (append (list 'a 'b 'c)

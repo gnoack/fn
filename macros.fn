@@ -139,7 +139,7 @@
 
 ;; Writeout multiple strings
 (defn awriteout (&rest args)
-  (writeout (apply append args)))
+  (writeout (apply string-append args)))
 
 ;; Wraps a method to print out its arguments.
 (defn debugging-wrap (func-symbol func)

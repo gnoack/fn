@@ -1,6 +1,8 @@
 
 (
 
+(defn identity (x) x)
+
 (defn second (list)  (first (rest list)))
 (defn third (list)   (first (rest (rest list))))
 (defn fourth (list)  (first (rest (rest (rest list)))))
@@ -14,8 +16,7 @@
 (defn progn (&rest args)
   (last args))
 
-;; Appending
-
+;; Lists
 (defn append (&rest as)
   (if (nil? as) as
       (apply append-inner as)))
@@ -27,15 +28,6 @@
 	  (cons (first a)
 		(apply append
 		       (cons (rest a) as))))))
-
-(defn digit->int (digit)
-  (- (char->num digit) (char->num #\0)))
-
-(defn string->int (str)
-  (reduce (lambda (init next)
-	    (+ (* 10 init) next))
-	  (map digit->int str)
-	  0))
 
 (defn eql (a b)
   (if (and (cons? a) (cons? b))
@@ -54,6 +46,54 @@
   (if (cons? seq)
       (+ 1 (length (rest seq)))
       0))
+
+;;;; Strings
+(defn string? (str)
+  (and (cons? str)
+       (all? (map char? str))))
+
+(def string-append append)
+
+(defn string-size (str) (length str))
+
+(defn string-at (str n)
+  (if (and (<= 0 n)
+           (< n (string-size str)))
+      (nth str n)
+      (error "Out of bounds.")))
+
+(defn %string->list-inner (str n str-length)
+  (if (eq n str-length)
+      (list)
+      (cons (string-at str n)
+            (%string->list-inner str (+ n 1) str-length))))
+
+(defn string->list (str)
+  (%string->list-inner str 0 (string-size str)))
+
+(def list->string identity)
+(def string= eql)
+
+(defn map-string (fn str)
+  (map fn (string->list str)))
+
+(defn string-join (strings delimiter)
+  (if (cons? strings)
+      (apply string-append
+	     (cons (first strings)
+		   (map (lambda (s) (string-append delimiter s))
+			(rest strings))))
+      '()))
+
+;; Number conversions
+(defn digit->int (digit)
+  (- (char->num digit) (char->num #\0)))
+
+(defn string->int (str)
+  (reduce (lambda (init next)
+	    (+ (* 10 init) next))
+	  (map digit->int (string->list str))
+	  0))
 
 ;; Integer to string conversion.
 (def _hex-digits "0123456789abcef")

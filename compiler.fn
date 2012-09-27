@@ -27,7 +27,7 @@
            (writeout "byte stream: ")
            (apply awriteout
                   (map (lambda (x)
-                         (append " " (int->string x 16)))
+                         (string-append " " (int->string x 16)))
                        (send self 'slice 0 index))))))))
 
 
@@ -80,8 +80,8 @@
 
 (defn linked-env-with-vars (next-env my-vars)
   (dispatcher self
-   ('prettyprint ()                (append (pprint my-vars) "::"
-                                           (send next-env 'prettyprint)))
+   ('prettyprint ()                (string-append (pprint my-vars) "::"
+                                                  (send next-env 'prettyprint)))
 
    ;; Construction
    ('linked-with-vars (vars)       (linked-env-with-vars self vars))
@@ -100,9 +100,9 @@
 (defn gensym (prefix)
   (progn
     (def global-label-counter (+ 1 global-label-counter))
-    (string->symbol (append prefix
-                            "-"
-                            (int->string global-label-counter 10)))))
+    (string->symbol (string-append prefix
+                                   "-"
+                                   (int->string global-label-counter 10)))))
 
 ;;; Compilation
 
