@@ -68,6 +68,14 @@
  '(append (list 'foo) (list 1 2 3) (list 'bar))
  (macroexpand '(backquote (foo (unquote-list (list 1 2 3)) bar))))
 
+;; TODO: Fix backquotes.
+;; (eql
+;;  'x
+;;  (macroexpand '(backquote (unquote x))))
+;; (eql
+;;  '(quote (list x))
+;;  (macroexpand '(backquote (list (backquote (list (unquote x)))))))
+
 ;; Labels (letrec)
 (eql
  '(let ((odd? '*undefined*)
