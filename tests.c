@@ -151,13 +151,26 @@ void init() {
   load_decls(compiler_decls());
 }
 
+#define HISTORY_FILE "/.fn_history"
+
+char* get_histfile() {
+  char* homedir = getenv("HOME");
+  char* result = malloc(strlen(homedir) + strlen(HISTORY_FILE) + 1);
+  strcpy(result, homedir);
+  strcat(result, HISTORY_FILE);
+  return result;
+}
+
 void repl() {
+  char* histfile = get_histfile();
+  read_history(histfile);
   char* input;
   while (1) {
     input = readline("fn> ");
 
     if (input == NULL) {
       puts("Goodbye.");
+      write_history(histfile);
       return;
     }
     if (*input) {
