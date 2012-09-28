@@ -99,7 +99,7 @@
 (def global-label-counter 100)
 (defn gensym (prefix)
   (progn
-    (def global-label-counter (+ 1 global-label-counter))
+    ($set! global-label-counter (+ 1 global-label-counter))
     (string->symbol (string-append prefix
                                    "-"
                                    (int->string global-label-counter 10)))))

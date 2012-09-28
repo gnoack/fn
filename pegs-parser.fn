@@ -13,93 +13,94 @@
 ;; into account the separators in the grammar language.
 (def _pp_symbol
     (peg=> (peg+ _alpha)
-	   string->symbol))
+           (lambda (l) (string->symbol (list->string l)))))
 
 (def _pp_string-expr
     (peg=> _string  ; like in Lisp.
-	   (lambda (chars)
-	     ;; `(peg-seq ,@(map (lambda (ch) `(peg= ,ch)) chars)))
-	     (cons 'peg-seq
-		   (map (lambda (ch) (list 'peg= ch))
-			chars)))))
+           (lambda (str)
+             ;; `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
+             ;;                  (string->list chars))))
+             (cons 'peg-seq
+                   (map (lambda (ch) (list 'peg= ch))
+                        (string->list str))))))
 
 (def _pp_symbol-expr
     (peg=> (peg-seq _pp_singlequote
-		    _pp_symbol)  ; like in Lisp.
-	   (lambda (result)
-	     ;; `(peg= (quote ,(second result)))
-	     (list 'peg= (list 'quote (second result))))))
+                    _pp_symbol)  ; like in Lisp.
+           (lambda (result)
+             ;; `(peg= (quote ,(second result)))
+             (list 'peg= (list 'quote (second result))))))
 
 ;; An individual parsing expression.
 (def _pp_expr4 (peg-alt _pp_string-expr
-			_pp_symbol-expr))
+                        _pp_symbol-expr))
 
 ;; Just parse nothing, always succeeds.
 (def _pp_epsilon (peg-seq))
 
 (def _pp_plus_expr
     (peg-let ((e _pp_expr4)
-	      (_ (peg= #\+)))
+              (_ (peg= #\+)))
        (list 'peg+ e)))
 
 (def _pp_star_expr
     (peg-let ((e _pp_expr4)
-	      (_ (peg= #\*)))
+              (_ (peg= #\*)))
        (list 'peg* e)))
 
 (def _pp_expr3
     (peg-alt _pp_plus_expr
-	     _pp_star_expr
-	     _pp_expr4))
+             _pp_star_expr
+             _pp_expr4))
 
 ;; _pp_bindingvar ::=
 ;;     ':' _symbol:s  => s
 ;;   | _pp_epsilon    => '_
 (def _pp_bindingvar
     (peg-alt (peg-let ((_ _pp_colon)
-		       (s _symbol))  ; like in Lisp.
-	       s)
-	     (peg=> _pp_epsilon
-		    (lambda (x) '_))))
+                       (s _symbol))  ; like in Lisp.
+                      s)
+             (peg=> _pp_epsilon
+                    (lambda (x) '_))))
 
 ;; Parser for a list of items separated by a separator.
 (defn peg-listof (item sep)
   (peg-let ((a item)
-	    (as (peg* (peg=> (peg-seq sep item)
-			     second))))
+            (as (peg* (peg=> (peg-seq sep item)
+                             second))))
     (cons a as)))
 
 (defn _pp_token (rule)
   (peg=> (peg-seq _pp_optional_whitespaces
-		  rule
-		  _pp_optional_whitespaces)
-	 second))
+                  rule
+                  _pp_optional_whitespaces)
+         second))
 
 ;; _pp_binding ::= _pp_expr3:e _pp_bindingvar:v => (list v e)
 (def _pp_binding
     (peg-let ((e _pp_expr3)
-	      (v _pp_bindingvar))
+              (v _pp_bindingvar))
       (list v e)))
 
 (def _pp_action_sequence
     (peg-let ((bindings (peg-listof _pp_binding
-				    _pp_optional_whitespaces))
-	      (_ (_pp_token _pp_arrow))
-	      (action _lisp_grammar))
+                                    _pp_optional_whitespaces))
+              (_ (_pp_token _pp_arrow))
+              (action _lisp_grammar))
       (list 'peg-let bindings action)))
 
 (def _pp_sequence
     (peg=> (peg+ (_pp_token _pp_expr3))
-	   (lambda (x) (cons 'peg-seq x))))
+           (lambda (x) (cons 'peg-seq x))))
 
 ;; An action with bound variables.
 (def _pp_expr2
     (peg-alt _pp_action_sequence
-	     _pp_sequence))
+             _pp_sequence))
 
 (def _pp_expr1
     (peg=> (peg-listof _pp_expr2 (_pp_token (peg= #\|)))
-	   (lambda (x)
-	     (cons 'peg-alt x))))
+           (lambda (x)
+             (cons 'peg-alt x))))
 
 )

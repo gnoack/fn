@@ -6,8 +6,8 @@
  (def %xyz-env (global-env 'linked-with-vars (list 'x 'y 'z)))
  (def %abz-env (%xyz-env 'linked-with-vars (list 'a 'b 'z))))
 
-(eql "GLOBAL" (send global-env 'prettyprint))
-(eql "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
+(string= "GLOBAL" (send global-env 'prettyprint))
+(string= "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
 (eql '(read-var 0 0) (send %xyz-env 'generate-read 'x))
 (eql '(read-var 0 1) (send %xyz-env 'generate-read 'y))

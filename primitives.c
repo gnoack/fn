@@ -79,8 +79,11 @@ oop primitive_num_to_char(oop args) {
 
 oop primitive_string_to_symbol(oop args) {
   PARSE_ONE_ARG(str);
-  CHECKV(is_cons(str) || is_nil(str), str, "Must be a string");
-  return make_symbol(c_string(str));
+  CHECKV(is_string(str), str, "Must be a string");
+  char* c_str = c_string(str);
+  oop result = make_symbol(c_str);
+  free(c_str);
+  return result;
 }
 
 oop primitive_symbol_to_string(oop args) {
@@ -167,16 +170,17 @@ oop primitive_list(oop args) {
 }
 
 oop primitive_apply(oop args) {
-  check_argument_number(args, 2);
-  return apply(make_cons(car(args), cadr(args)));
+  PARSE_TWO_ARGS(procedure, arguments);
+  return apply(make_cons(procedure, arguments));
 }
 
 /* Attention: has side effect of printing, returns argument. */
 oop primitive_write_out(oop args) {
-  check_argument_number(args, 1);
-  CHECKV(is_cons(car(args)) || is_nil(car(args)), car(args),
-	 "Must be list of characters (string)");
-  printf("%s\n", c_string(car(args)));
+  PARSE_ONE_ARG(str);
+  CHECKV(is_string(str), str, "Must be list of characters (string)");
+  char* c_str = c_string(str);
+  printf("%s\n", c_str);
+  free(c_str);
   return car(args);
 }
 

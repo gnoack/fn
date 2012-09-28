@@ -14,10 +14,15 @@
 
 (eql (list #\a #\b #\c)
      (string->list "abc"))
+(string= "hello" "hello")
+;(string= "hello" (list->string (list #\h #\e #\l #\l #\o)))
 
 (string= "a b c" (string-join (list "a" "b" "c") " "))
-(string= '() (string-join (list) " "))
+(string= "" (string-join (list) " "))
 (string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
+
+(eq #\d (string-at "abcdefg" 3))
+(eq 6 (string-size "abcdef"))
 
 
 ; Appending lists
@@ -40,8 +45,6 @@
 (eq 3 (nth (list 1 2 3 4 5) 2))
 (eq 5 (nth (list 5 6) 0))
 (eq 6 (nth (list 5 6) 1))
-(eq #\d (nth "abcdefg" 3))
-(eq 6 (length "abcdef"))
 (eq 2 (length (list 1 2)))
 
 (list? '(1 2 3))
@@ -53,8 +56,9 @@
 (eq 3 (digit->int #\3))
 
 ; Integer coding
-(eql "1" (int->string 1 10))
-(eql "123" (int->string 123 10))
+(string= "1" (int->string 1 10))
+(string= "123" (int->string 123 10))
+(string= "cafe" (int->string 51966 16))
 
 ;; Comparisons
 (<= 1 2)

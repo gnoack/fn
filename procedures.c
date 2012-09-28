@@ -13,16 +13,20 @@
 
 // Lisp procedures and accessing them.
 oop make_procedure(oop lambda_list, oop body, oop env) {
-  oop result = mem_alloc(4);
+  oop result = mem_alloc(5);
   mem_set(result, 0, symbols._procedure);
   mem_set(result, 1, lambda_list);
   mem_set(result, 2, body);
   mem_set(result, 3, env);
+  mem_set(result, 4, NIL);  // Name.
   return result;
 }
+
 oop fn_lambda_list(oop fn) { return mem_get(fn, 1); }
 oop fn_body(oop fn) { return mem_get(fn, 2); }
 oop fn_env(oop fn) { return mem_get(fn, 3); }
+oop fn_name(oop fn) { return mem_get(fn, 4); }
+oop fn_set_name(oop fn, oop name) { return mem_set(fn, 4, name); }
 boolean is_lisp_procedure(oop fn) {
   return TO_BOOL(is_mem(fn) &&
                  value_eq(symbols._procedure, mem_get(fn, 0)));
@@ -87,16 +91,36 @@ oop native_fn_apply(oop fn, oop args) {
 
 // Application
 
-// Function application.
-// First argument is function, rest are arguments.
-oop apply(oop values) {
-  oop fn = car(values);
-  if (is_lisp_procedure(fn)) {
-    return apply_lisp_procedure(fn, cdr(values));
-  } else {
-    CHECKV(is_native_fn(fn), fn, "Must be a procedure for applying.");
-    return native_fn_apply(fn, cdr(values));
+oop apply_stack[4000];
+int apply_stack_pos = 0;
+
+/*
+ * Print the current stack for debugging.
+ * Conflicts badly with the GC running in between,
+ * it's better to only do it when you're crashing anyway. :)
+ */
+void print_apply_stack() {
+  int i = apply_stack_pos;
+  while (i >= 0) {
+    printf("%3d ", i);
+    print_value(apply_stack[i]);
+    i--;
   }
 }
 
-
+// Function application.
+// First argument is function, rest are arguments.
+oop apply(oop values) {
+  print_stack_frame = print_apply_stack; // TODO: Set somewhere else.
+  apply_stack[apply_stack_pos++] = values;
+  oop fn = car(values);
+  oop result;
+  if (is_lisp_procedure(fn)) {
+    result = apply_lisp_procedure(fn, cdr(values));
+  } else {
+    CHECKV(is_native_fn(fn), fn, "Must be a procedure for applying.");
+    result = native_fn_apply(fn, cdr(values));
+  }
+  apply_stack_pos--;
+  return result;
+}

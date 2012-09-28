@@ -6,9 +6,9 @@
 
 (defn pprint (item)
   (cond ((string? item) (string-append "\""
-                                       (apply append
-                                              (map char-escape
-                                                   (string->list item)))
+                                       (apply string-append
+                                        (map char-escape
+                                             (string->list item)))
                                        "\""))
         ((cons? item)   (if (and (eq 'quote (first item))
 				 (eq 2 (length item)))

@@ -30,10 +30,13 @@
 		       (cons (rest a) as))))))
 
 (defn eql (a b)
-  (if (and (cons? a) (cons? b))
-      (and (eql (first a) (first b))
-	   (eql (rest a) (rest b)))
-      (eq a b)))
+  (cond ((and (cons? a) (cons? b))
+         (and (eql (first a) (first b))
+              (eql (rest a) (rest b))))
+        ((and (string? a) (string? b))
+         (string= a b))
+        (true
+         (eq a b))))
 
 (defn nth (seq n)
   (if (cons? seq)
@@ -47,20 +50,71 @@
       (+ 1 (length (rest seq)))
       0))
 
-;;;; Strings
-(defn string? (str)
-  (and (cons? str)
-       (all? (map char? str))))
+;; TODO: For speed, write in C using memcmp().
+(defn $mem= (a a-offset b b-offset size)
+  (or (eq 0 size)
+      (and (eq ($mem-block-byte-get a a-offset)
+               ($mem-block-byte-get b b-offset))
+           ($mem= a (+ 1 a-offset)
+                  b (+ 1 b-offset)
+                  (- size 1)))))
 
-(def string-append append)
+;; TODO: For speed, write in C using memcpy().
+(defn $memcpy (trg trg-offset src src-offset size)
+  (if (eq 0 size)
+      trg
+      (progn
+        ($mem-block-byte-set! trg trg-offset
+                              ($mem-block-byte-get src src-offset))
+        ($memcpy trg (+ 1 trg-offset)
+                 src (+ 1 src-offset)
+                 (- size 1)))))
 
-(defn string-size (str) (length str))
+(defn $mem-populate-from-byte-list (trg trg-offset src-list)
+  (if (cons? src-list)
+      (progn
+        ($mem-block-byte-set! trg trg-offset (first src-list))
+        ($mem-populate-from-byte-list trg (+ 1 trg-offset) (rest src-list)))
+      trg))
+
+;;; Strings
+(defn list->string (src-list)
+  (let ((len (length src-list)))
+    (let ((result-raw ($make-mem-block len)))
+      (progn
+        ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
+        ($make @string len result-raw)))))
+
+;; TODO: Would be better if this would append all strings at once.
+(defn string-append (&rest as)
+  (let ((total-string-size (reduce + (map string-size as) 0)))
+    (let ((result-raw ($make-mem-block total-string-size)))
+      (progn
+        ($mem-populate-from-string-list result-raw 0 as)
+        ($make @string total-string-size result-raw)))))
+
+(defn $mem-populate-from-string-list (trg trg-offset strings)
+  (if (nil? strings)
+      trg
+      (let ((src-string (first strings)))
+        (progn
+          ($memcpy trg trg-offset
+                   (%string-raw src-string) 0
+                   (string-size src-string))
+          ($mem-populate-from-string-list
+           trg (+ trg-offset (string-size src-string))
+           (rest strings))))))
+
+(defn string? (str)     (eq @string (type-of str)))
+(defn string-size (str) ($mem-get str 1))
+(defn %string-raw (str) ($mem-get str 2))
 
 (defn string-at (str n)
-  (if (and (<= 0 n)
-           (< n (string-size str)))
-      (nth str n)
-      (error "Out of bounds.")))
+  (if (string? str)
+      (if (<= 0 n (- (string-size str) 1))
+          (num->char ($mem-block-byte-get (%string-raw str) n))
+          (error "Out of bounds."))
+      (error str "Must be a string for string-at.")))
 
 (defn %string->list-inner (str n str-length)
   (if (eq n str-length)
@@ -69,10 +123,17 @@
             (%string->list-inner str (+ n 1) str-length))))
 
 (defn string->list (str)
-  (%string->list-inner str 0 (string-size str)))
+  (if (string? str)
+      (%string->list-inner str 0 (string-size str))
+      (error str "Must be a string for string->list.")))
 
-(def list->string identity)
-(def string= eql)
+(defn string= (a b)
+  (if (and (string? a) (string? b))
+      (and (eq (string-size a) (string-size b))
+           ($mem= (%string-raw a) 0
+                  (%string-raw b) 0
+                  (string-size a)))
+      (error a ", " b  ": Must both be strings to compare them as such.")))
 
 (defn map-string (fn str)
   (map fn (string->list str)))
@@ -83,7 +144,7 @@
 	     (cons (first strings)
 		   (map (lambda (s) (string-append delimiter s))
 			(rest strings))))
-      '()))
+      ""))
 
 ;; Number conversions
 (defn digit->int (digit)
@@ -96,15 +157,15 @@
 	  0))
 
 ;; Integer to string conversion.
-(def _hex-digits "0123456789abcef")
+(def _hex-digits "0123456789abcdef")
 (defn _int->string (n base)
   (if (eq n 0)
       (list)
-      (cons (nth _hex-digits (mod n base))
+      (cons (string-at _hex-digits (mod n base))
 	    (_int->string (/ n base) base))))
 
 (defn int->string (n base)
-  (reverse (_int->string n base)))
+  (list->string (reverse (_int->string n base))))
 
 
 ;; Ordering operators.
@@ -117,8 +178,8 @@
 		     (map char->num args)))
 
 (defn binary< (x y)
-  (_and (<= x y)
-	(not (eq x y))))
+  (and (<= x y)
+       (not (eq x y))))
 
 (defn < (&rest args)
   (sequence-ordered? binary< args))

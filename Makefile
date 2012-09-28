@@ -6,6 +6,7 @@ OBJECTS = \
 	arrays.o \
 	compiler.o \
 	cons.o \
+	debug.o \
 	dispatcher.o \
 	env.o \
 	eval.o \

@@ -11,7 +11,7 @@
 
 ;; Symbol conversion.
 (eq 'quuux (string->symbol "quuux"))
-(eql "quuux" (symbol->string 'quuux))
+(string= "quuux" (symbol->string 'quuux))
 
 ;; Arithmetic primitives.
 (eq 3 (+ 1 2))
@@ -36,16 +36,21 @@
 ;; Primitive type predicates
 ; cons?
 (cons? (cons 1 2))
-(cons? "foo")  ; Strings are lists, too.
 (not (cons? #\a))
 (not (cons? 1))
 (not (cons? 'foo))
 ; mem?
 (mem? (cons 1 2))
-(mem? "foo")  ; Strings are lists, too.
+(mem? "foo")  ; Strings are memory objects, too.
 (not (mem? #\a))
 (not (mem? 1))
 (not (mem? 'foo))
+; string?
+(string? "foo")
+(not (string? #\a))
+(not (string? 1))
+(not (string? 'foo))
+(not (string? (cons 1 2)))
 ; char?
 (char? #\a)
 (not (char? (cons 1 2)))
@@ -73,7 +78,7 @@
 ; Prints its argument and returns it.
 
 ; Commented out for nicer output...
-; (eql "foo" (writeout "foo"))
+; (string= "foo" (writeout "foo"))
 
 ;; UNSAFE functions for memory region allocation.
 (cons? ($make @cons 1 2))

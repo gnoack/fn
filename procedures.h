@@ -15,6 +15,8 @@ extern oop make_procedure(oop lambda_list, oop body, oop env);
 extern oop fn_lambda_list(oop fn);
 extern oop fn_body(oop fn);
 extern oop fn_env(oop fn);
+extern oop fn_name(oop fn);
+extern oop fn_set_name(oop fn, oop name);
 
 // True if it's a lisp procedure.
 extern boolean is_lisp_procedure(oop fn);

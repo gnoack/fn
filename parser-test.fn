@@ -2,40 +2,40 @@
 (
 ;; Don't forget to use eql.
 (eql (list 123 '())
-     (read "123"))
+     (read (string->list "123")))
 
 (eql (list "abc" '())
-     (read "\"abc\""))
+     (read (string->list "\"abc\"")))
 
 (eql (list "foo" '())
-     (read "\"foo\""))
+     (read (string->list "\"foo\"")))
 
 ;; A string containing a doublequote, an 'x'
 ;; and a backslash.
 (eql (list "\"x\\" '())
-     (read "\"\\\"x\\\\\""))
+     (read (string->list "\"\\\"x\\\\\"")))
 
 ; A character.
 (eql (list #\a '())
-     (read "\\a"))
+     (read (string->list "\\a")))
 
 (eql (list #\' '())
-     (read "\\\\'"))
+     (read (string->list "\\\\'")))
 
 (eql (list (list 1 2 3)
 	   '())
-     (read "(1 2 3)"))
+     (read (string->list "(1 2 3)")))
 
 (eql (list '(if (< 0 1) (+ 2 1) #\a)
 	   '())
-     (read "(if (< 0 1) (+ 2 1) \\a)"))
+     (read (string->list "(if (< 0 1) (+ 2 1) \\a)")))
 
 (eql (list '(abc (quote 123))
 	   '())
-     (read "(abc '123)"))
+     (read (string->list "(abc '123)")))
 
 (eql (list '(backquote
 	     (a (unquote b) (unquote-list c) d))
 	   '())
-     (read "`(a ,b ,@c d)"))
+     (read (string->list "`(a ,b ,@c d)")))
 )

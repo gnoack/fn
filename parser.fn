@@ -48,8 +48,9 @@
 
 ;; Rules
 
-;; _integer ::= _digit+:ds  ==> (string->int ds)
-(def _integer (peg=> (peg+ _digit) string->int))
+;; _integer ::= _digit+:ds  ==> (string->int (list->string ds))
+(def _integer (peg=> (peg+ _digit) (lambda (x)
+                                     (string->int (list->string x)))))
 
 ;; _escapedchar ::= '\' _any:e  ==> e
 ;;                | _any
@@ -63,11 +64,12 @@
 				  _escapedchar)
 			 second))
 
-;; _string ::= '"' _string-char*:cs '"'  ==> cs
+;; _string ::= '"' _string-char*:cs '"'  ==> (list->string cs)
 (def _string (peg=> (peg-seq _dblquote
 			     (peg* _string-char)
 			     _dblquote)
-		    second))
+		    (lambda (x)
+                      (list->string (second x)))))
 
 ;; _character ::= '\' _escapedchar:c  ==> c
 (def _character (peg=> (peg-seq _backslash
@@ -84,9 +86,10 @@
 	   second))
 
 ;; _symbol
-;;     ::= _anything_but_separator+:x ==> (string->symbol x)
+;;     ::= _anything_but_separator+:x ==> (string->symbol (list->string x))
 (def _symbol (peg=> (peg+ _anything_but_separator)
-		    string->symbol))
+		    (lambda (x)
+                      (string->symbol (list->string x)))))
 
 ;; _whitespaces ::= _whitespace*
 (def _whitespaces (peg* _whitespace))
@@ -140,6 +143,6 @@
 		   (cons '*error* failure-reason))))
 
 (defn read-all (in)
-  (first (read in)))
+  (first (read (string->list in))))
 
 )

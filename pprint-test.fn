@@ -1,11 +1,11 @@
 
 (
 
-(eql "123" (pprint 123))
-(eql "\"abc\"" (pprint "abc"))
-(eql "\\a" (pprint #\a))
-(eql "(1 2 3)" (pprint '(1 2 3)))
-(eql "foo" (pprint 'foo))
-(eql "nil" (pprint nil))
+(string= "123" (pprint 123))
+(string= "\"abc\"" (pprint "abc"))
+(string= "\\a" (pprint #\a))
+(string= "(1 2 3)" (pprint '(1 2 3)))
+(string= "foo" (pprint 'foo))
+(string= "nil" (pprint nil))
 
 )

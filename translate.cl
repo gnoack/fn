@@ -23,8 +23,7 @@
   (format nil "make_smallint(~aL)" int))
 
 (defmethod translate ((str string))
-  (format nil "LIST(make_symbol(\"list\"), ~{~a~^, ~})"
-	  (map 'list #'translate str)))
+  (format nil "make_string(~s)" str))
 
 (defmethod translate ((ch character))
   (format nil "make_char('~a')"
@@ -38,7 +37,7 @@
 (defmethod translate ((sym symbol))
   (let ((s (string-downcase (string sym))))
     (cond ((string= "nil" s) "NIL")
-	  (t (format nil "make_symbol(\"~a\")" s)))))
+	  (t (format nil "make_symbol(~s)" s)))))
 
 
 ;;; ==================================================

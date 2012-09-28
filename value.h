@@ -20,9 +20,12 @@ typedef char boolean;
 
 #define NIL ((oop) (fn_uint) 0L)
 
+void (*print_stack_frame)();
+
 #define CHECK(x, msg)                                \
   if (!(x)) {                                        \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
+    print_stack_frame();                             \
     exit(1);                                         \
   }
 
@@ -31,6 +34,7 @@ typedef char boolean;
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     printf("Offending value: ");                     \
     print_value(value);                              \
+    print_stack_frame();                             \
     exit(1);                                         \
   }
 

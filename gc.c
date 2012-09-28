@@ -139,7 +139,7 @@ void object_on_gc_start() {
   half_space_clear(&object_memory.current);
 }
 
-// Allocate in new space.
+// Allocate in new space, size in numbers of `oop's.
 extern oop gc_object_alloc(fn_uint size) {
   oop result = half_space_alloc(&object_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
@@ -217,8 +217,6 @@ void object_region_init(fn_uint size) {
 }
 
 
-// ---------------------------------------------------------
-
 /*
  * Primitive memory.
  *
@@ -230,6 +228,8 @@ struct {
   half_space old;
 } primitive_memory;
 
+region_t primitive_memory_region;
+
 void primitive_memory_on_gc_start() {
   half_space_swap(&primitive_memory.current, &primitive_memory.old);
   half_space_clear(&primitive_memory.current);
@@ -238,7 +238,7 @@ void primitive_memory_on_gc_start() {
 // Size in bytes
 extern oop gc_primitive_memory_alloc(fn_uint size) {
   // Round up to oop size and express in number of oops.
-  size = ((size + sizeof(oop) - 1) & ~(sizeof(oop) - 1)) / sizeof(oop);
+  size = (size + sizeof(oop) - 1) / sizeof(oop);
   oop result = half_space_alloc(&primitive_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
@@ -247,12 +247,10 @@ extern oop gc_primitive_memory_alloc(fn_uint size) {
 
 void primitive_memory_save(oop obj) {
   // Sharing the same is_saved method with the object allocator.
-  CHECKV(!object_is_saved(obj), obj, "Must be unsaved.");
-  CHECKV(half_space_contains(&primitive_memory.old, obj),
-	 obj, "Object must be in old half-space to be saved.");
+  CHECK(!object_is_saved(obj), "Must be unsaved.");
   // Move.
   fn_uint size = get_smallint(obj.mem[-1]);
-  oop newobj = gc_primitive_memory_alloc(size);
+  oop newobj = gc_primitive_memory_alloc(size * sizeof(oop));
   fn_uint i;
   for (i = 0; i < size; i++) {
     newobj.mem[i] = obj.mem[i];
@@ -267,8 +265,6 @@ void primitive_memory_save(oop obj) {
 extern boolean gc_is_primitive_memory(oop obj) {
   return TO_BOOL(half_space_contains(&primitive_memory.current, obj));
 }
-
-region_t primitive_memory_region;
 
 void primitive_memory_region_init(fn_uint size) {
   half_space_init(&primitive_memory.current, size);
@@ -360,7 +356,8 @@ oop gc_run(oop root) {
   if (should_skip_gc()) {
     return root;
   }
-  //half_space_print_fill(&object_memory.current, "before");
+  // half_space_print_fill(&object_memory.current, "before");
+  // half_space_print_fill(&primitive_memory.current, "before");
   // TODO: Only one root?
   primitive_memory_region.on_gc_start();
   immediate_region.on_gc_start();
@@ -378,6 +375,7 @@ oop gc_run(oop root) {
   primitive_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
   object_region.on_gc_stop();
-  //half_space_print_fill(&object_memory.current, "after");
+  // half_space_print_fill(&object_memory.current, "after");
+  // half_space_print_fill(&primitive_memory.current, "after");
   return result;
 }

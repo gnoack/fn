@@ -164,10 +164,12 @@ void repl() {
       add_history(input);
     }
     oop cmd = make_string(input);
-    oop sexpr = eval_global(LIST(make_symbol("read-all"),
-				 LIST(make_symbol("quote"), cmd)));
+    oop sexpr = eval_global(LIST(make_symbol("read-all"), cmd));
     print_value(eval_global(sexpr));
     
+    // GC if needed.
+    global_env = gc_run(global_env);
+
     free(input);
   }
 }

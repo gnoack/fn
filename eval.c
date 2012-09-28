@@ -83,6 +83,9 @@ oop eval_def(oop program, oop env) {
   oop symbol = cadr(program);
   oop value = eval(caddr(program), env);
   register_globally_oop(symbol, value);
+  if (is_lisp_procedure(value)) {
+    fn_set_name(value, symbol);
+  }
   return value;
 }
 
@@ -132,7 +135,8 @@ oop map_eval(oop list, oop env) {
 extern
 oop eval(oop program, oop env) {
   //print_value(program);
-  if (is_smallint(program) || is_nil(program) || is_char(program)) {
+  if (is_smallint(program) || is_nil(program) ||
+      is_char(program) || is_string(program)) {
     return program;
   } else if (is_symbol(program)) {
     // TODO: Proper error handling.

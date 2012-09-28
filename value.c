@@ -135,10 +135,16 @@ void print_value_internal(oop v) {
     printf("<PRIMITIVE-MEMORY #%08llx>", (unsigned long long) v.smallint);
   } else if (is_lisp_procedure(v)) {
     printf("<PROCEDURE ");
+    print_value_internal(fn_name(v));
+    printf(" ");
     print_value_internal(fn_lambda_list(v));
     printf(">");
   } else if (is_native_fn(v)) {
     printf("<NATIVE-PROCEDURE>");
+  } else if (is_string(v)) {
+    char* c_str = c_string(v);
+    printf("\"%s\"", c_str);
+    free(c_str);
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     printf("#[OBJECT]");
