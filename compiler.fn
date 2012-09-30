@@ -10,25 +10,22 @@
         (index 0))
     (dispatcher self
       ('put-byte! (byte)
-         (progn
-           ($mem-block-byte-set! memory index byte)
-           ($set! index (+ 1 index))
-           byte))
+         ($mem-block-byte-set! memory index byte)
+         ($set! index (+ 1 index))
+         byte)
       ('size ()
          index)
       ('slice (first last)
-         (progn
-           (if (eq first last)
-               (list)
-               (cons ($mem-block-byte-get memory first)
-                     (send self 'slice (+ 1 first) last)))))
+         (if (eq first last)
+             (list)
+             (cons ($mem-block-byte-get memory first)
+                   (send self 'slice (+ 1 first) last))))
       ('display ()
-         (progn
-           (writeout "byte stream: ")
-           (apply awriteout
-                  (map (lambda (x)
-                         (string-append " " (int->string x 16)))
-                       (send self 'slice 0 index))))))))
+         (writeout "byte stream: ")
+         (apply awriteout
+                (map (lambda (x)
+                       (string-append " " (int->string x 16)))
+                     (send self 'slice 0 index)))))))
 
 
 ;; Recognizing s-expressions.

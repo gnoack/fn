@@ -7,11 +7,14 @@
 
 (defn dispatch-clause->cond-clause (clause)
   ;; `((eq ,(first clause) selector)
-  ;;   (lambda ,(second clause) ,(third clause))))
+  ;;   (lambda ,(second clause) ,@(rest (rest clause))))
   (list (list 'eq (first clause) 'selector)
-	(list 'lambda (second clause) (third clause))))
+        (append
+         (list 'lambda (second clause))
+         (rest (rest clause)))))
 
 ;; Constructs an object with identity and able to receive messages.
+;; TODO: Would be nice to do this without extra lambdas.
 (defmacro dispatcher (name &rest defs)
   ;; `(labels ((,name (lambda (selector &rest args)
   ;;                    (apply (cond ,(map dispatch-clause->cond-clause defs))

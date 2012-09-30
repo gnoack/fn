@@ -1,4 +1,3 @@
-
 (
 
 (send (dispatcher self
@@ -12,5 +11,11 @@
 (not (send (dispatcher self
              ('is-123 (&rest args) (eql '(1 2 3) args)))
            'is-123 1 2 99))
+
+;; Multiple statements.
+(send (dispatcher self
+        ('hello () 'discard
+                   true))
+      'hello)
 
 )
