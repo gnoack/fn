@@ -73,8 +73,8 @@ oop eval_let(oop sexp, oop env) {
     env = make_env(car(binding), eval(cadr(binding), env), env);
     bindings = cdr(bindings);
   }
-  oop body = caddr(sexp);
-  return eval(body, env);
+  oop body = cddr(sexp);
+  return eval_all(body, env);
 }
 
 // TODO: Should register in current env only.
