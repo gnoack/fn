@@ -6,6 +6,16 @@
 #include "symbols.h"
 
 
+
+#ifdef GC_DEBUG
+  #define SANE(x) (sane(x))
+  // Forward declaration.
+  oop sane(oop obj);
+#else
+  #define SANE(x) (x)
+#endif  // GC_DEBUG
+
+
 // TODO: enumerate_refs only calls traverse_object_graph.  Hardcode it?
 typedef struct {
   // Executed before a GC run.
@@ -79,13 +89,6 @@ void half_space_clear(half_space* space) {
   bzero(space->start, sizeof(oop) * space->size);
 }
 
-// Helper to swap pointers into oop regions.
-void swap(oop** a, oop** b) {
-  oop* tmp = *a;
-  *a = *b;
-  *b = tmp;
-}
-
 // Swaps two half-spaces.
 void half_space_swap(half_space* a, half_space* b) {
   half_space tmp;
@@ -99,31 +102,49 @@ void half_space_swap(half_space* a, half_space* b) {
  * This doesn't care about storing object size within the half space.
  */
 oop half_space_alloc(half_space* space, fn_uint size) {
+  if (size == 0L) {
+    printf("You can't allocate empty objects in a half space.");
+    exit(1);
+  }
   oop result;
   result.mem = space->free;
   space->free += size;
   if (space->free >= space->end) {
-    printf("Too little space in new half-space.");
+    printf("Too little space in new half-space (%lu needed).", size);
     exit(1);
   }
   return result;
 }
 
 boolean half_space_contains(half_space* space, oop obj) {
-  return TO_BOOL(space->start <= obj.mem && obj.mem <= space->end);
+  return TO_BOOL(space->start <= obj.mem && obj.mem < space->end);
 }
 
 // Only for debugging.
 void half_space_print_fill(const half_space* space, const char* name) {
   fn_uint fill = space->free - space->start;
   fn_uint size = space->size;
-  printf("GC: %6s: Object fill: %d of %d (%d %%)\n",
+  printf("GC: %6s: Fill: %d of %d (%d %%)\n",
 	 name, (int) fill, (int) size, (int) (100*fill / size));
 }
 
 
 /*
  * Object memory.
+ *
+ * Structure of objects in memory:
+ *
+ *           Object f
+ *    ,---------^---------.
+ *  --+----+----+----+----+----+----+--
+ *    |  3 | f0 | f1 | f2 |  4 | g0 |
+ *  --+----+----+----+----+----+----+--
+ *           ^
+ *   Object pointer points at first field.
+ *
+ * To allocate an object of size n, allocate n+1
+ * oops from the half space, put the smallint n into
+ * the first oop, return a pointer to the second oop.
  */
 
 struct {
@@ -133,7 +154,6 @@ struct {
 
 region_t object_region;
 
-
 void object_on_gc_start() {
   half_space_swap(&object_memory.current, &object_memory.old);
   half_space_clear(&object_memory.current);
@@ -141,6 +161,10 @@ void object_on_gc_start() {
 
 // Allocate in new space, size in numbers of `oop's.
 extern oop gc_object_alloc(fn_uint size) {
+  // XXX: This is a hack to make sure we have enough to run the GC.
+  if (size == 0L) {
+    size = 1;
+  }
   oop result = half_space_alloc(&object_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
@@ -149,6 +173,8 @@ extern oop gc_object_alloc(fn_uint size) {
 
 // True if obj references a broken heart.
 boolean object_is_saved(oop obj) {
+  GC_CHECK(is_nil(obj.mem[-1]) || is_smallint(obj.mem[-1]),
+           "Must be int or nil (broken heart).");
   return is_nil(obj.mem[-1]);
 }
 
@@ -167,6 +193,7 @@ void object_save(oop obj) {
   // Mark as broken heart.
   obj.mem[-1] = NIL;
   obj.mem[0] = newobj;
+  SANE(newobj);
 }
 
 oop object_update(oop obj) {
@@ -239,6 +266,10 @@ void primitive_memory_on_gc_start() {
 extern oop gc_primitive_memory_alloc(fn_uint size) {
   // Round up to oop size and express in number of oops.
   size = (size + sizeof(oop) - 1) / sizeof(oop);
+  // This is a hack to make sure we're always allocating enough for GC.
+  if (size == 0) {
+    size = 1;
+  }
   oop result = half_space_alloc(&primitive_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
@@ -247,7 +278,8 @@ extern oop gc_primitive_memory_alloc(fn_uint size) {
 
 void primitive_memory_save(oop obj) {
   // Sharing the same is_saved method with the object allocator.
-  CHECK(!object_is_saved(obj), "Must be unsaved.");
+  GC_CHECK(!object_is_saved(obj), "Must be unsaved.");
+  GC_CHECK(half_space_contains(&primitive_memory.old, SANE(obj)), "obj is old");
   // Move.
   fn_uint size = get_smallint(obj.mem[-1]);
   oop newobj = gc_primitive_memory_alloc(size * sizeof(oop));
@@ -259,11 +291,15 @@ void primitive_memory_save(oop obj) {
   // Mark as broken heart.
   obj.mem[-1] = NIL;
   obj.mem[0] = newobj;
+
+  GC_CHECK(object_is_saved(obj), "Must be saved now.");
+  GC_CHECK(half_space_contains(&primitive_memory.current, SANE(newobj)), "newobj is current");
+  GC_CHECK(half_space_contains(&primitive_memory.old, SANE(obj)), "obj is old");
 }
 
 // Only valid outside of GC run.
 extern boolean gc_is_primitive_memory(oop obj) {
-  return TO_BOOL(half_space_contains(&primitive_memory.current, obj));
+  return TO_BOOL(half_space_contains(&primitive_memory.current, SANE(obj)));
 }
 
 void primitive_memory_region_init(fn_uint size) {
@@ -314,7 +350,7 @@ region_t* region(oop obj) {
   } else {
     CHECK(half_space_contains(&primitive_memory.old, obj) ||
           half_space_contains(&primitive_memory.current, obj),
-          "Must be an primitive object.");
+          "Must be a primitive object.");
     return &primitive_memory_region;
   }
 }
@@ -352,12 +388,20 @@ void persistent_refs_update() {
   }
 }
 
+#ifdef GC_DEBUG
+  oop pointered_half_space_sanity_check(half_space* space);
+#endif  // GC_DEBUG
+
 oop gc_run(oop root) {
   if (should_skip_gc()) {
     return root;
   }
-  // half_space_print_fill(&object_memory.current, "before");
-  // half_space_print_fill(&primitive_memory.current, "before");
+#ifdef GC_DEBUG
+  half_space_print_fill(&object_memory.current, "object before");
+  half_space_print_fill(&primitive_memory.current, "primitive before");
+  pointered_half_space_sanity_check(&object_memory.current);
+  pointered_half_space_sanity_check(&primitive_memory.current);
+#endif
   // TODO: Only one root?
   primitive_memory_region.on_gc_start();
   immediate_region.on_gc_start();
@@ -375,7 +419,65 @@ oop gc_run(oop root) {
   primitive_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
   object_region.on_gc_stop();
-  // half_space_print_fill(&object_memory.current, "after");
-  // half_space_print_fill(&primitive_memory.current, "after");
+#ifdef GC_DEBUG
+  half_space_print_fill(&object_memory.current, "object after");
+  half_space_print_fill(&primitive_memory.current, "primitive after");
+  pointered_half_space_sanity_check(&object_memory.current);
+  pointered_half_space_sanity_check(&primitive_memory.current);
+#endif
   return result;
 }
+
+
+
+#ifdef GC_DEBUG
+// SANE checks for absurdly big object sizes.
+// This is likely to be a sign that something
+// has been mispointered along the way.
+
+oop sane(oop obj) {
+  boolean is_mem = (half_space_contains(&object_memory.old, obj) ||
+                    half_space_contains(&object_memory.current, obj));
+  boolean is_primitive = (half_space_contains(&primitive_memory.old, obj) ||
+                          half_space_contains(&primitive_memory.current, obj));
+  if (is_mem || is_primitive) {
+    const char* allocation_type = is_mem ? "Pointer" : "Primitive";
+    if (is_nil(obj.mem[-1])) {
+      return obj;  // Broken heart.
+    }
+    if (!is_smallint(obj.mem[-1])) {
+      printf("%s object at address %lx is missing a size.\n",
+             allocation_type, (fn_uint) obj.mem);
+      print_zone(obj);
+      exit(1);
+    }
+    if (get_smallint(obj.mem[-1]) > 0xffff) {
+      printf("%s object size %lu is too large.\n",
+             allocation_type, get_smallint(obj.mem[-1]));
+      exit(1);
+    }
+  }
+  return obj;
+}
+
+// Check consistency of pointered half space between GC runs.
+oop pointered_half_space_sanity_check(half_space* space) {
+  printf("Start: %lx\n", (fn_uint) space->start);
+  printf(" Free: %lx\n", (fn_uint) space->free);
+  printf("  End: %lx\n", (fn_uint) space->end);
+  oop* current = space->start + 1;
+  while (current < space->free) {
+    oop size = current[-1];
+    if (!is_smallint(size)) {
+      printf("BROKEN HEART AT 0x%lx\n", (fn_uint) current);
+      oop ptr;
+      ptr.mem = current;
+      print_zone(ptr);
+      exit(1);
+    }
+    sane(*current);
+    current += get_smallint(size) + 1;
+  }
+}
+#endif  // GC_DEBUG
+

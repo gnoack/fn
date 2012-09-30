@@ -38,6 +38,14 @@ void (*print_stack_frame)();
     exit(1);                                         \
   }
 
+// A check where only the error message is printed out.
+// Useful during GC.
+#define GC_CHECK(x, msg)                             \
+  if (!(x)) {                                        \
+    printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
+    exit(1);                                         \
+  }
+
 #define CHECKNUMBER(value) \
   CHECKV(is_smallint(value), value, "Must be a number");
 
@@ -79,8 +87,5 @@ extern char get_char(oop v);
 extern const char* get_symbol(oop v);
 
 extern boolean value_eq(oop a, oop b);
-
-/** For debugging. */
-extern void print_value(oop v);
 
 #endif // _VALUE_H_
