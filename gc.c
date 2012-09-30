@@ -337,7 +337,15 @@ void gc_register_persistent_ref(oop* place) {
   persistent_ref_count++;
 }
 
-// ------------------------------------------------------------------
+void persistent_refs_update() {
+  fn_uint i;
+  for (i = 0; i < persistent_ref_count; i++) {
+    oop* place = persistent_refs[i];
+    *place = region(*place)->update(*place);
+  }
+}
+
+
 
 // Finds the region for an object
 region_t* region(oop obj) {
@@ -377,15 +385,6 @@ boolean should_skip_gc() {
   fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
   return TO_BOOL((100*obj_fill / object_memory.current.size) < 75 &&
                  (100*pri_fill / primitive_memory.current.size) < 75);
-}
-
-// TODO: Move up to the other persistent ref things.
-void persistent_refs_update() {
-  fn_uint i;
-  for (i = 0; i < persistent_ref_count; i++) {
-    oop* place = persistent_refs[i];
-    *place = region(*place)->update(*place);
-  }
 }
 
 #ifdef GC_DEBUG
