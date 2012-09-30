@@ -32,9 +32,11 @@ extern boolean is_lisp_procedure(oop fn);
 typedef oop (*function)(oop args);
 
 extern oop make_native_fn(function c_function);
-extern boolean is_native_fn(oop fn);
+extern boolean is_native_procedure(oop fn);
 extern oop native_fn_apply(oop fn, oop args);
 
+// Recognizing both kinds of procedures.
+extern boolean is_procedure(oop fn);
 
 // Function application.
 extern oop apply(oop values);

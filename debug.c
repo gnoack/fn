@@ -81,8 +81,10 @@ void print_value_internal(oop v) {
     printf(" ");
     print_value_internal(fn_lambda_list(v));
     printf(">");
-  } else if (is_native_fn(v)) {
-    printf("<NATIVE-PROCEDURE>");
+  } else if (is_native_procedure(v)) {
+    printf("<NATIVE-PROCEDURE ");
+    print_value_internal(fn_name(v));
+    printf(">");
   } else if (is_string(v)) {
     char* c_str = c_string(v);
     printf("\"%s\"", c_str);

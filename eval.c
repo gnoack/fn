@@ -14,6 +14,10 @@
 oop global_env;
 
 void register_globally_oop(oop key, oop value) {
+  // If it's a procedure, set its name.
+  if (is_procedure(value)) {
+    fn_set_name(value, key);
+  }
   // This is needed for recursion!
   if (is_nil(global_env)) {
     global_env = make_env(key, value, global_env);
@@ -83,9 +87,6 @@ oop eval_def(oop program, oop env) {
   oop symbol = cadr(program);
   oop value = eval(caddr(program), env);
   register_globally_oop(symbol, value);
-  if (is_lisp_procedure(value)) {
-    fn_set_name(value, symbol);
-  }
   return value;
 }
 

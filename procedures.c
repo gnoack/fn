@@ -15,21 +15,30 @@
 oop make_procedure(oop lambda_list, oop body, oop env) {
   oop result = mem_alloc(5);
   mem_set(result, 0, symbols._procedure);
-  mem_set(result, 1, lambda_list);
-  mem_set(result, 2, body);
-  mem_set(result, 3, env);
-  mem_set(result, 4, NIL);  // Name.
+  mem_set(result, 1, NIL);  // Name.
+  mem_set(result, 2, lambda_list);
+  mem_set(result, 3, body);
+  mem_set(result, 4, env);
   return result;
 }
 
-oop fn_lambda_list(oop fn) { return mem_get(fn, 1); }
-oop fn_body(oop fn) { return mem_get(fn, 2); }
-oop fn_env(oop fn) { return mem_get(fn, 3); }
-oop fn_name(oop fn) { return mem_get(fn, 4); }
-oop fn_set_name(oop fn, oop name) { return mem_set(fn, 4, name); }
+oop fn_name(oop fn) { return mem_get(fn, 1); }
+oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
+oop fn_body(oop fn) { return mem_get(fn, 3); }
+oop fn_env(oop fn) { return mem_get(fn, 4); }
 boolean is_lisp_procedure(oop fn) {
   return TO_BOOL(is_mem(fn) &&
                  value_eq(symbols._procedure, mem_get(fn, 0)));
+}
+
+// NOTE: Works for both native and Lisp procedures!
+// Can only be set once per procedure.
+oop fn_set_name(oop fn, oop name) {
+  if (is_nil(fn_name(fn))) {
+    return mem_set(fn, 1, name);
+  } else {
+    return name;
+  }
 }
 
 // Given a lambda list and a argument vector,
@@ -68,19 +77,20 @@ oop apply_lisp_procedure(oop fn, oop args) {
 
 // Native procedures
 oop make_native_fn(function c_function) {
-  oop result = mem_alloc(2);
+  oop result = mem_alloc(3);
   mem_set(result, 0, symbols._native_procedure);
-  mem_set(result, 1, make_smallint((fn_uint) c_function));
+  mem_set(result, 1, NIL);  // Name.
+  mem_set(result, 2, make_smallint((fn_uint) c_function));
   return result;
 }
 
-boolean is_native_fn(oop fn) {
+boolean is_native_procedure(oop fn) {
   return TO_BOOL(is_mem(fn) &&
                  value_eq(mem_get(fn, 0), symbols._native_procedure));
 }
 
 function native_fn_function(oop fn) {
-  return (function)(get_smallint(mem_get(fn, 1)));
+  return (function)(get_smallint(mem_get(fn, 2)));
 }
 
 oop native_fn_apply(oop fn, oop args) {
@@ -88,6 +98,9 @@ oop native_fn_apply(oop fn, oop args) {
   return c_function(args);
 }
 
+boolean is_procedure(oop fn) {
+  return TO_BOOL(is_lisp_procedure(fn) || is_native_procedure(fn));
+}
 
 // Application
 
@@ -118,7 +131,7 @@ oop apply(oop values) {
   if (is_lisp_procedure(fn)) {
     result = apply_lisp_procedure(fn, cdr(values));
   } else {
-    CHECKV(is_native_fn(fn), fn, "Must be a procedure for applying.");
+    CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = native_fn_apply(fn, cdr(values));
   }
   apply_stack_pos--;
