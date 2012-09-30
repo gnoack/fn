@@ -17,6 +17,8 @@
 (string= "hello" "hello")
 ;(string= "hello" (list->string (list #\h #\e #\l #\l #\o)))
 
+(string= "foobar" (string-append "foo" "bar"))
+
 (string= "a b c" (string-join (list "a" "b" "c") " "))
 (string= "" (string-join (list) " "))
 (string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))

@@ -16,10 +16,9 @@
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)
   (let ((result ($alloc (+ 2 capacity))))
-    (progn
-      ($mem-set! result 0 @array)
-      ($mem-set! result 1 capacity)
-      result)))
+    ($mem-set! result 0 @array)
+    ($mem-set! result 1 capacity)
+    result))
 
 (defm @array 'get (n)
   (with-asserts ((number? n)

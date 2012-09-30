@@ -27,9 +27,8 @@
  ;; Predictable version of compile
  ;; where the generated gensyms are always the same.
  (defn pcompile (expr env)
-   (progn
-     ($set! global-label-counter 1000)
-     (compile expr env))))
+   ($set! global-label-counter 1000)
+   (compile expr env)))
 
 (eql '(load-value 123
        push)

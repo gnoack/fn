@@ -98,11 +98,10 @@
 ;; Gensym for generating unused symbols.
 (def global-label-counter 100)
 (defn gensym (prefix)
-  (progn
-    ($set! global-label-counter (+ 1 global-label-counter))
-    (string->symbol (string-append prefix
-                                   "-"
-                                   (int->string global-label-counter 10)))))
+  ($set! global-label-counter (+ 1 global-label-counter))
+  (string->symbol (string-append prefix
+                                 "-"
+                                 (int->string global-label-counter 10))))
 
 ;;; Compilation
 

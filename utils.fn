@@ -81,29 +81,26 @@
 (defn list->string (src-list)
   (let ((len (length src-list)))
     (let ((result-raw ($make-mem-block len)))
-      (progn
-        ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
-        ($make @string len result-raw)))))
+      ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
+      ($make @string len result-raw))))
 
 ;; TODO: Would be better if this would append all strings at once.
 (defn string-append (&rest as)
   (let ((total-string-size (reduce + (map string-size as) 0)))
     (let ((result-raw ($make-mem-block total-string-size)))
-      (progn
-        ($mem-populate-from-string-list result-raw 0 as)
-        ($make @string total-string-size result-raw)))))
+      ($mem-populate-from-string-list result-raw 0 as)
+      ($make @string total-string-size result-raw))))
 
 (defn $mem-populate-from-string-list (trg trg-offset strings)
   (if (nil? strings)
       trg
       (let ((src-string (first strings)))
-        (progn
-          ($memcpy trg trg-offset
-                   (%string-raw src-string) 0
-                   (string-size src-string))
-          ($mem-populate-from-string-list
-           trg (+ trg-offset (string-size src-string))
-           (rest strings))))))
+        ($memcpy trg trg-offset
+                 (%string-raw src-string) 0
+                 (string-size src-string))
+        ($mem-populate-from-string-list
+         trg (+ trg-offset (string-size src-string))
+         (rest strings)))))
 
 (defn string? (str)     (eq @string (type-of str)))
 (defn string-size (str) ($mem-get str 1))
@@ -224,9 +221,7 @@
            (list? (rest potential-list)))))
 
 (defn error (&rest args)
-  (progn
-    (apply awriteout
-	   (cons "*ERROR*: " (map pprint args)))
-    (kill-lisp 1)))
+  (apply awriteout (cons "*ERROR*: " (map pprint args)))
+  (kill-lisp 1))
 
 )

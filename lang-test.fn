@@ -26,14 +26,24 @@
 	 (+ x 1))
        5))
 
+;; Lambda expression with multiple expressions in body.
+(eq 6 ((lambda (x)
+         'discard
+         (+ x 1))
+       5))
+
 ;; simple let
 (eq 3 (let ((x 3)) x))
 
+;; let with multiple commands returns last
+(eq 2 (let ((x 1))
+        1
+        2))
+
 ;; let with setting inside
 (eq 4 (let ((x 3))
-	(progn
-	  ($set! x 4)
-	  x)))
+        ($set! x 4)
+        x))
 
 ;; Quote
 (eq 3 '3)

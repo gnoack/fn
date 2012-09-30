@@ -4,10 +4,9 @@
 (eq 3 (send (make-array 3) 'size))
 
 (let ((obj (make-array 3)))
-  (progn
-    (send obj 'set! 0 'a)
-    (send obj 'set! 1 'b)
-    (send obj 'set! 2 'c)
-    (eq 'b (send obj 'get 1))))
+  (send obj 'set! 0 'a)
+  (send obj 'set! 1 'b)
+  (send obj 'set! 2 'c)
+  (eq 'b (send obj 'get 1)))
 
 )

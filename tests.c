@@ -205,8 +205,8 @@ int main(int argc, char* argv[]) {
   strings_tests();
   memory_tests();
   primitives_tests();
-  utils_tests();
   lang_tests();
+  utils_tests();
   env_tests();
   macros_tests();
   pegs_tests();

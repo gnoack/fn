@@ -65,7 +65,7 @@ oop eval_if(oop sexp, oop env) {
 
 oop eval_let(oop sexp, oop env) {
   CHECKV(value_eq(symbols._let, car(sexp)), sexp, "Must be a let form.");
-  CHECKV(length_int(sexp) == 3, sexp, "Bad let form length.");
+  CHECKV(length_int(sexp) >= 3, sexp, "Bad let form length.");
   oop bindings = cadr(sexp);
   while (!is_nil(bindings)) {
     oop binding = car(bindings);
@@ -137,7 +137,7 @@ oop map_eval(oop list, oop env) {
 oop eval_all(oop expressions, oop env) {
   CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
   while (!is_nil(rest(expressions))) {
-    eval(first(expressions), env);
+    eval(first(expressions), env);  // Discarding result.
     expressions = rest(expressions);
   }
   return eval(first(expressions), env);

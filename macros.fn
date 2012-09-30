@@ -27,18 +27,18 @@
 
 (def me-lambda-rec
     (lambda (xs)
-      (list 'lambda
-	    (first xs)  ; lambda-list
-	    (macroexpand-rec (first (rest xs))))))  ; body
+      (cons 'lambda
+      (cons (first xs) ; lambda-list
+            (map macroexpand-rec (rest xs)))))) ; body
 
 (def me-let-rec
     (lambda (xs)
-      (list 'let
-	    (map (lambda (binding)
-		   (cons (first binding)
-			 (macroexpand-rec (rest binding))))
-		 (first xs))  ; bindings
-	    (macroexpand-rec (first (rest xs))))))
+      (cons 'let
+      (cons (map (lambda (binding)
+                   (cons (first binding)
+                         (macroexpand-rec (rest binding))))
+                 (first xs)) ; bindings
+            (map macroexpand-rec (rest xs))))))
 
 (def false? (lambda (f) (eq false f)))
 
@@ -82,7 +82,7 @@
       (list 'if p true (cons 'or ps))))
 
 (defmacro defn (name lambda-list &rest body)
-  ;; `(def ,name (lambda ,lambda-list ,body))
+  ;; `(def ,name (lambda ,lambda-list ,@body))
   (list 'def name
 	(cons 'lambda (cons lambda-list body))))
 
@@ -141,46 +141,45 @@
 (defn awriteout (&rest args)
   (writeout (apply string-append args)))
 
-;; Wraps a method to print out its arguments.
+;; Wraps a method to print out its arguments.  (trace)
 (defn debugging-wrap (func-symbol func)
   (lambda (&rest args)
-    (progn (awriteout "Called " (pprint (cons func-symbol args)))
-	   (let ((result (apply func args)))
-	     (progn
-	       (awriteout "  ==> " (pprint result))
-	       result)))))
+    (awriteout "Called " (pprint (cons func-symbol args)))
+    (let ((result (apply func args)))
+      (awriteout "  ==> " (pprint result))
+      result)))
 
 ;; Call like (drap macroexpand) for instance to log method calls.
+;; TODO: Use $set! instead.
 (defmacro dwrap (sym)
   (list 'def sym (list 'debugging-wrap (list 'quote sym) sym)))
 
 ;; Like let, but variable values are evaluated in an environment where
 ;; the newly defined variables already exist.  This allows for mutual
 ;; recursion between functions.  See SICP, page 390.
-(defmacro labels (bindings body)
-  ;; `(let ,(map (lambda (binding) `(,(first binding) '*undefined*))
-  ;; 	         bindings)
-  ;;    (progn
-  ;;      ,@(map (lambda (binding)
-  ;; 		   `($set! (first binding) (second binding)))
+(defmacro labels (bindings &rest body)
+  ;; `(let ,(map (lambda (binding)
+  ;;               `(,(first binding) '*undefined*))
   ;;             bindings)
-  ;;      ,body))
-  (list 'let (map (lambda (binding)
-		    (list (first binding) ''*undefined*))
-		  bindings)
-	(append (list 'progn)
-		(map (lambda (binding)
-		       (list '$set! (first binding) (second binding)))
-		     bindings)
-		(list body))))
+  ;;    ,@(map (lambda (binding)
+  ;;             `($set! (first binding) (second binding))))
+  ;;    ,@body)
+  (append (list 'let
+                (map (lambda (binding)
+                       (list (first binding) ''*undefined*))
+                     bindings))
+          (map (lambda (binding)
+                 (list '$set! (first binding) (second binding)))
+               bindings)
+          body))
 
 ;; Example: (with-asserts ((number? n)) (+ 1 n))
 (defmacro with-asserts (asserts body)
   (reduce (lambda (b assertion)
-	    (list 'if assertion b
-		  (list 'error '"Assertion failed: "
-			(list 'pprint (list 'quote assertion)))))
-	  asserts
-	  body))
+            (list 'if assertion b
+                  (list 'error '"Assertion failed: "
+                        (list 'pprint (list 'quote assertion)))))
+          asserts
+          body))
 
 )
