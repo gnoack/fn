@@ -81,10 +81,10 @@
   (if (nil? ps) p
       (list 'if p true (cons 'or ps))))
 
-(defmacro defn (name lambda-list body)
+(defmacro defn (name lambda-list &rest body)
   ;; `(def ,name (lambda ,lambda-list ,body))
   (list 'def name
-	(list 'lambda lambda-list body)))
+	(cons 'lambda (cons lambda-list body))))
 
 ;; TODO: Use with-gensyms for SYM_.
 (defmacro case (expr &rest clauses)

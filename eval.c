@@ -91,7 +91,7 @@ oop eval_def(oop program, oop env) {
 
 oop eval_lambda(oop program, oop env) {
   return make_procedure(cadr(program),
-			caddr(program),
+			cddr(program),
 			env);
 }
 
@@ -130,6 +130,17 @@ oop map_eval(oop list, oop env) {
     oop mycar = eval(car(list), env);
     return make_cons(mycar, map_eval(cdr(list), env));
   }
+}
+
+// Evaluate all expressions in the environment, return last result.
+// (Imperative).
+oop eval_all(oop expressions, oop env) {
+  CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
+  while (!is_nil(rest(expressions))) {
+    eval(first(expressions), env);
+    expressions = rest(expressions);
+  }
+  return eval(first(expressions), env);
 }
 
 extern

@@ -63,7 +63,7 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
 oop apply_lisp_procedure(oop fn, oop args) {
   oop env = destructure_lambda_list(fn_lambda_list(fn),
 				    args, fn_env(fn));
-  return eval(fn_body(fn), env);
+  return eval_all(fn_body(fn), env);
 }
 
 // Native procedures

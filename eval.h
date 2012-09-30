@@ -26,5 +26,8 @@ void init_eval();
 extern
 void load_decls(oop decls);
 
+extern
+oop eval_all(oop expressions, oop env);
+
 #define __EVAL_H__ 0
 #endif // __EVAL_H__
