@@ -11,7 +11,7 @@
     (dispatcher self
       ('put-byte! (byte)
          ($mem-block-byte-set! memory index byte)
-         ($set! index (+ 1 index))
+         (set! index (+ 1 index))
          byte)
       ('size ()
          index)
@@ -34,7 +34,7 @@
 (def if? (smatcher 'if))
 (def def? (smatcher 'def))
 (def quote? (smatcher 'quote))
-(def $set!? (smatcher '$set!))
+(def set!? (smatcher 'set!))
 
 
 ;; Accessing elements in lists.
@@ -95,7 +95,7 @@
 ;; Gensym for generating unused symbols.
 (def global-label-counter 100)
 (defn gensym (prefix)
-  ($set! global-label-counter (+ 1 global-label-counter))
+  (set! global-label-counter (+ 1 global-label-counter))
   (string->symbol (string-append prefix
                                  "-"
                                  (int->string global-label-counter 10))))
@@ -166,7 +166,7 @@
 (defn compile-let (expr environment)
   (compile (transform-let->lambda expr) environment))
 
-(defn compile-$set! (expr environment)
+(defn compile-set! (expr environment)
   (let ((variable   (second expr))
         (value-expr (third expr)))
     (append (compile value-expr environment)
@@ -183,7 +183,7 @@
     ((lambda? expr)  (compile-lambda expr environment))
     ((let? expr)     (compile-let expr environment))
     ((def? expr)     (compile-def expr environment))
-    (($set!? expr)   (compile-$set! expr environment))
+    ((set!? expr)    (compile-set! expr environment))
     ((list? expr)    (compile-application expr environment))))
 
 )

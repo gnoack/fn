@@ -100,9 +100,9 @@ oop eval_quote(oop program, oop env) {
   return cadr(program);  // Quote.
 }
 
-/* Primitive $set!, modifies an existing variable in the environment. */
+/* Primitive set!, modifies an existing variable in the environment. */
 oop eval_set(oop program, oop env) {
-  CHECKV(length_int(program) == 3, program, "$set! needs two arguments.");
+  CHECKV(length_int(program) == 3, program, "set! needs two arguments.");
   oop symbol = cadr(program);
   CHECKV(env_haskey(env, symbol), symbol, "Symbol not present in environment.");
   oop new_value = eval(caddr(program), env);

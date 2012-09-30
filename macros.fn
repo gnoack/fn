@@ -150,7 +150,7 @@
       result)))
 
 ;; Call like (drap macroexpand) for instance to log method calls.
-;; TODO: Use $set! instead.
+;; TODO: Use set! instead.
 (defmacro dwrap (sym)
   (list 'def sym (list 'debugging-wrap (list 'quote sym) sym)))
 
@@ -162,14 +162,14 @@
   ;;               `(,(first binding) '*undefined*))
   ;;             bindings)
   ;;    ,@(map (lambda (binding)
-  ;;             `($set! (first binding) (second binding))))
+  ;;             `(set! (first binding) (second binding))))
   ;;    ,@body)
   (append (list 'let
                 (map (lambda (binding)
                        (list (first binding) ''*undefined*))
                      bindings))
           (map (lambda (binding)
-                 (list '$set! (first binding) (second binding)))
+                 (list 'set! (first binding) (second binding)))
                bindings)
           body))
 

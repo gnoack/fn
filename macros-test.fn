@@ -80,10 +80,10 @@
 (eql
  '(let ((odd? '*undefined*)
 	(even? '*undefined*))
-   ($set! odd?  (lambda (x) (if (eq 0 x) false
-                                (even? (- x 1)))))
-   ($set! even? (lambda (x) (if (eq 0 x) true
-                                (odd? (- x 1)))))
+   (set! odd?  (lambda (x) (if (eq 0 x) false
+                               (even? (- x 1)))))
+   (set! even? (lambda (x) (if (eq 0 x) true
+                               (odd? (- x 1)))))
    (odd? 7))
  (macroexpand '(labels ((odd?  (lambda (x) (if (eq 0 x) false
 					       (even? (- x 1)))))

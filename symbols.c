@@ -18,7 +18,7 @@ void init_symbols() {
   symbols._quote = make_symbol("quote");
   symbols._rest = make_symbol("&rest");
   symbols._macroexpand = make_symbol("macroexpand");
-  symbols._set = make_symbol("$set!");
+  symbols._set = make_symbol("set!");
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.
   symbols._cons = mem_alloc(2);

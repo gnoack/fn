@@ -42,7 +42,7 @@
 
 ;; let with setting inside
 (eq 4 (let ((x 3))
-        ($set! x 4)
+        (set! x 4)
         x))
 
 ;; Quote
