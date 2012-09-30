@@ -346,6 +346,11 @@ void persistent_refs_update() {
 }
 
 
+/*
+ * Core garbage collection functionality:
+ * - Traversing the object graph.
+ * - Figuring out the region responsible for an oop.
+ */
 
 // Finds the region for an object
 region_t* region(oop obj) {
@@ -380,6 +385,7 @@ void traverse_object_graph(oop current) {
   current_region->enumerate_refs(current, &traverse_object_graph);
 }
 
+// Decide whether to do the garbage collection at all.
 boolean should_skip_gc() {
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
   fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
@@ -388,6 +394,7 @@ boolean should_skip_gc() {
 }
 
 #ifdef GC_DEBUG
+  // Forward declaration.
   oop pointered_half_space_sanity_check(half_space* space);
 #endif  // GC_DEBUG
 
@@ -400,8 +407,7 @@ oop gc_run(oop root) {
   half_space_print_fill(&primitive_memory.current, "primitive before");
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&primitive_memory.current);
-#endif
-  // TODO: Only one root?
+#endif  // GC_DEBUG
   primitive_memory_region.on_gc_start();
   immediate_region.on_gc_start();
   object_region.on_gc_start();
@@ -412,7 +418,7 @@ oop gc_run(oop root) {
   primitive_memory_region.update_all_refs();
   immediate_region.update_all_refs();
   object_region.update_all_refs();
-  // Update persistent references.
+  // Update persistent references.  ("More roots".)
   persistent_refs_update();
   // Tell regions that the collection has finished.
   primitive_memory_region.on_gc_stop();
