@@ -32,7 +32,7 @@ char* c_string(oop str) {
   fn_uint len = get_smallint(mem_get(str, 1));
   fn_uint offset = get_smallint(mem_get(str, 2));
   oop raw_string = mem_get(str, 3);
-  char* original_raw = raw_string.mem;
+  char* original_raw = (char*) raw_string.mem;
   char* result = malloc(len + 1);
   CHECK(result != NULL, "Can't allocate memory.");
   memcpy((void*) result, (void*) original_raw + offset, len);
