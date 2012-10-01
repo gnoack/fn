@@ -88,8 +88,9 @@ LISPTARGETS = \
 	x86-test.c \
 	x86.c \
 
-CLFLAGS = --noinform --noprint --disable-debugger
-LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
+# CLFLAGS = --noinform --noprint --disable-debugger
+# LISP = sbcl $(CLFLAGS) --load translate.cl --eval "(run)"
+LISP = ./translate.scm
 
 %.c: %.fn
 	$(LISP) $*
