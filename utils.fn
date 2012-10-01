@@ -82,36 +82,36 @@
   (let ((len (length src-list)))
     (let ((result-raw ($make-mem-block len)))
       ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
-      ($make @string len result-raw))))
+      ($make @string len 0 result-raw))))
 
 ;; TODO: Would be better if this would append all strings at once.
 (defn string-append (&rest as)
   (let ((total-string-size (reduce + (map string-size as) 0)))
     (let ((result-raw ($make-mem-block total-string-size)))
       ($mem-populate-from-string-list result-raw 0 as)
-      ($make @string total-string-size result-raw))))
+      ($make @string total-string-size 0 result-raw))))
 
 (defn $mem-populate-from-string-list (trg trg-offset strings)
   (if (nil? strings)
       trg
       (let ((src-string (first strings)))
         ($memcpy trg trg-offset
-                 (%string-raw src-string) 0
+                 (%string-raw src-string) (%string-offset src-string)
                  (string-size src-string))
         ($mem-populate-from-string-list
          trg (+ trg-offset (string-size src-string))
          (rest strings)))))
 
-(defn string? (str)     (eq @string (type-of str)))
-(defn string-size (str) ($mem-get str 1))
-(defn %string-raw (str) ($mem-get str 2))
+(defn string? (str)        (eq @string (type-of str)))
+(defn string-size (str)    ($mem-get str 1))
+(defn %string-offset (str) ($mem-get str 2))
+(defn %string-raw (str)    ($mem-get str 3))
 
 (defn string-at (str n)
-  (if (string? str)
-      (if (<= 0 n (- (string-size str) 1))
-          (num->char ($mem-block-byte-get (%string-raw str) n))
-          (error "Out of bounds."))
-      (error str "Must be a string for string-at.")))
+  (with-asserts ((string? str)
+                 (<= 0 n (- (string-size str) 1)))
+    (num->char ($mem-block-byte-get (%string-raw str)
+                                    (+ (%string-offset str) n)))))
 
 (defn %string->list-inner (str n str-length)
   (if (eq n str-length)
@@ -120,17 +120,16 @@
             (%string->list-inner str (+ n 1) str-length))))
 
 (defn string->list (str)
-  (if (string? str)
-      (%string->list-inner str 0 (string-size str))
-      (error str "Must be a string for string->list.")))
+  (with-asserts ((string? str))
+    (%string->list-inner str 0 (string-size str))))
 
 (defn string= (a b)
-  (if (and (string? a) (string? b))
-      (and (eq (string-size a) (string-size b))
-           ($mem= (%string-raw a) 0
-                  (%string-raw b) 0
-                  (string-size a)))
-      (error a ", " b  ": Must both be strings to compare them as such.")))
+  (with-asserts ((string? a)
+                 (string? b))
+    (and (eq (string-size a) (string-size b))
+         ($mem= (%string-raw a) (%string-offset a)
+                (%string-raw b) (%string-offset b)
+                (string-size a)))))
 
 (defn map-string (fn str)
   (map fn (string->list str)))
@@ -142,6 +141,13 @@
 		   (map (lambda (s) (string-append delimiter s))
 			(rest strings))))
       ""))
+
+(defn substring (str begin)
+  (with-asserts ((<= begin (string-size str)))
+    ($make @string
+           (- (string-size str) begin)
+           (+ (%string-offset str) begin)
+           (%string-raw str))))
 
 ;; Number conversions
 (defn digit->int (digit)

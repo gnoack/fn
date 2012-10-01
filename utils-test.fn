@@ -23,6 +23,9 @@
 (string= "" (string-join (list) " "))
 (string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
 
+(string= "bar" (substring "foobar" 3))
+; (string= "oba" (substring "foobar" 2 5))
+
 (eq #\d (string-at "abcdefg" 3))
 (eq 6 (string-size "abcdef"))
 

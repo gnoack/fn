@@ -11,27 +11,31 @@
 
 #include "strings.h"
 
-/* +---------+------+--------+
- * | @string | size | memptr |----> raw ASCII string
- * +---------+------+--------+
+/* +---------+------+--------+--------+
+ * | @string | size | offset | memptr |----> raw ASCII string
+ * +---------+------+--------+--------+
  */
 oop make_string(const char* str) {
   fn_uint len = strlen(str);
-  oop result = mem_alloc(3);
+  oop result = mem_alloc(4);
   oop raw_string = mem_primitive_mem_alloc(len);
   memcpy((void*) raw_string.mem, (void*) str, len);
   mem_set(result, 0, symbols._string);
   mem_set(result, 1, make_smallint(len));
-  mem_set(result, 2, raw_string);
+  mem_set(result, 2, make_smallint(0));
+  mem_set(result, 3, raw_string);
   return result;
 }
 
 char* c_string(oop str) {
   CHECKV(is_string(str), str, "Must be string");
   fn_uint len = get_smallint(mem_get(str, 1));
+  fn_uint offset = get_smallint(mem_get(str, 2));
+  oop raw_string = mem_get(str, 3);
+  char* original_raw = raw_string.mem;
   char* result = malloc(len + 1);
-  oop raw_string = mem_get(str, 2);
-  memcpy((void*) result, (void*) raw_string.mem, len);
+  CHECK(result != NULL, "Can't allocate memory.");
+  memcpy((void*) result, (void*) original_raw + offset, len);
   result[len] = '\0';
   return result;
 }
