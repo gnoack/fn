@@ -7,8 +7,8 @@
 (defn pprint (item)
   (cond ((string? item) (string-append "\""
                                        (apply string-append
-                                        (map char-escape
-                                             (string->list item)))
+                                              (map char-escape
+                                                   (string->list item)))
                                        "\""))
         ((cons? item)   (if (and (eq 'quote (first item))
 				 (eq 2 (length item)))
@@ -16,10 +16,16 @@
 			    (string-append "("
                                            (string-join (map pprint item) " ")
                                            ")")))
+	((native-procedure? item)
+         (string-append "<NATIVE-PROCEDURE "
+                        (pprint (procedure-name item)) ">"))
+	((lisp-procedure? item)
+         (string-append "<PROCEDURE " (pprint (procedure-name item))
+                        " " (pprint (lisp-procedure-lambda-list item)) ">"))
 	((char? item)   (string-append "\\" (char-escape item)))
 	((number? item) (int->string item 10))
 	((nil? item)    "nil")
 	((symbol? item) (symbol->string item))
-	(true           (error "Don't know how to print this."))))
+        (true           "?UNPRINTABLE?")))
 
 )

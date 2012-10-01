@@ -145,7 +145,7 @@
 
 
 ;;; *******************************************************************
-;;; wrap for debugging
+;;; Procedure call tracing for debugging
 ;;; *******************************************************************
 ;; TODO: Move this somewhere else!
 
@@ -153,18 +153,22 @@
 (defn awriteout (&rest args)
   (writeout (apply string-append args)))
 
-;; Wraps a method to print out its arguments.  (trace)
-(defn debugging-wrap (func-symbol func)
-  (lambda (&rest args)
-    (awriteout "Called " (pprint (cons func-symbol args)))
-    (let ((result (apply func args)))
-      (awriteout "  ==> " (pprint result))
-      result)))
+(def %trace-indent "")
 
-;; Call like (drap macroexpand) for instance to log method calls.
-;; TODO: Use set! instead.
-(defmacro dwrap (sym)
-  (list 'def sym (list 'debugging-wrap (list 'quote sym) sym)))
+;; Wraps a method to print out its arguments.  (trace)
+(defn debugging-wrap (func)
+  (lambda (&rest args)
+    (let ((old-indent %trace-indent))
+      (set! %trace-indent (string-append "  " %trace-indent))
+      (awriteout %trace-indent (pprint (cons func args)))
+      (let ((result (apply func args)))
+        (awriteout %trace-indent (pprint func) " returned " (pprint result))
+        (set! %trace-indent old-indent)
+        result))))
+
+;; Call like (trace macroexpand) for instance to log method calls.
+(defmacro trace (sym)
+  (list 'set! sym (list 'debugging-wrap sym)))
 
 ;; Like let, but variable values are evaluated in an environment where
 ;; the newly defined variables already exist.  This allows for mutual

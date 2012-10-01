@@ -7,5 +7,7 @@
 (string= "(1 2 3)" (pprint '(1 2 3)))
 (string= "foo" (pprint 'foo))
 (string= "nil" (pprint nil))
+(string= "<NATIVE-PROCEDURE +>" (pprint +))
+(string= "<PROCEDURE pprint (item)>" (pprint pprint))
 
 )

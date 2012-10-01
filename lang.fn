@@ -62,18 +62,28 @@
     (lambda (car cdr)	
       ($make @cons car cdr)))
 
+(def %has-mem-type?
+  (lambda (value type)
+    (if (mem? value)
+        (eq type ($mem-get value 0))
+      false)))
+
 (def cons?
-    (lambda (value)
-      (if (mem? value)
-	  (eq @cons ($mem-get value 0))
-	  false)))
+  (lambda (value) (%has-mem-type? value @cons)))
+
+(def native-procedure?
+  (lambda (proc) (%has-mem-type? proc @native-procedure)))
+
+(def lisp-procedure?
+  (lambda (proc) (%has-mem-type? proc @procedure)))
 
 (def procedure?
-    (lambda (value)
-      (if (mem? value)
-          (if (eq @procedure ($mem-get value 0))
-              true
-              (eq @native-procedure ($mem-get value 0)))
-          false)))
+  (lambda (proc)
+    (_or (native-procedure? proc)
+         (lisp-procedure? proc))))
+
+;; See procedures.c for what fields mean what.
+(def procedure-name (lambda (proc) ($mem-get proc 1)))
+(def lisp-procedure-lambda-list (lambda (proc) ($mem-get proc 2)))
 
 )

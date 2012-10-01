@@ -84,7 +84,6 @@
       ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
       ($make @string len 0 result-raw))))
 
-;; TODO: Would be better if this would append all strings at once.
 (defn string-append (&rest as)
   (let ((total-string-size (reduce + (map string-size as) 0)))
     (let ((result-raw ($make-mem-block total-string-size)))
