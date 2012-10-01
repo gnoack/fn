@@ -84,15 +84,15 @@
      (reduce-right cons (list 'a 'b 'c) nil))
 
 ;; All-predicate
-(all? (list true true true))
-(not (all? (list true true false)))
-(all? (list))
+(all? identity (list true true true))
+(not (all? identity (list true true false)))
+(all? identity (list))
 
 ;; Any-predicate
-(any? (list true false false))
-(any? (list false false true))
-(not (any? (list false false false)))
-(not (any? (list)))
+(any? identity (list true false false))
+(any? identity (list false false true))
+(not (any? identity (list false false false)))
+(not (any? identity (list)))
 
 )
 

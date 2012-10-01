@@ -110,27 +110,39 @@
                             (list 'true (second clause)))))
                    clauses))))
 
+
 ;;; ***********************************************************
 ;;; Quasiquote implementation
 ;;; ***********************************************************
 
-(defn smatcher (symbol)
-  (lambda (e)
-    (and (cons? e)
-	 (eq symbol (first e)))))
+(defn smatch? (symbol e)
+  (and (cons? e)
+       (eq symbol (first e))))
 
-(def comma-expr? (smatcher 'unquote))
-(def comma-at-expr? (smatcher 'unquote-splicing))
+(defn list-expr? (e)
+  (smatch? 'list e))
 
 (defmacro quasiquote (expr)
-  (if (list? expr)
-      (cons 'append (map quasiquote-splice expr))
-      (list 'quote expr)))
+  (%quasiquote expr))
 
-(defn quasiquote-splice (expr)
-  (cond ((comma-expr? expr)    (list 'list (second expr)))
-	((comma-at-expr? expr) (second expr))
-	(true                  (list 'list (list 'quasiquote expr)))))
+(defn %simplify-listexpr (expr)
+  (if (and (smatch? 'append expr)
+           (all? list-expr? (rest expr)))
+      (cons 'list (apply append (map rest (rest expr))))
+    expr))
+
+(defn %quasiquote (expr)
+  (cond ((smatch? 'quasiquote expr) (list 'quote expr))
+        ((smatch? 'unquote expr)    (second expr))
+        ((list? expr)               (%simplify-listexpr
+                                     (cons 'append (map %quasiquote-splice expr))))
+        (true                       (list 'quote expr))))
+
+(defn %quasiquote-splice (expr)
+  (cond ((smatch? 'unquote expr)           (list 'list (second expr)))
+	((smatch? 'unquote-splicing expr)  (second expr))
+	(true                              (list 'list (list 'quasiquote expr)))))
+
 
 ;;; *******************************************************************
 ;;; wrap for debugging

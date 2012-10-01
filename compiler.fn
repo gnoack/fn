@@ -29,12 +29,12 @@
 
 
 ;; Recognizing s-expressions.
-(def let? (smatcher 'let))
-(def lambda? (smatcher 'lambda))
-(def if? (smatcher 'if))
-(def def? (smatcher 'def))
-(def quote? (smatcher 'quote))
-(def set!? (smatcher 'set!))
+(defn let? (e) (smatch? 'let e))
+(defn lambda? (e) (smatch? 'lambda e))
+(defn if? (e) (smatch? 'if e))
+(defn def? (e) (smatch? 'def e))
+(defn quote? (e) (smatch? 'quote e))
+(defn set!? (e) (smatch? 'set! e))
 
 
 ;; Accessing elements in lists.

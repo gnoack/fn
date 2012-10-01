@@ -207,13 +207,13 @@
 (defn ->true (&rest args) true)
 (defn ->false (&rest args) false)
 
-;; True iff the list contains only true.
-(defn all? (list)
-  (reduce (lambda (a b) (and a b)) list true))
+;; True iff all elements of the list fulfill the predicate.
+(defn all? (predicate? list)
+  (reduce (lambda (a b) (and a (predicate? b))) list true))
 
-;; True iff the list contains true at least once.
-(defn any? (list)
-  (reduce (lambda (a b) (or a b)) list false))
+;; True iff at least of of the list's elements fulfills the predicate.
+(defn any? (predicate? list)
+  (reduce (lambda (a b) (or a (predicate? b))) list false))
 
 (defn list? (potential-list)
   (or (nil? potential-list)

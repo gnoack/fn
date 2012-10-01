@@ -51,30 +51,29 @@
 (eql '(quote x)
      (macroexpand '(quasiquote x)))
 
-(eql '(append (list 'x))
+(eql '(list 'x)
      (macroexpand '(quasiquote (x))))
 
-(eql '(append (list x))
+(eql 'x
+     (macroexpand '(quasiquote (unquote x))))
+
+(eql '(list x)
      (macroexpand '(quasiquote ((unquote x)))))
 
-(eql '(append xs)
-     (macroexpand '(quasiquote ((unquote-splicing xs)))))
+(eql '(quote (quasiquote (unquote x)))
+     (macroexpand '(quasiquote (quasiquote (unquote x)))))
 
-(eql
- '(append (list 'foo) (list bar))
- (macroexpand '(quasiquote (foo (unquote bar)))))
+(eql '(list 'unquote-splicing 'xs)
+     (macroexpand '(quasiquote (unquote-splicing xs))))
 
-(eql
- '(append (list 'foo) (list 1 2 3) (list 'bar))
- (macroexpand '(quasiquote (foo (unquote-splicing (list 1 2 3)) bar))))
+(eql '(list 'foo bar)
+     (macroexpand '(quasiquote (foo (unquote bar)))))
 
-;; TODO: Fix quasiquotes.
-;; (eql
-;;  'x
-;;  (macroexpand '(quasiquote (unquote x))))
-;; (eql
-;;  '(quote (list x))
-;;  (macroexpand '(quasiquote (list (quasiquote (list (unquote x)))))))
+(eql '(list 'foo 1 2 3 'bar)
+     (macroexpand '(quasiquote (foo (unquote-splicing (list 1 2 3)) bar))))
+
+(eql 'x
+     (macroexpand '(quasiquote (unquote x))))
 
 ;; Labels (letrec)
 (eql
