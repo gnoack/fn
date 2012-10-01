@@ -34,8 +34,8 @@
 	   '())
      (read (string->list "(abc '123)")))
 
-(eql (list '(backquote
-	     (a (unquote b) (unquote-list c) d))
+(eql (list '(quasiquote
+	     (a (unquote b) (unquote-splicing c) d))
 	   '())
      (read (string->list "`(a ,b ,@c d)")))
 )

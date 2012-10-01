@@ -47,34 +47,34 @@
  '(if a true (if b true c))
  (macroexpand '(or a b c)))
 
-;; Backquote
+;; Backquote / quasiquote
 (eql '(quote x)
-     (macroexpand '(backquote x)))
+     (macroexpand '(quasiquote x)))
 
 (eql '(append (list 'x))
-     (macroexpand '(backquote (x))))
+     (macroexpand '(quasiquote (x))))
 
 (eql '(append (list x))
-     (macroexpand '(backquote ((unquote x)))))
+     (macroexpand '(quasiquote ((unquote x)))))
 
 (eql '(append xs)
-     (macroexpand '(backquote ((unquote-list xs)))))
+     (macroexpand '(quasiquote ((unquote-splicing xs)))))
 
 (eql
  '(append (list 'foo) (list bar))
- (macroexpand '(backquote (foo (unquote bar)))))
+ (macroexpand '(quasiquote (foo (unquote bar)))))
 
 (eql
  '(append (list 'foo) (list 1 2 3) (list 'bar))
- (macroexpand '(backquote (foo (unquote-list (list 1 2 3)) bar))))
+ (macroexpand '(quasiquote (foo (unquote-splicing (list 1 2 3)) bar))))
 
-;; TODO: Fix backquotes.
+;; TODO: Fix quasiquotes.
 ;; (eql
 ;;  'x
-;;  (macroexpand '(backquote (unquote x))))
+;;  (macroexpand '(quasiquote (unquote x))))
 ;; (eql
 ;;  '(quote (list x))
-;;  (macroexpand '(backquote (list (backquote (list (unquote x)))))))
+;;  (macroexpand '(quasiquote (list (quasiquote (list (unquote x)))))))
 
 ;; Labels (letrec)
 (eql

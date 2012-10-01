@@ -111,7 +111,7 @@
                    clauses))))
 
 ;;; ***********************************************************
-;;; Backquote implementation
+;;; Quasiquote implementation
 ;;; ***********************************************************
 
 (defn smatcher (symbol)
@@ -120,17 +120,17 @@
 	 (eq symbol (first e)))))
 
 (def comma-expr? (smatcher 'unquote))
-(def comma-at-expr? (smatcher 'unquote-list))
+(def comma-at-expr? (smatcher 'unquote-splicing))
 
-(defmacro backquote (expr)
+(defmacro quasiquote (expr)
   (if (list? expr)
-      (cons 'append (map backquote-splice expr))
+      (cons 'append (map quasiquote-splice expr))
       (list 'quote expr)))
 
-(defn backquote-splice (expr)
+(defn quasiquote-splice (expr)
   (cond ((comma-expr? expr)    (list 'list (second expr)))
 	((comma-at-expr? expr) (second expr))
-	(true                  (list 'list (list 'backquote expr)))))
+	(true                  (list 'list (list 'quasiquote expr)))))
 
 ;;; *******************************************************************
 ;;; wrap for debugging

@@ -109,9 +109,9 @@
      (peg=> (peg-seq _quote _expr)
 	    (lambda (x) (list 'quote (second x))))
      (peg=> (peg-seq _backquote _expr)
-	    (lambda (x) (list 'backquote (second x))))
+	    (lambda (x) (list 'quasiquote (second x))))
      (peg=> (peg-seq _comma _at _expr)
-	    (lambda (x) (list 'unquote-list (third x))))
+	    (lambda (x) (list 'unquote-splicing (third x))))
      (peg=> (peg-seq _comma _expr)
 	    (lambda (x) (list 'unquote (second x))))))
 
