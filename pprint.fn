@@ -1,5 +1,6 @@
 (
 
+;; TODO: Memory consumption.
 (defn char-escape (ch)
   (cond ((eq ch #\") "\\\"")
 	(true (list->string (list ch)))))

@@ -153,6 +153,7 @@
 (defn awriteout (&rest args)
   (writeout (apply string-append args)))
 
+;; TODO: We could use substrings of a larger indentation string instead.
 (def %trace-indent "")
 
 ;; Wraps a method to print out its arguments.  (trace)
