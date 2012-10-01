@@ -15,7 +15,7 @@
 (eql (list #\a #\b #\c)
      (string->list "abc"))
 (string= "hello" "hello")
-;(string= "hello" (list->string (list #\h #\e #\l #\l #\o)))
+(string= "hello" (list->string (list #\h #\e #\l #\l #\o)))
 
 (string= "foobar" (string-append "foo" "bar"))
 
