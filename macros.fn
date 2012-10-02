@@ -36,7 +36,7 @@
       (cons 'let
       (cons (map (lambda (binding)
                    (cons (first binding)
-                         (macroexpand-rec (rest binding))))
+                         (map macroexpand-rec (rest binding))))
                  (first xs)) ; bindings
             (map macroexpand-rec (rest xs))))))
 
