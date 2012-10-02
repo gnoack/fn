@@ -70,7 +70,7 @@
    ('linked-with-vars (vars)       (linked-env-with-vars self vars))
 
    ;; Code generation
-   ('generate-access (depth op x)  (list (%globalop op) x))
+   ('generate-access (depth op x)  `((,(%globalop op) ,x)))
    ('generate-read (x)             (send self 'generate-access 0 'read-var x))
    ('generate-write (x)            (send self 'generate-access 0 'write-var x))
 ))
@@ -85,7 +85,7 @@
 
    ;; Code generation
    ('generate-access (depth op x)  (if (contains? my-vars x)
-                                       (list op depth (index-of my-vars x))
+                                       `((,op ,depth ,(index-of my-vars x)))
                                        (send next-env 'generate-access (+ 1 depth) op x)))
    ('generate-read (x)             (send self 'generate-access 0 'read-var x))
    ('generate-write (x)            (send self 'generate-access 0 'write-var x))
@@ -105,30 +105,30 @@
 (defn compile-if (expr environment)
   (let ((true-branch-label (gensym "true-branch"))
         (after-if-label (gensym "after-if")))
-    (append (compile (second expr) environment)  ; Condition
-            (list 'pop
-                  'jump-if-true true-branch-label)
-            (compile (fourth expr) environment)  ; False-branch
-            (list 'jump after-if-label
-                  'label true-branch-label)
-            (compile (third expr) environment)   ; True-branch
-            (list 'label after-if-label))))
+    `(,@(compile (second expr) environment)  ; Condition.
+      (pop)
+      (jump-if-true ,true-branch-label)
+      ,@(compile (fourth expr) environment)  ; False branch.
+      (jump ,after-if-label)
+      (label ,true-branch-label)
+      ,@(compile (third expr) environment)  ; True branch.
+      (label ,after-if-label))))
 
 (defn compile-application (expr environment)
-  (append (apply append
-                 (map (lambda (e)
-                        (compile e environment))
-                      (reverse expr)))
-          (list 'pop
-                'call (- (length expr) 1))))
+  `(,@(apply append
+             (map (lambda (e)
+                    (compile e environment))
+                  (reverse expr)))
+    (pop)
+    (call ,(- (length expr) 1))))
 
 (defn compile-variable-read (expr environment)
-  (append (send environment 'generate-read expr)
-          (list 'push)))
+  `(,@(send environment 'generate-read expr)
+    (push)))
 
 (defn compile-literal (expr environment)
-  (list 'load-value expr
-        'push))
+  `((load-value ,expr)
+    (push)))
 
 ;; TODO: Support for variable length argument lists.
 (def lambda-list second)
@@ -136,19 +136,19 @@
 (defn compile-lambda (expr environment)
   (let ((lambda-entry-label (gensym "lambda-entry"))
         (after-lambda-label (gensym "after-lambda")))
-    (append (list 'make-lambda lambda-entry-label
-                  'push
-                  'jump after-lambda-label
-                  'label lambda-entry-label)
-            (compile (lambda-body expr)
-                     (send environment 'linked-with-vars (lambda-list expr)))
-            (list 'return
-                  'label after-lambda-label))))
+    `((make-lambda ,lambda-entry-label)
+      (push)
+      (jump ,after-lambda-label)
+      (label ,lambda-entry-label)
+      ,@(compile (lambda-body expr)
+                 (send environment 'linked-with-vars (lambda-list expr)))
+      (return)
+      (label ,after-lambda-label))))
 
 (defn compile-def (expr environment)
-  (append (compile (third expr) environment)
-          (list 'pop)
-          (send global-env 'generate-write (second expr))))
+  `(,@(compile (third expr) environment)
+    (pop)
+    ,@(send global-env 'generate-write (second expr))))
 
 ;; Transforming
 (def let-clauses second)
@@ -156,22 +156,16 @@
 (defn let-variables (e) (map first (let-clauses e)))
 (defn let-expressions (e) (map second (let-clauses e)))
 (defn transform-let->lambda (expr)
-  ;; `((lambda ,(let-variables expr) ,(let-body expr))
-  ;;   ,@(let-expressions expr))
-  (cons (list 'lambda
-              (let-variables expr)
-              (let-body expr))
-        (let-expressions expr)))
+  `((lambda ,(let-variables expr) ,(let-body expr))
+    ,@(let-expressions expr)))
 
 (defn compile-let (expr environment)
   (compile (transform-let->lambda expr) environment))
 
 (defn compile-set! (expr environment)
-  (let ((variable   (second expr))
-        (value-expr (third expr)))
-    (append (compile value-expr environment)
-            (list 'pop)
-            (send environment 'generate-write variable))))
+  `(,@(compile (third expr) environment)
+    (pop)
+    ,@(send environment 'generate-write (second expr))))
 
 (defn compile (expr environment)
   (cond

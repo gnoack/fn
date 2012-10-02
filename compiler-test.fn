@@ -9,19 +9,19 @@
 (string= "GLOBAL" (send global-env 'prettyprint))
 (string= "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
-(eql '(read-var 0 0) (send %xyz-env 'generate-read 'x))
-(eql '(read-var 0 1) (send %xyz-env 'generate-read 'y))
-(eql '(read-var 0 2) (send %xyz-env 'generate-read 'z))
-(eql '(read-global-var foo) (send %xyz-env 'generate-read 'foo))
+(eql '((read-var 0 0)) (send %xyz-env 'generate-read 'x))
+(eql '((read-var 0 1)) (send %xyz-env 'generate-read 'y))
+(eql '((read-var 0 2)) (send %xyz-env 'generate-read 'z))
+(eql '((read-global-var foo)) (send %xyz-env 'generate-read 'foo))
 
-(eql '(read-var 0 0) (send %abz-env 'generate-read 'a))
-(eql '(read-var 0 1) (send %abz-env 'generate-read 'b))
-(eql '(read-var 0 2) (send %abz-env 'generate-read 'z))  ; Shadows z in xyz-env
-(eql '(read-var 1 0) (send %abz-env 'generate-read 'x))
-(eql '(read-var 1 1) (send %abz-env 'generate-read 'y))
+(eql '((read-var 0 0)) (send %abz-env 'generate-read 'a))
+(eql '((read-var 0 1)) (send %abz-env 'generate-read 'b))
+(eql '((read-var 0 2)) (send %abz-env 'generate-read 'z)) ; Shadows z in xyz-env
+(eql '((read-var 1 0)) (send %abz-env 'generate-read 'x))
+(eql '((read-var 1 1)) (send %abz-env 'generate-read 'y))
 
-(eql '(write-var 1 1) (send %abz-env 'generate-write 'y))
-(eql '(write-var 0 2) (send %abz-env 'generate-write 'z))
+(eql '((write-var 1 1)) (send %abz-env 'generate-write 'y))
+(eql '((write-var 0 2)) (send %abz-env 'generate-write 'z))
 
 (->true
  ;; Predictable version of compile
@@ -30,65 +30,65 @@
    (set! global-label-counter 1000)
    (compile expr env)))
 
-(eql '(load-value 123
-       push)
+(eql '((load-value 123)
+       (push))
      (pcompile 123 global-env))
 
-(eql (list 'load-value #\a
-           'push)
+(eql '((load-value #\a)
+       (push))
      (pcompile #\a global-env))
 
-(eql '(load-value (+ 1 2 3)
-       push)
+(eql '((load-value (+ 1 2 3))
+       (push))
      (pcompile '(quote (+ 1 2 3)) global-env))
 
-(eql '(load-value 99
-       push
-       load-value 42
-       push
-       read-var 0 0  ; first var
-       push
-       pop
-       call 2)     ; 2 arguments
+(eql '((load-value 99)
+       (push)
+       (load-value 42)
+       (push)
+       (read-var 0 0)  ; first var
+       (push)
+       (pop)
+       (call 2))  ; 2 arguments
      (pcompile '(x 42 99) %xyz-env))
 
-(eql '(read-var 0 0
-       push
-       pop
-       jump-if-true true-branch-1001
+(eql '((read-var 0 0)
+       (push)
+       (pop)
+       (jump-if-true true-branch-1001)
        ; False branch
-       load-value 0
-       push
-       jump after-if-1002
+       (load-value 0)
+       (push)
+       (jump after-if-1002)
        ; True branch
-       label true-branch-1001
-       load-value 10
-       push
-       label after-if-1002)
+       (label true-branch-1001)
+       (load-value 10)
+       (push)
+       (label after-if-1002))
      (pcompile '(if x 10 0) %xyz-env))
 
-(eql '(make-lambda lambda-entry-1001
-       push
-       jump after-lambda-1002
+(eql '((make-lambda lambda-entry-1001)
+       (push)
+       (jump after-lambda-1002)
        ; -- this is where the lambda starts
-       label lambda-entry-1001
-       read-var 1 1    ; b
-       push
-       read-var 0 0    ; x
-       push
-       read-global-var +
-       push
-       pop
-       call 2
-       return
+       (label lambda-entry-1001)
+       (read-var 1 1)  ; b
+       (push)
+       (read-var 0 0)  ; x
+       (push)
+       (read-global-var +)
+       (push)
+       (pop)
+       (call 2)
+       (return)
        ;; -- this is where the lambda ends
-       label after-lambda-1002)
+       (label after-lambda-1002))
      (pcompile '(lambda (x) (+ x b)) %abz-env))
 
-(eql '(load-value 5
-       push
-       pop
-       write-global-var foo)
+(eql '((load-value 5)
+       (push)
+       (pop)
+       (write-global-var foo))
      (pcompile '(def foo 5) %xyz-env))
 
 (eql '((lambda (x y) (+ x y)) 1 2)
@@ -97,10 +97,10 @@
 (eql (pcompile '((lambda (x y) (+ x y)) 1 2) global-env)
      (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
-(eql '(load-value 42
-       push
-       pop
-       write-global-var meaning-of-life)
+(eql '((load-value 42)
+       (push)
+       (pop)
+       (write-global-var meaning-of-life))
      (pcompile '(set! meaning-of-life 42) global-env))
 
 )
