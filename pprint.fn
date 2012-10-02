@@ -12,7 +12,7 @@
                                                    (string->list item)))
                                        "\""))
         ((cons? item)   (if (and (eq 'quote (first item))
-				 (eq 2 (length item)))
+				 (= 2 (length item)))
 			    (string-append "'" (pprint (second item)))
 			    (string-append "("
                                            (string-join (map pprint item) " ")

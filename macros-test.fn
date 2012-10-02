@@ -76,20 +76,20 @@
 (eql
  '(let ((odd? '*undefined*)
 	(even? '*undefined*))
-   (set! odd?  (lambda (x) (if (eq 0 x) false
+   (set! odd?  (lambda (x) (if (= 0 x) false
                                (even? (- x 1)))))
-   (set! even? (lambda (x) (if (eq 0 x) true
+   (set! even? (lambda (x) (if (= 0 x) true
                                (odd? (- x 1)))))
    (odd? 7))
- (macroexpand '(labels ((odd?  (lambda (x) (if (eq 0 x) false
+ (macroexpand '(labels ((odd?  (lambda (x) (if (= 0 x) false
 					       (even? (- x 1)))))
-			(even? (lambda (x) (if (eq 0 x) true
+			(even? (lambda (x) (if (= 0 x) true
 					       (odd? (- x 1))))))
 		(odd? 7))))
 
-(labels ((odd?  (lambda (x) (if (eq 0 x) false
+(labels ((odd?  (lambda (x) (if (= 0 x) false
 				(even? (- x 1)))))
-	 (even? (lambda (x) (if (eq 0 x) true
+	 (even? (lambda (x) (if (= 0 x) true
 				(odd? (- x 1))))))
   (odd? 7))
 

@@ -13,6 +13,9 @@
 (def nil? (lambda (x)
 	    (eq nil x)))
 
+;; =, a nicer eq for numbers.
+(def = eq)
+
 ;; Map
 (def map (lambda (proc sequence)
 	   (if (nil? sequence)
@@ -78,7 +81,7 @@
 (def nth
   (lambda (seq n)
     (if (cons? seq)
-        (if (eq n 0)
+        (if (= 0 n)
             (first seq)
           (nth (rest seq) (- n 1)))
       nil)))  ; Nothing found.  TODO: Make this an error.

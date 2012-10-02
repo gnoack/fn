@@ -27,7 +27,7 @@
 
 ;; TODO: For speed, write in C using memcmp().
 (defn $mem= (a a-offset b b-offset size)
-  (or (eq 0 size)
+  (or (= 0 size)
       (and (eq ($mem-block-byte-get a a-offset)
                ($mem-block-byte-get b b-offset))
            ($mem= a (+ 1 a-offset)
@@ -36,7 +36,7 @@
 
 ;; TODO: For speed, write in C using memcpy().
 (defn $memcpy (trg trg-offset src src-offset size)
-  (if (eq 0 size)
+  (if (= 0 size)
       trg
       (progn
         ($mem-block-byte-set! trg trg-offset
@@ -88,7 +88,7 @@
                                     (+ (%string-offset str) n)))))
 
 (defn %string->list-inner (str n str-length)
-  (if (eq n str-length)
+  (if (= n str-length)
       (list)
       (cons (string-at str n)
             (%string->list-inner str (+ n 1) str-length))))
@@ -100,7 +100,7 @@
 (defn string= (a b)
   (with-asserts ((string? a)
                  (string? b))
-    (and (eq (string-size a) (string-size b))
+    (and (= (string-size a) (string-size b))
          ($mem= (%string-raw a) (%string-offset a)
                 (%string-raw b) (%string-offset b)
                 (string-size a)))))
@@ -136,7 +136,7 @@
 ;; Integer to string conversion.
 (def _hex-digits "0123456789abcdef")
 (defn _int->string (n base)
-  (if (eq n 0)
+  (if (= 0 n)
       (list)
       (cons (string-at _hex-digits (mod n base))
 	    (_int->string (/ n base) base))))
@@ -156,7 +156,7 @@
 
 (defn binary< (x y)
   (and (<= x y)
-       (not (eq x y))))
+       (not (= x y))))
 
 (defn < (&rest args)
   (sequence-ordered? binary< args))
