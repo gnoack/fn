@@ -1,33 +1,6 @@
 
 (
 
-
-;; Byte streams
-;; TODO: Move to a more appropriate file and test this.
-(defn make-byte-stream ()
-  ;; TODO: Handle overflow.
-  (let ((memory ($make-mem-block 100))
-        (index 0))
-    (dispatcher self
-      ('put-byte! (byte)
-         ($mem-block-byte-set! memory index byte)
-         (set! index (+ 1 index))
-         byte)
-      ('size ()
-         index)
-      ('slice (first last)
-         (if (eq first last)
-             (list)
-             (cons ($mem-block-byte-get memory first)
-                   (send self 'slice (+ 1 first) last))))
-      ('display ()
-         (writeout "byte stream: ")
-         (apply awriteout
-                (map (lambda (x)
-                       (string-append " " (int->string x 16)))
-                     (send self 'slice 0 index)))))))
-
-
 ;; Recognizing s-expressions.
 (defn let? (e) (smatch? 'let e))
 (defn lambda? (e) (smatch? 'lambda e))
@@ -179,5 +152,108 @@
     ((def? expr)     (compile-def expr environment))
     ((set!? expr)    (compile-set! expr environment))
     ((list? expr)    (compile-application expr environment))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Assembler                                                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Byte streams
+;; TODO: Move to a more appropriate file and test this.
+(defn make-byte-stream ()
+  ;; TODO: Handle overflow.
+  (let ((memory ($make-mem-block 100))
+        (index 0))
+    (dispatcher self
+      ('put-byte! (byte)
+         ($mem-block-byte-set! memory index byte)
+         (set! index (+ 1 index))
+         byte)
+      ('put-byte-at! (trg-index byte)
+         (with-asserts ((< trg-index index))
+           ($mem-block-byte-set! memory trg-index byte)))
+      ('size ()
+         index)
+      ('slice (first last)
+         (if (eq first last)
+             (list)
+             (cons ($mem-block-byte-get memory first)
+                   (send self 'slice (+ 1 first) last))))
+      ('display ()
+         (writeout "byte stream: ")
+         (apply awriteout
+                (map (lambda (x)
+                       (string-append " " (int->string x 16)))
+                     (send self 'slice 0 index)))))))
+
+(defn make-assembler (byte address-of oop-ref save-label!)
+  (dispatcher self
+    ('halt ()                     (byte 0))
+    ('jump (label)                (byte 1) (address-of label))
+    ('jump-if-true (label)        (byte 2) (address-of label))
+    ('load-value (oop)            (byte 3) (oop-ref oop))
+    ('read-var (f-depth v-index)  (byte 4) (byte f-depth) (byte v-index))
+    ('write-var (f-depth v-index) (byte 5) (byte f-depth) (byte v-index))
+    ('load-global-var (oop)       (byte 6) (oop-ref oop))
+    ('write-global-var (oop)      (byte 7) (oop-ref oop))
+    ('push ()                     (byte 8))
+    ('pop ()                      (byte 9))
+    ('make-lambda (label)         (byte 10) (address-of label))
+    ('call (argnum)               (byte 11) (byte argnum))
+    ('return ()                   (byte 12))
+
+    ('label (l)                   (save-label! l))))
+
+(defmacro for-each ((var items) &rest cmds)
+  `(map (lambda (,var) ,@cmds)
+        ,items))
+
+(defmacro when (condition &rest statements)
+  `(if ,condition
+       (progn ,@statements)
+     nil))
+
+(defmacro add-to-list! (name value)
+  `(set! ,name (cons ,value ,name)))
+
+(defmacro flet (clauses &rest body)
+  `(let ,(map (lambda ((name lambda-list &rest body))
+                `(,name (lambda ,lambda-list ,@body)))
+              clauses)
+     ,@body))
+
+(defn assemble (program)
+  (let ((byte-stream        (make-byte-stream))
+        (postponed-actions  (list))
+        (label-addrs        empty-map)
+        (known-oops         (list)))
+    (flet ((put-byte! (b)
+             (send byte-stream 'put-byte! b))
+           (put-label! (l)
+             (let ((pos (send byte-stream 'size)))
+               (send byte-stream 'put-byte! 0)
+               (add-to-list! postponed-actions
+                             (lambda ()
+                               (send byte-stream 'put-byte-at! pos
+                                     (send label-addrs 'get l))))))
+           (put-oop! (o)
+             (when (not (contains? known-oops o))
+               (add-to-list! known-oops o))
+             (let ((pos (send byte-stream 'size)))
+               (send byte-stream 'put-byte! 0)
+               (add-to-list! postponed-actions
+                             (lambda ()
+                               (send byte-stream 'put-byte-at! pos
+                                     (index-of known-oops o))))))
+           (save-label! (l)
+             (set! (send label-addrs 'put l
+                         (send byte-stream 'size)))))
+      (let ((translate!
+             (make-assembler put-byte! put-label! put-oop! save-label!)))
+        (for-each (cmd program)
+          (apply translate! cmd))
+        (for-each (todo postponed-actions)
+          (todo))
+        (send byte-stream 'display)
+        known-oops))))
 
 )
