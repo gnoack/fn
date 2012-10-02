@@ -99,14 +99,9 @@
     (apply fun arglist)))
 
 (defmacro peg-let (bindings action)
-  ;; `(peg=> (peg-seq ,@(map second bindings))
-  ;;         (lambda ,(map first bindings)
-  ;;           ,action))
-  (list 'peg=>
-	(cons 'peg-seq (map second bindings))
-	(list 'applicator
-	      (list 'lambda (map first bindings)
-		    action))))
+  `(peg=> (peg-seq ,@(map second bindings))
+          (applicator (lambda ,(map first bindings)
+                        ,action))))
 
 ;; PEG utilities
 (defn parses? (peg input)

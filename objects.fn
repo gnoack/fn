@@ -27,8 +27,7 @@
 
 ;; TODO: Supertypes?
 (defmacro deftype (name)
-  (list 'def name
-	(list '$make '@type 'empty-map)))
+  `(def ,name ($make @type empty-map)))
 
 (deftype @mem)
 (deftype @smallint)
@@ -57,10 +56,8 @@
              (send ($mem-get type 1) 'put selector method)))
 
 (defmacro defm (type selector args body)
-  ;; `(install-method! ,type ,selector
-  ;;                   (lambda (self ,@args) ,body))
-  (list 'install-method! type selector
-        (list 'lambda (cons 'self args) body)))
+  `(install-method! ,type ,selector
+                    (lambda (self ,@args) ,body)))
 
 
 ;;; Message sending

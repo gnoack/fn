@@ -68,7 +68,7 @@
 (defmacro cond (&rest pairs)
   (reduce (lambda (start item)
 	    (let ((condition (first item))
-		  (action (first (rest item))))
+		  (action (second item)))
 	      (list 'if condition action start)))
 	  (reverse pairs)
 	  '(error "No match.")))
@@ -160,33 +160,26 @@
 
 ;; Call like (trace macroexpand) for instance to log method calls.
 (defmacro trace (sym)
-  (list 'set! sym (list 'debugging-wrap sym)))
+  `(set! ,sym (debugging-wrap ,sym)))
 
 ;; Like let, but variable values are evaluated in an environment where
 ;; the newly defined variables already exist.  This allows for mutual
 ;; recursion between functions.  See SICP, page 390.
 (defmacro labels (bindings &rest body)
-  ;; `(let ,(map (lambda (binding)
-  ;;               `(,(first binding) '*undefined*))
-  ;;             bindings)
-  ;;    ,@(map (lambda (binding)
-  ;;             `(set! (first binding) (second binding))))
-  ;;    ,@body)
-  (append (list 'let
-                (map (lambda (binding)
-                       (list (first binding) ''*undefined*))
-                     bindings))
-          (map (lambda (binding)
-                 (list 'set! (first binding) (second binding)))
-               bindings)
-          body))
+  `(let ,(map (lambda (binding)
+                `(,(first binding) '*undefined*))
+              bindings)
+     ,@(map (lambda (binding)
+              `(set! ,(first binding) ,(second binding)))
+            bindings)
+     ,@body))
 
 ;; Example: (with-asserts ((number? n)) (+ 1 n))
 (defmacro with-asserts (asserts body)
   (reduce (lambda (b assertion)
-            (list 'if assertion b
-                  (list 'error '"Assertion failed: "
-                        (list 'pprint (list 'quote assertion)))))
+            `(if ,assertion
+                 ,b
+               (error "Assertion failed: " (pprint (quote ,assertion)))))
           asserts
           body))
 

@@ -28,14 +28,11 @@
      (acons 'and
 	    (lambda (x)
 	      (list 'if (first x)
-		    (first (rest x))
+                    (second x)
 		    'false))
 	    *macros*))
  (macroexpand-rec
-  '(defmacro and (x)
-    (list 'if (first x)
-          (first (rest x))
-          'false))))
+  '(defmacro and (x) (list 'if (first x) (second x) 'false))))
 
 (eql
  '(if a (if b c false) false)
