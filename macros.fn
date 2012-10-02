@@ -86,31 +86,6 @@
   (list 'def name
 	(cons 'lambda (cons lambda-list body))))
 
-;; TODO: Use with-gensyms for SYM_.
-(defmacro case (expr &rest clauses)
-  ;; `(let ((sym_ ,expr))
-  ;;    (cond
-  ;;      ,@(map (lambda (clause)
-  ;;               (cond ((list? (first clause))
-  ;;                      `((eq (quote ,(first clause)) sym_)
-  ;;                        ,(second clause)))
-  ;;                     ((eq 'else (first clause))
-  ;;                      `(true ,(second clause)))))
-  ;;             clauses)))
-  (list 'let (list (list 'sym_ expr))
-        (cons 'cond
-              (map (lambda (clause)
-                     (cond ((list? (first clause))
-                            (list (list 'eq
-                                        (list 'quote
-                                              (first (first clause)))
-                                        'sym_)
-                                  (second clause)))
-                           ((eq 'else (first clause))
-                            (list 'true (second clause)))))
-                   clauses))))
-
-
 ;;; ***********************************************************
 ;;; Quasiquote implementation
 ;;; ***********************************************************
@@ -142,6 +117,22 @@
   (cond ((smatch? 'unquote expr)           (list 'list (second expr)))
 	((smatch? 'unquote-splicing expr)  (second expr))
 	(true                              (list 'list (list 'quasiquote expr)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; More general purpose macros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO: Use with-gensyms for SYM_.
+(defmacro case (expr &rest clauses)
+  `(let ((sym_ ,expr))
+     (cond
+       ,@(map (lambda (clause)
+                (cond ((list? (first clause))
+                       `((eq (quote ,(first (first clause))) sym_)
+                         ,(second clause)))
+                      ((eq 'else (first clause))
+                       `(true ,(second clause)))))
+              clauses))))
 
 
 ;;; *******************************************************************

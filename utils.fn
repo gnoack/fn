@@ -1,12 +1,6 @@
 
 (
 
-(defn identity (x) x)
-
-(defn second (list)  (first (rest list)))
-(defn third (list)   (first (rest (rest list))))
-(defn fourth (list)  (first (rest (rest (rest list)))))
-
 (defn last (l)
   (if (nil? (rest l))
       (first l)
@@ -17,17 +11,10 @@
   (last args))
 
 ;; Lists
-(defn append (&rest as)
-  (if (nil? as) as
-      (apply append-inner as)))
-
-(defn append-inner (a &rest as)
-  (if (nil? as) a
-      (if (nil? a)
-	  (apply append as)
-	  (cons (first a)
-		(apply append
-		       (cons (rest a) as))))))
+(defn length (seq)
+  (if (cons? seq)
+      (+ 1 (length (rest seq)))
+      0))
 
 (defn eql (a b)
   (cond ((and (cons? a) (cons? b))
@@ -37,18 +24,6 @@
          (string= a b))
         (true
          (eq a b))))
-
-(defn nth (seq n)
-  (if (cons? seq)
-      (if (eq n 0)
-	  (first seq)
-	  (nth (rest seq) (- n 1)))
-      nil))  ; Nothing found.
-
-(defn length (seq)
-  (if (cons? seq)
-      (+ 1 (length (rest seq)))
-      0))
 
 ;; TODO: For speed, write in C using memcmp().
 (defn $mem= (a a-offset b b-offset size)
@@ -211,19 +186,6 @@
 ;; Always return true (false).
 (defn ->true (&rest args) true)
 (defn ->false (&rest args) false)
-
-;; True iff all elements of the list fulfill the predicate.
-(defn all? (predicate? list)
-  (reduce (lambda (a b) (and a (predicate? b))) list true))
-
-;; True iff at least of of the list's elements fulfills the predicate.
-(defn any? (predicate? list)
-  (reduce (lambda (a b) (or a (predicate? b))) list false))
-
-(defn list? (potential-list)
-  (or (nil? potential-list)
-      (and (cons? potential-list)
-           (list? (rest potential-list)))))
 
 (defn error (&rest args)
   (apply awriteout (cons "*ERROR*: " (map pprint args)))

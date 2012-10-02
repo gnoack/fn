@@ -177,7 +177,7 @@ oop primitive_apply(oop args) {
 /* Attention: has side effect of printing, returns argument. */
 oop primitive_write_out(oop args) {
   PARSE_ONE_ARG(str);
-  CHECKV(is_string(str), str, "Must be list of characters (string)");
+  CHECKV(is_string(str), str, "Must be a string.");
   char* c_str = c_string(str);
   printf("%s\n", c_str);
   free(c_str);

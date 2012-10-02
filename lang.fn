@@ -28,6 +28,61 @@
 			  (rest list)
 			  (proc start (first list))))))
 
+(def identity (lambda (x) x))
+
+(def second (lambda (list)  (first (rest list))))
+(def third (lambda (list)   (first (rest (rest list)))))
+(def fourth (lambda (list)  (first (rest (rest (rest list))))))
+
+;; Check whether something is a list.
+(def list?
+  (lambda (l)
+    (if (nil? l)
+        true
+      (if (cons? l)
+          (list? (rest l))
+        false))))
+
+;; True iff all elements of the list fulfill the predicate.
+(def all?
+  (lambda (predicate? list)
+    (if (cons? list)
+        (if (predicate? (first list))
+            (all? predicate? (rest list))
+          false)
+        true)))
+
+;; True iff at least of of the list's elements fulfills the predicate.
+(def any?
+  (lambda (predicate? list)
+    (if (cons? list)
+        (if (predicate? (first list))
+            true
+          (any? predicate? (rest list)))
+        false)))
+
+(def append
+  (lambda (&rest as)
+    (if (nil? as) as
+      (apply append-inner as))))
+
+(def append-inner
+  (lambda (a &rest as)
+    (if (nil? as) a
+      (if (nil? a)
+          (apply append as)
+        (cons (first a)
+              (apply append
+                     (cons (rest a) as)))))))
+
+(def nth
+  (lambda (seq n)
+    (if (cons? seq)
+        (if (eq n 0)
+            (first seq)
+          (nth (rest seq) (- n 1)))
+      nil)))  ; Nothing found.  TODO: Make this an error.
+
 ;; Reversing sequences.
 (def %xcons (lambda (l r)
 	     (cons r l)))

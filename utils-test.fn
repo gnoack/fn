@@ -1,11 +1,6 @@
 (
 
-; First, second, third
-(eq 1 (first '(1 2 3 4 5 6)))
-(eq 2 (second '(1 2 3 4 5 6)))
-(eq 3 (third '(1 2 3 4 5 6)))
-(eq 4 (fourth '(1 2 3 4 5 6)))
-(eq 6 (last '(1 2 3 4 5 6)))
+; Progn
 (eq 'result (progn 1 2 3 'result))
 
 ; Strings
@@ -29,33 +24,8 @@
 (eq #\d (string-at "abcdefg" 3))
 (eq 6 (string-size "abcdef"))
 
-
-; Appending lists
-(eql (list 'a 'b 'c 'd 'e)
-     (append (list 'a 'b 'c)
-	     (list 'd 'e)))
-
-(eql (list 'a 'b)
-     (append '() (list 'a 'b)))
-
-(eql (list 'a 'b)
-     (append (list 'a 'b) '()))
-
-(eql '() (append))
-
 ; Integer parsing.
 (eq 123 (string->int "123"))
-
-; Lists
-(eq 3 (nth (list 1 2 3 4 5) 2))
-(eq 5 (nth (list 5 6) 0))
-(eq 6 (nth (list 5 6) 1))
-(eq 2 (length (list 1 2)))
-
-(list? '(1 2 3))
-(list? '())
-(not (list? 1))
-(not (list? (cons 1 2)))
 
 ; Digit to int
 (eq 3 (digit->int #\3))
@@ -85,17 +55,6 @@
 
 (eql (list 'a 'b 'c)
      (reduce-right cons (list 'a 'b 'c) nil))
-
-;; All-predicate
-(all? identity (list true true true))
-(not (all? identity (list true true false)))
-(all? identity (list))
-
-;; Any-predicate
-(any? identity (list true false false))
-(any? identity (list false false true))
-(not (any? identity (list false false false)))
-(not (any? identity (list)))
 
 )
 
