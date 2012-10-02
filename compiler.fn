@@ -203,6 +203,8 @@
 
     ('label (l)                   (save-label! l))))
 
+;; TODO: Move utility macros to macros.fn
+;; TODO: Separate imperative macros into their own file?
 (defmacro for-each ((var items) &rest cmds)
   `(map (lambda (,var) ,@cmds)
         ,items))
