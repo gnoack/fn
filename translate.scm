@@ -33,9 +33,7 @@
                        ((char=? input #\newline) "\\n")
                        (else input))))
         ((symbol? input)
-         (if (eq? 'nil input)
-             "NIL"
-             (format #f "make_symbol(\"~s\")" input)))))
+         (format #f "make_symbol(\"~s\")" input))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
