@@ -155,8 +155,9 @@
   (cond
     ((number? expr)  (compile-literal expr environment))
     ((char? expr)    (compile-literal expr environment))
-    ((quote? expr)   (compile-literal (second expr) environment))
     ((symbol? expr)  (compile-variable-read expr environment))
+    ((string? expr)  (compile-literal expr environment))
+    ((quote? expr)   (compile-literal (second expr) environment))
     ((if? expr)      (compile-if expr environment))
     ((lambda? expr)  (compile-lambda expr environment))
     ((let? expr)     (compile-let expr environment))
@@ -173,7 +174,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Byte streams
-;; TODO: Move to a more appropriate file and test this.
+;; TODO: Move to a more appropriate file?
 (defn make-byte-stream ()
   (let ((buffer ($make-mem-block 100))
         (index 0)
@@ -202,7 +203,6 @@
              (list)
              (cons ($mem-block-byte-get buffer first)
                    (send self 'slice (+ 1 first) last))))
-      ;; TODO: Only return relevant part!
       ('buffer ()
          (let ((new-buffer ($make-mem-block index)))
            ($memcpy new-buffer 0
