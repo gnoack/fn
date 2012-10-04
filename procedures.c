@@ -152,7 +152,7 @@ int apply_stack_pos = 0;
  * it's better to only do it when you're crashing anyway. :)
  */
 void print_apply_stack() {
-  int i = apply_stack_pos;
+  int i = apply_stack_pos - 1;
   while (i >= 0) {
     printf("%3d ", i);
     print_value(apply_stack[i]);
