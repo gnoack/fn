@@ -103,14 +103,14 @@ void half_space_swap(half_space* a, half_space* b) {
  */
 oop half_space_alloc(half_space* space, fn_uint size) {
   if (size == 0L) {
-    printf("You can't allocate empty objects in a half space.");
+    printf("You can't allocate empty objects in a half space.\n");
     exit(1);
   }
   oop result;
   result.mem = space->free;
   space->free += size;
   if (space->free >= space->end) {
-    printf("Too little space in new half-space (%lu needed).", size);
+    printf("Too little space in new half-space (%lu needed).\n", size);
     exit(1);
   }
   return result;
@@ -370,7 +370,7 @@ region_t* region(oop obj) {
 
 void init_gc() {
   object_region_init(1 << 24);  // TODO: Enough?
-  primitive_memory_region_init(1 << 16);  // TODO: Enough?
+  primitive_memory_region_init(1 << 18);  // TODO: Enough?
   immediate_region_init();
   persistent_refs_init();
 }
