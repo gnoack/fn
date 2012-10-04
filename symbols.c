@@ -27,6 +27,8 @@ void init_symbols() {
   gc_register_persistent_ref(&symbols._procedure);
   symbols._native_procedure = mem_alloc(2);
   gc_register_persistent_ref(&symbols._native_procedure);
+  symbols._compiled_procedure = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._compiled_procedure);
   symbols._string = mem_alloc(2);
   gc_register_persistent_ref(&symbols._string);
 

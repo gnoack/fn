@@ -7,6 +7,8 @@
 // Lisp procedures.
 //
 
+// TODO: Trim down these exports.
+
 // Makes a lisp procedure from a lambda list, its body and
 // a captured environment.
 extern oop make_procedure(oop lambda_list, oop body, oop env);
@@ -17,6 +19,16 @@ extern oop fn_body(oop fn);
 extern oop fn_env(oop fn);
 extern oop fn_name(oop fn);
 extern oop fn_set_name(oop fn, oop name);
+
+// Makes a compiled Lisp procedure.
+extern oop make_compiled_procedure(oop lambda_list, oop code, oop env);
+
+// Accessors for compiled Lisp procedures.
+extern oop cfn_name(oop cfn);
+extern oop cfn_lambda_list(oop cfn);
+extern oop cfn_code(oop cfn);
+extern oop cfn_env(oop cfn);
+extern boolean is_compiled_lisp_procedure(oop cfn);
 
 // True if it's a lisp procedure.
 extern boolean is_lisp_procedure(oop fn);

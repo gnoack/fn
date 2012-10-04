@@ -4,12 +4,15 @@
 #include "value.h"
 #include "cons.h"
 #include "carcdr.h"
-#include "symbols.h"
-#include "eval.h"
 #include "env.h"
+#include "eval.h"
+#include "interpreter.h"
 #include "memory.h"
+#include "symbols.h"
 
 #include "procedures.h"
+
+// TODO: Unify access to compiled and non-compiled procedures!
 
 // Lisp procedures and accessing them.
 oop make_procedure(oop lambda_list, oop body, oop env) {
@@ -31,7 +34,27 @@ boolean is_lisp_procedure(oop fn) {
                  value_eq(symbols._procedure, mem_get(fn, 0)));
 }
 
-// NOTE: Works for both native and Lisp procedures!
+/* Compiled Lisp procedures. */
+oop make_compiled_procedure(oop lambda_list, oop code, oop env) {
+  oop result = mem_alloc(5);
+  mem_set(result, 0, symbols._compiled_procedure);
+  mem_set(result, 1, NIL);  // Name.
+  mem_set(result, 2, lambda_list);
+  mem_set(result, 3, code);
+  mem_set(result, 4, env);
+  return result;
+}
+
+oop cfn_name(oop cfn) { return mem_get(cfn, 1); }
+oop cfn_lambda_list(oop cfn) { return mem_get(cfn, 2); }
+oop cfn_code(oop cfn) { return mem_get(cfn, 3); }
+oop cfn_env(oop cfn) { return mem_get(cfn, 4); }
+boolean is_compiled_lisp_procedure(oop cfn) {
+  return TO_BOOL(is_mem(cfn) &&
+                 value_eq(symbols._compiled_procedure, mem_get(cfn, 0)));
+}
+
+// NOTE: Works for all kinds of procedures!
 // Can only be set once per procedure.
 oop fn_set_name(oop fn, oop name) {
   if (is_nil(fn_name(fn))) {
@@ -69,6 +92,20 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
   }
 }
 
+oop apply_compiled_lisp_procedure(oop cfn, oop args) {
+  oop linked_list_env = destructure_lambda_list(cfn_lambda_list(cfn), args, NIL);
+  oop outer_frame = cfn_env(cfn);
+  fn_uint inner_frame_size = length_int(linked_list_env);
+  oop inner_frame = make_frame(inner_frame_size, NIL, NIL, outer_frame);
+  unsigned int index = 0;
+  while (!is_nil(linked_list_env)) {
+    set_var(inner_frame, index, rest(first(linked_list_env)));
+    index++;
+    linked_list_env = rest(linked_list_env);
+  }
+  return interpret(inner_frame, cfn_code(cfn));
+}
+
 oop apply_lisp_procedure(oop fn, oop args) {
   oop env = destructure_lambda_list(fn_lambda_list(fn),
 				    args, fn_env(fn));
@@ -99,7 +136,9 @@ oop native_fn_apply(oop fn, oop args) {
 }
 
 boolean is_procedure(oop fn) {
-  return TO_BOOL(is_lisp_procedure(fn) || is_native_procedure(fn));
+  return TO_BOOL(is_lisp_procedure(fn) ||
+                 is_compiled_lisp_procedure(fn) ||
+                 is_native_procedure(fn));
 }
 
 // Application
@@ -130,6 +169,8 @@ oop apply(oop values) {
   oop result;
   if (is_lisp_procedure(fn)) {
     result = apply_lisp_procedure(fn, cdr(values));
+  } else if (is_compiled_lisp_procedure(fn)) {
+    result = apply_compiled_lisp_procedure(fn, cdr(values));
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = native_fn_apply(fn, cdr(values));

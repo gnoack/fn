@@ -20,6 +20,9 @@
     ($mem-set! result 1 capacity)
     result))
 
+(defn list->array (l)
+  (apply $make `(@array ,(length l) ,@l)))
+
 (defm @array 'get (n)
   (with-asserts ((number? n)
 		 (< n (send self 'size)))

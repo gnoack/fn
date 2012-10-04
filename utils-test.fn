@@ -31,6 +31,7 @@
 (eq 3 (digit->int #\3))
 
 ; Integer coding
+(string= "0" (int->string 0 10))
 (string= "1" (int->string 1 10))
 (string= "123" (int->string 123 10))
 (string= "cafe" (int->string 51966 16))

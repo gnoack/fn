@@ -140,10 +140,6 @@
 ;;; *******************************************************************
 ;; TODO: Move this somewhere else!
 
-;; Writeout multiple strings
-(defn awriteout (&rest args)
-  (writeout (apply string-append args)))
-
 ;; TODO: We could use substrings of a larger indentation string instead.
 (def %trace-indent "")
 
@@ -152,9 +148,9 @@
   (lambda (&rest args)
     (let ((old-indent %trace-indent))
       (set! %trace-indent (string-append "  " %trace-indent))
-      (awriteout %trace-indent (pprint (cons func args)))
+      (println %trace-indent (pprint (cons func args)))
       (let ((result (apply func args)))
-        (awriteout %trace-indent (pprint func) " returned " (pprint result))
+        (println %trace-indent (pprint func) " returned " (pprint result))
         (set! %trace-indent old-indent)
         result))))
 

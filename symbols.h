@@ -17,6 +17,7 @@ typedef struct {
   oop _cons;
   oop _procedure;
   oop _native_procedure;
+  oop _compiled_procedure;
   oop _string;
 
   // Bytecode.

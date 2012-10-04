@@ -142,7 +142,10 @@
 	    (_int->string (/ n base) base))))
 
 (defn int->string (n base)
-  (list->string (reverse (_int->string n base))))
+  (let ((result (_int->string n base)))
+    (if (nil? result)
+        "0"
+      (list->string (reverse result)))))
 
 
 ;; Ordering operators.
@@ -188,7 +191,7 @@
 (defn ->false (&rest args) false)
 
 (defn error (&rest args)
-  (apply awriteout (cons "*ERROR*: " (map pprint args)))
+  (apply println (cons "*ERROR*: " (map pprint args)))
   (kill-lisp 1))
 
 )

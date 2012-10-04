@@ -21,6 +21,12 @@ extern
 void register_globally_fn(const char* name, function fn);
 
 extern
+oop lookup_globally(oop key);
+
+extern
+boolean is_global_env(oop v);
+
+extern
 void init_eval();
 
 extern

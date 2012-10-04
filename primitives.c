@@ -163,6 +163,7 @@ UNARY_PREDICATE(primitive_char_p, is_char);
 UNARY_PREDICATE(primitive_number_p, is_smallint);
 UNARY_PREDICATE(primitive_symbol_p, is_symbol);
 UNARY_PREDICATE(primitive_mem_block_p, is_primitive_mem);
+UNARY_PREDICATE(primitive_global_env_p, is_global_env);
 
 oop primitive_list(oop args) {
   // Any argument number accepted, of course. :)
@@ -179,7 +180,7 @@ oop primitive_write_out(oop args) {
   PARSE_ONE_ARG(str);
   CHECKV(is_string(str), str, "Must be a string.");
   char* c_str = c_string(str);
-  printf("%s\n", c_str);
+  printf("%s", c_str);
   free(c_str);
   return car(args);
 }
@@ -187,6 +188,7 @@ oop primitive_write_out(oop args) {
 oop primitive_kill_lisp(oop args) {
   PARSE_ONE_ARG(exit_status);
   CHECKNUMBER(exit_status);
+  CHECK(1==0, "Gaa, Lisp was killed!");
   exit(get_smallint(exit_status));
 }
 
@@ -237,6 +239,7 @@ void init_primitives() {
   register_globally_fn("kill-lisp", primitive_kill_lisp);
   register_globally_fn("$make-mem-block", primitive_primitive_mem_alloc);
   register_globally_fn("mem-block?", primitive_mem_block_p);
+  register_globally_fn("global-env?", primitive_global_env_p);
   register_globally_fn("$mem-block-byte-get", primitive_primitive_mem_get);
   register_globally_fn("$mem-block-byte-set!", primitive_primitive_mem_set);
 }

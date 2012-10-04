@@ -45,7 +45,7 @@ void print_zone(oop obj) {
 
 // Prints values, for debugging.
 void print_value_internal(oop v) {
-  if (value_eq(v, global_env)) {
+  if (is_global_env(v)) {
     printf("[global-env]");
   } else if (is_smallint(v)) {
     printf("%d", (unsigned int) get_smallint(v));
@@ -80,6 +80,12 @@ void print_value_internal(oop v) {
     print_value_internal(fn_name(v));
     printf(" ");
     print_value_internal(fn_lambda_list(v));
+    printf(">");
+  } else if (is_compiled_lisp_procedure(v)) {
+    printf("<COMPILED-PROCEDURE ");
+    print_value_internal(cfn_name(v));
+    printf(" ");
+    print_value_internal(cfn_lambda_list(v));
     printf(">");
   } else if (is_native_procedure(v)) {
     printf("<NATIVE-PROCEDURE ");

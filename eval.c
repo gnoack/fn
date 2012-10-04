@@ -13,6 +13,7 @@
 
 oop global_env;
 
+// TODO: Check for already registered keys.
 void register_globally_oop(oop key, oop value) {
   // If it's a procedure, set its name.
   if (is_procedure(value)) {
@@ -26,6 +27,10 @@ void register_globally_oop(oop key, oop value) {
   }
 }
 
+boolean is_global_env(oop v) {
+  return value_eq(global_env, v);
+}
+
 // Registers a lisp value under a global variable name.
 void register_globally(const char* name, oop value) {
   register_globally_oop(make_symbol(name), value);
@@ -37,6 +42,10 @@ void register_globally_fn(const char* name, function fn) {
   register_globally(name, make_native_fn(fn));
 }
 
+oop lookup_globally(oop key) {
+  return env_lookup(global_env, key);
+}
+
 void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
@@ -46,6 +55,7 @@ void init_eval() {
   register_globally("@cons", symbols._cons);
   register_globally("@procedure", symbols._procedure);
   register_globally("@native-procedure", symbols._native_procedure);
+  register_globally("@compiled-procedure", symbols._compiled_procedure);
   register_globally("@string", symbols._string);
 }
 

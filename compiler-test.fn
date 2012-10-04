@@ -42,14 +42,14 @@
        (push))
      (pcompile '(quote (+ 1 2 3)) global-env))
 
-(eql '((load-value 99)
+(eql '((read-var 0 0)  ; first var
        (push)
        (load-value 42)
        (push)
-       (read-var 0 0)  ; first var
+       (load-value 99)
        (push)
-       (pop)
-       (call 2))  ; 2 arguments
+       (call 3)
+       (push))  ; 2 arguments and one procedure.
      (pcompile '(x 42 99) %xyz-env))
 
 (eql '((read-var 0 0)
@@ -67,19 +67,20 @@
        (label after-if-1002))
      (pcompile '(if x 10 0) %xyz-env))
 
-(eql '((make-lambda lambda-entry-1001)
+(eql '((make-lambda lambda-entry-1001 (x))
        (push)
        (jump after-lambda-1002)
        ; -- this is where the lambda starts
        (label lambda-entry-1001)
-       (read-var 1 1)  ; b
+       (read-global-var +)
        (push)
        (read-var 0 0)  ; x
        (push)
-       (read-global-var +)
+       (read-var 1 1)  ; b
+       (push)
+       (call 3)  ; 2 arguments and one procedure.
        (push)
        (pop)
-       (call 2)
        (return)
        ;; -- this is where the lambda ends
        (label after-lambda-1002))
@@ -102,5 +103,20 @@
        (pop)
        (write-global-var meaning-of-life))
      (pcompile '(set! meaning-of-life 42) global-env))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Execute some real compiled functions!                    ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(eql (cons 1 2)
+     ((compile-fn cons) 1 2))
+
+(eql (list 1 2 3)
+     ((compile-fn map) identity (list 1 2 3)))
+
+;; It works!
+(set! map (compile-fn map))
+(map char->num (list #\a #\b #\c))
 
 )

@@ -29,4 +29,16 @@
 	((symbol? item) (symbol->string item))
         (true           "?UNPRINTABLE?")))
 
+(defn display (item)
+  (if (string? item)
+      (writeout item)
+    (writeout (pprint item))))
+
+(defn newline ()
+  (writeout "\n"))
+
+(defn println (&rest args)
+  (map display args)
+  (newline))
+
 )

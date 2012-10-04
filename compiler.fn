@@ -91,9 +91,9 @@
   `(,@(apply append
              (map (lambda (e)
                     (compile e environment))
-                  (reverse expr)))
-    (pop)
-    (call ,(- (length expr) 1))))
+                  expr))
+    (call ,(length expr))
+    (push)))
 
 (defn compile-variable-read (expr environment)
   `(,@(send environment 'generate-read expr)
@@ -103,20 +103,31 @@
   `((load-value ,expr)
     (push)))
 
-;; TODO: Support for variable length argument lists.
+(defn vars-from-ll (lambda-list)
+  (cond ((nil? lambda-list) '())
+        ((smatch? '&rest lambda-list)  (vars-from-ll (rest lambda-list)))
+        ((cons? lambda-list)           (append (vars-from-ll (first lambda-list))
+                                               (vars-from-ll (rest lambda-list))))
+        ((symbol? lambda-list)         (list lambda-list))))
+
 (def lambda-list second)
-(def lambda-body third)
+(defn lambda-body (e) (rest (rest e)))
 (defn compile-lambda (expr environment)
   (let ((lambda-entry-label (gensym "lambda-entry"))
         (after-lambda-label (gensym "after-lambda")))
-    `((make-lambda ,lambda-entry-label)
+    `((make-lambda ,lambda-entry-label ,(lambda-list expr))
       (push)
       (jump ,after-lambda-label)
       (label ,lambda-entry-label)
-      ,@(compile (lambda-body expr)
-                 (send environment 'linked-with-vars (lambda-list expr)))
-      (return)
+      ,@(compile-lambda-body (lambda-body expr)
+                             (send environment 'linked-with-vars
+                                   (vars-from-ll (lambda-list expr))))
       (label ,after-lambda-label))))
+
+(defn compile-lambda-body (exprs environment)
+  `(,@(compile-sequence exprs environment)
+    (pop)
+    (return)))
 
 (defn compile-def (expr environment)
   `(,@(compile (third expr) environment)
@@ -153,6 +164,10 @@
     ((set!? expr)    (compile-set! expr environment))
     ((list? expr)    (compile-application expr environment))))
 
+(defn compile-sequence (exprs environment)
+  (apply append (map (lambda (e) (compile e environment))
+                     exprs)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assembler                                                       ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,6 +180,7 @@
         (index 0))
     (dispatcher self
       ('put-byte! (byte)
+         (println "[asm] " index ": " byte)
          ($mem-block-byte-set! memory index byte)
          (set! index (+ 1 index))
          byte)
@@ -178,9 +194,11 @@
              (list)
              (cons ($mem-block-byte-get memory first)
                    (send self 'slice (+ 1 first) last))))
+      ;; TODO: Only return relevant part!
+      ('buffer () memory)
       ('display ()
-         (writeout "byte stream: ")
-         (apply awriteout
+         (println "Byte stream:")
+         (apply println
                 (map (lambda (x)
                        (string-append " " (int->string x 16)))
                      (send self 'slice 0 index)))))))
@@ -193,7 +211,7 @@
     ('load-value (oop)            (byte 3) (oop-ref oop))
     ('read-var (f-depth v-index)  (byte 4) (byte f-depth) (byte v-index))
     ('write-var (f-depth v-index) (byte 5) (byte f-depth) (byte v-index))
-    ('load-global-var (oop)       (byte 6) (oop-ref oop))
+    ('read-global-var (oop)       (byte 6) (oop-ref oop))
     ('write-global-var (oop)      (byte 7) (oop-ref oop))
     ('push ()                     (byte 8))
     ('pop ()                      (byte 9))
@@ -247,7 +265,8 @@
                                (send byte-stream 'put-byte-at! pos
                                      (index-of known-oops o))))))
            (save-label! (l)
-             (set! (send label-addrs 'put l
+             (set! label-addrs
+                   (send label-addrs 'put l
                          (send byte-stream 'size)))))
       (let ((translate!
              (make-assembler put-byte! put-label! put-oop! save-label!)))
@@ -255,7 +274,40 @@
           (apply translate! cmd))
         (for-each (todo postponed-actions)
           (todo))
-        (send byte-stream 'display)
-        known-oops))))
+        (list 0  ; Position where to start.
+              (send byte-stream 'buffer)
+              (list->array known-oops))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Putting together compiled functions.                             ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defn make-compiled-procedure (name lambda-list code in-frame)
+  ($make @compiled-procedure name lambda-list code in-frame))
+
+(defn fn-name (fn) ($mem-get fn 1))
+(defn fn-lambda-list (fn) ($mem-get fn 2))
+(defn fn-body (fn) ($mem-get fn 3))
+(defn fn-env (fn) ($mem-get fn 4))
+
+(defn compile-fn (fn)
+  (with-asserts ((eq @procedure (type-of fn))
+                 (global-env? (fn-env fn)))
+    ;; Note: This is the static global env...
+    (make-compiled-procedure
+     (fn-name fn)
+     (fn-lambda-list fn)
+     (assemble (compile-lambda-body (fn-body fn)
+                                    (send global-env 'linked-with-vars
+                                          (vars-from-ll (fn-lambda-list fn)))))
+     nil)))
+
+(defn compile-fn* (fn)
+  (with-asserts ((eq @procedure (type-of fn))
+                 (global-env? (fn-env fn)))
+    (compile-lambda-body (fn-body fn)
+                         (send global-env 'linked-with-vars
+                               (vars-from-ll (fn-lambda-list fn))))))
 
 )

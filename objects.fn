@@ -22,6 +22,8 @@
 ($mem-set! @procedure 1 empty-map)
 ($mem-set! @native-procedure 0 @type)
 ($mem-set! @native-procedure 1 empty-map)
+($mem-set! @compiled-procedure 0 @type)
+($mem-set! @compiled-procedure 1 empty-map)
 ($mem-set! @string 0 @type)
 ($mem-set! @string 1 empty-map)
 
