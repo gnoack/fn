@@ -50,6 +50,7 @@ void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
   global_env = NIL;
+  register_globally("nil", NIL);
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
   register_globally("@cons", symbols._cons);

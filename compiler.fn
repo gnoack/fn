@@ -88,6 +88,8 @@
       (label ,after-if-label))))
 
 (defn compile-application (expr environment)
+  (when (nil? expr)
+    (error "Need at least a function to call!"))
   `(,@(apply append
              (map (lambda (e)
                     (compile e environment))
@@ -176,24 +178,24 @@
 ;; Byte streams
 ;; TODO: Move to a more appropriate file?
 (defn make-byte-stream ()
-  (let ((buffer ($make-mem-block 100))
+  (let ((buffer ($make-mem-block 256))
         (index 0)
-        (buffer-size 100))
+        (buffer-size 256))
     (dispatcher self
       ('put-byte! (byte)
+         ; (println "[b] " index ": " byte)
          (when (<= buffer-size index)
-           (println "Resize buffer to " (* index 2))
            (let ((new-buffer ($make-mem-block (* index 2))))
              ($memcpy new-buffer 0
                       buffer 0
                       index)
              (set! buffer new-buffer)
              (set! buffer-size (* index 2))))
-         ; (println "[asm] " index ": " byte)
          ($mem-block-byte-set! buffer index byte)
          (set! index (+ 1 index))
          byte)
       ('put-byte-at! (trg-index byte)
+         ; (println "[B] " trg-index ": " byte)
          (with-asserts ((< trg-index index))
            ($mem-block-byte-set! buffer trg-index byte)))
       ('size ()
@@ -234,6 +236,9 @@
 
     ('label (l)                   (save-label! l))))
 
+(defn lower-byte (n) (mod n 256))
+(defn upper-byte (n) (/ (mod n 65536) 256))
+
 (defn assemble (program)
   (let ((byte-stream        (make-byte-stream))
         (postponed-actions  (list))
@@ -244,10 +249,14 @@
            (put-label! (l)
              (let ((pos (send byte-stream 'size)))
                (send byte-stream 'put-byte! 0)
+               (send byte-stream 'put-byte! 0)
                (add-to-list! postponed-actions
                              (lambda ()
-                               (send byte-stream 'put-byte-at! pos
-                                     (send label-addrs 'get l))))))
+                               (let ((label-addr (send label-addrs 'get l)))
+                                 (send byte-stream 'put-byte-at! pos
+                                       (upper-byte label-addr))
+                                 (send byte-stream 'put-byte-at! (+ pos 1)
+                                       (lower-byte label-addr)))))))
            (put-oop! (o)
              (when (not (contains? known-oops o))
                (add-to-list! known-oops o))
@@ -302,5 +311,8 @@
     (compile-lambda-body (fn-body fn)
                          (send global-env 'linked-with-vars
                                (vars-from-ll (fn-lambda-list fn))))))
+
+(defmacro c! (s)
+  `(set! ,s (compile-fn ,s)))
 
 )

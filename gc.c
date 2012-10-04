@@ -369,7 +369,7 @@ region_t* region(oop obj) {
 }
 
 void init_gc() {
-  object_region_init(1 << 22);  // TODO: Enough?
+  object_region_init(1 << 24);  // TODO: Enough?
   primitive_memory_region_init(1 << 16);  // TODO: Enough?
   immediate_region_init();
   persistent_refs_init();
