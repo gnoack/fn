@@ -191,7 +191,7 @@
 (defn ->false (&rest args) false)
 
 (defn error (&rest args)
-  (apply println (cons "*ERROR*: " (map pprint args)))
+  (apply println (cons "*ERROR*: " args))
   (kill-lisp 1))
 
 )

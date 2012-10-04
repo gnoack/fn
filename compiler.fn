@@ -175,27 +175,40 @@
 ;; Byte streams
 ;; TODO: Move to a more appropriate file and test this.
 (defn make-byte-stream ()
-  ;; TODO: Handle overflow.
-  (let ((memory ($make-mem-block 100))
-        (index 0))
+  (let ((buffer ($make-mem-block 100))
+        (index 0)
+        (buffer-size 100))
     (dispatcher self
       ('put-byte! (byte)
+         (when (<= buffer-size index)
+           (println "Resize buffer to " (* index 2))
+           (let ((new-buffer ($make-mem-block (* index 2))))
+             ($memcpy new-buffer 0
+                      buffer 0
+                      index)
+             (set! buffer new-buffer)
+             (set! buffer-size (* index 2))))
          ; (println "[asm] " index ": " byte)
-         ($mem-block-byte-set! memory index byte)
+         ($mem-block-byte-set! buffer index byte)
          (set! index (+ 1 index))
          byte)
       ('put-byte-at! (trg-index byte)
          (with-asserts ((< trg-index index))
-           ($mem-block-byte-set! memory trg-index byte)))
+           ($mem-block-byte-set! buffer trg-index byte)))
       ('size ()
          index)
       ('slice (first last)
          (if (eq first last)
              (list)
-             (cons ($mem-block-byte-get memory first)
+             (cons ($mem-block-byte-get buffer first)
                    (send self 'slice (+ 1 first) last))))
       ;; TODO: Only return relevant part!
-      ('buffer () memory)
+      ('buffer ()
+         (let ((new-buffer ($make-mem-block index)))
+           ($memcpy new-buffer 0
+                    buffer 0
+                    index)
+           new-buffer))
       ('display ()
          (println "Byte stream:")
          (apply println
@@ -220,26 +233,6 @@
     ('return ()                   (byte 12))
 
     ('label (l)                   (save-label! l))))
-
-;; TODO: Move utility macros to macros.fn
-;; TODO: Separate imperative macros into their own file?
-(defmacro for-each ((var items) &rest cmds)
-  `(map (lambda (,var) ,@cmds)
-        ,items))
-
-(defmacro when (condition &rest statements)
-  `(if ,condition
-       (progn ,@statements)
-     nil))
-
-(defmacro add-to-list! (name value)
-  `(set! ,name (cons ,value ,name)))
-
-(defmacro flet (clauses &rest body)
-  `(let ,(map (lambda ((name lambda-list &rest body))
-                `(,name (lambda ,lambda-list ,@body)))
-              clauses)
-     ,@body))
 
 (defn assemble (program)
   (let ((byte-stream        (make-byte-stream))

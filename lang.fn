@@ -135,10 +135,14 @@
 (def lisp-procedure?
   (lambda (proc) (%has-mem-type? proc @procedure)))
 
+(def compiled-procedure?
+  (lambda (proc) (%has-mem-type? proc @compiled-procedure)))
+
 (def procedure?
   (lambda (proc)
     (_or (native-procedure? proc)
-         (lisp-procedure? proc))))
+         (_or (lisp-procedure? proc)
+              (compiled-procedure? proc)))))
 
 ;; See procedures.c for what fields mean what.
 (def procedure-name (lambda (proc) ($mem-get proc 1)))

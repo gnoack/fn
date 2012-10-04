@@ -71,7 +71,7 @@
 		  (action (second item)))
 	      (list 'if condition action start)))
 	  (reverse pairs)
-	  '(error "No match.")))
+          '(error "No match.")))
 
 (defmacro and (p &rest ps)
   (if (nil? ps) p
@@ -178,5 +178,29 @@
                (error "Assertion failed: " (pprint (quote ,assertion)))))
           asserts
           body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Macros for imperative code.                                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: Separate imperative macros into their own file?
+(defmacro for-each ((var items) &rest cmds)
+  `(map (lambda (,var) ,@cmds)
+        ,items))
+
+(defmacro add-to-list! (name value)
+  `(set! ,name (cons ,value ,name)))
+
+(defmacro flet (clauses &rest body)
+  `(let ,(map (lambda ((name lambda-list &rest body))
+                `(,name (lambda ,lambda-list ,@body)))
+              clauses)
+     ,@body))
+
+;; One-sided `if' for imperative code.
+(defmacro when (condition &rest statements)
+  `(if ,condition
+       (progn ,@statements)
+     nil))
 
 )
