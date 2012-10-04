@@ -175,8 +175,8 @@
   (reduce (lambda (b assertion)
             `(if ,assertion
                  ,b
-               (error "Assertion failed: " (pprint (quote ,assertion)))))
-          asserts
+               (error "Assertion failed: " (quote ,assertion))))
+          (reverse asserts)
           body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

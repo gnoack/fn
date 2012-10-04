@@ -101,7 +101,8 @@
 (eql '((load-value 42)
        (push)
        (pop)
-       (write-global-var meaning-of-life))
+       (write-global-var meaning-of-life)
+       (push))
      (pcompile '(set! meaning-of-life 42) global-env))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

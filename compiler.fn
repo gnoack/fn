@@ -128,7 +128,6 @@
 
 (defn compile-lambda-body (exprs environment)
   `(,@(compile-sequence exprs environment)
-    (pop)
     (return)))
 
 (defn compile-def (expr environment)
@@ -138,11 +137,11 @@
 
 ;; Transforming
 (def let-clauses second)
-(def let-body third)
+(defn let-body (e) (rest (rest e)))
 (defn let-variables (e) (map first (let-clauses e)))
 (defn let-expressions (e) (map second (let-clauses e)))
 (defn transform-let->lambda (expr)
-  `((lambda ,(let-variables expr) ,(let-body expr))
+  `((lambda ,(let-variables expr) ,@(let-body expr))
     ,@(let-expressions expr)))
 
 (defn compile-let (expr environment)
@@ -151,7 +150,8 @@
 (defn compile-set! (expr environment)
   `(,@(compile (third expr) environment)
     (pop)
-    ,@(send environment 'generate-write (second expr))))
+    ,@(send environment 'generate-write (second expr))
+    (push)))
 
 (defn compile (expr environment)
   (cond
@@ -168,7 +168,8 @@
     ((list? expr)    (compile-application expr environment))))
 
 (defn compile-sequence (exprs environment)
-  (apply append (map (lambda (e) (compile e environment))
+  (apply append (map (lambda (e) `(,@(compile e environment)
+                                   (pop)))
                      exprs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,7 +287,11 @@
 
 
 (defn make-compiled-procedure (name lambda-list code in-frame)
-  ($make @compiled-procedure name lambda-list code in-frame))
+  (with-asserts ((or (nil? name) (symbol? name))
+                 (list? code)
+                 (number? (first code))
+                 (mem-block? (second code)))
+    ($make @compiled-procedure name lambda-list code in-frame)))
 
 (defn fn-name (fn) ($mem-get fn 1))
 (defn fn-lambda-list (fn) ($mem-get fn 2))

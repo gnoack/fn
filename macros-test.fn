@@ -95,8 +95,17 @@
 
 (eql '(if (number? n)
        (+ 1 n)
-       (error "Assertion failed: " (pprint '(number? n))))
+       (error "Assertion failed: " '(number? n)))
      (macroexpand '(with-asserts ((number? n)) (+ 1 n))))
+
+(eql '(if (number? n)
+          (if (< 3 n)
+              (+ 1 n)
+            (error "Assertion failed: "  '(< 3 n)))
+        (error "Assertion failed: "  '(number? n)))
+     (macroexpand '(with-asserts ((number? n)
+                                  (< 3 n))
+                     (+ 1 n))))
 
 (eql '(def foo (lambda (x) 1 2 3))
      (macroexpand '(defn foo (x) 1 2 3)))
