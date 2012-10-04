@@ -116,7 +116,9 @@
      ((compile-fn map) identity (list 1 2 3)))
 
 ;; It works!
-(set! map (compile-fn map))
-(map char->num (list #\a #\b #\c))
+(progn
+  (set! map (compile-fn map))
+  (eql '(97 98 99)
+       (map char->num (list #\a #\b #\c))))
 
 )

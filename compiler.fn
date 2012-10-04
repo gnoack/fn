@@ -180,7 +180,7 @@
         (index 0))
     (dispatcher self
       ('put-byte! (byte)
-         (println "[asm] " index ": " byte)
+         ; (println "[asm] " index ": " byte)
          ($mem-block-byte-set! memory index byte)
          (set! index (+ 1 index))
          byte)
@@ -215,7 +215,7 @@
     ('write-global-var (oop)      (byte 7) (oop-ref oop))
     ('push ()                     (byte 8))
     ('pop ()                      (byte 9))
-    ('make-lambda (label)         (byte 10) (address-of label))
+    ('make-lambda (label ll)      (byte 10) (address-of label) (oop-ref ll))
     ('call (argnum)               (byte 11) (byte argnum))
     ('return ()                   (byte 12))
 
