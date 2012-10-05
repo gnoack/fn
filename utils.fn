@@ -194,4 +194,7 @@
   (apply println (cons "*ERROR*: " args))
   (kill-lisp 1))
 
+;; Utilities for dictionaries.  Tested in data-test.fn
+(defn dict-size (dict) ($mem-get dict 1))
+
 )

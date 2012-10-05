@@ -1,6 +1,7 @@
 #ifndef _PRIMITIVES_H_
 
 #include "value.h"
+#include "carcdr.h"
 
 #define PARSE_ONE_ARG(first_arg)    \
   check_argument_number(args, 1);   \
@@ -18,7 +19,7 @@
   oop third_arg = caddr(args);      \
 
 #define UNARY_PREDICATE(name, c_tester) \
-oop name(oop args) {     \
+oop name(oop args) {                    \
   PARSE_ONE_ARG(value);                 \
   return lisp_bool(c_tester(value));    \
 }
