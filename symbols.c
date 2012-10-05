@@ -23,14 +23,16 @@ void init_symbols() {
   // The types are finished when types are initialized.
   symbols._cons = mem_alloc(2);
   gc_register_persistent_ref(&symbols._cons);
+  symbols._frame = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._frame);
+  symbols._string = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._string);
   symbols._procedure = mem_alloc(2);
   gc_register_persistent_ref(&symbols._procedure);
   symbols._native_procedure = mem_alloc(2);
   gc_register_persistent_ref(&symbols._native_procedure);
   symbols._compiled_procedure = mem_alloc(2);
   gc_register_persistent_ref(&symbols._compiled_procedure);
-  symbols._string = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._string);
 
   symbols._bc_halt = make_symbol("halt");
   symbols._bc_jump = make_symbol("jump");

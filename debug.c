@@ -99,14 +99,16 @@ void print_value_internal(oop v) {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._cons, v)) {
       printf("@cons");
+    } else if (value_eq(symbols._frame, v)) {
+      printf("@frame");
+    } else if (value_eq(symbols._string, v)) {
+      printf("@string");
     } else if (value_eq(symbols._procedure, v)) {
       printf("@procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {
       printf("@compiled-procedure");
     } else if (value_eq(symbols._native_procedure, v)) {
       printf("@native-procedure");
-    } else if (value_eq(symbols._string, v)) {
-      printf("@string");
     } else {
       printf("#[OBJECT]");
     }

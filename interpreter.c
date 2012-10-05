@@ -61,7 +61,7 @@ oop make_frame(unsigned int argnum,
 	       oop retfrm,
 	       oop next_frame) {
   oop result = mem_alloc(5 + argnum);
-  mem_set(result, 0, NIL);  // TODO: Type marker.
+  mem_set(result, 0, symbols._frame);
   mem_set(result, 1, retptr);
   mem_set(result, 2, retfrm);
   mem_set(result, 3, next_frame);

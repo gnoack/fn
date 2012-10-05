@@ -15,10 +15,12 @@ typedef struct {
 
   // Built-in types.
   oop _cons;
+  oop _frame;
+  oop _string;
+
   oop _procedure;
   oop _native_procedure;
   oop _compiled_procedure;
-  oop _string;
 
   // Bytecode.
   oop _bc_halt;

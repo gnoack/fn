@@ -54,10 +54,11 @@ void init_eval() {
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
   register_globally("@cons", symbols._cons);
+  register_globally("@frame", symbols._frame);
+  register_globally("@string", symbols._string);
   register_globally("@procedure", symbols._procedure);
   register_globally("@native-procedure", symbols._native_procedure);
   register_globally("@compiled-procedure", symbols._compiled_procedure);
-  register_globally("@string", symbols._string);
 }
 
 // Evaluation.
