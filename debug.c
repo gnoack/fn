@@ -101,6 +101,8 @@ void print_value_internal(oop v) {
       printf("@cons");
     } else if (value_eq(symbols._procedure, v)) {
       printf("@procedure");
+    } else if (value_eq(symbols._compiled_procedure, v)) {
+      printf("@compiled-procedure");
     } else if (value_eq(symbols._native_procedure, v)) {
       printf("@native-procedure");
     } else if (value_eq(symbols._string, v)) {
