@@ -5,7 +5,10 @@
 #include "gc.h"
 #include "symbols.h"
 
+// TODO: Eliminate a lot of code duplication here!
 
+
+#define GC_LOGGING 1
 
 #ifdef GC_DEBUG
   #define SANE(x) (sane(x))
@@ -299,7 +302,7 @@ void primitive_memory_save(oop obj) {
 
 // Only valid outside of GC run.
 extern boolean gc_is_primitive_memory(oop obj) {
-  return TO_BOOL(half_space_contains(&primitive_memory.current, SANE(obj)));
+  return half_space_contains(&primitive_memory.current, SANE(obj));
 }
 
 void primitive_memory_region_init(fn_uint size) {
@@ -368,13 +371,6 @@ region_t* region(oop obj) {
   }
 }
 
-void init_gc() {
-  object_region_init(1 << 24);  // TODO: Enough?
-  primitive_memory_region_init(1 << 18);  // TODO: Enough?
-  immediate_region_init();
-  persistent_refs_init();
-}
-
 void traverse_object_graph(oop current) {
   region_t* current_region = region(current);
   if (current_region->is_saved(current)) {
@@ -385,8 +381,26 @@ void traverse_object_graph(oop current) {
   current_region->enumerate_refs(current, &traverse_object_graph);
 }
 
+boolean _run_gc_soon;
+
+void run_gc_soon() {
+  _run_gc_soon = YES;
+}
+
+void init_gc() {
+  _run_gc_soon = NO;
+  object_region_init(1 << 24);  // TODO: Enough?
+  primitive_memory_region_init(1 << 18);  // TODO: Enough?
+  immediate_region_init();
+  persistent_refs_init();
+}
+
 // Decide whether to do the garbage collection at all.
 boolean should_skip_gc() {
+  if (_run_gc_soon) {
+    _run_gc_soon = NO;
+    return NO;
+  }
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
   fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
   return TO_BOOL((100*obj_fill / object_memory.current.size) < 75 &&
@@ -402,12 +416,14 @@ oop gc_run(oop root) {
   if (should_skip_gc()) {
     return root;
   }
-#ifdef GC_DEBUG
+  #ifdef GC_LOGGING
   half_space_print_fill(&object_memory.current, "object before");
   half_space_print_fill(&primitive_memory.current, "primitive before");
+  #endif  // GC_LOGGING
+  #ifdef GC_DEBUG
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&primitive_memory.current);
-#endif  // GC_DEBUG
+  #endif  // GC_DEBUG
   primitive_memory_region.on_gc_start();
   immediate_region.on_gc_start();
   object_region.on_gc_start();
@@ -424,12 +440,14 @@ oop gc_run(oop root) {
   primitive_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
   object_region.on_gc_stop();
-#ifdef GC_DEBUG
+  #ifdef GC_LOGGING
   half_space_print_fill(&object_memory.current, "object after");
   half_space_print_fill(&primitive_memory.current, "primitive after");
+  #endif  // GC_LOGGING
+  #ifdef GC_DEBUG
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&primitive_memory.current);
-#endif
+  #endif  // GC_DEBUG
   return result;
 }
 

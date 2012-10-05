@@ -9,6 +9,7 @@ extern oop gc_primitive_memory_alloc(fn_uint size);
 extern boolean gc_is_primitive_memory(oop obj);
 
 extern void init_gc();
+extern void run_gc_soon();
 
 /*
  * Register a reference to be updated

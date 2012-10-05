@@ -212,6 +212,11 @@ oop primitive_primitive_mem_set(oop args) {
   return value;
 }
 
+oop primitive_run_gc(oop args) {
+  CHECKV(is_nil(args), args, "No arguments allowed for run-gc.");
+  run_gc_soon();
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -242,4 +247,5 @@ void init_primitives() {
   register_globally_fn("global-env?", primitive_global_env_p);
   register_globally_fn("$mem-block-byte-get", primitive_primitive_mem_get);
   register_globally_fn("$mem-block-byte-set!", primitive_primitive_mem_set);
+  register_globally_fn("run-gc", primitive_run_gc);
 }
