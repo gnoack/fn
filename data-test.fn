@@ -1,0 +1,12 @@
+(
+
+;; TODO: Enable tests.
+;; (->true (def %dict (make-dict)))
+
+;; (progn
+;;   (dict-put! %dict 'foo 1)
+;;   (dict-put! %dict 'bar 2)
+;;   (dict-put! %dict 'baz 3)
+;;   (= 3 (dict-size %dict)))
+
+)

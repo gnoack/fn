@@ -6,6 +6,7 @@ OBJECTS = \
 	arrays.o \
 	compiler.o \
 	cons.o \
+	data.o \
 	debug.o \
 	dispatcher.o \
 	env.o \
@@ -34,6 +35,7 @@ TESTOBJECTS = \
 	arrays-test.o \
 	compiler-test.o \
 	cons-test.o \
+	data-test.o \
 	dispatcher-test.o \
 	env-test.o \
 	eval-test.o \
@@ -64,6 +66,7 @@ LISPTARGETS = \
 	arrays.c \
 	compiler-test.c \
 	compiler.c \
+	data-test.c \
 	dispatcher-test.c \
 	dispatcher.c \
 	lang-test.c \

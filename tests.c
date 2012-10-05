@@ -3,6 +3,7 @@
 
 #include "arrays.h"
 #include "compiler.h"
+#include "data.h"
 #include "dispatcher.h"
 #include "env-test.h"
 #include "eval.h"
@@ -25,6 +26,7 @@
 #include "arrays-test.h"
 #include "compiler-test.h"
 #include "cons-test.h"
+#include "data-test.h"
 #include "dispatcher-test.h"
 #include "env-test.h"
 #include "gc-test.h"
@@ -136,6 +138,7 @@ void init() {
   init_eval();
   init_primitives();
   init_interpreter();
+  init_data();
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
@@ -219,6 +222,7 @@ int main(int argc, char* argv[]) {
   arrays_tests();
   x86_tests();
   compiler_tests();
+  data_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);
