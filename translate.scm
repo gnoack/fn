@@ -3,9 +3,6 @@
 !#
 
 (use-modules (ice-9 format))
-;; (define-module (translate)
-;;   #:use-module (ice-9 format)
-;;   #:export (main))
 
 (define (sanitize str)
   (string-map (lambda (ch)
@@ -77,7 +74,6 @@
                        cdecls))))
 
 (define (actual-convert formatter file-basename)
-  (format #t " * Converting ~a.fn... (Scheme)~%" file-basename)
   (call-with-output-file (format #f "~a.c" file-basename)
     (lambda (out)
       (call-with-input-file (format #f "~a.fn" file-basename)
