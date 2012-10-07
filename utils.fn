@@ -197,4 +197,13 @@
 ;; Utilities for dictionaries.  Tested in data-test.fn
 (defn dict-size (dict) ($mem-get dict 1))
 
+(defn dict-pprint (dict)
+  (string-append "{"
+                 (string-join
+                  (map (lambda (x)
+                         (string-append (pprint (first x)) ": " (pprint (rest x))))
+                       (dict-key-value-pairs dict))
+                  ", ")
+                 "}"))
+
 )
