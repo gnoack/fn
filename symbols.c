@@ -21,6 +21,8 @@ void init_symbols() {
   symbols._set = make_symbol("set!");
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.
+  symbols._array = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._array);
   symbols._cons = mem_alloc(2);
   gc_register_persistent_ref(&symbols._cons);
   symbols._dict = mem_alloc(2);

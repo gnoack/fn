@@ -20,7 +20,7 @@ fn_uint symbol_to_hash(oop symbol) {
 oop make_array(fn_uint array_size) {
   fn_uint header_size = 2;
   oop result = mem_alloc(header_size + array_size);
-  mem_set(result, 0, NIL);  // TODO: @array type.
+  mem_set(result, 0, symbols._array);
   mem_set(result, 1, make_smallint(array_size));  // Size
   fn_uint i;
   for (i = 0; i < array_size; i++) {

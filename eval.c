@@ -53,6 +53,7 @@ void init_eval() {
   register_globally("nil", NIL);
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
+  register_globally("@array", symbols._array);
   register_globally("@cons", symbols._cons);
   register_globally("@dict", symbols._dict);
   register_globally("@frame", symbols._frame);

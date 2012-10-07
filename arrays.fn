@@ -1,6 +1,10 @@
 
 (
 
+;; TODO: Arrays are not used from within Lisp right now.
+
+;; Type @array is defined in C.
+
 ;; TODO: Make $alloc a primitive and implement $make on top?
 (defn list-of-size (capacity)
   (if (eq 0 capacity)
@@ -9,9 +13,6 @@
 
 (defn $alloc (capacity)
   (apply $make (list-of-size capacity)))
-
-;; Type
-(deftype @array)
 
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)

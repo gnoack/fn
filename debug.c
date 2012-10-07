@@ -97,7 +97,9 @@ void print_value_internal(oop v) {
     free(c_str);
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
-    if (value_eq(symbols._cons, v)) {
+    if (value_eq(symbols._array, v)) {
+      printf("@array");
+    } else if (value_eq(symbols._cons, v)) {
       printf("@cons");
     } else if (value_eq(symbols._dict, v)) {
       printf("@dict");

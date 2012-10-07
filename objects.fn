@@ -14,6 +14,8 @@
 ; @cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:
 ;  (def @cons ($make @type (make-dict)))
+($mem-set! @array 0 @type)
+($mem-set! @array 1 (make-dict))
 ($mem-set! @cons 0 @type)
 ($mem-set! @cons 1 (make-dict))
 ($mem-set! @dict 0 @type)
