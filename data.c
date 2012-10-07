@@ -210,22 +210,36 @@ void dict_change_count(oop dict, int amount) {
 
 
 
+oop dict_get(oop dict, oop key) {
+  return dict_table_get(dict_table(dict), key);
+}
+
+void dict_remove(oop dict, oop key) {
+  dict_change_count(dict, -1);
+  dict_table_remove(dict_table(dict), key);
+}
+
+oop dict_put(oop dict, oop key, oop value) {
+  int added_amount = dict_table_put(dict_table(dict), key, value);
+  dict_change_count(dict, added_amount);
+}
+
+
+
 oop primitive_dict_get(oop args) {
   PARSE_TWO_ARGS(dict, key);
-  return dict_table_get(dict_table(dict), key);
+  return dict_get(dict, key);
 }
 
 oop primitive_dict_remove(oop args) {
   PARSE_TWO_ARGS(dict, key);
-  dict_change_count(dict, -1);
-  dict_table_remove(dict_table(dict), key);
+  dict_remove(dict, key);
   return dict;
 }
 
 oop primitive_dict_put(oop args) {
   PARSE_THREE_ARGS(dict, key, value);
-  int added_amount = dict_table_put(dict_table(dict), key, value);
-  dict_change_count(dict, added_amount);
+  dict_put(dict, key, value);
   return value;
 }
 
