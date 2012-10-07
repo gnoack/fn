@@ -131,7 +131,6 @@ void dict_resize(oop dict, fn_uint new_table_size) {
   oop old_table = dict_table(dict);
   oop new_table = make_array(new_table_size * 2);
   fn_uint old_table_size = array_size(old_table) >> 1;
-  printf("Resize from %d to %d\n", old_table_size, new_table_size);
   int i, j;
   for (i=0; i<old_table_size; i++) {
     oop key = array_get(old_table, i);
