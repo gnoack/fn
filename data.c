@@ -49,6 +49,16 @@ oop array_get(oop array, fn_uint index) {
 }
 
 
+/*
+ * Dictionary
+ *
+ * +-------+------+-------+
+ * | @dict | size | table |------> (array)
+ * +-------+------+-------+
+ *
+ * `size' is the number of elements in the dictionary.
+ * The table size is saved in the table itself.
+ */
 
 fn_uint dict_size(oop dict) {
   return get_smallint(mem_get(dict, 1));
@@ -65,14 +75,10 @@ fn_uint dict_table_size(oop dict) {
 oop primitive_make_dict(oop args) {
   CHECK(is_nil(args), "make-dict takes no arguments.");
   fn_uint table_size = 5;
-  oop result = mem_alloc(table_size + 3);
+  oop result = mem_alloc(3);
   mem_set(result, 0, NIL);  // TODO: Type marker.
   mem_set(result, 1, make_smallint(0L));
   mem_set(result, 2, make_array(table_size));
-  fn_uint i;
-  for (i = 0; i < table_size; i++) {
-    mem_set(result, 3 + i, NIL);
-  }
   return result;
 }
 
