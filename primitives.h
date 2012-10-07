@@ -26,6 +26,7 @@ oop name(oop args) {                    \
 
 extern void check_argument_number(oop args, int expected);
 extern void init_primitives();
+extern oop lisp_bool(boolean b);
 
 #define _PRIMITIVES_H_ 0
 #endif  // _PRIMITIVES_H_

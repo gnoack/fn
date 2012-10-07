@@ -2,11 +2,12 @@
 #include "data.h"
 
 #include "cons.h"
-#include "value.h"
+#include "eval.h"
 #include "memory.h"
 #include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
+#include "value.h"
 
 
 
@@ -108,7 +109,21 @@ oop dict_table_get(oop table, oop key) {
       return array_get(table, size + i);
     }
   } while (!is_nil(current_key));
-  CHECKV(1==0, key, "Key not found.")
+  CHECKV(1==0, key, "Key not found.");
+}
+
+boolean dict_table_has_key(oop table, oop key) {
+  int size = (int) array_size(table) >> 1;
+  int i = symbol_to_hash(key) % size;
+  oop current_key;
+  do {
+    i = (i + 1) % size;
+    current_key = array_get(table, i);
+    if (value_eq(current_key, key)) {
+      return YES;
+    }
+  } while (!is_nil(current_key));
+  return NO;
 }
 
 oop dict_table_key_value_pairs(oop table) {
@@ -164,6 +179,10 @@ oop dict_get(oop dict, oop key) {
   return dict_table_get(dict_table(dict), key);
 }
 
+boolean dict_has_key(oop dict, oop key) {
+  return dict_table_has_key(dict_table(dict), key);
+}
+
 oop dict_put(oop dict, oop key, oop value) {
   // TODO: Only resize when a new entry had to be added.
   int added_amount = dict_table_put(dict_table(dict), key, value);
@@ -185,6 +204,11 @@ oop primitive_dict_get(oop args) {
   return dict_get(dict, key);
 }
 
+oop primitive_dict_has_key(oop args) {
+  PARSE_TWO_ARGS(dict, key);
+  return lisp_bool(dict_has_key(dict, key));
+}
+
 oop primitive_dict_put(oop args) {
   PARSE_THREE_ARGS(dict, key, value);
   dict_put(dict, key, value);
@@ -202,6 +226,104 @@ oop primitive_make_dict(oop args) {
 }
 
 
+/*
+ * Fixed-size dynamic frames.
+ *
+ * +---------+------+------+----+----+-----+----+----+----+-----+----+
+ * | @dframe | size | next | k1 | k2 | ... | kn | v1 | v2 | ... | vn |
+ * +---------+------+------+----+----+-----+----+----+----+-----+----+
+ *
+ * `size' is the number of variables.
+ * `next' is the next frame.
+ *
+ * In order to set a variable in this frame, it first needs to be registered.
+ */
+
+#define DFRAME_HEADER_SIZE 3
+
+// Construct a fixed-size dynamic frame.
+oop make_dframe(oop next_frame, fn_uint size) {
+  oop result = mem_alloc(DFRAME_HEADER_SIZE + size * 2);
+  mem_set(result, 0, NIL);  // TODO: Type.
+  mem_set(result, 1, make_smallint(size));
+  mem_set(result, 2, next_frame);
+  return result;
+}
+
+void dframe_register_key(oop dframe, fn_uint pos, oop key) {
+  CHECK(pos < get_smallint(mem_get(dframe, 1)), "Index out of bounds.");
+  mem_set(dframe, DFRAME_HEADER_SIZE + pos, key);
+}
+
+void dframe_set(oop dframe, oop key, oop value) {
+  for (;;) {
+    fn_uint size = get_smallint(mem_get(dframe, 1));
+    int i;
+    for (i=0; i<size; i++) {
+      oop current_key = mem_get(dframe, DFRAME_HEADER_SIZE + i);
+      if (value_eq(key, current_key)) {
+        mem_set(dframe, DFRAME_HEADER_SIZE + size + i, value);
+        return;
+      }
+    }
+    // Not found, try next dframe.
+    dframe = mem_get(dframe, 2);
+    if (is_nil(dframe)) {
+      register_globally_oop(key, value);
+      return;
+    }
+  }
+}
+
+oop dframe_get(oop dframe, oop key) {
+  for (;;) {
+    fn_uint size = get_smallint(mem_get(dframe, 1));
+    int i;
+    for (i=0; i<size; i++) {
+      oop current_key = mem_get(dframe, DFRAME_HEADER_SIZE + i);
+      if (value_eq(key, current_key)) {
+        return mem_get(dframe, DFRAME_HEADER_SIZE + size + i);
+      }
+    }
+    // Not found, try next dframe.
+    dframe = mem_get(dframe, 2);
+    if (is_nil(dframe)) {
+      return lookup_globally(key);
+    }
+  }
+}
+
+
+// Lisp interface for dframes.
+
+oop primitive_make_dframe(oop args) {
+  oop next_frame = first(args);
+  args = rest(args);
+
+  fn_uint size = length_int(args);
+  oop result = make_dframe(next_frame, size);
+  fn_uint i;
+  for (i=0; i<size; i++) {
+    oop key = first(args);
+    CHECKV(is_symbol(key), key, "Needs to be a symbol.");
+    dframe_register_key(result, i, key);
+    args = rest(args);
+  }
+  return result;
+}
+
+oop primitive_dframe_set(oop args) {
+  PARSE_THREE_ARGS(dframe, key, value);
+  dframe_set(dframe, key, value);
+  return value;
+}
+
+oop primitive_dframe_get(oop args) {
+  PARSE_TWO_ARGS(dframe, key);
+  return dframe_get(dframe, key);
+}
+
+
 
 void init_data() {
   // Some simple utilities defined in utils.fn.
@@ -209,7 +331,11 @@ void init_data() {
   register_globally_fn("make-dict", primitive_make_dict);
   register_globally_fn("dict-get", primitive_dict_get);
   register_globally_fn("dict-put!", primitive_dict_put);
+  register_globally_fn("dict-has-key?", primitive_dict_has_key);
   register_globally_fn("dict-key-value-pairs",
                        primitive_dict_key_value_pairs);
+  register_globally_fn("make-dframe", primitive_make_dframe);
+  register_globally_fn("dframe-get", primitive_dframe_get);
+  register_globally_fn("dframe-set!", primitive_dframe_set);
 }
 

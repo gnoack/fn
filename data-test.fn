@@ -16,11 +16,31 @@
 
 (= 3 (dict-size %dict))
 
+(dict-has-key? %dict 'foo)
+(dict-has-key? %dict 'bar)
+(dict-has-key? %dict 'baz)
+(not (dict-has-key? %dict 'quux))
+
 ;; TODO: Write remove function.
 ;; (progn
 ;;   (dict-remove! %dict 'bar)
 ;;   (= 2 (dict-size %dict)))
 
 ;; (= 2 (length (dict-key-value-pairs %dict)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Dframes                                ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(->true
+ (def %dfa (make-dframe nil 'a 'b 'c))
+ (def %dfb (make-dframe %dfa 'd 'e))
+ (dframe-set! %dfb 'd 1)
+ (dframe-set! %dfb 'b 2)
+ (dframe-set! %dfb '%justfortesting 3))
+
+(= 3 %justfortesting)  ; was set in global env instead.
+(= 2 (dframe-get %dfb 'b))
+(= 1 (dframe-get %dfb 'd))
+(= 2 (dframe-get %dfa 'b))
 
 )
