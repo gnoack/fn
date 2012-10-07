@@ -99,6 +99,8 @@ void print_value_internal(oop v) {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._cons, v)) {
       printf("@cons");
+    } else if (value_eq(symbols._dict, v)) {
+      printf("@dict");
     } else if (value_eq(symbols._frame, v)) {
       printf("@frame");
     } else if (value_eq(symbols._string, v)) {

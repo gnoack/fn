@@ -6,6 +6,7 @@
 #include "memory.h"
 #include "primitives.h"
 #include "strings.h"
+#include "symbols.h"
 
 
 
@@ -24,7 +25,7 @@ oop primitive_symbol_to_hash(oop args) {
 oop make_array(fn_uint array_size) {
   fn_uint header_size = 2;
   oop result = mem_alloc(header_size + array_size);
-  mem_set(result, 0, NIL);  // TODO: Type marker.
+  mem_set(result, 0, symbols._dict);
   mem_set(result, 1, make_smallint(array_size));  // Size
   fn_uint i;
   for (i = 0; i < array_size; i++) {
@@ -75,6 +76,7 @@ oop primitive_make_dict(oop args) {
   return result;
 }
 
+// In `oop's, not in items.
 #define INNER_TABLE_SIZE 14
 
 // Returns 1 if element was put, 0 if it was replced.

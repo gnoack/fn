@@ -23,6 +23,8 @@ void init_symbols() {
   // The types are finished when types are initialized.
   symbols._cons = mem_alloc(2);
   gc_register_persistent_ref(&symbols._cons);
+  symbols._dict = mem_alloc(2);
+  gc_register_persistent_ref(&symbols._dict);
   symbols._frame = mem_alloc(2);
   gc_register_persistent_ref(&symbols._frame);
   symbols._string = mem_alloc(2);

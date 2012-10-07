@@ -5,8 +5,6 @@
 
 /*
  * Creates a Lisp string from a plain ASCII C string.
- *
- * A string is a sequence of characters.
  */
 extern oop make_string(const char* str);
 
