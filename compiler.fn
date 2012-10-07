@@ -243,7 +243,7 @@
 (defn assemble (program)
   (let ((byte-stream        (make-byte-stream))
         (postponed-actions  (list))
-        (label-addrs        empty-map)
+        (label-addrs        (make-dict))
         (known-oops         (list)))
     (flet ((put-byte! (b)
              (send byte-stream 'put-byte! b))
@@ -253,7 +253,7 @@
                (send byte-stream 'put-byte! 0)
                (add-to-list! postponed-actions
                              (lambda ()
-                               (let ((label-addr (send label-addrs 'get l)))
+                               (let ((label-addr (dict-get label-addrs l)))
                                  (send byte-stream 'put-byte-at! pos
                                        (upper-byte label-addr))
                                  (send byte-stream 'put-byte-at! (+ pos 1)
@@ -268,9 +268,7 @@
                                (send byte-stream 'put-byte-at! pos
                                      (index-of known-oops o))))))
            (save-label! (l)
-             (set! label-addrs
-                   (send label-addrs 'put l
-                         (send byte-stream 'size)))))
+             (dict-put! label-addrs l (send byte-stream 'size))))
       (let ((translate!
              (make-assembler put-byte! put-label! put-oop! save-label!)))
         (for-each (cmd program)
