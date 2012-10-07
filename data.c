@@ -77,14 +77,15 @@ oop primitive_make_dict(oop args) {
 
 #define INNER_TABLE_SIZE 14
 
-void inner_table_put(oop inner_table, oop key, oop value) {
+// Returns 1 if element was put, 0 if it was replced.
+int inner_table_put(oop inner_table, oop key, oop value) {
   int i;
   int first_good_index = -1;
   for (i=0; i<INNER_TABLE_SIZE; i+=2) {
     oop stored_key = array_get(inner_table, i);
     if (value_eq(stored_key, key)) {
       array_set(inner_table, i + 1, value);
-      return;
+      return 0;
     } else if (first_good_index == -1 && is_nil(stored_key)) {
       first_good_index = i;
     }
@@ -95,9 +96,10 @@ void inner_table_put(oop inner_table, oop key, oop value) {
   }
   array_set(inner_table, first_good_index, key);
   array_set(inner_table, first_good_index + 1, value);
+  return 1;
 }
 
-void inner_table_delete(oop inner_table, oop key) {
+void inner_table_remove(oop inner_table, oop key) {
   int i;
   for (i=0; i<INNER_TABLE_SIZE; i+=2) {
     oop stored_key = array_get(inner_table, i);
@@ -144,14 +146,20 @@ oop dict_table_get_inner_table(oop table, oop key, boolean create_if_needed) {
   return result;
 }
 
-void dict_table_put(oop table, oop key, oop value) {
+// Returns 1 if element was put, 0 if it was replced.
+int dict_table_put(oop table, oop key, oop value) {
   oop inner_table = dict_table_get_inner_table(table, key, YES);
-  inner_table_put(inner_table, key, value);
+  return inner_table_put(inner_table, key, value);
 }
 
 oop dict_table_get(oop table, oop key) {
   oop inner_table = dict_table_get_inner_table(table, key, NO);
   return inner_table_get(inner_table, key);
+}
+
+void dict_table_remove(oop table, oop key) {
+  oop inner_table = dict_table_get_inner_table(table, key, NO);
+  inner_table_remove(inner_table, key);
 }
 
 oop dict_table_key_value_pairs(oop table) {
@@ -189,10 +197,10 @@ void dict_resize(oop dict, fn_uint new_table_size) {
   mem_set(dict, 2, new_table);
 }
 
-void dict_increase_count(oop dict) {
+void dict_change_count(oop dict, int amount) {
   fn_uint old_count = dict_size(dict);
   fn_uint table_size = dict_table_size(dict);
-  fn_uint new_count = old_count + 1;
+  fn_uint new_count = old_count + amount;
   // TODO: Tweak factor.
   if (new_count > table_size * 4) {
     dict_resize(dict, table_size * 2);
@@ -200,15 +208,24 @@ void dict_increase_count(oop dict) {
   mem_set(dict, 1, make_smallint(new_count));
 }
 
+
+
 oop primitive_dict_get(oop args) {
   PARSE_TWO_ARGS(dict, key);
   return dict_table_get(dict_table(dict), key);
 }
 
+oop primitive_dict_remove(oop args) {
+  PARSE_TWO_ARGS(dict, key);
+  dict_change_count(dict, -1);
+  dict_table_remove(dict_table(dict), key);
+  return dict;
+}
+
 oop primitive_dict_put(oop args) {
   PARSE_THREE_ARGS(dict, key, value);
-  dict_increase_count(dict);
-  dict_table_put(dict_table(dict), key, value);
+  int added_amount = dict_table_put(dict_table(dict), key, value);
+  dict_change_count(dict, added_amount);
   return value;
 }
 
@@ -223,6 +240,7 @@ void init_data() {
   register_globally_fn("make-dict", primitive_make_dict);
   register_globally_fn("dict-get", primitive_dict_get);
   register_globally_fn("dict-put!", primitive_dict_put);
+  register_globally_fn("dict-remove!", primitive_dict_remove);
   register_globally_fn("dict-key-value-pairs",
                        primitive_dict_key_value_pairs);
 }

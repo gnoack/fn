@@ -14,4 +14,12 @@
   (dict-put! %dict 'foo 99)
   (= 99 (dict-get %dict 'foo)))
 
+(= 3 (dict-size %dict))
+
+(progn
+  (dict-remove! %dict 'bar)
+  (= 2 (dict-size %dict)))
+
+(= 2 (length (dict-key-value-pairs %dict)))
+
 )
