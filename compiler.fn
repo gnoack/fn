@@ -299,7 +299,10 @@
 (defn compile-fn (fn)
   (with-asserts ((eq @procedure (type-of fn))
                  (global-env? (fn-env fn)))
-    ;; Note: This is the static global env...
+    ;; Note: This is the *static* global env...
+    ;; If we compile a function captured in a deeper environment, we
+    ;; don't know what other functions have been captured in the same.
+    ;; We can't convert the environment itself to a @frame.
     (make-compiled-procedure
      (fn-name fn)
      (fn-lambda-list fn)

@@ -104,7 +104,6 @@ void assert_eq(const char* filename,
   init_assert();
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
-    // TODO: Use nice object representation instead!
     printf("  Expected: ");
     print_value(a);
     printf("       Got: ");

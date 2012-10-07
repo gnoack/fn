@@ -8,7 +8,7 @@
 // TODO: Eliminate a lot of code duplication here!
 
 
-#define GC_LOGGING 1
+// #define GC_LOGGING 1
 
 #ifdef GC_DEBUG
   #define SANE(x) (sane(x))
