@@ -140,7 +140,7 @@
   (_lisp_grammar in
 		 list
 		 (lambda (&rest failure-reason)
-		   (cons '*error* failure-reason))))
+		   (apply error failure-reason))))
 
 (defn read-all (in)
   (first (read (string->list in))))
