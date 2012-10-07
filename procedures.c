@@ -165,7 +165,8 @@ boolean is_procedure(oop fn) {
 
 // Application
 
-oop apply_stack[4000];
+#define MAX_APPLY_STACK 4000
+oop apply_stack[MAX_APPLY_STACK];
 int apply_stack_pos = 0;
 
 /*
@@ -186,6 +187,7 @@ void print_apply_stack() {
 // First argument is function, rest are arguments.
 oop apply(oop values) {
   print_stack_frame = print_apply_stack; // TODO: Set somewhere else.
+  CHECK(apply_stack_pos < MAX_APPLY_STACK, "Stack exhausted.");
   apply_stack[apply_stack_pos++] = values;
   oop fn = car(values);
   oop result;
