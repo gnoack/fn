@@ -15,7 +15,6 @@ OBJECTS = \
 	interpreter.o \
 	lang.o \
 	macros.o \
-	maps.o \
 	memory.o \
 	objects.o \
 	parser.o \
@@ -43,7 +42,6 @@ TESTOBJECTS = \
 	interpreter-test.o \
 	lang-test.o \
 	macros-test.o \
-	maps-test.o \
 	memory-test.o \
 	objects-test.o \
 	parser-test.o \
@@ -73,8 +71,6 @@ LISPTARGETS = \
 	lang.c \
 	macros-test.c \
 	macros.c \
-	maps-test.c \
-	maps.c \
 	objects-test.c \
 	objects.c \
 	parser-test.c \

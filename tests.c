@@ -10,7 +10,6 @@
 #include "gc.h"
 #include "lang.h"
 #include "macros.h"
-#include "maps.h"
 #include "objects.h"
 #include "parser.h"
 #include "pegs-parser.h"
@@ -32,7 +31,6 @@
 #include "gc-test.h"
 #include "interpreter-test.h"
 #include "macros-test.h"
-#include "maps-test.h"
 #include "memory-test.h"
 #include "objects-test.h"
 #include "parser-test.h"
@@ -143,7 +141,6 @@ void init() {
   load_decls(macros_decls());
   load_decls(utils_decls());
   load_decls(dispatcher_decls());
-  load_decls(maps_decls());
   load_decls(objects_decls());
   load_decls(arrays_decls());
   load_decls(pegs_decls());
@@ -217,7 +214,6 @@ int main(int argc, char* argv[]) {
   pegs_parser_tests();
   pprint_tests();
   dispatcher_tests();
-  maps_tests();
   objects_tests();
   arrays_tests();
   x86_tests();
