@@ -250,13 +250,20 @@ oop make_dframe(oop next_frame, fn_uint size) {
   return result;
 }
 
-void dframe_register_key(oop dframe, fn_uint pos, oop key) {
-  CHECK(pos < get_smallint(mem_get(dframe, 1)), "Index out of bounds.");
+void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value) {
+  fn_uint frame_size = get_smallint(mem_get(dframe, 1));
+  CHECK(pos < frame_size, "Index out of bounds.");
   mem_set(dframe, DFRAME_HEADER_SIZE + pos, key);
+  mem_set(dframe, DFRAME_HEADER_SIZE + frame_size + pos, value);
 }
 
 void dframe_set(oop dframe, oop key, oop value) {
   for (;;) {
+    if (is_global_env(dframe)) {
+      register_globally_oop(key, value);
+      return;
+    }
+
     fn_uint size = get_smallint(mem_get(dframe, 1));
     int i;
     for (i=0; i<size; i++) {
@@ -268,15 +275,15 @@ void dframe_set(oop dframe, oop key, oop value) {
     }
     // Not found, try next dframe.
     dframe = mem_get(dframe, 2);
-    if (is_nil(dframe)) {
-      register_globally_oop(key, value);
-      return;
-    }
   }
 }
 
 oop dframe_get(oop dframe, oop key) {
   for (;;) {
+    if (is_global_env(dframe)) {
+      return lookup_globally(key);
+    }
+
     fn_uint size = get_smallint(mem_get(dframe, 1));
     int i;
     for (i=0; i<size; i++) {
@@ -287,9 +294,6 @@ oop dframe_get(oop dframe, oop key) {
     }
     // Not found, try next dframe.
     dframe = mem_get(dframe, 2);
-    if (is_nil(dframe)) {
-      return lookup_globally(key);
-    }
   }
 }
 
@@ -300,13 +304,17 @@ oop primitive_make_dframe(oop args) {
   oop next_frame = first(args);
   args = rest(args);
 
+  if (is_nil(next_frame)) {
+    next_frame = global_env;
+  }
+
   fn_uint size = length_int(args);
   oop result = make_dframe(next_frame, size);
   fn_uint i;
   for (i=0; i<size; i++) {
     oop key = first(args);
     CHECKV(is_symbol(key), key, "Needs to be a symbol.");
-    dframe_register_key(result, i, key);
+    dframe_register_key(result, i, key, NIL);
     args = rest(args);
   }
   return result;

@@ -2,6 +2,7 @@
 #include "cons.h"
 #include "tests.h"
 #include "eval.h"
+#include "data.h"
 
 #define I make_smallint
 #define S make_symbol
@@ -16,7 +17,8 @@ TEST(eval_def_simple) {
 }
 
 TEST(eval_symbol_in_env) {
-  oop env = LIST(make_cons(S("x"), I(2)));
+  oop env = make_dframe(NIL, 1);
+  dframe_register_key(env, 0, S("x"), I(2));
   ASSERT_EQ(I(2), eval(S("x"), env));
 }
 

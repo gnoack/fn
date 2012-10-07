@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "data.h"
 #include "value.h"
 #include "cons.h"
 #include "carcdr.h"
@@ -68,7 +69,8 @@ oop fn_set_name(oop fn, oop name) {
 // returns a filled environment linking to the
 // environment env.
 // Helper for apply_lisp_procedure below.
-oop destructure_lambda_list(oop ll, oop args, oop env) {
+// TODO: Make lamba list destructuring much faster!
+oop destructure_lambda_list_inner(oop ll, oop args, oop env) {
   if (is_nil(ll)) {
     CHECKV(is_nil(args), args, "Too many arguments in function call.");
     return env;
@@ -76,9 +78,9 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
     if (is_cons(car(ll))) {
       // Nested destructuring
       CHECK(!is_nil(args), "Need more arguments in function call.");
-      return destructure_lambda_list(
+      return destructure_lambda_list_inner(
 	  cdr(ll), cdr(args),
-	  destructure_lambda_list(car(ll), car(args), env));
+	  destructure_lambda_list_inner(car(ll), car(args), env));
     } else if (value_eq(car(ll), symbols._rest)) {
       // &rest binds to a list of all remaining arguments.
       CHECK(is_cons(cdr(ll)), "Need variable identifier after &rest");
@@ -87,13 +89,33 @@ oop destructure_lambda_list(oop ll, oop args, oop env) {
     } else {
       CHECK(!is_nil(args), "Need more arguments in function call.");
       return make_env(car(ll), car(args),
-		      destructure_lambda_list(cdr(ll), cdr(args), env));
+		      destructure_lambda_list_inner(cdr(ll), cdr(args), env));
     }
   }
 }
 
+oop old_style_env_to_dframe(oop env, oop next_frame) {
+  fn_uint size = length_int(env);
+  oop result = make_dframe(next_frame, size);
+  int i;
+  for (i=0; i<size; i++) {
+    oop key = first(first(env));
+    oop value = rest(first(env));
+    dframe_register_key(result, i, key, value);
+    env = cdr(env);
+  }
+  return result;
+}
+
+// Same as above, but converts into dframe.
+oop destructure_lambda_list(oop ll, oop args, oop next_frame) {
+  return old_style_env_to_dframe(destructure_lambda_list_inner(ll, args, NIL),
+                                 next_frame);
+}
+
 oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  oop linked_list_env = destructure_lambda_list(cfn_lambda_list(cfn), args, NIL);
+  oop linked_list_env =
+    destructure_lambda_list_inner(cfn_lambda_list(cfn), args, NIL);
   oop outer_frame = cfn_env(cfn);
   fn_uint inner_frame_size = length_int(linked_list_env);
   oop inner_frame = make_frame(inner_frame_size, NIL, NIL, outer_frame);

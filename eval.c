@@ -4,6 +4,7 @@
 #include "gc.h"
 #include "cons.h"
 #include "value.h"
+#include "data.h"
 #include "carcdr.h"
 #include "procedures.h"
 #include "symbols.h"
@@ -19,12 +20,7 @@ void register_globally_oop(oop key, oop value) {
   if (is_procedure(value)) {
     fn_set_name(value, key);
   }
-  // This is needed for recursion!
-  if (is_nil(global_env)) {
-    global_env = make_env(key, value, global_env);
-  } else {
-    env_put(global_env, key, value);
-  }
+  dict_put(global_env, key, value);
 }
 
 boolean is_global_env(oop v) {
@@ -43,13 +39,13 @@ void register_globally_fn(const char* name, function fn) {
 }
 
 oop lookup_globally(oop key) {
-  return env_lookup(global_env, key);
+  return dict_get(global_env, key);
 }
 
 void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
-  global_env = NIL;
+  global_env = make_dict(47);
   register_globally("nil", NIL);
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
@@ -85,14 +81,19 @@ oop eval_let(oop sexp, oop env) {
   CHECKV(value_eq(symbols._let, car(sexp)), sexp, "Must be a let form.");
   CHECKV(length_int(sexp) >= 3, sexp, "Bad let form length.");
   oop bindings = cadr(sexp);
+  oop new_env = make_dframe(env, length_int(bindings));
+  int pos = 0;
   while (!is_nil(bindings)) {
-    oop binding = car(bindings);
+    oop binding = first(bindings);
     CHECKV(length_int(binding) == 2, binding, "Bindings need length 2.");
-    env = make_env(car(binding), eval(cadr(binding), env), env);
-    bindings = cdr(bindings);
+    oop key = car(binding);
+    oop value = eval(cadr(binding), env);
+    dframe_register_key(new_env, pos, key, value);
+    pos++;
+    bindings = rest(bindings);
   }
   oop body = cddr(sexp);
-  return eval_all(body, env);
+  return eval_all(body, new_env);
 }
 
 // TODO: Should register in current env only.
@@ -119,19 +120,16 @@ oop eval_quote(oop program, oop env) {
 oop eval_set(oop program, oop env) {
   CHECKV(length_int(program) == 3, program, "set! needs two arguments.");
   oop symbol = cadr(program);
-  CHECKV(env_haskey(env, symbol), symbol, "Symbol not present in environment.");
   oop new_value = eval(caddr(program), env);
-  env_put(env, symbol, new_value);
+  dframe_set(env, symbol, new_value);
   return new_value;
 }
 
 extern
 oop eval_global(oop program) {
-  if (env_haskey(global_env, symbols._macroexpand)) {
-    oop macroexpand_fn = env_lookup(global_env,
-				    symbols._macroexpand);
-    program = apply(make_cons(macroexpand_fn,
-			      make_cons(program, NIL)));
+  if (dict_has_key(global_env, symbols._macroexpand)) {
+    oop macroexpand_fn = dict_get(global_env, symbols._macroexpand);
+    program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
   }
   return eval(program, global_env);
 }
@@ -165,9 +163,8 @@ oop eval(oop program, oop env) {
       is_char(program) || is_string(program)) {
     return program;
   } else if (is_symbol(program)) {
-    // TODO: Proper error handling.
-    CHECKV(env_haskey(env, program), program, "Unknown symbol.");
-    return env_lookup(env, program);
+    // TODO: Proper error handling, this just crashes.
+    return dframe_get(env, program);
   }
   CHECKV(is_cons(program), program, "What is this? I can't evaluate it!");
   oop command = car(program);
