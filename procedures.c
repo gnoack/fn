@@ -56,7 +56,7 @@ boolean is_compiled_lisp_procedure(oop cfn) {
 
 // NOTE: Works for all kinds of procedures!
 // Can only be set once per procedure.
-oop fn_set_name(oop fn, oop name) {
+oop procedure_set_name(oop fn, oop name) {
   if (is_nil(fn_name(fn))) {
     return mem_set(fn, 1, name);
   } else {

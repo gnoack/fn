@@ -17,7 +17,7 @@ oop global_env;
 void register_globally_oop(oop key, oop value) {
   // If it's a procedure, set its name.
   if (is_procedure(value)) {
-    fn_set_name(value, key);
+    procedure_set_name(value, key);
   }
   dict_put(global_env, key, value);
 }
