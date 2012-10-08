@@ -12,14 +12,18 @@
 
 #include "procedures.h"
 
+// Count variables in a lambda list and do basic syntax checks (forward decl).
+fn_uint num_vars_in_ll(oop ll);
+
 // Interpreted Lisp procedure.
 oop make_procedure(oop lambda_list, oop body, oop env) {
-  oop result = mem_alloc(5);
+  oop result = mem_alloc(6);
   mem_set(result, 0, symbols._procedure);
   mem_set(result, 1, NIL);  // Name.
   mem_set(result, 2, lambda_list);
   mem_set(result, 3, body);
   mem_set(result, 4, env);
+  mem_set(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
   return result;
 }
 
@@ -29,12 +33,13 @@ oop make_compiled_procedure(oop lambda_list, oop code, oop env) {
          "Code has to be a three tuple.");
   CHECKNUMBER(first(code));
   CHECKV(is_primitive_mem(cadr(code)), cadr(code), "Needs to have bytecode.");
-  oop result = mem_alloc(5);
+  oop result = mem_alloc(6);
   mem_set(result, 0, symbols._compiled_procedure);
   mem_set(result, 1, NIL);  // Name.
   mem_set(result, 2, lambda_list);
   mem_set(result, 3, code);
   mem_set(result, 4, env);
+  mem_set(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
   return result;
 }
 
@@ -53,6 +58,7 @@ oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
 oop fn_code(oop fn) { return mem_get(fn, 3); }
 oop fn_env(oop fn) { return mem_get(fn, 4); }
+fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 5)); }
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {
@@ -99,82 +105,104 @@ oop procedure_set_name(oop fn, oop name) {
 
 
 // Lambda list destructuring.
-// TODO: This code needs major cleanup.
+// TODO: Remove duplication between destructuring functions.
 
-// TODO: Get rid of this function.
-oop make_env(oop key, oop value, oop env) {
-  return make_cons(make_cons(key, value), env);
-}
-
-// Given a lambda list and a argument vector,
-// returns a filled environment linking to the
-// environment env.
-// Helper for apply_lisp_procedure below.
-// TODO: Make lamba list destructuring much faster!
-oop destructure_lambda_list_inner(oop ll, oop args, oop env) {
-  if (is_nil(ll)) {
-    CHECKV(is_nil(args), args, "Too many arguments in function call.");
-    return env;
-  } else {
-    if (is_cons(car(ll))) {
-      // Nested destructuring
-      CHECK(!is_nil(args), "Need more arguments in function call.");
-      return destructure_lambda_list_inner(
-	  cdr(ll), cdr(args),
-	  destructure_lambda_list_inner(car(ll), car(args), env));
-    } else if (value_eq(car(ll), symbols._rest)) {
-      // &rest binds to a list of all remaining arguments.
-      CHECK(is_cons(cdr(ll)), "Need variable identifier after &rest");
-      CHECK(is_nil(cddr(ll)), "Only one variable identifier after &rest");
-      return make_env(cadr(ll), args, env);
-    } else {
-      CHECK(!is_nil(args), "Need more arguments in function call.");
-      return make_env(car(ll), car(args),
-		      destructure_lambda_list_inner(cdr(ll), cdr(args), env));
+fn_uint num_vars_in_ll(oop ll) {
+  fn_uint count = 0L;
+  while (is_cons(ll)) {
+    oop item = car(ll);
+    if (is_symbol(item)) {
+      if (value_eq(item, symbols._rest)) {
+        ll = cdr(ll);
+        CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
+        CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
+        count++;
+        ll = cdr(ll);
+        CHECKV(is_nil(ll), ll, "Need only one symbol after &rest.");
+        return count;
+      } else {
+        count++;
+      }
+    } else if (is_cons(item)) {
+      count += num_vars_in_ll(item);
     }
+    ll = cdr(ll);
   }
+  return count;
 }
 
-oop old_style_env_to_dframe(oop env, oop next_frame) {
-  fn_uint size = length_int(env);
-  oop result = make_dframe(next_frame, size);
-  int i;
-  for (i=0; i<size; i++) {
-    oop key = first(first(env));
-    oop value = rest(first(env));
-    dframe_register_key(result, i, key, value);
-    env = cdr(env);
+fn_uint destructure_lambda_list_into_dframe(oop ll, oop args, oop dframe,
+                                            fn_uint idx) {
+  while (is_cons(ll)) {
+    oop ll_item = car(ll);
+    if (is_symbol(ll_item)) {
+      if (value_eq(ll_item, symbols._rest)) {
+        ll = cdr(ll);
+        oop key = car(ll);
+        oop value = args;
+        dframe_register_key(dframe, idx, key, value);
+        idx++;
+        return idx;
+      } else {
+        oop key = ll_item;
+        oop value = car(args);
+        dframe_register_key(dframe, idx, key, value);
+        idx++;
+      }
+    } else if (is_cons(ll_item)) {
+      oop arg_item = car(args);
+      CHECKV(is_cons(arg_item), arg_item, "Not enough arguments.");
+      idx = destructure_lambda_list_into_dframe(ll_item, arg_item, dframe,
+                                                idx);
+    }
+    ll = cdr(ll);
+    args = cdr(args);
   }
-  return result;
+  CHECKV(is_nil(args), args, "Too many arguments.");
+  return idx;
 }
 
-// Same as above, but converts into dframe.
-oop destructure_lambda_list(oop ll, oop args, oop next_frame) {
-  return old_style_env_to_dframe(destructure_lambda_list_inner(ll, args, NIL),
-                                 next_frame);
+fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
+                                           fn_uint idx) {
+  while (is_cons(ll)) {
+    oop ll_item = car(ll);
+    if (is_symbol(ll_item)) {
+      if (value_eq(ll_item, symbols._rest)) {
+        ll = cdr(ll);
+        oop value = args;
+        set_var(frame, idx, value);
+        idx++;
+        return idx;
+      } else {
+        oop value = car(args);
+        set_var(frame, idx, value);
+        idx++;
+      }
+    } else if (is_cons(ll_item)) {
+      oop arg_item = car(args);
+      CHECKV(is_cons(arg_item), arg_item, "Not enough arguments.");
+      idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame,
+                                               idx);
+    }
+    ll = cdr(ll);
+    args = cdr(args);
+  }
+  CHECKV(is_nil(args), args, "Too many arguments.");
+  return idx;
 }
 
 
 // Specialized apply methods.
 
 oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  oop linked_list_env =
-    destructure_lambda_list_inner(fn_lambda_list(cfn), args, NIL);
-  oop outer_frame = fn_env(cfn);
-  fn_uint inner_frame_size = length_int(linked_list_env);
-  oop inner_frame = make_frame(inner_frame_size, NIL, NIL, outer_frame);
-  unsigned int index = 0;
-  while (!is_nil(linked_list_env)) {
-    set_var(inner_frame, index, rest(first(linked_list_env)));
-    index++;
-    linked_list_env = rest(linked_list_env);
-  }
-  return interpret(inner_frame, fn_code(cfn));
+  oop env = make_frame(fn_argnum(cfn), NIL, NIL, fn_env(cfn));
+  destructure_lambda_list_into_frame(fn_lambda_list(cfn), args, env, 0);
+  return interpret(env, fn_code(cfn));
 }
 
 oop apply_lisp_procedure(oop fn, oop args) {
-  oop env = destructure_lambda_list(fn_lambda_list(fn),
-				    args, fn_env(fn));
+  oop env = make_dframe(fn_env(fn), fn_argnum(fn));
+  destructure_lambda_list_into_dframe(fn_lambda_list(fn), args, env, 0);
   return eval_all(fn_code(fn), env);
 }
 
