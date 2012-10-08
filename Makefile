@@ -27,7 +27,6 @@ OBJECTS = \
 	symbols.o \
 	utils.o \
 	value.o \
-	x86.o \
 
 TESTOBJECTS = \
 	arrays-test.o \
@@ -52,7 +51,6 @@ TESTOBJECTS = \
 	tests.o \
 	utils-test.o \
 	value-test.o \
-	x86-test.o \
 
 
 ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
@@ -82,8 +80,6 @@ LISPTARGETS = \
 	primitives-test.c \
 	utils-test.c \
 	utils.c \
-	x86-test.c \
-	x86.c \
 
 LISP = ./translate.scm
 

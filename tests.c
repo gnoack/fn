@@ -19,7 +19,6 @@
 #include "symbols.h"
 #include "utils.h"
 #include "value.h"
-#include "x86.h"
 
 #include "arrays-test.h"
 #include "compiler-test.h"
@@ -39,7 +38,6 @@
 #include "string-interning-test.h"
 #include "strings-test.h"
 #include "utils-test.h"
-#include "x86-test.h"
 
 #include "carcdr.h"
 
@@ -144,7 +142,6 @@ void init() {
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
   load_decls(pprint_decls());
-  load_decls(x86_decls());
   load_decls(compiler_decls());
 }
 
@@ -212,7 +209,6 @@ int main(int argc, char* argv[]) {
   dispatcher_tests();
   objects_tests();
   arrays_tests();
-  x86_tests();
   compiler_tests();
   data_tests();
   /* Summing up. */
