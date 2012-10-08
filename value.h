@@ -13,9 +13,9 @@
   typedef uint32_t fn_uint;
 #endif  // __WORDSIZE == 64
 
-typedef char boolean;
-#define YES 1
+typedef int boolean;
 #define NO 0
+#define YES 1
 #define TO_BOOL(b) ((b) ? YES : NO)
 
 #define NIL ((oop) (fn_uint) 0L)
