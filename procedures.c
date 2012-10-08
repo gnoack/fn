@@ -5,7 +5,6 @@
 #include "value.h"
 #include "cons.h"
 #include "carcdr.h"
-#include "env.h"
 #include "eval.h"
 #include "interpreter.h"
 #include "memory.h"
@@ -63,6 +62,11 @@ oop fn_set_name(oop fn, oop name) {
   } else {
     return name;
   }
+}
+
+// TODO: Get rid of this.
+oop make_env(oop key, oop value, oop env) {
+  return make_cons(make_cons(key, value), env);
 }
 
 // Given a lambda list and a argument vector,

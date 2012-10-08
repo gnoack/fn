@@ -8,7 +8,6 @@
 #include "carcdr.h"
 #include "procedures.h"
 #include "symbols.h"
-#include "env.h"
 
 #include "eval.h"
 

@@ -9,7 +9,6 @@ OBJECTS = \
 	data.o \
 	debug.o \
 	dispatcher.o \
-	env.o \
 	eval.o \
 	gc.o \
 	interpreter.o \
@@ -36,7 +35,6 @@ TESTOBJECTS = \
 	cons-test.o \
 	data-test.o \
 	dispatcher-test.o \
-	env-test.o \
 	eval-test.o \
 	gc-test.o \
 	interpreter-test.o \

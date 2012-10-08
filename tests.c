@@ -5,7 +5,6 @@
 #include "compiler.h"
 #include "data.h"
 #include "dispatcher.h"
-#include "env-test.h"
 #include "eval.h"
 #include "gc.h"
 #include "lang.h"
@@ -27,7 +26,6 @@
 #include "cons-test.h"
 #include "data-test.h"
 #include "dispatcher-test.h"
-#include "env-test.h"
 #include "gc-test.h"
 #include "interpreter-test.h"
 #include "macros-test.h"
@@ -206,7 +204,6 @@ int main(int argc, char* argv[]) {
   primitives_tests();
   lang_tests();
   utils_tests();
-  env_tests();
   macros_tests();
   pegs_tests();
   parser_tests();
