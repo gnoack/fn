@@ -34,7 +34,7 @@ void register_globally(const char* name, oop value) {
 // TODO: Move this to a different module.
 // Registers a lisp function under a global variable name.
 void register_globally_fn(const char* name, function fn) {
-  register_globally(name, make_native_fn(fn));
+  register_globally(name, make_native_procedure(fn));
 }
 
 oop lookup_globally(oop key) {

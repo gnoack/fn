@@ -14,25 +14,13 @@
 extern oop make_procedure(oop lambda_list, oop body, oop env);
 
 // Accessors for lambda list, body and captured environment.
-extern oop fn_lambda_list(oop fn);
-extern oop fn_body(oop fn);
-extern oop fn_env(oop fn);
-extern oop fn_name(oop fn);
 extern oop fn_set_name(oop fn, oop name);
 
 // Makes a compiled Lisp procedure.
 extern oop make_compiled_procedure(oop lambda_list, oop code, oop env);
 
-// Accessors for compiled Lisp procedures.
-extern oop cfn_name(oop cfn);
-extern oop cfn_lambda_list(oop cfn);
-extern oop cfn_code(oop cfn);
-extern oop cfn_env(oop cfn);
-extern boolean is_compiled_lisp_procedure(oop cfn);
-
-// True if it's a lisp procedure.
-extern boolean is_lisp_procedure(oop fn);
-
+// Printing for debugging.
+extern void print_procedure(oop fn);
 
 
 //
@@ -43,9 +31,7 @@ extern boolean is_lisp_procedure(oop fn);
 // Who came up with this syntax?
 typedef oop (*function)(oop args);
 
-extern oop make_native_fn(function c_function);
-extern boolean is_native_procedure(oop fn);
-extern oop native_fn_apply(oop fn, oop args);
+extern oop make_native_procedure(function c_function);
 
 // Recognizing both kinds of procedures.
 extern boolean is_procedure(oop fn);

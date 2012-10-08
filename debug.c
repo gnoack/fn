@@ -75,22 +75,8 @@ void print_value_internal(oop v) {
     printf(")");
   } else if (is_primitive_mem(v)) {
     printf("<PRIMITIVE-MEMORY #%08llx>", (unsigned long long) v.smallint);
-  } else if (is_lisp_procedure(v)) {
-    printf("<PROCEDURE ");
-    print_value_internal(fn_name(v));
-    printf(" ");
-    print_value_internal(fn_lambda_list(v));
-    printf(">");
-  } else if (is_compiled_lisp_procedure(v)) {
-    printf("<COMPILED-PROCEDURE ");
-    print_value_internal(cfn_name(v));
-    printf(" ");
-    print_value_internal(cfn_lambda_list(v));
-    printf(">");
-  } else if (is_native_procedure(v)) {
-    printf("<NATIVE-PROCEDURE ");
-    print_value_internal(fn_name(v));
-    printf(">");
+  } else if (is_procedure(v)) {
+    print_procedure(v);
   } else if (is_string(v)) {
     char* c_str = c_string(v);
     printf("\"%s\"", c_str);

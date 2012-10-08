@@ -139,7 +139,7 @@ oop apply_lisp_procedure(oop fn, oop args) {
 }
 
 // Native procedures
-oop make_native_fn(function c_function) {
+oop make_native_procedure(function c_function) {
   oop result = mem_alloc(3);
   mem_set(result, 0, symbols._native_procedure);
   mem_set(result, 1, NIL);  // Name.
@@ -165,6 +165,26 @@ boolean is_procedure(oop fn) {
   return TO_BOOL(is_lisp_procedure(fn) ||
                  is_compiled_lisp_procedure(fn) ||
                  is_native_procedure(fn));
+}
+
+void print_procedure(oop fn) {
+  if (is_lisp_procedure(fn)) {
+    printf("<PROCEDURE ");
+    print_value_internal(fn_name(fn));
+    printf(" ");
+    print_value_internal(fn_lambda_list(fn));
+    printf(">");
+  } else if (is_compiled_lisp_procedure(fn)) {
+    printf("<COMPILED-PROCEDURE ");
+    print_value_internal(cfn_name(fn));
+    printf(" ");
+    print_value_internal(cfn_lambda_list(fn));
+    printf(">");
+  } else if (is_native_procedure(fn)) {
+    printf("<NATIVE-PROCEDURE ");
+    print_value_internal(fn_name(fn));
+    printf(">");
+  }
 }
 
 // Application
