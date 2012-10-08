@@ -41,5 +41,8 @@ char* c_string(oop str) {
 }
 
 boolean is_string(oop str) {
-  return is_mem(str) && value_eq(symbols._string, mem_get(str, 0));
+  if (!is_mem(str)) {
+    return NO;
+  }
+  return value_eq(symbols._string, mem_get(str, 0));
 }
