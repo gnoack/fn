@@ -18,6 +18,13 @@
   oop second_arg = cadr(args);      \
   oop third_arg = caddr(args);      \
 
+#define PARSE_FOUR_ARGS(first_arg, second_arg, third_arg, fourth_arg) \
+  check_argument_number(args, 4);   \
+  oop first_arg = first(args);      \
+  oop second_arg = cadr(args);      \
+  oop third_arg = caddr(args);      \
+  oop fourth_arg = cadddr(args);    \
+
 #define UNARY_PREDICATE(name, c_tester) \
 oop name(oop args) {                    \
   PARSE_ONE_ARG(value);                 \

@@ -346,4 +346,3 @@ void init_data() {
   register_globally_fn("dframe-get", primitive_dframe_get);
   register_globally_fn("dframe-set!", primitive_dframe_set);
 }
-

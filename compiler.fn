@@ -283,14 +283,6 @@
 ;;; Putting together compiled functions.                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(defn make-compiled-procedure (name lambda-list code in-frame)
-  (with-asserts ((or (nil? name) (symbol? name))
-                 (list? code)
-                 (number? (first code))
-                 (mem-block? (second code)))
-    ($make @compiled-procedure name lambda-list code in-frame)))
-
 (defn fn-name (fn) ($mem-get fn 1))
 (defn fn-lambda-list (fn) ($mem-get fn 2))
 (defn fn-body (fn) ($mem-get fn 3))
