@@ -39,23 +39,7 @@ oop make_char(const char c) {
  * well.  (This works because symbols are always interned.)
  */
 boolean value_eq(oop a, oop b) {
-  // TODO(gnoack): Consider TO_BOOL(a.smallint == a.smallint),
-  //   we don't need these types.
-  if (is_symbol(a) && is_symbol(b)) {
-    return TO_BOOL(a.symbol == b.symbol);
-  } else if (is_smallint(a) && is_smallint(b)) {
-    return TO_BOOL(a.smallint == b.smallint);
-  } else if (is_mem(a) && is_mem(a)) {
-    return TO_BOOL(a.mem == b.mem);
-  } else if (is_char(a) && is_char(b)) {
-    return TO_BOOL(a.mem == b.mem);
-  } else if (is_nil(a) && is_nil(b)) {
-    return YES;
-  } else if (is_primitive_mem(a) && is_primitive_mem(b)) {
-    return YES;
-  } else {
-    return NO;  // a and b have different types.
-  }
+  return TO_BOOL(a.mem == b.mem);
 }
 
 // TODO(gnoack): Reduce the is_* to a function that returns the
