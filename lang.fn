@@ -93,28 +93,6 @@
 (def reverse (lambda (seq)
 	       (reduce %xcons seq nil)))
 
-;; Association lists.
-(def acons
-    (lambda (key value list)
-      (cons (cons key value) list)))
-
-(def lookup
-    (lambda (key alist)
-      (if (nil? alist)
-	  false
-	  (if (eq key (first (first alist)))
-	      (rest (first alist))
-	      (lookup key (rest alist))))))
-
-(def pairlis
-    (lambda (keys values)
-      (if (_or (nil? keys)
-	       (nil? values))
-	  '()
-	  (acons (first keys)
-		 (first values)
-		 (pairlis (rest keys) (rest values))))))
-
 ;; cons, cons?
 (def cons
     (lambda (car cdr)	

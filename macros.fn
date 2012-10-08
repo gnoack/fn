@@ -1,29 +1,26 @@
 (
 ;; MACROS
 
-;; Global variable *macros* stores an alist of all macros to be
+;; Global variable *macros* stores a dictionary of all macros to be
 ;; applied to expressions before evaluation.  A macro is a lambda of
-;; an expression and it's stored in the alist with the macro name as
-;; key.
+;; an expression and it's stored in the dictionary with the macro name
+;; as key.
 
 ;; To bootstrap this:
-;;  * introduce the *macros* alist using def,
+;;  * introduce the *macros* dictionary using def,
 ;;  * introduce the defmacro macro ('defmacro . (lambda (e) ...))
-;;    and define it so that it adds a macro to the *macros* alist, in
-;;    doubt by overriding.  (We need an implementation of alists for
-;;    that.)
+;;    and define it so that it adds a macro to *macros*, in doubt by
+;;    overriding.
 
 (def macroexpand-defmacro
-    (lambda (macroname lambda-list body)
-      ;; `(def *macros* (acons ,macroname
-      ;; 		     (lambda ,lambda-list ,body) *macros*))
-      (list 'def '*macros*
-	    (list 'acons (list 'quote macroname)
-		  (list 'lambda lambda-list body) '*macros*))))
+    (lambda (macroname lambda-list &rest body)
+      ;; `(dict-put! *macros* (quote ,macroname)
+      ;;             (lambda ,lambda-list ,@body))
+      (list 'dict-put! '*macros* (list 'quote macroname)
+            (cons 'lambda (cons lambda-list body)))))
 
-(def *macros*
-    (acons 'defmacro
-	   macroexpand-defmacro '()))
+(def *macros* (make-dict))
+(dict-put! *macros* 'defmacro macroexpand-defmacro)
 
 (def me-lambda-rec
     (lambda (xs)
@@ -52,10 +49,11 @@
 	    (if (eq x 'quote) e  ; just leave it
 	    (if (eq x 'lambda) (me-lambda-rec xs)
 	    (if (eq x 'let) (me-let-rec xs)
-		(let ((expand (lookup x *macros*)))
-		  (if (not (false? expand))
-		      (macroexpand-rec (apply expand xs))
-		      (cons x (map macroexpand-rec xs))))))))
+              (if (if (symbol? x)
+                      (dict-has-key? *macros* x)
+                    false)
+                  (macroexpand-rec (apply (dict-get *macros* x) xs))
+                (cons x (map macroexpand-rec xs)))))))
 	  e)))
 
 ;; 'macroexpand' is special in that the evaluator transforms any

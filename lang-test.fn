@@ -94,26 +94,6 @@
 (eql '() (reverse '()))
 (eql '(a b c) (reverse '(c b a)))
 
-; Alists
-(eql (list (cons 'a 1))
-     (acons 'a 1 '()))
-
-(eql (list (cons 'a 1)
-	   (cons 'b 2))
-     (acons 'a 1 (acons 'b 2 '())))
-
-(eql (list (cons 'a 1)
-	   (cons 'b 2)
-	   (cons 'c 3))
-     (pairlis '(a b c)
-	      '(1 2 3)))
-
-(eq 2 (lookup 'b (pairlis '(a b c)
-			  '(1 2 3))))
-
-(eq false (lookup 'z (pairlis '(a b c)
-			      '(1 2 3))))
-
 ; First, second, third
 (eq 1 (first '(1 2 3 4 5 6)))
 (eq 2 (second '(1 2 3 4 5 6)))

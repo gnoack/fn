@@ -24,15 +24,15 @@
 ;; Does the hand-written defmacro
 ;; macro work?
 (eql
- '(def *macros*
-     (acons 'and
-	    (lambda (x)
-	      (list 'if (first x)
-                    (second x)
-		    'false))
-	    *macros*))
+ '(dict-put! *macros*
+             'and
+             (lambda (x)
+               "doc"
+               (list 'if (first x)
+                     (second x)
+                     'false)))
  (macroexpand-rec
-  '(defmacro and (x) (list 'if (first x) (second x) 'false))))
+  '(defmacro and (x) "doc" (list 'if (first x) (second x) 'false))))
 
 (eql
  '(if a (if b c false) false)
