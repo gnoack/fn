@@ -260,7 +260,7 @@ void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value) {
 void dframe_set(oop dframe, oop key, oop value) {
   for (;;) {
     if (is_global_env(dframe)) {
-      register_globally_oop(key, value);
+      set_globally_oop(key, value);
       return;
     }
 

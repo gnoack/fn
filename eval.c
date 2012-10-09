@@ -13,13 +13,18 @@
 
 oop global_env;
 
-// TODO: Check for already registered keys.
-void register_globally_oop(oop key, oop value) {
+void set_globally_oop(oop key, oop value) {
   // If it's a procedure, set its name.
   if (is_procedure(value)) {
     procedure_set_name(value, key);
   }
   dict_put(global_env, key, value);
+}
+
+// Like the above, but also check for redefinitions.
+void register_globally_oop(oop key, oop value) {
+  CHECKV(!dict_has_key(global_env, key), key, "Symbol already defined.");
+  set_globally_oop(key, value);
 }
 
 boolean is_global_env(oop v) {
