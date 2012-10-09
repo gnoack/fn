@@ -1,8 +1,6 @@
 (
 ;; Everything is prefixed _PP, to avoid namespace collisions.
 
-(defn identity (x) x)
-
 (def _pp_singlequote (peg= #\'))
 (def _pp_colon (peg= #\:))
 (def _pp_arrow (peg-seq (peg= #\=) (peg= #\>)))
