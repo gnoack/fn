@@ -11,6 +11,7 @@
 
 
 ;; Accessing elements in lists.
+;; TODO: Is all this OO necessary?
 (defm @cons 'contains? (v)
   (or (eq v (first self))
       (send (rest self) 'contains? v)))
