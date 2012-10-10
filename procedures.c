@@ -194,10 +194,14 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
 
 // Specialized apply methods.
 
-oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  oop env = make_frame(fn_argnum(cfn), NIL, NIL, fn_env(cfn));
+oop make_frame_for_application(oop cfn, oop args) {
+  oop env = make_frame(fn_argnum(cfn), fn_env(cfn));
   destructure_lambda_list_into_frame(fn_lambda_list(cfn), args, env, 0);
-  return interpret(env, fn_code(cfn));
+  return env;
+}
+
+oop apply_compiled_lisp_procedure(oop cfn, oop args) {
+  return interpret(make_frame_for_application(cfn, args), fn_code(cfn));
 }
 
 oop apply_lisp_procedure(oop fn, oop args) {

@@ -233,7 +233,8 @@
     ('pop ()                      (byte 9))
     ('make-lambda (label ll)      (byte 10) (address-of label) (oop-ref ll))
     ('call (argnum)               (byte 11) (byte argnum))
-    ('return ()                   (byte 12))
+    ('tail-call (argnum)          (byte 12) (byte argnum))
+    ('return ()                   (byte 13))
 
     ('label (l)                   (save-label! l))))
 

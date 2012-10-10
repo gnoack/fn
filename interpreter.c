@@ -4,12 +4,14 @@
 #include "memory.h"
 #include "symbols.h"
 #include "value.h"
+#include "procedures.h"
 
+#include "carcdr.h"
 #include "interpreter.h"
 
 #define MAX_STACK_SIZE 0x800
 
-#define INTERPRETER_DEBUG 1
+// #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
 
 #ifdef INTERPRETER_LOGGING
@@ -54,40 +56,99 @@ oop stack_pop() {
   return stack.stack[stack.size];
 }
 
+// Convenience function to pop n elements from the stack and make them
+// into a list.
+oop stack_pop_list(fn_uint size) {
+  oop list = NIL;
+  while (size > 0) {
+    list = make_cons(stack_pop(), list);
+    size--;
+  }
+  return list;
+}
+
+#ifdef INTERPRETER_DEBUG
+void print_stack() {
+  int i;
+  for (i=stack.size-1; i>=0; i--) {
+    printf(" [s] %03d ", i);
+    print_value(stack.stack[i]);
+  }
+}
+#endif  // INTERPRETER_DEBUG
+
+
 // Frame
-// If retptr == NIL, return.  Otherwise, stay in interpreter loop.
-oop make_frame(unsigned int argnum,
-	       oop retptr,
-	       oop retfrm,
-	       oop next_frame) {
+oop make_frame(unsigned int argnum, oop next_frame) {
   oop result = mem_alloc(5 + argnum);
   mem_set(result, 0, symbols._frame);
-  mem_set(result, 1, retptr);
-  mem_set(result, 2, retfrm);
-  mem_set(result, 3, next_frame);
-  mem_set(result, 4, make_smallint(argnum));
+  mem_set(result, 1, next_frame);
+  mem_set(result, 2, make_smallint(argnum));
   return result;
 }
 
 oop nth_frame(oop frame, unsigned int depth) {
   while (depth > 0) {
-    frame = mem_get(frame, 3);  // next_frame
+    frame = mem_get(frame, 1);  // next_frame
     depth--;
   }
   return frame;
 }
 
 void set_var(oop frame, unsigned int index, oop value) {
-  CHECK(0 <= index && index < get_smallint(mem_get(frame, 4)),
+  CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
 	"Index out of bounds.");
-  mem_set(frame, 5 + index, value);
+  mem_set(frame, 3 + index, value);
 }
 
 oop get_var(oop frame, unsigned int index) {
-  CHECK(0 <= index && index < get_smallint(mem_get(frame, 4)),
+  CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
 	"Index out of bounds.");
-  return mem_get(frame, 5 + index);
+  return mem_get(frame, 3 + index);
 }
+
+
+// Apply compiled Lisp procedures by modifying
+// the bytecode interpreter state and letting the interpreter do it.
+void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
+                            oop retptr) {
+
+  // TODO: Stack traces for procedures executed like this.
+  oop values = stack_pop_list(arg_count);
+  #ifdef INTERPRETER_LOGGING
+  if (value_eq(retptr, state->retptr)) {
+    IPRINT("tail-call %lu    .oO ", arg_count);
+  } else {
+    IPRINT("call %lu         .oO ", arg_count);
+  }
+  IVALUE(values);
+  #endif  // INTERPRETER_LOGGING
+  oop cfn = car(values);
+  if (is_compiled_lisp_procedure(cfn)) {
+    oop args = cdr(values);
+    // Modify the interpreter state and let the interpreter handle
+    // recursion.
+    oop env = make_frame_for_application(cfn, args);
+
+    // Data.
+    state->reg_acc = NIL;  // Just for encapsulation.
+    state->reg_frm = env;
+
+    // Position.
+    oop code = fn_code(cfn);
+    state->ip = get_smallint(car(code));
+    state->bytecode = cadr(code);
+    state->oop_lookups = caddr(code);
+
+    // Return pointer.
+    state->retptr = retptr;
+  } else {
+    // Call recursively on the C stack.
+    state->reg_acc = apply(values);
+  }
+}
+
+
 
 unsigned char read_byte(interpreter_state_t* state) {
   unsigned char result = ((unsigned char*) state->bytecode.mem)[state->ip];
@@ -110,6 +171,25 @@ oop read_oop(interpreter_state_t* state) {
   return state->oop_lookups.mem[2 + read_byte(state)];
 }
 
+oop serialize_retptr(interpreter_state_t* state) {
+  oop result = mem_alloc(5);
+  // TODO: Type marker?
+  mem_set(result, 0, state->reg_frm);
+  mem_set(result, 1, make_smallint(state->ip));
+  mem_set(result, 2, state->bytecode);
+  mem_set(result, 3, state->oop_lookups);
+  mem_set(result, 4, state->retptr);
+  return result;
+}
+
+void deserialize_retptr(oop retptr, interpreter_state_t* state) {
+  state->reg_frm     = mem_get(retptr, 0);
+  state->ip          = get_smallint(mem_get(retptr, 1));
+  state->bytecode    = mem_get(retptr, 2);
+  state->oop_lookups = mem_get(retptr, 3);
+  state->retptr      = mem_get(retptr, 4);
+}
+
 // Interpreter
 // TODO: Support nested execution!
 oop interpret(oop frame, oop code) {
@@ -119,6 +199,7 @@ oop interpret(oop frame, oop code) {
   state.ip = get_smallint(first(code));
   state.bytecode = first(rest(code));
   state.oop_lookups = first(rest(rest(code)));
+  state.retptr = NIL;
 
   #ifdef INTERPRETER_DEBUG
   unsigned int stack_size_before = stack.size;
@@ -190,11 +271,11 @@ oop interpret(oop frame, oop code) {
     }
     case BC_PUSH:
       stack_push(state.reg_acc);
-      IPRINT("push\n");
+      IPRINT("push           .oO stack-size=%d\n", stack.size);
       break;
     case BC_POP:
       state.reg_acc = stack_pop();
-      IPRINT("pop            .oO ");
+      IPRINT("pop            .oO stack-size=%d, ", stack.size);
       IVALUE(state.reg_acc);
       break;
     case BC_MAKE_LAMBDA: {
@@ -207,27 +288,32 @@ oop interpret(oop frame, oop code) {
       break;
     }
     case BC_CALL: {
-      // TODO: Implement tail calls!
       fn_uint arg_count = read_index(&state);
-      oop arglist = NIL;
-      IPRINT("call %lu         .oO ", arg_count);
-      while (arg_count > 0) {
-        arglist = make_cons(stack_pop(), arglist);
-        arg_count--;
-      }
-      IVALUE(arglist);
-      state.reg_acc = apply(arglist);
+      apply_into_interpreter(arg_count, &state, serialize_retptr(&state));
+      break;
+    }
+    case BC_TAIL_CALL: {
+      // TODO: Clean up stack on tail call.
+      fn_uint arg_count = read_index(&state);
+      apply_into_interpreter(arg_count, &state, state.retptr);
       break;
     }
     case BC_RETURN:
       IPRINT("return\n");
-      CHECK(is_nil(mem_get(state.reg_frm, 2)),
-            "Only NIL supported as retptr for now.");
+      if(is_nil(state.retptr)) {
+        #ifdef INTERPRETER_DEBUG
+        if (stack_size_before != stack.size) {
+          printf("The stack is a mutant!");
+          print_stack();
+          exit(1);
+        }
+        #endif  // INTERPRETER_DEBUG
+        return state.reg_acc;
+      } else {
+        deserialize_retptr(state.retptr, &state);
+      }
       // TODO: Restore previous state if reg_frm[2] != nil.
-      #ifdef INTERPRETER_DEBUG
-      CHECK(stack_size_before == stack.size, "The stack is a mutant!");
-      #endif  // INTERPRETER_DEBUG
-      return state.reg_acc;
+      break;
     default:
       printf("Fatal: Unknown byte code!\n");
       exit(1);

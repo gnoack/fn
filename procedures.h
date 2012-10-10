@@ -2,6 +2,7 @@
 #ifndef __PROCEDURES_H__
 
 #include "value.h"
+#include "interpreter.h"
 
 // Defines the type "function" to be oop --> oop.
 typedef oop (*function)(oop args);
@@ -30,7 +31,12 @@ extern oop procedure_set_name(oop fn, oop name);
 
 extern void print_procedure(oop fn);
 extern boolean is_procedure(oop fn);
+
+// TODO: Better name.
+extern oop make_frame_for_application(oop cfn, oop args);
+extern boolean is_compiled_lisp_procedure(oop fn);
 extern oop apply(oop values);
+extern oop fn_code(oop cfn);
 
 #define __PROCEDURES_H__ 0
 #endif // __PROCEDURES_H__

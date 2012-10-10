@@ -10,27 +10,29 @@ extern void stack_push(oop value);
 extern oop stack_pop();
 
 // Frame
-extern
-oop make_frame(unsigned int argnum,
-	       oop retptr,
-	       oop retfrm,
-	       oop next_frame);
+extern oop make_frame(unsigned int argnum,
+                      oop next_frame);
 
-extern
-void set_var(oop frame, unsigned int index, oop value);
+extern void set_var(oop frame, unsigned int index, oop value);
 
-extern
-oop get_var(oop frame, unsigned int index);
+extern oop get_var(oop frame, unsigned int index);
 
 typedef struct {
+  // Data.
   oop reg_acc;
   oop reg_frm;
+
+  // Execution point.
+  fn_uint ip;
   oop bytecode;
   oop oop_lookups;
-  fn_uint ip;
+
+  // What to do on return.
+  oop retptr;
 } interpreter_state_t;
 
-extern interpreter_state_t state_old;
+extern oop serialize_retptr(interpreter_state_t* state);
+
 
 // Bytecodes
 #define BC_HALT 0
@@ -45,7 +47,8 @@ extern interpreter_state_t state_old;
 #define BC_POP 9
 #define BC_MAKE_LAMBDA 10
 #define BC_CALL 11
-#define BC_RETURN 12
+#define BC_TAIL_CALL 12
+#define BC_RETURN 13
 
 #define _INTERPRETER_H_ 0
 #endif  // _INTERPRETER_H_
