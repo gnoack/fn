@@ -201,6 +201,10 @@
        (progn ,@statements)
      nil))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Macros for performance measurements.                             ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn with-timer-function (thunk)
   (let ((old-milliseconds (get-time)))
     (thunk)

@@ -172,7 +172,24 @@
                      exprs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Assembler                                                       ;;
+;;; Optimizer                                                     ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn longer-eq-than (n list)
+  (cond ((= n 0)     true)
+        ((nil? list) false)
+        (true        (longer-eq-than (- n 1) (rest list)))))
+
+(defn optimize (commands)
+  (cond ((and (longer-eq-than 2 commands)
+              (eql '(push) (first commands))
+              (eql '(pop) (second commands)))
+         (rest (rest commands)))
+        (true
+         (cons (first commands) (optimize (rest commands))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Assembler                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Byte streams
@@ -297,9 +314,11 @@
     (make-compiled-procedure
      (fn-name fn)
      (fn-lambda-list fn)
-     (assemble (compile-lambda-body (fn-body fn)
-                                    (send global-env 'linked-with-vars
-                                          (vars-from-ll (fn-lambda-list fn)))))
+     (assemble
+      (optimize
+       (compile-lambda-body (fn-body fn)
+                            (send global-env 'linked-with-vars
+                                  (vars-from-ll (fn-lambda-list fn))))))
      nil)))
 
 (defn compile-fn* (fn)
