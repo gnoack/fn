@@ -201,4 +201,15 @@
        (progn ,@statements)
      nil))
 
+(defn with-timer-function (thunk)
+  (let ((old-milliseconds (get-time)))
+    (thunk)
+    (let ((new-milliseconds (get-time)))
+      (with-asserts ((<= old-milliseconds new-milliseconds))
+        (println (- new-milliseconds old-milliseconds) " milliseconds elapsed."))
+      nil)))
+
+(defmacro with-timer (&rest body)
+  `(with-timer-function (lambda () ,@body)))
+
 )

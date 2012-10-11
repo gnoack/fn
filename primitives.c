@@ -1,5 +1,6 @@
 
 #include "stdio.h"
+#include "time.h"
 
 #include "primitives.h"
 
@@ -204,6 +205,13 @@ oop primitive_make_compiled_procedure(oop args) {
   return result;
 }
 
+oop primitive_get_process_time(oop args) {
+  CHECKV(is_nil(args), args, "No arguments allowed for get-time.");
+  struct timespec time;
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &time);
+  return make_smallint(time.tv_sec * 1000 + time.tv_nsec / 1000000);
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -237,4 +245,5 @@ void init_primitives() {
   register_globally_fn("run-gc", primitive_run_gc);
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);
+  register_globally_fn("get-time", primitive_get_process_time);
 }

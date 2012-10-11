@@ -1,5 +1,5 @@
 
-LIBS = -lreadline
+LIBS = -lreadline -lrt
 CFLAGS = -g
 HEADERS = *.h
 OBJECTS = \
