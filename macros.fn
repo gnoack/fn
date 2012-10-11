@@ -182,7 +182,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO: Separate imperative macros into their own file?
-(defmacro for-each ((var items) &rest cmds)
+(defmacro dolist ((var items) &rest cmds)
   `(map (lambda (,var) ,@cmds)
         ,items))
 

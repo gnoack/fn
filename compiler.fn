@@ -287,9 +287,9 @@
              (dict-put! label-addrs l (send byte-stream 'size))))
       (let ((translate!
              (make-assembler put-byte! put-label! put-oop! save-label!)))
-        (for-each (cmd program)
+        (dolist (cmd program)
           (apply translate! cmd))
-        (for-each (todo postponed-actions)
+        (dolist (todo postponed-actions)
           (todo))
         (list 0  ; Position where to start.
               (send byte-stream 'buffer)
