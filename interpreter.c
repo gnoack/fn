@@ -254,7 +254,8 @@ oop interpret(oop frame, oop code) {
     }
     case BC_WRITE_GLOBAL_VAR: {
       oop key = read_oop(&state);
-      register_globally_oop(key, state.reg_acc);
+      // TODO: Make bytecode-level distinction between defining and setting?
+      set_globally_oop(key, state.reg_acc);
       IPRINT("write-global-var ");
       IVALUE(key);
       IPRINT("                 ");

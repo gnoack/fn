@@ -123,13 +123,14 @@ boolean half_space_contains(half_space* space, oop obj) {
   return TO_BOOL(space->start <= obj.mem && obj.mem < space->end);
 }
 
-// Only for debugging.
+#ifdef GC_LOGGING
 void half_space_print_fill(const half_space* space, const char* name) {
   fn_uint fill = space->free - space->start;
   fn_uint size = space->size;
   printf("GC: %6s: Fill: %d of %d (%d %%)\n",
 	 name, (int) fill, (int) size, (int) (100*fill / size));
 }
+#endif  // GC_LOGGING
 
 
 /*
