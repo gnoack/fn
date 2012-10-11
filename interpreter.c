@@ -183,7 +183,6 @@ void deserialize_retptr(oop retptr, interpreter_state_t* state) {
 }
 
 // Interpreter
-// TODO: Support nested execution!
 oop interpret(oop frame, oop code) {
   interpreter_state_t state;
   state.reg_acc = NIL;
