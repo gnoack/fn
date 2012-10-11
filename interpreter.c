@@ -111,24 +111,21 @@ oop get_var(oop frame, unsigned int index) {
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
-                            oop retptr) {
-
+                            boolean tailcall) {
   // TODO: Stack traces for procedures executed like this.
   oop values = stack_pop_list(arg_count);
-  #ifdef INTERPRETER_LOGGING
-  if (value_eq(retptr, state->retptr)) {
-    IPRINT("tail-call %lu    .oO ", arg_count);
-  } else {
-    IPRINT("call %lu         .oO ", arg_count);
-  }
+  IPRINT("call %lu         .oO ", arg_count);
   IVALUE(values);
-  #endif  // INTERPRETER_LOGGING
   oop cfn = car(values);
   if (is_compiled_lisp_procedure(cfn)) {
     oop args = cdr(values);
-    // Modify the interpreter state and let the interpreter handle
-    // recursion.
     oop env = make_frame_for_application(cfn, args);
+
+    if (tailcall == NO) {
+      stack_push(serialize_retptr(state));
+    }
+
+    // Modify the interpreter state.
 
     // Data.
     state->reg_acc = NIL;  // Just for encapsulation.
@@ -139,9 +136,6 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     state->ip = get_smallint(car(code));
     state->bytecode = cadr(code);
     state->oop_lookups = caddr(code);
-
-    // Return pointer.
-    state->retptr = retptr;
   } else {
     // Call recursively on the C stack.
     state->reg_acc = apply(values);
@@ -172,13 +166,12 @@ oop read_oop(interpreter_state_t* state) {
 }
 
 oop serialize_retptr(interpreter_state_t* state) {
-  oop result = mem_alloc(5);
+  oop result = mem_alloc(4);
   // TODO: Type marker?
   mem_set(result, 0, state->reg_frm);
   mem_set(result, 1, make_smallint(state->ip));
   mem_set(result, 2, state->bytecode);
   mem_set(result, 3, state->oop_lookups);
-  mem_set(result, 4, state->retptr);
   return result;
 }
 
@@ -187,7 +180,6 @@ void deserialize_retptr(oop retptr, interpreter_state_t* state) {
   state->ip          = get_smallint(mem_get(retptr, 1));
   state->bytecode    = mem_get(retptr, 2);
   state->oop_lookups = mem_get(retptr, 3);
-  state->retptr      = mem_get(retptr, 4);
 }
 
 // Interpreter
@@ -199,7 +191,7 @@ oop interpret(oop frame, oop code) {
   state.ip = get_smallint(first(code));
   state.bytecode = first(rest(code));
   state.oop_lookups = first(rest(rest(code)));
-  state.retptr = NIL;
+  stack_push(NIL);  // Return pointer.
 
   #ifdef INTERPRETER_DEBUG
   unsigned int stack_size_before = stack.size;
@@ -289,18 +281,18 @@ oop interpret(oop frame, oop code) {
     }
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, serialize_retptr(&state));
+      apply_into_interpreter(arg_count, &state, NO);
       break;
     }
     case BC_TAIL_CALL: {
-      // TODO: Clean up stack on tail call.
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, state.retptr);
+      apply_into_interpreter(arg_count, &state, YES);
       break;
     }
     case BC_RETURN:
       IPRINT("return\n");
-      if(is_nil(state.retptr)) {
+      oop retptr = stack_pop();
+      if(is_nil(retptr)) {
         #ifdef INTERPRETER_DEBUG
         if (stack_size_before != stack.size) {
           printf("The stack is a mutant!");
@@ -310,7 +302,7 @@ oop interpret(oop frame, oop code) {
         #endif  // INTERPRETER_DEBUG
         return state.reg_acc;
       } else {
-        deserialize_retptr(state.retptr, &state);
+        deserialize_retptr(retptr, &state);
       }
       // TODO: Restore previous state if reg_frm[2] != nil.
       break;
