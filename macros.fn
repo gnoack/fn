@@ -53,7 +53,7 @@
                       (dict-has-key? *macros* x)
                     false)
                   (macroexpand-rec (apply (dict-get *macros* x) xs))
-                (cons x (map macroexpand-rec xs)))))))
+                (map macroexpand-rec e))))))
 	  e)))
 
 ;; 'macroexpand' is special in that the evaluator transforms any
@@ -117,20 +117,39 @@
 	(true                              (list 'list (list 'quasiquote expr)))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; More general purpose macros
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO: Use with-gensyms for SYM_.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; with-gensyms                                                   ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Gensym for generating unused symbols.
+;; TODO: Make the global-label-counter inaccessible to the outside.
+(def global-label-counter 100)
+(defn gensym (prefix)
+  (set! global-label-counter (+ 1 global-label-counter))
+  (string->symbol (string-append prefix
+                                 "-"
+                                 (int->string global-label-counter 10))))
+
+(defmacro with-gensyms (vars &rest body)
+  `((lambda ,vars ,@body)
+    ,@(map (lambda (var) `(gensym ,(symbol->string var)))
+           vars)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; More general purpose macros                                    ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro case (expr &rest clauses)
-  `(let ((sym_ ,expr))
-     (cond
-       ,@(map (lambda (clause)
-                (cond ((list? (first clause))
-                       `((eq (quote ,(first (first clause))) sym_)
-                         ,(second clause)))
-                      ((eq 'else (first clause))
-                       `(true ,(second clause)))))
-              clauses))))
+  (with-gensyms (value)
+    `(let ((,value ,expr))
+       (cond
+        ,@(map (lambda (clause)
+                 (cond ((list? (first clause))
+                        `((eq (quote ,(first (first clause))) ,value)
+                          ,(second clause)))
+                       ((eq 'else (first clause))
+                        `(true ,(second clause)))))
+               clauses)))))
 
 
 ;;; *******************************************************************

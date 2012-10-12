@@ -9,17 +9,14 @@
              (b b-case)
              (c c-case))))
 
-(eql (macroexpand '(let ((sym_ 'foo))
-                    (cond
-                      ((eq 'foo sym_) 1)
-                      ((eq 'bar sym_) 2)
-                      ((eq 'baz sym_) 3)
-                      (true           4))))
-     (macroexpand '(case 'foo
-                    ((foo) 1)
-                    ((bar) 2)
-                    ((baz) 3)
-                    (else  4))))
+(case 'bar
+  ((foo) false)
+  ((bar) true)
+  (else  false))
+
+(case 'spam
+  ((foo) false)
+  (else  true))
 
 ;; Does the hand-written defmacro
 ;; macro work?
