@@ -1,15 +1,6 @@
 
 (
 
-;; Recognizing s-expressions.
-(defn let? (e) (smatch? 'let e))
-(defn lambda? (e) (smatch? 'lambda e))
-(defn if? (e) (smatch? 'if e))
-(defn def? (e) (smatch? 'def e))
-(defn quote? (e) (smatch? 'quote e))
-(defn set!? (e) (smatch? 'set! e))
-
-
 ;; Accessing elements in lists.
 (defn list-index-of (list value)
   (with-asserts ((cons? list))
@@ -151,13 +142,16 @@
     ((char? expr)    (compile-literal expr environment))
     ((symbol? expr)  (compile-variable-read expr environment))
     ((string? expr)  (compile-literal expr environment))
-    ((quote? expr)   (compile-literal (second expr) environment))
-    ((if? expr)      (compile-if expr environment))
-    ((lambda? expr)  (compile-lambda expr environment))
-    ((let? expr)     (compile-let expr environment))
-    ((def? expr)     (compile-def expr environment))
-    ((set!? expr)    (compile-set! expr environment))
-    ((list? expr)    (compile-application expr environment))))
+    (true
+     (case (first expr)
+       ((quote)      (compile-literal (second expr) environment))
+       ((if)         (compile-if expr environment))
+       ((lambda)     (compile-lambda expr environment))
+       ((let)        (compile-let expr environment))
+       ((def)        (compile-def expr environment))
+       ((set!)       (compile-set! expr environment))
+       (else         (with-asserts ((list? expr))
+                       (compile-application expr environment)))))))
 
 (defn compile-sequence (exprs environment)
   (apply append (map (lambda (e) `(,@(compile e environment)
