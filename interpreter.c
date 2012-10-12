@@ -190,11 +190,12 @@ oop interpret(oop frame, oop code) {
   state.ip = get_smallint(first(code));
   state.bytecode = first(rest(code));
   state.oop_lookups = first(rest(rest(code)));
-  stack_push(NIL);  // Return pointer.
 
   #ifdef INTERPRETER_DEBUG
   unsigned int stack_size_before = stack.size;
   #endif  // INTERPRETER_DEBUG
+
+  stack_push(NIL);  // Return pointer.
 
   for (;;) {
     IPRINT("[i] %5lu: ", state.ip);

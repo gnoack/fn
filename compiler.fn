@@ -158,14 +158,33 @@
         ((nil? list) false)
         (true        (longer-eq-than (- n 1) (rest list)))))
 
-(defn optimize (commands)
+(defn optimize-push-pop (commands)
   (cond ((and (longer-eq-than 2 commands)
-              (eql '(push) (first commands))
-              (eql '(pop) (second commands)))
+               (eql '(push) (first commands))
+               (eql '(pop) (second commands)))
+         ;; Skip those two commands
          (rest (rest commands)))
+        ((nil? commands) '())
         (true
-         (cons (first commands) (optimize (rest commands))))))
+         (cons (first commands) (optimize-push-pop (rest commands))))))
 
+;; TODO: This only works for very straightforward cases.  Improve!
+(defn optimize-tail-calls (commands)
+  (cond ((and (longer-eq-than 2 commands)
+               (cons? (first commands))
+               (eql 'call (first (first commands)))
+               (eql '(return) (second commands)))
+         ;; Convert to tail call.  Note: Not all tail-call commands
+         ;; can be executed as tail calls due to C interoperability.
+         ;; Therefore, we still need ot keep the (return) bytecode.
+         (cons (cons 'tail-call (rest (first commands)))
+               (rest commands)))
+        ((nil? commands) '())
+        (true
+         (cons (first commands) (optimize-tail-calls (rest commands))))))
+
+(defn optimize (commands)
+  (optimize-tail-calls (optimize-push-pop commands)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Assembler                                                     ;;;
