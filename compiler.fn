@@ -54,25 +54,25 @@
 ;;; Compilation
 
 (defn compile-if ((if_ condition-expr consequent-expr alternative-expr)
-                  environment)
+                  environment call-style)
   (with-gensyms (true-branch after-if)
-    `(,@(compile condition-expr environment)
+    `(,@(compile condition-expr environment 'call)
       (pop)
       (jump-if-true ,true-branch)
-      ,@(compile alternative-expr environment)
+      ,@(compile alternative-expr environment call-style)
       (jump ,after-if)
       (label ,true-branch)
-      ,@(compile consequent-expr environment)
+      ,@(compile consequent-expr environment call-style)
       (label ,after-if))))
 
-(defn compile-application (expr environment)
+(defn compile-application (expr environment call-style)
   (when (nil? expr)
     (error "Need at least a function to call!"))
   `(,@(apply append
              (map (lambda (e)
-                    (compile e environment))
+                    (compile e environment 'call))
                   expr))
-    (call ,(length expr))
+    (,call-style ,(length expr))
     (push)))
 
 (defn compile-variable-read (expr environment)
@@ -102,11 +102,11 @@
       (label ,after-lambda))))
 
 (defn compile-lambda-body (exprs environment)
-  `(,@(compile-sequence exprs environment)
+  `(,@(compile-sequence exprs environment 'tail-call)
     (return)))
 
-(defn compile-def ((def_ symbol value-expr) environment)
-  `(,@(compile value-expr environment)
+(defn compile-def ((def_ symbol value-expr) environment call-style)
+  `(,@(compile value-expr environment call-style)
     (pop)
     ,@(send global-env 'generate-write symbol)))
 
@@ -117,16 +117,16 @@
     `((lambda ,let-variables ,@body-exprs)
       ,@let-expressions)))
 
-(defn compile-let (expr environment)
-  (compile (transform-let->lambda expr) environment))
+(defn compile-let (expr environment call-style)
+  (compile (transform-let->lambda expr) environment call-style))
 
-(defn compile-set! ((set!_ symbol value-expr) environment)
-  `(,@(compile value-expr environment)
+(defn compile-set! ((set!_ symbol value-expr) environment call-style)
+  `(,@(compile value-expr environment call-style)
     (pop)
     ,@(send environment 'generate-write symbol)
     (push)))
 
-(defn compile (expr environment)
+(defn compile (expr environment call-style)
   (cond
     ((number? expr)  (compile-literal expr environment))
     ((char? expr)    (compile-literal expr environment))
@@ -135,18 +135,21 @@
     (true
      (case (first expr)
        ((quote)      (compile-literal (second expr) environment))
-       ((if)         (compile-if expr environment))
+       ((if)         (compile-if expr environment call-style))
        ((lambda)     (compile-lambda expr environment))
-       ((let)        (compile-let expr environment))
-       ((def)        (compile-def expr environment))
-       ((set!)       (compile-set! expr environment))
+       ((let)        (compile-let expr environment call-style))
+       ((def)        (compile-def expr environment call-style))
+       ((set!)       (compile-set! expr environment call-style))
        (else         (with-asserts ((list? expr))
-                       (compile-application expr environment)))))))
+                       (compile-application expr environment call-style)))))))
 
-(defn compile-sequence (exprs environment)
-  (apply append (map (lambda (e) `(,@(compile e environment)
-                                   (pop)))
-                     exprs)))
+(defn compile-sequence (exprs environment call-style)
+  ;; Only the last expression keeps the tail call property.
+  `(,@(apply append (map (lambda (e) `(,@(compile e environment 'call)
+                                       (pop)))
+                         (all-but-last exprs)))
+    ,@(compile (last exprs) environment call-style)
+    (pop)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

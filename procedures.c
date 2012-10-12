@@ -145,6 +145,7 @@ fn_uint destructure_lambda_list_into_dframe(oop ll, oop args, oop dframe,
         return idx;
       } else {
         oop key = ll_item;
+        CHECKV(is_cons(args), args, "Not enough arguments.");
         oop value = car(args);
         dframe_register_key(dframe, idx, key, value);
         idx++;
@@ -174,6 +175,7 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
         idx++;
         return idx;
       } else {
+        CHECKV(is_cons(args), args, "Not enough arguments.");
         oop value = car(args);
         set_var(frame, idx, value);
         idx++;

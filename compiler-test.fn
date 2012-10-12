@@ -28,7 +28,7 @@
  ;; where the generated gensyms are always the same.
  (defn pcompile (expr env)
    (set! global-label-counter 1000)
-   (compile expr env)))
+   (compile expr env 'call)))
 
 (eql '((load-value 123)
        (push))
@@ -76,15 +76,21 @@
        (push)
        (read-var 0 0)  ; x
        (push)
+       (read-global-var +)
+       (push)
+       (read-var 1 1)  ; b
+       (push)
        (read-var 1 1)  ; b
        (push)
        (call 3)  ; 2 arguments and one procedure.
+       (push)
+       (tail-call 3)  ; 2 arguments and one procedure.
        (push)
        (pop)
        (return)
        ;; -- this is where the lambda ends
        (label after-lambda-1002))
-     (pcompile '(lambda (x) (+ x b)) %abz-env))
+     (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
 
 (eql '((load-value 5)
        (push)
