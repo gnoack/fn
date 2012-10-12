@@ -11,21 +11,17 @@
 
 
 ;; Accessing elements in lists.
-;; TODO: Is all this OO necessary?
-(defm @cons 'contains? (v)
-  (or (eq v (first self))
-      (send (rest self) 'contains? v)))
+(defn list-index-of (list value)
+  (with-asserts ((cons? list))
+    (if (eq value (first list))
+        0
+      (+ 1 (list-index-of (rest list) value)))))
 
-(defm @nil 'contains? (v)
-  false)
-
-(defm @cons 'index-of (v)
-  (if (eq v (first self))
-      0
-      (+ 1 (send (rest self) 'index-of v))))
-
-(def contains? (sender 'contains?))
-(def index-of (sender 'index-of))
+(defn list-contains? (list value)
+  (if (cons? list)
+      (or (eq value (first list))
+          (list-contains? (rest list) value))
+      false))
 
 
 ;;; Static variable environment
@@ -57,8 +53,8 @@
     ('linked-with-vars (vars)       (linked-env-with-vars self vars))
 
     ;; Code generation
-    ('generate-access (depth op x)  (if (contains? my-vars x)
-                                        `((,op ,depth ,(index-of my-vars x)))
+    ('generate-access (depth op x)  (if (list-contains? my-vars x)
+                                        `((,op ,depth ,(list-index-of my-vars x)))
                                       (send next-env 'generate-access (+ 1 depth) op x)))
     ('generate-read (x)             (send self 'generate-access 0 'read-var x))
     ('generate-write (x)            (send self 'generate-access 0 'write-var x))))
@@ -274,14 +270,14 @@
                                  (send byte-stream 'put-byte-at! (+ pos 1)
                                        (lower-byte label-addr)))))))
            (put-oop! (o)
-             (when (not (contains? known-oops o))
+             (when (not (list-contains? known-oops o))
                (add-to-list! known-oops o))
              (let ((pos (send byte-stream 'size)))
                (send byte-stream 'put-byte! 0)
                (add-to-list! postponed-actions
                              (lambda ()
                                (send byte-stream 'put-byte-at! pos
-                                     (index-of known-oops o))))))
+                                     (list-index-of known-oops o))))))
            (save-label! (l)
              (dict-put! label-addrs l (send byte-stream 'size))))
       (let ((translate!
