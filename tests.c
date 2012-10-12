@@ -126,6 +126,7 @@ void run_lisp_tests(oop tests) {
 }
 
 void init() {
+  init_procedures();
   init_gc();
   init_symbols();
   init_eval();

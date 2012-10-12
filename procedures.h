@@ -38,5 +38,7 @@ extern boolean is_compiled_lisp_procedure(oop fn);
 extern oop apply(oop values);
 extern oop fn_code(oop cfn);
 
+extern void init_procedures();
+
 #define __PROCEDURES_H__ 0
 #endif // __PROCEDURES_H__

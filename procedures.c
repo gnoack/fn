@@ -259,7 +259,6 @@ void print_apply_stack() {
 // Function application.
 // First argument is function, rest are arguments.
 oop apply(oop values) {
-  print_stack_frame = print_apply_stack; // TODO: Set somewhere else.
   CHECK(apply_stack_pos < MAX_APPLY_STACK, "Stack exhausted.");
   apply_stack[apply_stack_pos++] = values;
   oop fn = car(values);
@@ -274,4 +273,8 @@ oop apply(oop values) {
   }
   apply_stack_pos--;
   return result;
+}
+
+void init_procedures() {
+  print_stack_frame = print_apply_stack;
 }
