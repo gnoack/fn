@@ -6,6 +6,12 @@
       (first l)
       (last (rest l))))
 
+(defn all-but-last (l)
+  (if (nil? (rest l))
+      '()
+    (cons (first l)
+          (all-but-last (rest l)))))
+
 ;; Progn
 (defn progn (&rest args)
   (last args))

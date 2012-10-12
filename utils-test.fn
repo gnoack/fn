@@ -1,9 +1,12 @@
 (
 
-; Progn
+(eq 3 (last '(1 2 3)))
+(eql '(1 2) (all-but-last '(1 2 3)))
+
+;; Progn
 (eq 'result (progn 1 2 3 'result))
 
-; Strings
+;; Strings
 (string= "abc" "abc")
 (not (string= "x" "y"))
 
@@ -24,13 +27,13 @@
 (eq #\d (string-at "abcdefg" 3))
 (eq 6 (string-size "abcdef"))
 
-; Integer parsing.
+;; Integer parsing.
 (eq 123 (string->int "123"))
 
-; Digit to int
+;; Digit to int
 (eq 3 (digit->int #\3))
 
-; Integer coding
+;; Integer coding
 (string= "0" (int->string 0 10))
 (string= "1" (int->string 1 10))
 (string= "123" (int->string 123 10))
@@ -50,7 +53,7 @@
 (char<= #\a #\a #\b #\c)
 (not (char<= #\a #\c #\b))
 
-; Reducing
+;; Reducing
 (eql (cons (cons (cons nil 'a) 'b) 'c)
      (reduce cons (list 'a 'b 'c) nil))
 
