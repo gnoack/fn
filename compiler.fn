@@ -74,16 +74,17 @@
 
 ;;; Compilation
 
-(defn compile-if (expr environment)
+(defn compile-if ((if_ condition-expr consequent-expr alternative-expr)
+                  environment)
   (let ((true-branch-label (gensym "true-branch"))
         (after-if-label (gensym "after-if")))
-    `(,@(compile (second expr) environment)  ; Condition.
+    `(,@(compile condition-expr environment)
       (pop)
       (jump-if-true ,true-branch-label)
-      ,@(compile (fourth expr) environment)  ; False branch.
+      ,@(compile alternative-expr environment)
       (jump ,after-if-label)
       (label ,true-branch-label)
-      ,@(compile (third expr) environment)  ; True branch.
+      ,@(compile consequent-expr environment)
       (label ,after-if-label))))
 
 (defn compile-application (expr environment)
@@ -111,45 +112,41 @@
                                                (vars-from-ll (rest lambda-list))))
         ((symbol? lambda-list)         (list lambda-list))))
 
-(def lambda-list second)
-(defn lambda-body (e) (rest (rest e)))
-(defn compile-lambda (expr environment)
+(defn compile-lambda ((lambda_ lambda-list &rest body-exprs) environment)
   (let ((lambda-entry-label (gensym "lambda-entry"))
         (after-lambda-label (gensym "after-lambda")))
-    `((make-lambda ,lambda-entry-label ,(lambda-list expr))
+    `((make-lambda ,lambda-entry-label ,lambda-list)
       (push)
       (jump ,after-lambda-label)
       (label ,lambda-entry-label)
-      ,@(compile-lambda-body (lambda-body expr)
+      ,@(compile-lambda-body body-exprs
                              (send environment 'linked-with-vars
-                                   (vars-from-ll (lambda-list expr))))
+                                   (vars-from-ll lambda-list)))
       (label ,after-lambda-label))))
 
 (defn compile-lambda-body (exprs environment)
   `(,@(compile-sequence exprs environment)
     (return)))
 
-(defn compile-def (expr environment)
-  `(,@(compile (third expr) environment)
+(defn compile-def ((def_ symbol value-expr) environment)
+  `(,@(compile value-expr environment)
     (pop)
-    ,@(send global-env 'generate-write (second expr))))
+    ,@(send global-env 'generate-write symbol)))
 
 ;; Transforming
-(def let-clauses second)
-(defn let-body (e) (rest (rest e)))
-(defn let-variables (e) (map first (let-clauses e)))
-(defn let-expressions (e) (map second (let-clauses e)))
-(defn transform-let->lambda (expr)
-  `((lambda ,(let-variables expr) ,@(let-body expr))
-    ,@(let-expressions expr)))
+(defn transform-let->lambda ((let_ let-clauses &rest body-exprs))
+  (let ((let-variables (map first let-clauses))
+        (let-expressions (map second let-clauses)))
+    `((lambda ,let-variables ,@body-exprs)
+      ,@let-expressions)))
 
 (defn compile-let (expr environment)
   (compile (transform-let->lambda expr) environment))
 
-(defn compile-set! (expr environment)
-  `(,@(compile (third expr) environment)
+(defn compile-set! ((set!_ symbol value-expr) environment)
+  `(,@(compile value-expr environment)
     (pop)
-    ,@(send environment 'generate-write (second expr))
+    ,@(send environment 'generate-write symbol)
     (push)))
 
 (defn compile (expr environment)
@@ -171,6 +168,7 @@
                                    (pop)))
                      exprs)))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Optimizer                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -187,6 +185,7 @@
          (rest (rest commands)))
         (true
          (cons (first commands) (optimize (rest commands))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Assembler                                                     ;;;
