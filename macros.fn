@@ -153,15 +153,16 @@
 
 (set! defn-body-exprs->let-form
       (lambda (exprs)
-        (let ((def-expr? (lambda (e) (smatch? 'def e))))
+        (let ((exprs (map macroexpand exprs))
+              (def-expr? (lambda (e) (smatch? 'def e))))
           (let ((def-forms (list-prefix-where def-expr? exprs))
                 (body-exprs (list-without-prefix-where def-expr? exprs)))
             (if (nil? def-forms)
                 exprs
-              `(labels ,(map (lambda ((def_ symbol value-expr))
-                               `(,symbol ,value-expr))
-                             def-forms)
-                 ,@body-exprs))))))
+              `((labels ,(map (lambda ((def_ symbol value-expr))
+                                `(,symbol ,value-expr))
+                              def-forms)
+                  ,@body-exprs)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

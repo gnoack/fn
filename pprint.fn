@@ -3,7 +3,7 @@
 ;; TODO: Memory consumption.
 (defn char-escape (ch)
   (cond ((eq ch #\") "\\\"")
-	(true (list->string (list ch)))))
+        (true (list->string (list ch)))))
 
 (defn pprint (item)
   (cond ((string? item) (string-append "\""
@@ -12,21 +12,21 @@
                                                    (string->list item)))
                                        "\""))
         ((cons? item)   (if (and (eq 'quote (first item))
-				 (= 2 (length item)))
-			    (string-append "'" (pprint (second item)))
-			    (string-append "("
-                                           (string-join (map pprint item) " ")
-                                           ")")))
-	((native-procedure? item)
+                                 (= 2 (length item)))
+                            (string-append "'" (pprint (second item)))
+                          (string-append "("
+                                         (string-join (map pprint item) " ")
+                                         ")")))
+        ((native-procedure? item)
          (string-append "<NATIVE-PROCEDURE "
                         (pprint (procedure-name item)) ">"))
-	((lisp-procedure? item)
+        ((lisp-procedure? item)
          (string-append "<PROCEDURE " (pprint (procedure-name item))
                         " " (pprint (lisp-procedure-lambda-list item)) ">"))
-	((char? item)   (string-append "\\" (char-escape item)))
-	((number? item) (int->string item 10))
-	((nil? item)    "nil")
-	((symbol? item) (symbol->string item))
+        ((char? item)   (string-append "\\" (char-escape item)))
+        ((number? item) (int->string item 10))
+        ((nil? item)    "nil")
+        ((symbol? item) (symbol->string item))
         (true           "?UNPRINTABLE?")))
 
 (defn display (item)
