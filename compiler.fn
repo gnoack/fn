@@ -294,26 +294,31 @@
 (defn fn-body (fn) ($mem-get fn 3))
 (defn fn-env (fn) ($mem-get fn 4))
 
+(defn compilable? (fn)
+  ;; Note: This is the *static* global env...
+  ;; If we compile a function captured in a deeper environment, we
+  ;; don't know what other functions have been captured in the same.
+  ;; We can't convert the environment itself to a @frame.
+  (and (eq @procedure (type-of fn))
+       (global-env? (fn-env fn))))
+
 (defn compile-fn (fn)
-  (with-asserts ((eq @procedure (type-of fn))
-                 (global-env? (fn-env fn)))
-    ;; Note: This is the *static* global env...
-    ;; If we compile a function captured in a deeper environment, we
-    ;; don't know what other functions have been captured in the same.
-    ;; We can't convert the environment itself to a @frame.
-    (make-compiled-procedure
-     (fn-name fn)
-     (fn-lambda-list fn)
-     (assemble
-      (optimize
-       (compile-lambda-body (fn-body fn)
-                            (send global-env 'linked-with-vars
-                                  (vars-from-ll (fn-lambda-list fn))))))
-     nil)))
+  (if (compilable? fn)
+      (let ((env-in-body (send global-env 'linked-with-vars
+                               (vars-from-ll (fn-lambda-list fn)))))
+        (make-compiled-procedure
+         (fn-name fn)
+         (fn-lambda-list fn)
+         (assemble (optimize
+                    (compile-lambda-body (fn-body fn) env-in-body)))
+         nil))
+    (progn
+      ;; TODO: This is a hack to make compiling by hand convenient.
+      (println "This procedure is not compilable, returning it as it is.")
+      fn)))
 
 (defn compile-fn* (fn)
-  (with-asserts ((eq @procedure (type-of fn))
-                 (global-env? (fn-env fn)))
+  (with-asserts ((compilable? fn))
     (compile-lambda-body (fn-body fn)
                          (send global-env 'linked-with-vars
                                (vars-from-ll (fn-lambda-list fn))))))
