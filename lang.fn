@@ -14,6 +14,7 @@
 	    (eq nil x)))
 
 ;; =, a nicer eq for numbers.
+;; TODO: Support more number types.
 (def = eq)
 
 ;; Map
