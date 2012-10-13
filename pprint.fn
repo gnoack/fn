@@ -38,6 +38,7 @@
 
 (defn println (&rest args)
   (map display args)
-  (newline))
+  (newline)
+  nil)
 
 )
