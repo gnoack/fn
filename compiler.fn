@@ -15,7 +15,9 @@
       false))
 
 
-;;; Static variable environment
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Static variable environments                                  ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn %globalop (op)
   (case op
@@ -51,7 +53,9 @@
     ('generate-write (x)            (send self 'generate-access 0 'write-var x))))
 
 
-;;; Compilation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Compiler                                                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn compile-if ((if_ condition-expr consequent-expr alternative-expr)
                   environment call-style)

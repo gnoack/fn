@@ -79,10 +79,14 @@
   (if (nil? ps) p
       (list 'if p true (cons 'or ps))))
 
+;; XXX: Only for now.  Rebound after `labels' is defined.
+(def defn-body-exprs->let-form identity)
+
 (defmacro defn (name lambda-list &rest body)
   ;; `(def ,name (lambda ,lambda-list ,@body))
   (list 'def name
-	(cons 'lambda (cons lambda-list body))))
+	(cons 'lambda (cons lambda-list
+                            (defn-body-exprs->let-form body)))))
 
 ;;; ***********************************************************
 ;;; Quasiquote implementation
@@ -116,6 +120,48 @@
 	((smatch? 'unquote-splicing expr)  (second expr))
 	(true                              (list 'list (list 'quasiquote expr)))))
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; `labels' and friends                                           ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Like let, but variable values are evaluated in an environment where
+;; the newly defined variables already exist.  This allows for mutual
+;; recursion between functions.  See SICP, page 390.
+(defmacro labels (bindings &rest body)
+  `(let ,(map (lambda (binding)
+                `(,(first binding) '*undefined*))
+              bindings)
+     ,@(map (lambda (binding)
+              `(set! ,(first binding) ,(second binding)))
+            bindings)
+     ,@body))
+
+(defn list-prefix-where (predicate? l)
+  (if (and (cons? l)
+           (predicate? (first l)))
+      (cons (first l)
+            (list-prefix-where predicate? (rest l)))
+    '()))
+
+(defn list-without-prefix-where (predicate? l)
+  (if (and (cons? l)
+           (predicate? (first l)))
+      (list-without-prefix-where predicate? (rest l))
+    l))
+
+(set! defn-body-exprs->let-form
+      (lambda (exprs)
+        (let ((def-expr? (lambda (e) (smatch? 'def e))))
+          (let ((def-forms (list-prefix-where def-expr? exprs))
+                (body-exprs (list-without-prefix-where def-expr? exprs)))
+            (if (nil? def-forms)
+                exprs
+              `(labels ,(map (lambda ((def_ symbol value-expr))
+                               `(,symbol ,value-expr))
+                             def-forms)
+                 ,@body-exprs))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -175,17 +221,6 @@
 (defmacro trace (sym)
   `(set! ,sym (debugging-wrap ,sym)))
 
-;; Like let, but variable values are evaluated in an environment where
-;; the newly defined variables already exist.  This allows for mutual
-;; recursion between functions.  See SICP, page 390.
-(defmacro labels (bindings &rest body)
-  `(let ,(map (lambda (binding)
-                `(,(first binding) '*undefined*))
-              bindings)
-     ,@(map (lambda (binding)
-              `(set! ,(first binding) ,(second binding)))
-            bindings)
-     ,@body))
 
 ;; Example: (with-asserts ((number? n)) (+ 1 n))
 (defmacro with-asserts (asserts body)
