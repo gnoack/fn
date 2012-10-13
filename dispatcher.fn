@@ -1,9 +1,9 @@
 
 (
 
-;;;; *****************************************
-;;;; Simple OO using symbol-based dispatching.
-;;;; *****************************************
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Simple OO using symbol-based dispatching.                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn dispatch-clause->cond-clause (clause)
   `((eq ,(first clause) selector)

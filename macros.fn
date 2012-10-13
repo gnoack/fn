@@ -88,9 +88,9 @@
 	(cons 'lambda (cons lambda-list
                             (defn-body-exprs->let-form body)))))
 
-;;; ***********************************************************
-;;; Quasiquote implementation
-;;; ***********************************************************
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Quasiquote implementation                                      ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn smatch? (symbol e)
   (and (cons? e)
@@ -199,23 +199,23 @@
                clauses)))))
 
 
-;;; *******************************************************************
-;;; Procedure call tracing for debugging
-;;; *******************************************************************
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Procedure call tracing for debugging                           ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TODO: Move this somewhere else!
 
 ;; TODO: We could use substrings of a larger indentation string instead.
-(def %trace-indent "")
+(def *trace-indent* "")
 
 ;; Wraps a method to print out its arguments.  (trace)
 (defn debugging-wrap (func)
   (lambda (&rest args)
     (let ((old-indent %trace-indent))
-      (set! %trace-indent (string-append "  " %trace-indent))
-      (println %trace-indent (pprint (cons func args)))
+      (set! *trace-indent* (string-append "  " %trace-indent))
+      (println *trace-indent* (pprint (cons func args)))
       (let ((result (apply func args)))
-        (println %trace-indent (pprint func) " returned " (pprint result))
-        (set! %trace-indent old-indent)
+        (println *trace-indent* (pprint func) " returned " (pprint result))
+        (set! *trace-indent* old-indent)
         result))))
 
 ;; Call like (trace macroexpand) for instance to log method calls.
