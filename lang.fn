@@ -91,7 +91,7 @@
 	     (cons r l)))
 
 (def reverse (lambda (seq)
-	       (reduce %xcons seq nil)))
+	       (reduce %xcons seq '())))
 
 ;; cons, cons?
 (def cons

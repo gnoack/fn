@@ -70,10 +70,9 @@
 
 ;;; Message sending
 
-(defn %method-for-type (type selector)
-  (dict-get ($mem-get type 1) selector))
-
 (defn send (receiver message &rest arguments)
+  (defn %method-for-type (type selector)
+    (dict-get ($mem-get type 1) selector))
   (if (procedure? receiver)
       (apply receiver (cons message arguments))
       (apply (%method-for-type (type-of receiver) message)

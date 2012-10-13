@@ -93,13 +93,12 @@
     (num->char ($mem-block-byte-get (%string-raw str)
                                     (+ (%string-offset str) n)))))
 
-(defn %string->list-inner (str n str-length)
-  (if (= n str-length)
-      (list)
+(defn string->list (str)
+  (defn %string->list-inner (str n str-length)
+    (if (= n str-length)
+        (list)
       (cons (string-at str n)
             (%string->list-inner str (+ n 1) str-length))))
-
-(defn string->list (str)
   (with-asserts ((string? str))
     (%string->list-inner str 0 (string-size str))))
 
