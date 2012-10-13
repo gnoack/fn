@@ -9,5 +9,7 @@
 (string= "nil" (pprint nil))
 (string= "<NATIVE-PROCEDURE +>" (pprint +))
 (string= "<PROCEDURE pprint (item)>" (pprint pprint))
+(string= "<COMPILED-PROCEDURE display (item)>"
+         (pprint (compile-fn display)))
 
 )
