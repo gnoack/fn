@@ -255,7 +255,7 @@
 (defn readline-calculate-completions (text)
   (defn completions-for-dict (dict)
     (let ((names (map (lambda (x) (symbol->string (first x)))
-                    (dict-key-value-pairs dict))))
+                      (dict-key-value-pairs dict))))
     (filter (lambda (name)
               (string-prefix? text name))
             names)))
