@@ -250,7 +250,6 @@
         result)
     nil))
 
-;; TODO: Sort output?
 ;; TODO: Optimize memory usage?
 (defn readline-calculate-completions (text)
   (defn completions-for-dict (dict)
