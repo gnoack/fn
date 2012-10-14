@@ -251,13 +251,15 @@
     nil))
 
 ;; TODO: Sort output?
-;; TODO: Also complete macro names.
 ;; TODO: Optimize memory usage?
 (defn readline-calculate-completions (text)
-  (let ((names (map (lambda (x) (symbol->string (first x)))
-                    (dict-key-value-pairs $global-env))))
+  (defn completions-for-dict (dict)
+    (let ((names (map (lambda (x) (symbol->string (first x)))
+                    (dict-key-value-pairs dict))))
     (filter (lambda (name)
               (string-prefix? text name))
             names)))
+  (append (completions-for-dict $global-env)
+          (completions-for-dict *macros*)))
 
 )
