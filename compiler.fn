@@ -268,7 +268,7 @@
              (when (not (list-contains? known-oops o))
                (add-to-list! known-oops o))
              (let ((pos (send byte-stream 'size)))
-               (send byte-stream 'put-byte! 65)  ; XXX For debugging.
+               (send byte-stream 'put-byte! 0)
                (add-to-list! postponed-actions
                              (lambda ()
                                (send byte-stream 'put-byte-at! pos
@@ -330,5 +330,4 @@
   (map first (filter (lambda (kv) (compilable? (rest kv)))
                      (dict-key-value-pairs $global-env))))
 
-(def yurgs (cons make-byte-stream assemble))
 )
