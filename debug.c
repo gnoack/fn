@@ -97,6 +97,19 @@ void print_value_internal(oop v) {
       print_value_internal(array_get(v, i));
     }
     putchar(']');
+  } else if (is_dict(v)) {
+    oop kv_pairs = dict_key_value_pairs(v);
+    printf("#{");
+    while (is_cons(kv_pairs)) {
+      print_value_internal(first(first(kv_pairs)));
+      printf(": ");
+      print_value_internal(rest(first(kv_pairs)));
+      if (!is_nil(rest(kv_pairs))) {
+        printf(", ");
+      }
+      kv_pairs = rest(kv_pairs);
+    }
+    putchar('}');
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {

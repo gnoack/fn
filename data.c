@@ -45,6 +45,9 @@ oop array_get(oop array, fn_uint index) {
 }
 
 boolean is_array(oop array) {
+  if (!is_mem(array)) {
+    return NO;
+  }
   return value_eq(symbols._array, mem_get(array, 0));
 }
 
@@ -193,6 +196,17 @@ oop dict_put(oop dict, oop key, oop value) {
   dict_change_count(dict, added_amount);
 }
 
+oop dict_key_value_pairs(oop dict) {
+  return dict_table_key_value_pairs(dict_table(dict));
+}
+
+boolean is_dict(oop dict) {
+  if (!is_mem(dict)) {
+    return NO;
+  }
+  return value_eq(symbols._dict, mem_get(dict, 0));
+}
+
 
 /*
  * Lisp interface.
@@ -221,7 +235,7 @@ oop primitive_dict_put(oop args) {
 
 oop primitive_dict_key_value_pairs(oop args) {
   PARSE_ONE_ARG(dict);
-  return dict_table_key_value_pairs(dict_table(dict));
+  return dict_key_value_pairs(dict);
 }
 
 oop primitive_make_dict(oop args) {

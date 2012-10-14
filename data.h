@@ -14,6 +14,8 @@ extern oop make_dict(fn_uint table_size);
 extern oop dict_get(oop dict, oop key);
 extern boolean dict_has_key(oop dict, oop key);
 extern oop dict_put(oop dict, oop key, oop value);
+extern oop dict_key_value_pairs(oop dict);
+extern boolean is_dict(oop dict);
 
 // Dframes.
 extern oop make_dframe(oop next_frame, fn_uint size);
