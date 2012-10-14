@@ -326,4 +326,8 @@
 (defmacro c! (s)
   `(set! ,s (compile-fn ,s)))
 
+(defn uncompiled-functions ()
+  (map first (filter (lambda (kv) (compilable? (rest kv)))
+                     (dict-key-value-pairs $global-env))))
+
 )
