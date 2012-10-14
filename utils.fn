@@ -112,6 +112,14 @@
                 (%string-raw b) (%string-offset b)
                 (string-size a)))))
 
+(defn string-prefix? (needle haystack)
+  (with-asserts ((string? needle)
+                 (string? haystack))
+    (and (<= (string-size needle) (string-size haystack))
+         ($mem= (%string-raw needle) (%string-offset needle)
+                (%string-raw haystack) (%string-offset haystack)
+                (string-size needle)))))
+
 (defn map-string (fn str)
   (map fn (string->list str)))
 

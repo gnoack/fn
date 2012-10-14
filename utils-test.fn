@@ -24,6 +24,10 @@
 (string= "bar" (substring "foobar" 3))
 ; (string= "oba" (substring "foobar" 2 5))
 
+(string-prefix? "foo" "foobar")
+(not (string-prefix? "bar" "foobar"))
+(not (string-prefix? "foobar" "foo"))
+
 (eq #\d (string-at "abcdefg" 3))
 (eq 6 (string-size "abcdef"))
 
