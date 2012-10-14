@@ -31,7 +31,7 @@
         ((and (string? a) (string? b))
          (string= a b))
         (true
-         (eq a b))))
+         false)))
 
 ;; TODO: For speed, write in C using memcmp().
 (defn $mem= (a a-offset b b-offset size)
