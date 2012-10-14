@@ -23,7 +23,9 @@
       0))
 
 (defn eql (a b)
-  (cond ((and (cons? a) (cons? b))
+  (cond ((eq a b)
+         true)
+        ((and (cons? a) (cons? b))
          (and (eql (first a) (first b))
               (eql (rest a) (rest b))))
         ((and (string? a) (string? b))
