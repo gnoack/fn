@@ -404,8 +404,8 @@ boolean should_skip_gc() {
   }
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
   fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
-  return TO_BOOL((100*obj_fill / object_memory.current.size) < 75 &&
-                 (100*pri_fill / primitive_memory.current.size) < 75);
+  return TO_BOOL((100*obj_fill / object_memory.current.size) < 50 &&
+                 (100*pri_fill / primitive_memory.current.size) < 50);
 }
 
 #ifdef GC_DEBUG
