@@ -109,8 +109,8 @@
   `(,@(compile-sequence exprs environment 'tail-call)
     (return)))
 
-(defn compile-def ((def_ symbol value-expr) environment call-style)
-  `(,@(compile value-expr environment call-style)
+(defn compile-def ((def_ symbol value-expr) environment)
+  `(,@(compile value-expr environment 'call)
     (pop)
     ,@(send global-env 'generate-write symbol)))
 
@@ -124,8 +124,8 @@
 (defn compile-let (expr environment call-style)
   (compile (transform-let->lambda expr) environment call-style))
 
-(defn compile-set! ((set!_ symbol value-expr) environment call-style)
-  `(,@(compile value-expr environment call-style)
+(defn compile-set! ((set!_ symbol value-expr) environment)
+  `(,@(compile value-expr environment 'call)
     (pop)
     ,@(send environment 'generate-write symbol)
     (push)))
@@ -142,8 +142,8 @@
        ((if)         (compile-if expr environment call-style))
        ((lambda)     (compile-lambda expr environment))
        ((let)        (compile-let expr environment call-style))
-       ((def)        (compile-def expr environment call-style))
-       ((set!)       (compile-set! expr environment call-style))
+       ((def)        (compile-def expr environment))
+       ((set!)       (compile-set! expr environment))
        (else         (with-asserts ((list? expr))
                        (compile-application expr environment call-style)))))))
 
@@ -268,7 +268,7 @@
              (when (not (list-contains? known-oops o))
                (add-to-list! known-oops o))
              (let ((pos (send byte-stream 'size)))
-               (send byte-stream 'put-byte! 0)
+               (send byte-stream 'put-byte! 65)  ; XXX For debugging.
                (add-to-list! postponed-actions
                              (lambda ()
                                (send byte-stream 'put-byte-at! pos
@@ -330,4 +330,5 @@
   (map first (filter (lambda (kv) (compilable? (rest kv)))
                      (dict-key-value-pairs $global-env))))
 
+(def yurgs (cons make-byte-stream assemble))
 )

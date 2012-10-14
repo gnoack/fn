@@ -44,6 +44,10 @@ oop array_get(oop array, fn_uint index) {
   return mem_get(array, 2 + index);
 }
 
+boolean is_array(oop array) {
+  return value_eq(symbols._array, mem_get(array, 0));
+}
+
 
 /*
  * Dictionary

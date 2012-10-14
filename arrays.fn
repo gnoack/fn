@@ -22,7 +22,8 @@
     result))
 
 (defn list->array (l)
-  (apply $make `(@array ,(length l) ,@l)))
+  ;; XXX: Space needed after `,', we don't want to splice!
+  (apply $make `(, @array ,(length l) ,@l)))
 
 (defm @array 'get (n)
   (with-asserts ((number? n)

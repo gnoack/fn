@@ -2,6 +2,13 @@
 
 #include "value.h"
 
+// Arrays.
+extern oop make_array(fn_uint array_size);
+extern fn_uint array_size(oop array);
+extern oop array_set(oop array, fn_uint index, oop value);
+extern oop array_get(oop array, fn_uint index);
+extern boolean is_array(oop array);
+
 // Dictionaries.
 extern oop make_dict(fn_uint table_size);
 extern oop dict_get(oop dict, oop key);

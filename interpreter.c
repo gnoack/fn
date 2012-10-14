@@ -9,7 +9,7 @@
 #include "carcdr.h"
 #include "interpreter.h"
 
-#define MAX_STACK_SIZE 0x800
+#define MAX_STACK_SIZE 0x4000
 
 // #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
@@ -123,7 +123,10 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
 
     if (tailcall == NO) {
       stack_push(serialize_retptr(state));
+    } else {
+      apply_stack_pop();
     }
+    apply_stack_push(values);
 
     // Modify the interpreter state.
 
@@ -162,7 +165,11 @@ fn_uint read_index(interpreter_state_t* state) {
 
 // TODO: Only one byte: Will it be enough?
 oop read_oop(interpreter_state_t* state) {
+#ifdef INTERPRETER_DEBUG
+  return mem_get(state->oop_lookups, 2 + read_byte(state));
+#else
   return state->oop_lookups.mem[2 + read_byte(state)];
+#endif  // INTERPRETER_DEBUG
 }
 
 oop serialize_retptr(interpreter_state_t* state) {
@@ -303,6 +310,7 @@ oop interpret(oop frame, oop code) {
         #endif  // INTERPRETER_DEBUG
         return state.reg_acc;
       } else {
+        apply_stack_pop();
         deserialize_retptr(retptr, &state);
       }
       // TODO: Restore previous state if reg_frm[2] != nil.

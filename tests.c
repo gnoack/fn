@@ -49,7 +49,7 @@ unsigned int assertion_count = 0;
 unsigned int failure_count = 0;
 
 void init_assert() {
-  printf(".");
+  putchar('.');
   fflush(stdout);
   assertion_count++;
 }
@@ -167,11 +167,36 @@ char* symbol_completion_entry(const char* text, int state) {
   }
 }
 
+void compile_system() {
+  char* status = "-\\|/";
+  int statusidx = 0;
+
+  oop uncompiled_functions = NIL;
+  for (;;) {
+    // TODO: Querying all of this everytime from scratch is slow.
+    uncompiled_functions =
+      apply(LIST(lookup_globally(make_symbol("uncompiled-functions"))));
+    if (is_nil(uncompiled_functions)) {
+      break;
+    }
+    oop symbol = first(uncompiled_functions);
+    printf("\rCompiling [%c] %-60s", status[statusidx], symbol.symbol);
+    fflush(stdout);
+
+    eval_global(LIST(make_symbol("c!"), symbol));
+    
+    global_env = gc_run(global_env);
+    statusidx = (statusidx + 1) & 3;
+  }
+  printf("\rCompiling done.                                \n");
+}
+
 void repl() {
   char* histfile = get_histfile();
   read_history(histfile);
   rl_completion_entry_function = symbol_completion_entry;
   char* input;
+  compile_system();
   while (1) {
     input = readline("fn> ");
 

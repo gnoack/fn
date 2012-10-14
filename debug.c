@@ -2,6 +2,7 @@
 #include "debug.h"
 
 #include "value.h"
+#include "data.h"
 #include "eval.h"
 #include "cons.h"
 #include "strings.h"
@@ -74,13 +75,28 @@ void print_value_internal(oop v) {
     }
     printf(")");
   } else if (is_primitive_mem(v)) {
-    printf("<PRIMITIVE-MEMORY #%08llx>", (unsigned long long) v.smallint);
+    printf("<PRIMITIVE-MEMORY #%08llx ", (unsigned long long) v.smallint);
+    fn_uint size = get_smallint(v.mem[-1]);
+    fn_uint i;
+    for (i=0; i<size*sizeof(oop); i++) {
+      printf(" %02x", ((unsigned char*) v.mem)[i]);
+    }
+    printf(">");
   } else if (is_procedure(v)) {
     print_procedure(v);
   } else if (is_string(v)) {
     char* c_str = c_string(v);
     printf("\"%s\"", c_str);
     free(c_str);
+  } else if (is_array(v)) {
+    fn_uint i;
+    fn_uint size = array_size(v);
+    printf("#[ARRAY:");
+    for (i=0; i<size; i++) {
+      putchar(' ');
+      print_value_internal(array_get(v, i));
+    }
+    putchar(']');
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {

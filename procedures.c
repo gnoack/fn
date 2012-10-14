@@ -258,11 +258,19 @@ void print_apply_stack() {
   }
 }
 
+void apply_stack_push(oop values) {
+  CHECK(apply_stack_pos < MAX_APPLY_STACK, "Stack exhausted.");
+  apply_stack[apply_stack_pos++] = values;
+}
+
+void apply_stack_pop() {
+  apply_stack_pos--;
+}
+
 // Function application.
 // First argument is function, rest are arguments.
 oop apply(oop values) {
-  CHECK(apply_stack_pos < MAX_APPLY_STACK, "Stack exhausted.");
-  apply_stack[apply_stack_pos++] = values;
+  apply_stack_push(values);
   oop fn = car(values);
   oop result;
   if (is_lisp_procedure(fn)) {
@@ -273,7 +281,7 @@ oop apply(oop values) {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = native_fn_apply(fn, cdr(values));
   }
-  apply_stack_pos--;
+  apply_stack_pop();
   return result;
 }
 

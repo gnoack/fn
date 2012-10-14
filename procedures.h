@@ -38,6 +38,10 @@ extern boolean is_compiled_lisp_procedure(oop fn);
 extern oop apply(oop values);
 extern oop fn_code(oop cfn);
 
+// Apply stack.
+extern void apply_stack_push(oop values);
+extern void apply_stack_pop();
+
 extern void init_procedures();
 
 #define __PROCEDURES_H__ 0

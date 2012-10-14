@@ -19,7 +19,7 @@
 // TODO: Unlimited space for interned strings.
 char* interned_strings = NULL;
 
-#define INTERNED_DB_SIZE (16 * 1024)
+#define INTERNED_DB_SIZE (32 * 1024)
 
 boolean matches(const char* a, const char* b) {
   return TO_BOOL(strcmp(a, b) == 0);
