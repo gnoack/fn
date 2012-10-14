@@ -196,7 +196,8 @@ void repl() {
   read_history(histfile);
   rl_completion_entry_function = symbol_completion_entry;
   char* input;
-  compile_system();
+  // TODO: Make this available as a command line flag.
+  // compile_system();
   while (1) {
     input = readline("fn> ");
 
