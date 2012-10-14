@@ -156,15 +156,27 @@ char* get_histfile() {
   return result;
 }
 
+char* symbol_completion_entry(const char* text, int state) {
+  oop result =
+    apply(LIST(lookup_globally(make_symbol("readline-completion-entry")),
+               make_string(text), make_smallint(state)));
+  if (is_nil(result)) {
+    return NULL;
+  } else {
+    return c_string(result);
+  }
+}
+
 void repl() {
   char* histfile = get_histfile();
   read_history(histfile);
+  rl_completion_entry_function = symbol_completion_entry;
   char* input;
   while (1) {
     input = readline("fn> ");
 
     if (input == NULL) {
-      puts("Goodbye.");
+      puts("\nGoodbye.");
       write_history(histfile);
       return;
     }

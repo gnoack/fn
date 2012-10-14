@@ -33,6 +33,14 @@
         (true
          false)))
 
+(defn filter (predicate? l)
+  (if (cons? l)
+      (if (predicate? (first l))
+          (cons (first l)
+                (filter predicate? (rest l)))
+        (filter predicate? (rest l)))
+    '()))
+
 ;; TODO: For speed, write in C using memcmp().
 (defn $mem= (a a-offset b b-offset size)
   (or (= 0 size)
@@ -131,12 +139,15 @@
 			(rest strings))))
       ""))
 
-(defn substring (str begin)
-  (with-asserts ((<= begin (string-size str)))
-    ($make @string
-           (- (string-size str) begin)
-           (+ (%string-offset str) begin)
-           (%string-raw str))))
+(defn substring (str begin &rest args)
+  (let ((end (if (nil? args)
+                 (string-size str)
+               (first args))))
+    (with-asserts ((<= begin end (string-size str)))
+      ($make @string
+             (- end begin)
+             (+ (%string-offset str) begin)
+             (%string-raw str)))))
 
 ;; Number conversions
 (defn digit->int (digit)
@@ -220,5 +231,33 @@
                        (dict-key-value-pairs dict))
                   ", ")
                  "}"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Readline completion.                                           ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; A slightly hacky way to figure out the global environment. :)
+(def $global-env ($mem-get (lambda () 42) 4))
+
+;; Called into from C.  (See REPL implementation.)
+(defn readline-completion-entry (text state)
+  (when (= 0 state)
+    (set! *current-completions*
+          (readline-calculate-completions text)))
+  (if (cons? *current-completions*)
+      (let ((result (first *current-completions*)))
+        (set! *current-completions* (rest *current-completions*))
+        result)
+    nil))
+
+;; TODO: Sort output?
+;; TODO: Also complete macro names.
+;; TODO: Optimize memory usage?
+(defn readline-calculate-completions (text)
+  (let ((names (map (lambda (x) (symbol->string (first x)))
+                    (dict-key-value-pairs $global-env))))
+    (filter (lambda (name)
+              (string-prefix? text name))
+            names)))
 
 )

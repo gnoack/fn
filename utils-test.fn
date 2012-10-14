@@ -1,7 +1,10 @@
 (
 
+;; Lists
 (eq 3 (last '(1 2 3)))
 (eql '(1 2) (all-but-last '(1 2 3)))
+(eql (list 'a 'b 'c)
+     (filter symbol? (list "a" 'a 1 'b 'c 99)))
 
 ;; Progn
 (eq 'result (progn 1 2 3 'result))
@@ -22,7 +25,8 @@
 (string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
 
 (string= "bar" (substring "foobar" 3))
-; (string= "oba" (substring "foobar" 2 5))
+(string= "bar" (substring (substring "foobar" 2) 1))
+(string= "bar" (substring "foobarbaz" 3 6))
 
 (string-prefix? "foo" "foobar")
 (not (string-prefix? "bar" "foobar"))
@@ -63,6 +67,9 @@
 
 (eql (list 'a 'b 'c)
      (reduce-right cons (list 'a 'b 'c) nil))
+
+;; Readline completion.
+
 
 )
 
