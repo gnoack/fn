@@ -38,18 +38,5 @@ void init_symbols() {
   symbols._compiled_procedure = mem_alloc(2);
   gc_register_persistent_ref(&symbols._compiled_procedure);
 
-  symbols._bc_halt = make_symbol("halt");
-  symbols._bc_jump = make_symbol("jump");
-  symbols._bc_jump_if_true = make_symbol("jump-if-true");
-  symbols._bc_load_value = make_symbol("load_value");
-  symbols._bc_load_var = make_symbol("load-var");
-  symbols._bc_write_var = make_symbol("write-var");
-  symbols._bc_load_global_var = make_symbol("load-global-var");
-  symbols._bc_write_global_var = make_symbol("write-global-var");
-  symbols._bc_push = make_symbol("push");
-  symbols._bc_pop = make_symbol("pop");
-  symbols._bc_make_lambda = make_symbol("make-lambda");
-  symbols._bc_call = make_symbol("call");
-  symbols._bc_return = make_symbol("return");
   initialized = YES;
 }

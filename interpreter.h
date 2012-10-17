@@ -34,20 +34,18 @@ extern oop serialize_retptr(interpreter_state_t* state);
 
 
 // Bytecodes
-#define BC_HALT 0
-#define BC_JUMP 1
-#define BC_JUMP_IF_TRUE 2
-#define BC_LOAD_VALUE 3
-#define BC_READ_VAR 4
-#define BC_WRITE_VAR 5
-#define BC_READ_GLOBAL_VAR 6
-#define BC_WRITE_GLOBAL_VAR 7
-#define BC_PUSH 8
-#define BC_POP 9
-#define BC_MAKE_LAMBDA 10
-#define BC_CALL 11
-#define BC_TAIL_CALL 12
-#define BC_RETURN 13
+#define BC_JUMP 0
+#define BC_JUMP_IF_TRUE 1
+#define BC_LOAD_VALUE 2
+#define BC_READ_VAR 3
+#define BC_WRITE_VAR 4
+#define BC_READ_GLOBAL_VAR 5
+#define BC_WRITE_GLOBAL_VAR 6
+#define BC_POP 7
+#define BC_MAKE_LAMBDA 8
+#define BC_CALL 9
+#define BC_TAIL_CALL 10
+#define BC_RETURN 11
 
 #define _INTERPRETER_H_ 0
 #endif  // _INTERPRETER_H_

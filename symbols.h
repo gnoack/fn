@@ -23,22 +23,6 @@ typedef struct {
   oop _procedure;
   oop _native_procedure;
   oop _compiled_procedure;
-
-  // Bytecode.
-  oop _bc_halt;
-  oop _bc_jump;
-  oop _bc_jump_if_true;
-  oop _bc_load_value;
-  oop _bc_load_var;
-  oop _bc_write_var;
-  oop _bc_load_global_var;
-  oop _bc_write_global_var;
-  oop _bc_push;
-  oop _bc_pop;
-  oop _bc_make_lambda;
-  oop _bc_call;
-  oop _bc_return;
-
 } symbols_t;
 
 extern symbols_t symbols;

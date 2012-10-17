@@ -210,15 +210,10 @@ oop interpret(oop frame, oop code) {
     IPRINT("[i] %5lu: ", state.ip);
     unsigned char operation = read_byte(&state);
     switch (operation) {
-    case BC_HALT:
-      IPRINT("halt\n");
-      return NIL;
-    case BC_JUMP: {
-      fn_uint address = read_label_address(&state);
-      IPRINT("jump %lu\n", address);
-      state.ip = address;
+    case BC_JUMP:
+      state.ip = read_label_address(&state);
+      IPRINT("jump %lu\n", state.ip);
       break;
-    }
     case BC_JUMP_IF_TRUE: {
       fn_uint address = read_label_address(&state);
       oop condition = stack_pop();
@@ -278,9 +273,6 @@ oop interpret(oop frame, oop code) {
       IVALUE(value);
       break;
     }
-    case BC_PUSH:
-      CHECK(1==0, "PUSH is deprecated.");
-      break;
     case BC_POP: {
       oop value = stack_pop();
       IPRINT("pop            .oO stack-size=%d, ", stack.size);
@@ -293,8 +285,7 @@ oop interpret(oop frame, oop code) {
       IPRINT("make-lambda %lu ", start_ip);
       IVALUE(lambda_list);
       oop code = LIST(make_smallint(start_ip), state.bytecode, state.oop_lookups);
-      oop value = make_compiled_procedure(lambda_list, code, state.reg_frm);
-      stack_push(value);
+      stack_push(make_compiled_procedure(lambda_list, code, state.reg_frm));
       break;
     }
     case BC_CALL: {
