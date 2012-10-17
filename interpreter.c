@@ -13,8 +13,18 @@
 
 #define MAX_STACK_SIZE 0x4000
 
-#define INTERPRETER_DEBUG 1
+// #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
+
+#ifdef INTERPRETER_DEBUG
+#define DEBUG_CHECK(a,b) CHECK(a,b)
+#define MEM_GET(obj,idx) mem_get((obj),(idx))
+#define MEM_SET(obj,idx,val) mem_get((obj),(idx),(val))
+#else  // INTERPRETER_DEBUG
+#define DEBUG_CHECK(a,b)
+#define MEM_GET(obj,idx) (obj).mem[(idx)]
+#define MEM_SET(obj,idx,val) ((obj).mem[(idx)] = (val))
+#endif  // INTERPRETER_DEBUG
 
 #ifdef INTERPRETER_LOGGING
 #define IPRINT(...) printf(__VA_ARGS__)
@@ -22,7 +32,7 @@
 #else
 #define IPRINT(...)
 #define IVALUE(x)
-#endif  // INTERPRETER_DEBUG
+#endif  // INTERPRETER_LOGGING
 
 typedef struct {
   oop stack[MAX_STACK_SIZE];
@@ -53,26 +63,26 @@ void stack_push(oop value) {
 }
 
 oop stack_peek() {
-  CHECK(stack.size > 0, "Stack empty, can't peek.");
+  DEBUG_CHECK(stack.size > 0, "Stack empty, can't peek.");
   return stack.stack[stack.size - 1];
 }
 
 // Peek at position n from top, 1 being the topmost element.
 oop stack_peek_at(fn_uint n) {
   int idx = stack.size - n;
-  CHECK(idx >= 0, "Can't peek that deep.");
+  DEBUG_CHECK(idx >= 0, "Can't peek that deep.");
   return stack.stack[idx];
 }
 
 oop stack_pop() {
-  CHECK(stack.size > 0, "Stack empty, can't pop.");
+  DEBUG_CHECK(stack.size > 0, "Stack empty, can't pop.");
   stack.size--;
   return stack.stack[stack.size];
 }
 
 // Shrink stack by n elements.
 void stack_shrink(int n) {
-  CHECK(stack.size >= n, "Can't shrink below stack size 0.");
+  DEBUG_CHECK(stack.size >= n, "Can't shrink below stack size 0.");
   stack.size -= n;
 }
 
@@ -101,9 +111,9 @@ void print_stack() {
 // Frame
 oop make_frame(fn_uint argnum, oop next_frame) {
   oop result = mem_alloc(5 + argnum);
-  mem_set(result, 0, symbols._frame);
-  mem_set(result, 1, next_frame);
-  mem_set(result, 2, make_smallint(argnum));
+  MEM_SET(result, 0, symbols._frame);
+  MEM_SET(result, 1, next_frame);
+  MEM_SET(result, 2, make_smallint(argnum));
   return result;
 }
 
@@ -117,22 +127,22 @@ oop make_frame_from_stack(fn_uint argnum, oop next_frame) {
 
 oop nth_frame(oop frame, unsigned int depth) {
   while (depth > 0) {
-    frame = mem_get(frame, 1);  // next_frame
+    frame = MEM_GET(frame, 1);  // next_frame
     depth--;
   }
   return frame;
 }
 
 void set_var(oop frame, unsigned int index, oop value) {
-  CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
-	"Index out of bounds.");
-  mem_set(frame, 3 + index, value);
+  DEBUG_CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
+              "Index out of bounds.");
+  MEM_SET(frame, 3 + index, value);
 }
 
 oop get_var(oop frame, unsigned int index) {
-  CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
-	"Index out of bounds.");
-  return mem_get(frame, 3 + index);
+  DEBUG_CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
+              "Index out of bounds.");
+  return MEM_GET(frame, 3 + index);
 }
 
 
@@ -149,6 +159,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
       values = make_cons(cfn, args);
       env = make_frame_for_application(cfn, args);
     } else {
+      // TODO: Do quick calls with vararg procedures, too.
       fn_uint function_argnum = fn_argnum(cfn);
       env = make_frame_from_stack(function_argnum, fn_env(cfn));
       CHECK(arg_count = function_argnum + 1, "Bad argument number.");
@@ -205,28 +216,24 @@ fn_uint read_index(interpreter_state_t* state) {
 
 // TODO: Only one byte: Will it be enough?
 oop read_oop(interpreter_state_t* state) {
-#ifdef INTERPRETER_DEBUG
-  return mem_get(state->oop_lookups, 2 + read_byte(state));
-#else
-  return state->oop_lookups.mem[2 + read_byte(state)];
-#endif  // INTERPRETER_DEBUG
+  return MEM_GET(state->oop_lookups, 2 + read_byte(state));
 }
 
 oop serialize_retptr(interpreter_state_t* state) {
   oop result = mem_alloc(4);
   // TODO: Type marker?
-  mem_set(result, 0, state->reg_frm);
-  mem_set(result, 1, make_smallint(state->ip));
-  mem_set(result, 2, state->bytecode);
-  mem_set(result, 3, state->oop_lookups);
+  MEM_SET(result, 0, state->reg_frm);
+  MEM_SET(result, 1, make_smallint(state->ip));
+  MEM_SET(result, 2, state->bytecode);
+  MEM_SET(result, 3, state->oop_lookups);
   return result;
 }
 
 void deserialize_retptr(oop retptr, interpreter_state_t* state) {
-  state->reg_frm     = mem_get(retptr, 0);
-  state->ip          = get_smallint(mem_get(retptr, 1));
-  state->bytecode    = mem_get(retptr, 2);
-  state->oop_lookups = mem_get(retptr, 3);
+  state->reg_frm     = MEM_GET(retptr, 0);
+  state->ip          = get_smallint(MEM_GET(retptr, 1));
+  state->bytecode    = MEM_GET(retptr, 2);
+  state->oop_lookups = MEM_GET(retptr, 3);
 }
 
 // Interpreter
