@@ -1,0 +1,51 @@
+A little profiling with time ./repl -t.
+
+Sunday:
+13.645 real -- unoptimized
+13.363 real -- when methods are stored in dictionaries
+13.295 real -- when in compilation, labels are stored in dictionaries
+13.183 real -- after removing maps.fn
+13.194 real -- after switching to open addressing.. (hah!)
+ 2.196 real -- after switching to dframes for frames and dict for global env.
+
+Monday:
+ 1.217 real -- after switching to dictionaries for macro expanders and
+               deleting a couple of unused modules (and tests)
+ 1.069 real -- after destructuring dynamic lambda lists in an optimized way.
+
+The above measurements are all without gcc optimizations.  With -O1,
+the tests run well under 2 seconds, but with -O2 the interpreter
+segfaults.  Maybe I should git bisect on that to see how I introduced
+it.
+
+[ Cheated: 0.400 real -- after fixing the -O2 issue. ]
+
+
+ 0.790 real -- after fixing value_eq to be a lot quicker.
+
+Oct 13, we're back to 1.012 -- why?
+
+
+A little more profiling with
+(dolist (fn meeeh) (with-timer (compile-fn fn)))
+
+Compile time for: (make-assembler, make-byte-stream, assemble)
+Oct 17, with push and pop:                     (579, 521, 375)
+Oct 17, without push after reads:              (516, 454, 327)
+Oct 17, without push after loads:              (495, 434, 304)
+Oct 17, without pop/push around writes:        (495, 430, 301)  -- little improvement.
+Oct 17, without push after calls.              (465, 403, 281)
+Oct 17, without push after make-lambda:        (451, 393, 273)
+Oct 17, without pop before jump-if-true:       (439, 370, 270)
+Oct 17, with inlined compile-sequence:         (415, 346, 253)
+Oct 17, without pop before return:             (406, 339, 247)
+Oct 17, after random refactorings:             (350, 337, 244)  -- make-a. got shorter.
+Oct 17, after quick-calling simple procs       (292, 279, 202)  -- NB (105, 99, 72) with gcc -O3 :)
+Oct 17, after disabling interpreter debug mode (286, 273, 199)  -- Oops.
+Oct 17, after flagging out unneeded checks     (263, 252, 183)
+
+NB -- when disabling the checks in mem_get, mem_set, you go directly to (149, 140, 102)
+   -- we are essentially wasting (114, 112, 81) on bounds checks.
+   -- these checks are there for safety, it will be tricky to get rid of them.
+
+To be continued...
