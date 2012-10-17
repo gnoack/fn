@@ -94,7 +94,6 @@
 (defn compile-lambda ((lambda_ lambda-list &rest body-exprs) environment)
   (with-gensyms (lambda-entry after-lambda)
     `((make-lambda ,lambda-entry ,lambda-list)
-      (push)
       (jump ,after-lambda)
       (label ,lambda-entry)
       ,@(compile-lambda-body body-exprs

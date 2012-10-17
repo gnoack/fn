@@ -58,7 +58,6 @@
      (pcompile '(if x 10 0) %xyz-env))
 
 (eql '((make-lambda lambda-entry-1001 (x))
-       (push)
        (jump after-lambda-1002)
        ; -- this is where the lambda starts
        (label lambda-entry-1001)

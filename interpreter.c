@@ -296,6 +296,7 @@ oop interpret(oop frame, oop code) {
       IVALUE(lambda_list);
       oop code = LIST(make_smallint(start_ip), state.bytecode, state.oop_lookups);
       state.reg_acc = make_compiled_procedure(lambda_list, code, state.reg_frm);
+      stack_push(state.reg_acc);
       break;
     }
     case BC_CALL: {
