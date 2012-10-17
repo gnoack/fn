@@ -135,7 +135,6 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     // Modify the interpreter state.
 
     // Data.
-    state->reg_acc = NIL;  // Just for encapsulation.
     state->reg_frm = env;
 
     // Position.
@@ -145,8 +144,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     state->oop_lookups = caddr(code);
   } else {
     // Call recursively on the C stack.
-    state->reg_acc = apply(values);
-    stack_push(state->reg_acc);
+    stack_push(apply(values));
   }
 }
 
@@ -197,7 +195,6 @@ void deserialize_retptr(oop retptr, interpreter_state_t* state) {
 // Interpreter
 oop interpret(oop frame, oop code) {
   interpreter_state_t state;
-  state.reg_acc = NIL;
   state.reg_frm = frame;
   state.ip = get_smallint(first(code));
   state.bytecode = first(rest(code));
@@ -224,79 +221,80 @@ oop interpret(oop frame, oop code) {
     }
     case BC_JUMP_IF_TRUE: {
       fn_uint address = read_label_address(&state);
-      state.reg_acc = stack_pop();
-      if (value_eq(state.reg_acc, symbols._true)) {
+      oop condition = stack_pop();
+      if (value_eq(condition, symbols._true)) {
         IPRINT("jump-if-true %lu (taken)\n", address);
         state.ip = address;
       } else {
-        CHECK(value_eq(state.reg_acc, symbols._false),
+        CHECK(value_eq(condition, symbols._false),
               "Condition evaluated to non-boolean value.");
         IPRINT("jump-if-true %lu (not taken)\n", address);
       }
       break;
     }
-    case BC_LOAD_VALUE:
-      state.reg_acc = read_oop(&state);
+    case BC_LOAD_VALUE: {
+      oop value = read_oop(&state);
       IPRINT("load-value ");
-      IVALUE(state.reg_acc);
-      stack_push(state.reg_acc);
+      IVALUE(value);
+      stack_push(value);
       break;
+    }
     case BC_READ_VAR: {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
-      state.reg_acc = get_var(frame, index);
+      oop value = get_var(frame, index);
       IPRINT("read-var %lu %lu   .oO ", depth, index);
-      IVALUE(state.reg_acc);
-      stack_push(state.reg_acc);
+      IVALUE(value);
+      stack_push(value);
       break;
     }
     case BC_WRITE_VAR: {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
-      state.reg_acc = stack_peek();
-      set_var(frame, index, state.reg_acc);
+      oop value = stack_peek();
+      set_var(frame, index, value);
       IPRINT("write-var %lu %lu  // ", depth, index);
-      IVALUE(state.reg_acc);
+      IVALUE(value);
       break;
     }
     case BC_READ_GLOBAL_VAR: {
       oop key = read_oop(&state);
-      state.reg_acc = lookup_globally(key);
+      oop value = lookup_globally(key);
       IPRINT("load-global-var ");
       IVALUE(key);
-      stack_push(state.reg_acc);
+      stack_push(value);
       break;
     }
     case BC_WRITE_GLOBAL_VAR: {
       oop key = read_oop(&state);
       // TODO: Make bytecode-level distinction between defining and setting?
-      state.reg_acc = stack_peek();
-      set_globally_oop(key, state.reg_acc);
+      oop value = stack_peek();
+      set_globally_oop(key, value);
       IPRINT("write-global-var ");
       IVALUE(key);
       IPRINT("                 ");
-      IVALUE(state.reg_acc);
+      IVALUE(value);
       break;
     }
     case BC_PUSH:
-      stack_push(state.reg_acc);
-      IPRINT("push           .oO stack-size=%d\n", stack.size);
+      CHECK(1==0, "PUSH is deprecated.");
       break;
-    case BC_POP:
-      state.reg_acc = stack_pop();
+    case BC_POP: {
+      oop value = stack_pop();
       IPRINT("pop            .oO stack-size=%d, ", stack.size);
-      IVALUE(state.reg_acc);
+      IVALUE(value);
       break;
+    }
     case BC_MAKE_LAMBDA: {
       fn_uint start_ip = read_label_address(&state);
       oop lambda_list = read_oop(&state);
       IPRINT("make-lambda %lu ", start_ip);
       IVALUE(lambda_list);
       oop code = LIST(make_smallint(start_ip), state.bytecode, state.oop_lookups);
-      state.reg_acc = make_compiled_procedure(lambda_list, code, state.reg_frm);
-      stack_push(state.reg_acc);
+      oop value = make_compiled_procedure(lambda_list, code, state.reg_frm);
+      stack_push(value);
       break;
     }
     case BC_CALL: {
@@ -321,7 +319,7 @@ oop interpret(oop frame, oop code) {
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
-        return state.reg_acc;
+        return retvalue;
       } else {
         apply_stack_pop();
         stack_push(retvalue);

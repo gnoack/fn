@@ -18,8 +18,7 @@ extern void set_var(oop frame, unsigned int index, oop value);
 extern oop get_var(oop frame, unsigned int index);
 
 typedef struct {
-  // Data.
-  oop reg_acc;
+  // Current frame.
   oop reg_frm;
 
   // Execution point.
