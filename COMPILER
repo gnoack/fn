@@ -1,0 +1,39 @@
+
+The compiler
+============
+
+* translates Lisp to Intermediate language,
+
+
+Intermediate Language
+=====================
+
+* There is only one register, ACC.
+* Values at the Intermediate Language level are pointers, tagged integers etc.
+
+
+
+label [sym]                An entry point in the intermediate code
+jump [sym]                 Jump to label
+jump-if-true [sym]         Jump if accumulator contains the "true" value.
+
+load-value [val]           Loads the given value into ACC.
+
+read-var [n] [m]           Read the m-th argument in the n-th frame from here into ACC.
+write-var [n] [m]          Write.
+
+read-global-var [sym]
+write-global-var [sym]
+
+push                       Push accumulator to stack.
+pop                        Pop accumulator from stack.
+
+make-lambda [sym] [ll]     Create a closure capturing the current environment,
+                           whose code starts at the given label, and
+                           which has the given lambda list.
+
+call [n]                   Take topmost n things from stack and use them to call a function.
+                           The result value of the call will be found in ACC afterwards.
+
+return                     Activate the environment referenced by the current environment.
+                           Jump to the return pointer stored in the old environment.
