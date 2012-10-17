@@ -101,7 +101,12 @@
       (label ,after-lambda))))
 
 (defn compile-lambda-body (exprs environment)
-  `(,@(compile-sequence exprs environment 'tail-call)
+  ;; Only the last expression keeps the tail call property.
+  `(,@(apply append (map (lambda (e) `(,@(compile e environment 'call)
+                                       (pop)))
+                         (all-but-last exprs)))
+    ,@(compile (last exprs) environment 'tail-call)
+    (pop)
     (return)))
 
 (defn compile-def ((def_ symbol value-expr) environment)
@@ -138,14 +143,6 @@
        ((set!)       (compile-set! expr environment))
        (else         (with-asserts ((list? expr))
                        (compile-application expr environment call-style)))))))
-
-(defn compile-sequence (exprs environment call-style)
-  ;; Only the last expression keeps the tail call property.
-  `(,@(apply append (map (lambda (e) `(,@(compile e environment 'call)
-                                       (pop)))
-                         (all-but-last exprs)))
-    ,@(compile (last exprs) environment call-style)
-    (pop)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
