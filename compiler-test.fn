@@ -42,8 +42,7 @@
 (eql '((read-var 0 0)  ; first var
        (load-value 42)
        (load-value 99)
-       (call 3)
-       (push))  ; 2 arguments and one procedure.
+       (call 3))  ; 2 arguments and one procedure.
      (pcompile '(x 42 99) %xyz-env))
 
 (eql '((read-var 0 0)
@@ -69,9 +68,7 @@
        (read-var 1 1)  ; b
        (read-var 1 1)  ; b
        (call 3)  ; 2 arguments and one procedure.
-       (push)
        (tail-call 3)  ; 2 arguments and one procedure.
-       (push)
        (pop)
        (return)
        ;; -- this is where the lambda ends

@@ -76,8 +76,7 @@
              (map (lambda (e)
                     (compile e environment 'call))
                   expr))
-    (,call-style ,(length expr))
-    (push)))
+    (,call-style ,(length expr))))
 
 (defn compile-variable-read (expr environment)
   (send environment 'generate-read expr))

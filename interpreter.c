@@ -147,6 +147,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
   } else {
     // Call recursively on the C stack.
     state->reg_acc = apply(values);
+    stack_push(state->reg_acc);
   }
 }
 
@@ -321,6 +322,7 @@ oop interpret(oop frame, oop code) {
         return state.reg_acc;
       } else {
         apply_stack_pop();
+        stack_push(state.reg_acc);
         deserialize_retptr(retptr, &state);
       }
       // TODO: Restore previous state if reg_frm[2] != nil.
