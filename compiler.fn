@@ -109,9 +109,7 @@
 
 (defn compile-def ((def_ symbol value-expr) environment)
   `(,@(compile value-expr environment 'call)
-    (pop)
-    ,@(send global-env 'generate-write symbol)
-    (push)))
+    ,@(send global-env 'generate-write symbol)))
 
 ;; Transforming
 (defn transform-let->lambda ((let_ let-clauses &rest body-exprs))
@@ -125,9 +123,7 @@
 
 (defn compile-set! ((set!_ symbol value-expr) environment)
   `(,@(compile value-expr environment 'call)
-    (pop)
-    ,@(send environment 'generate-write symbol)
-    (push)))
+    ,@(send environment 'generate-write symbol)))
 
 (defn compile (expr environment call-style)
   (cond

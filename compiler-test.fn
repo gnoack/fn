@@ -79,9 +79,7 @@
      (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
 
 (eql '((load-value 5)
-       (pop)
-       (write-global-var foo)
-       (push))
+       (write-global-var foo))
      (pcompile '(def foo 5) %xyz-env))
 
 (eql '((lambda (x y) (+ x y)) 1 2)
@@ -91,9 +89,7 @@
      (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
 (eql '((load-value 42)
-       (pop)
-       (write-global-var meaning-of-life)
-       (push))
+       (write-global-var meaning-of-life))
      (pcompile '(set! meaning-of-life 42) global-env))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

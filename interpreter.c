@@ -50,6 +50,11 @@ void stack_push(oop value) {
   stack.size++;
 }
 
+oop stack_peek() {
+  CHECK(stack.size > 0, "Stack empty, can't peek.");
+  return stack.stack[stack.size - 1];
+}
+
 oop stack_pop() {
   CHECK(stack.size > 0, "Stack empty, can't pop.");
   stack.size--;
@@ -249,6 +254,7 @@ oop interpret(oop frame, oop code) {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
+      state.reg_acc = stack_peek();
       set_var(frame, index, state.reg_acc);
       IPRINT("write-var %lu %lu  // ", depth, index);
       IVALUE(state.reg_acc);
@@ -265,6 +271,7 @@ oop interpret(oop frame, oop code) {
     case BC_WRITE_GLOBAL_VAR: {
       oop key = read_oop(&state);
       // TODO: Make bytecode-level distinction between defining and setting?
+      state.reg_acc = stack_peek();
       set_globally_oop(key, state.reg_acc);
       IPRINT("write-global-var ");
       IVALUE(key);
