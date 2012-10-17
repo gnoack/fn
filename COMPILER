@@ -2,38 +2,61 @@
 The compiler
 ============
 
-* translates Lisp to Intermediate language,
+* The compiler translates Lisp to an intermediate S-expression language,
+* The assembler translates the intermediate S-exp language to bytecode.
+* The bytecode and the intermediate language are very simple to map to
+  each other, with the exception that in bytecode, jump target indexes
+  are already resolved and the oop lookup table is constructed.
+
+Bytecode / Intermediate language
+================================
+
+* There are no registers, the language is stack-based.
+* A piece of code to jump into is represented as list of three items:
+  (position, bytecode, oop-lookup-table)
+
+  - bytecode is a primitive memory buffer that contains the byte code
+  - position is a smallint, an index into the bytecode
+  - oop-lookup-table is used whenever a literal Lisp value is
+    referenced in the bytecode.  These values can't be referenced from
+    within the bytecode itself because the primitive memory region
+    doesn't support oop references.
 
 
-Intermediate Language
-=====================
+label [sym]                An entry point in the intermediate code.
+jump [sym]                 Unconditionally jump to label.
+jump-if-true [sym]         Pop top of stack, jump if contains the "true" value.
+                           Otherwise, expect "false" value.
 
-* There is only one register, ACC.
-* Values at the Intermediate Language level are pointers, tagged integers etc.
+load-value [val]           Loads the given value and pushes it on the stack.
+                           This literal value is looked up in the oop-lookup table.
 
+read-var [n] [m]           Read the m-th argument in the n-th frame from here
+                           and push it to the stack.
+write-var [n] [m]          Write (in position as above),
+                           also push the written item to the stack.
 
-
-label [sym]                An entry point in the intermediate code
-jump [sym]                 Jump to label
-jump-if-true [sym]         Jump if accumulator contains the "true" value.
-
-load-value [val]           Loads the given value into ACC.
-
-read-var [n] [m]           Read the m-th argument in the n-th frame from here into ACC.
-write-var [n] [m]          Write.
-
-read-global-var [sym]
+read-global-var [sym]      Like read-var, write-var.
 write-global-var [sym]
 
-push                       Push accumulator to stack.
-pop                        Pop accumulator from stack.
+pop                        Remove one item from the stack.
+                           This is only used to discard the top of the stack now,
+                           the result is not saved anywhere.  (TODO: Rename?)
+                           Note: push is not needed any more.
 
 make-lambda [sym] [ll]     Create a closure capturing the current environment,
                            whose code starts at the given label, and
                            which has the given lambda list.
+                           `ll': looked up in oop-lookup-table
+                           `sym': resolved at compile time to a bytecode position.
 
-call [n]                   Take topmost n things from stack and use them to call a function.
-                           The result value of the call will be found in ACC afterwards.
+call [n]                   Take topmost n things from stack and use them to call
+                           a function.  The procedure needs to be deepest in the
+                           stack, the other items on the stack are arguments.
+                           After the call returns, the result value of the call
+                           will have been pushed on the stack.
+tail-call [n]              Same, but skips the current frame when returning.
 
-return                     Activate the environment referenced by the current environment.
-                           Jump to the return pointer stored in the old environment.
+return                     Pop result value from stack.
+                           Restore interpreter state before last call instruction.
+                           Push result value to stack.
