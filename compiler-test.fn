@@ -95,7 +95,8 @@
 (eql '((load-value 5)
        (push)
        (pop)
-       (write-global-var foo))
+       (write-global-var foo)
+       (push))
      (pcompile '(def foo 5) %xyz-env))
 
 (eql '((lambda (x y) (+ x y)) 1 2)
@@ -166,5 +167,9 @@
   (set! map (compile-fn map))
   (eql '(97 98 99)
        (map char->num (list #\a #\b #\c))))
+
+(progn
+  ((compile-fn (lambda (x) "xx" (def __just_a_test x))) 99)
+  (= 99 __just_a_test))
 
 )
