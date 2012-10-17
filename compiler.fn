@@ -83,8 +83,7 @@
   (send environment 'generate-read expr))
 
 (defn compile-literal (expr environment)
-  `((load-value ,expr)
-    (push)))
+  `((load-value ,expr)))
 
 (defn vars-from-ll (lambda-list)
   (cond ((nil? lambda-list) '())

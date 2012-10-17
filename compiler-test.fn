@@ -30,23 +30,18 @@
    (set! global-label-counter 1000)
    (compile expr env 'call)))
 
-(eql '((load-value 123)
-       (push))
+(eql '((load-value 123))
      (pcompile 123 global-env))
 
-(eql '((load-value #\a)
-       (push))
+(eql '((load-value #\a))
      (pcompile #\a global-env))
 
-(eql '((load-value (+ 1 2 3))
-       (push))
+(eql '((load-value (+ 1 2 3)))
      (pcompile '(quote (+ 1 2 3)) global-env))
 
 (eql '((read-var 0 0)  ; first var
        (load-value 42)
-       (push)
        (load-value 99)
-       (push)
        (call 3)
        (push))  ; 2 arguments and one procedure.
      (pcompile '(x 42 99) %xyz-env))
@@ -56,12 +51,10 @@
        (jump-if-true true-branch-1001)
        ; False branch
        (load-value 0)
-       (push)
        (jump after-if-1002)
        ; True branch
        (label true-branch-1001)
        (load-value 10)
-       (push)
        (label after-if-1002))
      (pcompile '(if x 10 0) %xyz-env))
 
@@ -86,7 +79,6 @@
      (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
 
 (eql '((load-value 5)
-       (push)
        (pop)
        (write-global-var foo)
        (push))
@@ -99,7 +91,6 @@
      (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
 (eql '((load-value 42)
-       (push)
        (pop)
        (write-global-var meaning-of-life)
        (push))

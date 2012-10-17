@@ -233,6 +233,7 @@ oop interpret(oop frame, oop code) {
       state.reg_acc = read_oop(&state);
       IPRINT("load-value ");
       IVALUE(state.reg_acc);
+      stack_push(state.reg_acc);
       break;
     case BC_READ_VAR: {
       fn_uint depth = read_index(&state);
