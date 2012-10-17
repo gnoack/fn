@@ -196,8 +196,6 @@ void repl() {
   read_history(histfile);
   rl_completion_entry_function = symbol_completion_entry;
   char* input;
-  // TODO: Make this available as a command line flag.
-  // compile_system();
   while (1) {
     input = readline("fn> ");
 
@@ -220,9 +218,28 @@ void repl() {
   }
 }
 
+boolean test_arg = NO;
+boolean compile_arg = NO;
+
+void parse_args(int argc, char* argv[]) {
+  int i;
+  for (i=1; i<argc; i++) {
+    if (strcmp(argv[i], "-t") == 0) {
+      test_arg = YES;
+    }
+    if (strcmp(argv[i], "-c") == 0) {
+      compile_arg = YES;
+    }
+  }
+}
+
 int main(int argc, char* argv[]) {
   init();
-  if (argc <= 1 || strcmp(argv[1], "-t")) {
+  parse_args(argc, argv);
+  if (compile_arg) {
+    compile_system();
+  }
+  if (test_arg == NO) {
     puts("FN " __DATE__ ".");
     repl();
     exit(0);
