@@ -61,7 +61,6 @@
                   environment call-style)
   (with-gensyms (true-branch after-if)
     `(,@(compile condition-expr environment 'call)
-      (pop)
       (jump-if-true ,true-branch)
       ,@(compile alternative-expr environment call-style)
       (jump ,after-if)

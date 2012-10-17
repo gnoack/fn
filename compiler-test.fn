@@ -46,7 +46,6 @@
      (pcompile '(x 42 99) %xyz-env))
 
 (eql '((read-var 0 0)
-       (pop)
        (jump-if-true true-branch-1001)
        ; False branch
        (load-value 0)

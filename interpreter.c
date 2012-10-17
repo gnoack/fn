@@ -225,6 +225,7 @@ oop interpret(oop frame, oop code) {
     }
     case BC_JUMP_IF_TRUE: {
       fn_uint address = read_label_address(&state);
+      state.reg_acc = stack_pop();
       if (value_eq(state.reg_acc, symbols._true)) {
         IPRINT("jump-if-true %lu (taken)\n", address);
         state.ip = address;
