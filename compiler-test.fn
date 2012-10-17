@@ -43,7 +43,6 @@
      (pcompile '(quote (+ 1 2 3)) global-env))
 
 (eql '((read-var 0 0)  ; first var
-       (push)
        (load-value 42)
        (push)
        (load-value 99)
@@ -53,7 +52,6 @@
      (pcompile '(x 42 99) %xyz-env))
 
 (eql '((read-var 0 0)
-       (push)
        (pop)
        (jump-if-true true-branch-1001)
        ; False branch
@@ -73,15 +71,10 @@
        ; -- this is where the lambda starts
        (label lambda-entry-1001)
        (read-global-var +)
-       (push)
        (read-var 0 0)  ; x
-       (push)
        (read-global-var +)
-       (push)
        (read-var 1 1)  ; b
-       (push)
        (read-var 1 1)  ; b
-       (push)
        (call 3)  ; 2 arguments and one procedure.
        (push)
        (tail-call 3)  ; 2 arguments and one procedure.
@@ -111,18 +104,6 @@
        (write-global-var meaning-of-life)
        (push))
      (pcompile '(set! meaning-of-life 42) global-env))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Optimizer tests                                         ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Optimize [(push) (pop)] --> []
-(eql '((read-var 0 0)
-       (call 1))
-     (optimize '((read-var 0 0)
-                 (push)
-                 (pop)
-                 (call 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests for byte stream.                                  ;;;

@@ -241,6 +241,7 @@ oop interpret(oop frame, oop code) {
       state.reg_acc = get_var(frame, index);
       IPRINT("read-var %lu %lu   .oO ", depth, index);
       IVALUE(state.reg_acc);
+      stack_push(state.reg_acc);
       break;
     }
     case BC_WRITE_VAR: {
@@ -257,6 +258,7 @@ oop interpret(oop frame, oop code) {
       state.reg_acc = lookup_globally(key);
       IPRINT("load-global-var ");
       IVALUE(key);
+      stack_push(state.reg_acc);
       break;
     }
     case BC_WRITE_GLOBAL_VAR: {

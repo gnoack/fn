@@ -80,8 +80,7 @@
     (push)))
 
 (defn compile-variable-read (expr environment)
-  `(,@(send environment 'generate-read expr)
-    (push)))
+  (send environment 'generate-read expr))
 
 (defn compile-literal (expr environment)
   `((load-value ,expr)
@@ -156,28 +155,6 @@
     ,@(compile (last exprs) environment call-style)
     (pop)))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Optimizer                                                     ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn longer-eq-than (n list)
-  (cond ((= n 0)     true)
-        ((nil? list) false)
-        (true        (longer-eq-than (- n 1) (rest list)))))
-
-(defn optimize-push-pop (commands)
-  (cond ((and (longer-eq-than 2 commands)
-               (eql '(push) (first commands))
-               (eql '(pop) (second commands)))
-         ;; Skip those two commands
-         (rest (rest commands)))
-        ((nil? commands) '())
-        (true
-         (cons (first commands) (optimize-push-pop (rest commands))))))
-
-(defn optimize (commands)
-  (optimize-push-pop commands))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Assembler                                                     ;;;
@@ -310,8 +287,7 @@
         (make-compiled-procedure
          (fn-name fn)
          (fn-lambda-list fn)
-         (assemble (optimize
-                    (compile-lambda-body (fn-body fn) env-in-body)))
+         (assemble (compile-lambda-body (fn-body fn) env-in-body))
          nil))
     (progn
       ;; TODO: This is a hack to make compiling by hand convenient.
@@ -330,5 +306,7 @@
 (defn uncompiled-functions ()
   (map first (filter (lambda (kv) (compilable? (rest kv)))
                      (dict-key-value-pairs $global-env))))
+
+(def meeeh (list make-assembler make-byte-stream assemble))
 
 )
