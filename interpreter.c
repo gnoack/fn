@@ -117,7 +117,6 @@ oop get_var(oop frame, unsigned int index) {
 // the bytecode interpreter state and letting the interpreter do it.
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
-  // TODO: Stack traces for procedures executed like this.
   oop values = stack_pop_list(arg_count);
   IPRINT("call %lu         .oO ", arg_count);
   IVALUE(values);
@@ -328,7 +327,6 @@ oop interpret(oop frame, oop code) {
         stack_push(retvalue);
         deserialize_retptr(retptr, &state);
       }
-      // TODO: Restore previous state if reg_frm[2] != nil.
       break;
     default:
       printf("Fatal: Unknown byte code!\n");
