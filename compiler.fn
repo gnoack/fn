@@ -106,7 +106,6 @@
                                        (pop)))
                          (all-but-last exprs)))
     ,@(compile (last exprs) environment 'tail-call)
-    (pop)
     (return)))
 
 (defn compile-def ((def_ symbol value-expr) environment)

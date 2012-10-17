@@ -312,6 +312,7 @@ oop interpret(oop frame, oop code) {
     }
     case BC_RETURN:
       IPRINT("return\n");
+      oop retvalue = stack_pop();
       oop retptr = stack_pop();
       if(is_nil(retptr)) {
         #ifdef INTERPRETER_DEBUG
@@ -324,7 +325,7 @@ oop interpret(oop frame, oop code) {
         return state.reg_acc;
       } else {
         apply_stack_pop();
-        stack_push(state.reg_acc);
+        stack_push(retvalue);
         deserialize_retptr(retptr, &state);
       }
       // TODO: Restore previous state if reg_frm[2] != nil.

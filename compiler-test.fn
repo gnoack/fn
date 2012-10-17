@@ -67,7 +67,6 @@
        (read-var 1 1)  ; b
        (call 3)  ; 2 arguments and one procedure.
        (tail-call 3)  ; 2 arguments and one procedure.
-       (pop)
        (return)
        ;; -- this is where the lambda ends
        (label after-lambda-1002))
