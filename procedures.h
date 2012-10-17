@@ -37,6 +37,9 @@ extern oop make_frame_for_application(oop cfn, oop args);
 extern boolean is_compiled_lisp_procedure(oop fn);
 extern oop apply(oop values);
 extern oop fn_code(oop cfn);
+extern oop fn_env(oop fn);
+extern fn_uint fn_argnum(oop fn);
+extern boolean fn_nested_args(oop fn);
 
 // Apply stack.
 extern void apply_stack_push(oop values);

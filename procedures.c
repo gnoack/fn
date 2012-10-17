@@ -58,7 +58,8 @@ oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
 oop fn_code(oop fn) { return mem_get(fn, 3); }
 oop fn_env(oop fn) { return mem_get(fn, 4); }
-fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 5)); }
+fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 5)) >> 1; }
+boolean fn_nested_args(oop fn) { return TO_BOOL(get_smallint(mem_get(fn, 5)) & 1); }
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {
@@ -107,6 +108,8 @@ oop procedure_set_name(oop fn, oop name) {
 // Lambda list destructuring.
 // TODO: Remove duplication between destructuring functions.
 
+// Returns twice the number of variables in the lambda list,
+// plus 1, if lambda list was nested or had varargs (not flat),
 fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
@@ -116,15 +119,15 @@ fn_uint num_vars_in_ll(oop ll) {
         ll = cdr(ll);
         CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
         CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
-        count++;
+        count = (count + 2) | 1;
         ll = cdr(ll);
         CHECKV(is_nil(ll), ll, "Need only one symbol after &rest.");
         return count;
       } else {
-        count++;
+        count += 2;
       }
     } else if (is_cons(item)) {
-      count += num_vars_in_ll(item);
+      count = (count + num_vars_in_ll(item)) | 1;
     }
     ll = cdr(ll);
   }

@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "cons.h"
 #include "eval.h"  // TODO: Break dependency to lookup_globally().
 #include "memory.h"
@@ -11,7 +13,7 @@
 
 #define MAX_STACK_SIZE 0x4000
 
-// #define INTERPRETER_DEBUG 1
+#define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
 
 #ifdef INTERPRETER_LOGGING
@@ -55,10 +57,23 @@ oop stack_peek() {
   return stack.stack[stack.size - 1];
 }
 
+// Peek at position n from top, 1 being the topmost element.
+oop stack_peek_at(fn_uint n) {
+  int idx = stack.size - n;
+  CHECK(idx >= 0, "Can't peek that deep.");
+  return stack.stack[idx];
+}
+
 oop stack_pop() {
   CHECK(stack.size > 0, "Stack empty, can't pop.");
   stack.size--;
   return stack.stack[stack.size];
+}
+
+// Shrink stack by n elements.
+void stack_shrink(int n) {
+  CHECK(stack.size >= n, "Can't shrink below stack size 0.");
+  stack.size -= n;
 }
 
 // Convenience function to pop n elements from the stack and make them
@@ -84,11 +99,19 @@ void print_stack() {
 
 
 // Frame
-oop make_frame(unsigned int argnum, oop next_frame) {
+oop make_frame(fn_uint argnum, oop next_frame) {
   oop result = mem_alloc(5 + argnum);
   mem_set(result, 0, symbols._frame);
   mem_set(result, 1, next_frame);
   mem_set(result, 2, make_smallint(argnum));
+  return result;
+}
+
+oop make_frame_from_stack(fn_uint argnum, oop next_frame) {
+  oop result = make_frame(argnum, next_frame);
+  memcpy(&(result.mem[3]),
+         &(stack.stack[stack.size - argnum]),
+         sizeof(oop) * argnum);
   return result;
 }
 
@@ -117,19 +140,30 @@ oop get_var(oop frame, unsigned int index) {
 // the bytecode interpreter state and letting the interpreter do it.
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
-  oop values = stack_pop_list(arg_count);
-  IPRINT("call %lu         .oO ", arg_count);
-  IVALUE(values);
-  oop cfn = car(values);
+  oop cfn = stack_peek_at(arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
-    oop args = cdr(values);
-    oop env = make_frame_for_application(cfn, args);
+    oop values, env;
+    if (fn_nested_args(cfn)) {
+      oop args = stack_pop_list(arg_count - 1);
+      stack_shrink(1);
+      values = make_cons(cfn, args);
+      env = make_frame_for_application(cfn, args);
+    } else {
+      fn_uint function_argnum = fn_argnum(cfn);
+      env = make_frame_from_stack(function_argnum, fn_env(cfn));
+      CHECK(arg_count = function_argnum + 1, "Bad argument number.");
+      stack_shrink(arg_count);
+      values = make_cons(cfn, env);  // XXX: Crappy, but just for debugging.
+    }
 
     if (tailcall == NO) {
       stack_push(serialize_retptr(state));
     } else {
       apply_stack_pop();
     }
+
+    IPRINT("call %lu         .oO ", arg_count);
+    IVALUE(values);
     apply_stack_push(values);
 
     // Modify the interpreter state.
@@ -144,6 +178,9 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     state->oop_lookups = caddr(code);
   } else {
     // Call recursively on the C stack.
+    oop values = stack_pop_list(arg_count);
+    IPRINT("call %lu         .oO ", arg_count);
+    IVALUE(values);
     stack_push(apply(values));
   }
 }

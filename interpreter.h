@@ -10,8 +10,7 @@ extern void stack_push(oop value);
 extern oop stack_pop();
 
 // Frame
-extern oop make_frame(unsigned int argnum,
-                      oop next_frame);
+extern oop make_frame(fn_uint argnum, oop next_frame);
 
 extern void set_var(oop frame, unsigned int index, oop value);
 
