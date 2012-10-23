@@ -12,6 +12,10 @@
 
 #include "procedures.h"
 
+#define MAX_NATIVE_PROCEDURES 42
+function native_procedures[MAX_NATIVE_PROCEDURES];
+fn_uint next_native_procedure = 0;
+
 // Count variables in a lambda list and do basic syntax checks (forward decl).
 fn_uint num_vars_in_ll(oop ll);
 
@@ -45,10 +49,15 @@ oop make_compiled_procedure(oop lambda_list, oop code, oop env) {
 
 // Native procedures
 oop make_native_procedure(function c_function) {
+  fn_uint index = next_native_procedure;
+  CHECK(index < MAX_NATIVE_PROCEDURES, "Too many native functions registered.");
+  native_procedures[index] = c_function;
+  next_native_procedure++;
+
   oop result = mem_alloc(3);
   mem_set(result, 0, symbols._native_procedure);
   mem_set(result, 1, NIL);  // Name.
-  mem_set(result, 2, make_smallint((fn_uint) c_function));
+  mem_set(result, 2, make_smallint(index));
   return result;
 }
 
@@ -63,7 +72,7 @@ boolean fn_nested_args(oop fn) { return TO_BOOL(get_smallint(mem_get(fn, 5)) & 1
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {
-  return (function)(get_smallint(mem_get(fn, 2)));
+  return native_procedures[get_smallint(mem_get(fn, 2))];
 }
 
 
