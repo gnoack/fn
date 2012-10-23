@@ -16,7 +16,7 @@ fn_uint char_start = 0xcccc0000;
 
 oop make_smallint(fn_uint i) {
   oop a;
-  a.smallint = (i << 1) | 1L;
+  a.smallint = (i << 1) | 1;
   CHECK(a.smallint >> 1 == i, "Integer doesn't fit into smallint.");
   CHECKV(is_smallint(a), a, "Couldn't produce a smallint.");
   return a;
