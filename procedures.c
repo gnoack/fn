@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 
+#include "gc.h"
 #include "data.h"
 #include "value.h"
 #include "cons.h"
@@ -262,11 +263,10 @@ int apply_stack_pos = 0;
  * it's better to only do it when you're crashing anyway. :)
  */
 void print_apply_stack() {
-  int i = apply_stack_pos - 1;
-  while (i >= 0) {
+  int i;
+  for (i=apply_stack_pos-1; i>=0; i--) {
     printf("%3d ", i);
     print_value(apply_stack[i]);
-    i--;
   }
 }
 
@@ -297,6 +297,14 @@ oop apply(oop values) {
   return result;
 }
 
+void enumerate_apply_stack_roots(void (*accept)(oop* place)) {
+  int i;
+  for (i=0; i<apply_stack_pos; i++) {
+    accept(&apply_stack[i]);
+  }
+}
+
 void init_procedures() {
   print_stack_frame = print_apply_stack;
+  gc_register_persistent_refs(enumerate_apply_stack_roots);
 }

@@ -46,6 +46,10 @@ oop lookup_globally(oop key) {
   return dict_get(global_env, key);
 }
 
+void enumerate_gc_roots(void (*accept)(oop* place)) {
+  accept(&global_env);
+}
+
 void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
@@ -61,6 +65,7 @@ void init_eval() {
   register_globally("@procedure", symbols._procedure);
   register_globally("@native-procedure", symbols._native_procedure);
   register_globally("@compiled-procedure", symbols._compiled_procedure);
+  gc_register_persistent_refs(enumerate_gc_roots);
 }
 
 // Evaluation.
@@ -201,5 +206,5 @@ void load_decls(oop decls) {
 
     decls = cdr(decls);
   }
-  global_env = gc_run(global_env);
+  gc_run();
 }

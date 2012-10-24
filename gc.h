@@ -12,14 +12,17 @@ extern void init_gc();
 extern void run_gc_soon();
 
 /*
- * Register a reference to be updated
+ * For registering references to be updated
  * if the referenced object has been moved.
  */
-extern
-void gc_register_persistent_ref(oop* place);
+typedef void (*enumerator_t)(void (*accept)(oop* ref));
 
 extern
-oop gc_run(oop root);
+void gc_register_persistent_refs(enumerator_t enumerator);
+
+extern
+void gc_run();
+
 
 #define _GC_H_ 0
 #endif  // _GC_H_

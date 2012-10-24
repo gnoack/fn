@@ -320,32 +320,36 @@ void primitive_memory_region_init(fn_uint size) {
 }
 
 
+// Forward declaration.
+void traverse_object_graph(oop current);
+
 /*
  * Persistent references are references in C code that need to be
- * updated when objects move in a GC run.
+ * updated when objects move in a GC run.  A persistent ref enumerator
+ * is a function that's calling another function for each place where
+ * an oop is referenced from C.
  */
 
-#define MAX_PERSISTENT_REF_COUNT 8
-fn_uint persistent_ref_count;
-oop** persistent_refs;
+#define MAX_ENUMERATOR_COUNT 8
+fn_uint enumerator_count = 0;
+enumerator_t enumerators[MAX_ENUMERATOR_COUNT];
 
-void persistent_refs_init() {
-  persistent_refs = malloc(MAX_PERSISTENT_REF_COUNT * sizeof(oop*));
-  persistent_ref_count = 0;
+void gc_register_persistent_refs(enumerator_t enumerator) {
+  CHECK(enumerator_count < MAX_ENUMERATOR_COUNT,
+        "Too many persistent ref enumerators.");
+  enumerators[enumerator_count] = enumerator;
+  enumerator_count++;
 }
 
-void gc_register_persistent_ref(oop* place) {
-  CHECK(persistent_ref_count < MAX_PERSISTENT_REF_COUNT,
-	"Too many persistent references.");
-  persistent_refs[persistent_ref_count] = place;
-  persistent_ref_count++;
+void traverse_object_in_place(oop* place) {
+  traverse_object_graph(*place);
+  *place = region(*place)->update(*place);
 }
 
-void persistent_refs_update() {
+void traverse_persistent_refs() {
   fn_uint i;
-  for (i = 0; i < persistent_ref_count; i++) {
-    oop* place = persistent_refs[i];
-    *place = region(*place)->update(*place);
+  for (i=0; i<enumerator_count; i++) {
+    enumerators[i](traverse_object_in_place);
   }
 }
 
@@ -393,7 +397,6 @@ void init_gc() {
   object_region_init(1 << 24);  // TODO: Enough?
   primitive_memory_region_init(1 << 18);  // TODO: Enough?
   immediate_region_init();
-  persistent_refs_init();
 }
 
 // Decide whether to do the garbage collection at all.
@@ -413,9 +416,9 @@ boolean should_skip_gc() {
   oop pointered_half_space_sanity_check(half_space* space);
 #endif  // GC_DEBUG
 
-oop gc_run(oop root) {
+void gc_run() {
   if (should_skip_gc()) {
-    return root;
+    return;
   }
   #ifdef GC_LOGGING
   half_space_print_fill(&object_memory.current, "object before");
@@ -429,14 +432,11 @@ oop gc_run(oop root) {
   immediate_region.on_gc_start();
   object_region.on_gc_start();
   // Traverse roots
-  traverse_object_graph(root);
-  oop result = region(root)->update(root);
+  traverse_persistent_refs();
   // Tell regions to update all refs.
   primitive_memory_region.update_all_refs();
   immediate_region.update_all_refs();
   object_region.update_all_refs();
-  // Update persistent references.  ("More roots".)
-  persistent_refs_update();
   // Tell regions that the collection has finished.
   primitive_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
@@ -449,7 +449,6 @@ oop gc_run(oop root) {
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&primitive_memory.current);
   #endif  // GC_DEBUG
-  return result;
 }
 
 

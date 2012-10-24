@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "gc.h"
 #include "memory.h"
 #include "cons.h"
 #include "value.h"
@@ -62,10 +63,15 @@ unsigned int length_int(oop list) {
 oop the_end_marker;
 boolean initialized_marker = NO;
 
+void enumerate_end_marker_root(void (*accept)(oop* place)) {
+  accept(&the_end_marker);
+}
+
 extern
 oop end_marker() {
   if (!initialized_marker) {
     the_end_marker = make_symbol("hard to guess");
+    gc_register_persistent_refs(enumerate_end_marker_root);
     initialized_marker = YES;
   }
   return the_end_marker;

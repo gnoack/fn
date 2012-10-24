@@ -121,7 +121,7 @@ void run_lisp_tests(oop tests) {
 
     tests = cdr(tests);
   }
-  global_env = gc_run(global_env);
+  gc_run();
 }
 
 void init() {
@@ -184,7 +184,7 @@ void compile_system() {
 
     eval_global(LIST(make_symbol("c!"), symbol));
     
-    global_env = gc_run(global_env);
+    gc_run();
     statusidx = (statusidx + 1) & 3;
   }
   printf("\rCompiling done.                                \n");
@@ -211,7 +211,7 @@ void repl() {
     print_value(eval_global(sexpr));
     
     // GC if needed.
-    global_env = gc_run(global_env);
+    gc_run();
 
     free(input);
   }

@@ -6,6 +6,29 @@
 
 symbols_t symbols;
 
+void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
+  // Symbols.
+  accept(&symbols._if);
+  accept(&symbols._def);
+  accept(&symbols._lambda);
+  accept(&symbols._let);
+  accept(&symbols._true);
+  accept(&symbols._false);
+  accept(&symbols._quote);
+  accept(&symbols._rest);
+  accept(&symbols._macroexpand);
+  accept(&symbols._set);
+  // Types.
+  accept(&symbols._array);
+  accept(&symbols._cons);
+  accept(&symbols._dict);
+  accept(&symbols._frame);
+  accept(&symbols._string);
+  accept(&symbols._procedure);
+  accept(&symbols._native_procedure);
+  accept(&symbols._compiled_procedure);
+}
+
 void init_symbols() {
   static boolean initialized = NO;
   if (initialized) return;
@@ -22,21 +45,14 @@ void init_symbols() {
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.
   symbols._array = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._array);
   symbols._cons = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._cons);
   symbols._dict = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._dict);
   symbols._frame = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._frame);
   symbols._string = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._string);
   symbols._procedure = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._procedure);
   symbols._native_procedure = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._native_procedure);
   symbols._compiled_procedure = mem_alloc(2);
-  gc_register_persistent_ref(&symbols._compiled_procedure);
 
+  gc_register_persistent_refs(symbols_enumerate_oop_places);
   initialized = YES;
 }

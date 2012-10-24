@@ -1,6 +1,7 @@
 
 #include <string.h>
 
+#include "gc.h"
 #include "cons.h"
 #include "eval.h"  // TODO: Break dependency to lookup_globally().
 #include "memory.h"
@@ -41,12 +42,21 @@ typedef struct {
 
 stack_t stack;
 
+void enumerate_interpreter_roots(void (*accept)(oop* place)) {
+  // TODO: Also enumerate roots in running process?
+  int i;
+  for (i=0; i<stack.size; i++) {
+    accept(&stack.stack[i]);
+  }
+}
+
 void init_interpreter() {
   int i;
   for (i=0; i<MAX_STACK_SIZE; i++) {
     stack.stack[i] = NIL;
   }
   stack.size = 0;
+  gc_register_persistent_refs(enumerate_interpreter_roots);
 }
 
 // Stack
