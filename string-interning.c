@@ -13,9 +13,6 @@
  *   * Interning a string.  (TODO: Could be improved much.)
  */
 
-// TODO: Capability to iterate over interned strings (for readline).
-//  See http://cnswww.cns.cwru.edu/php/chet/readline/readline.html#SEC44
-
 // TODO: Unlimited space for interned strings.
 char* interned_strings = NULL;
 

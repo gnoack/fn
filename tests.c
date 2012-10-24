@@ -25,7 +25,6 @@
 #include "cons-test.h"
 #include "data-test.h"
 #include "dispatcher-test.h"
-#include "gc-test.h"
 #include "interpreter-test.h"
 #include "macros-test.h"
 #include "memory-test.h"
@@ -246,7 +245,6 @@ int main(int argc, char* argv[]) {
   }
   printf("Test execution:\n");
   /* Register tests here. */
-  gc_tests();
   interpreter_tests();
   cons_tests();
   interning_tests();

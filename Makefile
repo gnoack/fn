@@ -35,7 +35,6 @@ TESTOBJECTS = \
 	data-test.o \
 	dispatcher-test.o \
 	eval-test.o \
-	gc-test.o \
 	interpreter-test.o \
 	lang-test.o \
 	macros-test.o \
