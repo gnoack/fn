@@ -29,5 +29,7 @@ extern symbols_t symbols;
 
 extern void init_symbols();
 
+extern oop make_or_lookup_symbol(const char* str);
+
 #define __SYMBOLS_H__ 0
 #endif // __SYMBOLS_H__

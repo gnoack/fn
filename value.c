@@ -7,7 +7,7 @@
 #include "cons.h"
 #include "memory.h"
 #include "procedures.h"
-#include "string-interning.h"
+#include "symbols.h"
 
 // Characters are mapped to char_start in memory;
 // the nth ASCII character corresponds to the value
@@ -23,10 +23,7 @@ oop make_smallint(fn_uint i) {
 }
 
 oop make_symbol(const char* str) {
-  oop a;
-  a.symbol = intern_string(str);
-  CHECK(is_symbol(a), "Couldn't construct string.");
-  return a;
+  return make_or_lookup_symbol(str);
 }
 
 oop make_char(const char c) {

@@ -1,8 +1,64 @@
 
+#include <string.h>  // strdup
+
 #include "gc.h"
 #include "value.h"
 #include "memory.h"
 #include "symbols.h"
+#include "string-interning.h"
+
+/* Hash map for looking up symbols. */
+#define HASH_MAP_SIZE 2048
+fn_uint number_of_symbols = 0;
+char* interned_symbols_keys[HASH_MAP_SIZE];
+oop interned_symbols_values[HASH_MAP_SIZE];
+
+fn_uint string_to_hash(const char* str) {
+  fn_uint value = 1;
+  while (*str) {
+    value = value * 7 + *str;
+    str++;
+  }
+  return value;
+}
+
+fn_uint find_place(const char* key) {
+  fn_uint i = string_to_hash(key);
+  for (;;) {
+    i = (i + 1) % HASH_MAP_SIZE;
+    char* current_key = interned_symbols_keys[i];
+    if (!current_key) {
+      break;
+    }
+    if (!strcmp(current_key, key)) {
+      break;
+    }
+  }
+  return i;
+}
+
+oop construct_symbol(const char* str) {
+  oop a;
+  a.symbol = intern_string(str);
+  CHECK(is_symbol(a), "Couldn't construct string.");
+  return a;
+}
+
+oop make_or_lookup_symbol(const char* str) {
+  fn_uint idx = find_place(str);
+  if (interned_symbols_keys[idx]) {
+    return interned_symbols_values[idx];
+  } else {
+    number_of_symbols++;
+    // TODO: Implement resizing.
+    CHECK(number_of_symbols < HASH_MAP_SIZE, "Too many symbols.");
+    interned_symbols_keys[idx] = strdup(str);
+    interned_symbols_values[idx] = construct_symbol(str);
+    return interned_symbols_values[idx];
+  }
+}
+
+
 
 symbols_t symbols;
 
