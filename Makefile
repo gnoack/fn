@@ -22,7 +22,6 @@ OBJECTS = \
 	pprint.o \
 	primitives.o \
 	procedures.o \
-	string-interning.o \
 	strings.o \
 	symbols.o \
 	utils.o \
@@ -45,7 +44,6 @@ TESTOBJECTS = \
 	pegs-test.o \
 	pprint-test.o \
 	primitives-test.o \
-	string-interning-test.o \
 	strings-test.o \
 	tests.o \
 	utils-test.o \

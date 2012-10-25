@@ -57,9 +57,6 @@ typedef union value_u {
 
   /* Pointer to a series of values. */
   union value_u* mem;
-
-  /* Pointer to a symbol. */
-  const char* symbol;
 } oop;
 
 extern oop make_smallint(fn_uint i);
@@ -84,6 +81,7 @@ extern fn_uint get_smallint(oop v);
 
 extern char get_char(oop v);
 
+// Returned object is immutable, forever, and owned by the symbol.
 extern const char* get_symbol(oop v);
 
 extern boolean value_eq(oop a, oop b);

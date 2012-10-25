@@ -10,10 +10,9 @@
 #include "value.h"
 
 
-
 fn_uint symbol_to_hash(oop symbol) {
   CHECKV(is_symbol(symbol), symbol, "Must be a symbol for hashing it.");
-  return (symbol.smallint >> 1);
+  return get_smallint(symbol.mem[2]);
 }
 
 

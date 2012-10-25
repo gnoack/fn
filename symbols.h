@@ -19,6 +19,7 @@ typedef struct {
   oop _dict;
   oop _frame;
   oop _string;
+  oop _symbol;
 
   oop _procedure;
   oop _native_procedure;

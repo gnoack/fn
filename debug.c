@@ -53,7 +53,7 @@ void print_value_internal(oop v) {
   } else if (is_char(v)) {
     printf("\\%c", get_char(v));
   } else if (is_symbol(v)) {
-    printf("%s", v.symbol);
+    printf("%s", get_symbol(v));
   } else if (is_nil(v)) {
     printf("nil");
   } else if (is_cons(v)) {

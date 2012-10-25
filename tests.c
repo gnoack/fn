@@ -34,7 +34,6 @@
 #include "pegs-test.h"
 #include "pprint-test.h"
 #include "primitives-test.h"
-#include "string-interning-test.h"
 #include "strings-test.h"
 #include "utils-test.h"
 
@@ -179,7 +178,7 @@ void compile_system() {
       break;
     }
     oop symbol = first(uncompiled_functions);
-    printf("\rCompiling [%c] %-60s", status[statusidx], symbol.symbol);
+    printf("\rCompiling [%c] %-60s", status[statusidx], get_symbol(symbol));
     fflush(stdout);
 
     eval_global(LIST(make_symbol("c!"), symbol));
@@ -247,7 +246,6 @@ int main(int argc, char* argv[]) {
   /* Register tests here. */
   interpreter_tests();
   cons_tests();
-  interning_tests();
   eval_tests();
   value_tests();
   strings_tests();

@@ -51,7 +51,10 @@ boolean is_smallint(oop v) {
 }
 
 boolean is_symbol(oop v) {
-  return is_interned(v.symbol);
+  if (is_mem(v)) {
+    return TO_BOOL(value_eq(v.mem[0], symbols._symbol));
+  }
+  return NO;
 }
 
 boolean is_mem(oop v) {
@@ -74,7 +77,7 @@ fn_uint get_smallint(oop v) {
 
 const char* get_symbol(oop v) {
   CHECKV(is_symbol(v), v, "Must be a symbol");
-  return v.symbol;
+  return (char*) mem_get(v, 1).mem;
 }
 
 char get_char(oop v) {

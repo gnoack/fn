@@ -14,24 +14,21 @@
 ; @cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:
 ;  (def @cons ($make @type (make-dict)))
-($mem-set! @array 0 @type)
-($mem-set! @array 1 (make-dict))
-($mem-set! @cons 0 @type)
-($mem-set! @cons 1 (make-dict))
-($mem-set! @dict 0 @type)
-($mem-set! @dict 1 (make-dict))
-($mem-set! @frame 0 @type)
-($mem-set! @frame 1 (make-dict))
-($mem-set! @string 0 @type)
-($mem-set! @string 1 (make-dict))
+(defn $patch-type! (type)
+  ($mem-set! type 0 @type)
+  ($mem-set! type 1 (make-dict)))
+
+($patch-type! @array)
+($patch-type! @cons)
+($patch-type! @dict)
+($patch-type! @frame)
+($patch-type! @string)
+($patch-type! @symbol)
 
 ; Same procedure for @procedure.
-($mem-set! @procedure 0 @type)
-($mem-set! @procedure 1 (make-dict))
-($mem-set! @native-procedure 0 @type)
-($mem-set! @native-procedure 1 (make-dict))
-($mem-set! @compiled-procedure 0 @type)
-($mem-set! @compiled-procedure 1 (make-dict))
+($patch-type! @procedure)
+($patch-type! @native-procedure)
+($patch-type! @compiled-procedure)
 
 ;; TODO: Supertypes?
 (defmacro deftype (name)
@@ -40,7 +37,6 @@
 (deftype @mem)
 (deftype @smallint)
 (deftype @character)
-(deftype @symbol)
 (deftype @nil)
 (deftype @mem-block)
 

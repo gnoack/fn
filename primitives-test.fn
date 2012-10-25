@@ -42,9 +42,9 @@
 ; mem?
 (mem? (cons 1 2))
 (mem? "foo")  ; Strings are memory objects, too.
+(mem? 'foo)  ; Symbols, too.
 (not (mem? #\a))
 (not (mem? 1))
-(not (mem? 'foo))
 ; string?
 (string? "foo")
 (not (string? #\a))

@@ -62,6 +62,7 @@ void init_eval() {
   register_globally("@dict", symbols._dict);
   register_globally("@frame", symbols._frame);
   register_globally("@string", symbols._string);
+  register_globally("@symbol", symbols._symbol);
   register_globally("@procedure", symbols._procedure);
   register_globally("@native-procedure", symbols._native_procedure);
   register_globally("@compiled-procedure", symbols._compiled_procedure);
