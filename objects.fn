@@ -47,7 +47,6 @@
 (defn type-of (x)
   (cond ((number? x) @smallint)
 	((char? x) @character)
-	((symbol? x) @symbol)
 	((nil? x) @nil)
         ((mem-block? x) @mem-block)
 	((mem? x) ($mem-get x 0))))
