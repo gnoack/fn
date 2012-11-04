@@ -419,10 +419,10 @@ oop interpret(oop frame, oop code) {
       break;
     }
     case BC_INVALIDATE_CONTINUATION: {
+      IPRINT("invalidate-continuation\n");
       oop return_value = stack_pop();
       oop continuation = stack_pop();
       stack_push(return_value);
-      IPRINT("invalidate-continuation\n");
       invalidate_continuation(continuation);
       break;
     }
