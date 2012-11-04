@@ -289,6 +289,8 @@
   (map first (filter (lambda (kv) (compilable? (rest kv)))
                      (dict-key-value-pairs $global-env))))
 
+;; Keep around references to uncompiled versions of these functions,
+;; for performance testing.  TODO: Remove this.
 (def meeeh (list make-assembler make-byte-stream assemble))
 
 )
