@@ -1,16 +1,16 @@
 
 (
 
-(string= "123" (pprint 123))
-(string= "\"abc\"" (pprint "abc"))
-(string= "\\a" (pprint #\a))
-(string= "(1 2 3)" (pprint '(1 2 3)))
-(string= "foo" (pprint 'foo))
-(string= "nil" (pprint nil))
-(string= "<NATIVE-PROCEDURE +>" (pprint +))
+(string=? "123" (pprint 123))
+(string=? "\"abc\"" (pprint "abc"))
+(string=? "\\a" (pprint #\a))
+(string=? "(1 2 3)" (pprint '(1 2 3)))
+(string=? "foo" (pprint 'foo))
+(string=? "nil" (pprint nil))
+(string=? "<NATIVE-PROCEDURE +>" (pprint +))
 (or (compiled-procedure? pprint)
-    (string= "<PROCEDURE pprint (item)>" (pprint pprint)))
-(string= "<COMPILED-PROCEDURE display (item)>"
-         (pprint (compile-fn display)))
+    (string=? "<PROCEDURE pprint (item)>" (pprint pprint)))
+(string=? "<COMPILED-PROCEDURE display (item)>"
+          (pprint (compile-fn display)))
 
 )

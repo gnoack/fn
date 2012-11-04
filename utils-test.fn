@@ -10,23 +10,23 @@
 (eq 'result (progn 1 2 3 'result))
 
 ;; Strings
-(string= "abc" "abc")
-(not (string= "x" "y"))
+(string=? "abc" "abc")
+(not (string=? "x" "y"))
 
 (eql (list #\a #\b #\c)
      (string->list "abc"))
-(string= "hello" "hello")
-(string= "hello" (list->string (list #\h #\e #\l #\l #\o)))
+(string=? "hello" "hello")
+(string=? "hello" (list->string (list #\h #\e #\l #\l #\o)))
 
-(string= "foobar" (string-append "foo" "bar"))
+(string=? "foobar" (string-append "foo" "bar"))
 
-(string= "a b c" (string-join (list "a" "b" "c") " "))
-(string= "" (string-join (list) " "))
-(string= "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
+(string=? "a b c" (string-join (list "a" "b" "c") " "))
+(string=? "" (string-join (list) " "))
+(string=? "foo, bar, baz" (string-join (list "foo" "bar" "baz") ", "))
 
-(string= "bar" (substring "foobar" 3))
-(string= "bar" (substring (substring "foobar" 2) 1))
-(string= "bar" (substring "foobarbaz" 3 6))
+(string=? "bar" (substring "foobar" 3))
+(string=? "bar" (substring (substring "foobar" 2) 1))
+(string=? "bar" (substring "foobarbaz" 3 6))
 
 (string-prefix? "foo" "foobar")
 (not (string-prefix? "bar" "foobar"))
@@ -42,10 +42,10 @@
 (eq 3 (digit->int #\3))
 
 ;; Integer coding
-(string= "0" (int->string 0 10))
-(string= "1" (int->string 1 10))
-(string= "123" (int->string 123 10))
-(string= "cafe" (int->string 51966 16))
+(string=? "0" (int->string 0 10))
+(string=? "1" (int->string 1 10))
+(string=? "123" (int->string 123 10))
+(string=? "cafe" (int->string 51966 16))
 
 ;; Comparisons
 (<= 1 2)

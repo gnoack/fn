@@ -6,8 +6,8 @@
  (def %xyz-env (global-env 'linked-with-vars (list 'x 'y 'z)))
  (def %abz-env (%xyz-env 'linked-with-vars (list 'a 'b 'z))))
 
-(string= "GLOBAL" (send global-env 'prettyprint))
-(string= "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
+(string=? "GLOBAL" (send global-env 'prettyprint))
+(string=? "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
 (eql '((read-var 0 0)) (send %xyz-env 'generate-read 'x))
 (eql '((read-var 0 1)) (send %xyz-env 'generate-read 'y))
@@ -121,8 +121,8 @@
 (eql (list 1 2 3)
      ((compile-fn map) identity (list 1 2 3)))
 
-(string= "hello"
-         ((compile-fn (lambda () "hello"))))
+(string=? "hello"
+          ((compile-fn (lambda () "hello"))))
 
 ;; It works!
 (progn

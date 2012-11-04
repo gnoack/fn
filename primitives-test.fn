@@ -11,7 +11,7 @@
 
 ;; Symbol conversion.
 (eq 'quuux (string->symbol "quuux"))
-(string= "quuux" (symbol->string 'quuux))
+(string=? "quuux" (symbol->string 'quuux))
 
 ;; Arithmetic primitives.
 (eq 3 (+ 1 2))
@@ -78,7 +78,7 @@
 ; Prints its argument and returns it.
 
 ; Commented out for nicer output...
-; (string= "foo" (writeout "foo"))
+; (string=? "foo" (writeout "foo"))
 
 ;; UNSAFE functions for memory region allocation.
 (cons? ($make @cons 1 2))
