@@ -60,3 +60,24 @@ tail-call [n]              Same, but skips the current frame when returning.
 return                     Pop result value from stack.
                            Restore interpreter state before last call instruction.
                            Push result value to stack.
+
+call/cc                    Call with current continuation,
+invalidate-continuation    invalidate the continuation, as continuations are
+                           only short-lived in this Lisp.
+
+                           Note that call/cc and invalidate-continuation must
+                           always happen both directly after each other.
+
+                           call/cc:
+                             pops `proc' from stack,
+                             pushes the continuation,
+                             then the return value of call/cc.
+
+                           invalidate-continutation:
+                             pops the return value from stack
+                             pops the continuation from stack
+                             invalidates it
+                             pushes the return value back.
+
+restore-continuation       Pops a return value, then a continuation from the stack
+                           and invokes the continuation with the return value.

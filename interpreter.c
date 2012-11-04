@@ -156,6 +156,8 @@ oop get_var(oop frame, unsigned int index) {
 }
 
 
+oop serialize_retptr(interpreter_state_t* state);
+
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
@@ -249,17 +251,34 @@ void deserialize_retptr(oop retptr, interpreter_state_t* state) {
 
 // Continuations
 oop make_continuation(interpreter_state_t* state) {
-  oop result = mem_alloc(3);
-  MEM_SET(result, 0, NIL);  // TODO: Type.
+  oop result = mem_alloc(4);
+  MEM_SET(result, 0, symbols._continuation);
   MEM_SET(result, 1, serialize_retptr(state));
   MEM_SET(result, 2, make_smallint(stack.size));
+  MEM_SET(result, 3, make_smallint(apply_stack_pos));
   return result;
 }
 
+void invalidate_continuation(oop continuation) {
+  CHECKV(is_continuation_valid(continuation), continuation,
+         "Not a valid continuation.");
+  MEM_SET(continuation, 1, NIL);
+}
+
+boolean is_continuation_valid(oop continuation) {
+  return TO_BOOL(!value_eq(MEM_GET(continuation, 1), NIL));
+}
+
+boolean is_continuation(oop continuation) {
+  return value_eq(MEM_GET(continuation, 0), symbols._continuation);
+}
+
 void restore_continuation(oop continuation, interpreter_state_t* state) {
-  // TODO: Also unwind stack trace (see procedures.c).
+  CHECKV(is_continuation_valid(continuation), continuation,
+         "Not a valid continuation.");
   deserialize_retptr(MEM_GET(continuation, 1), state);
   stack.size = get_smallint(MEM_GET(continuation, 2));
+  apply_stack_pos = get_smallint(MEM_GET(continuation, 3));
 }
 
 
@@ -393,14 +412,18 @@ oop interpret(oop frame, oop code) {
       // TODO: Optimize proc pop/push.
       oop proc = stack_pop();
       oop continuation = make_continuation(&state);
+      stack_push(continuation);
       stack_push(proc);
       stack_push(continuation);
       apply_into_interpreter(2, &state, NO);
       break;
     }
     case BC_INVALIDATE_CONTINUATION: {
+      oop return_value = stack_pop();
+      oop continuation = stack_pop();
+      stack_push(return_value);
       IPRINT("invalidate-continuation\n");
-      // TODO: Invalidate continuations properly.
+      invalidate_continuation(continuation);
       break;
     }
     case BC_RESTORE_CONTINUATION: {
@@ -408,6 +431,7 @@ oop interpret(oop frame, oop code) {
       oop return_value = stack_pop();
       oop continuation = stack_pop();
       restore_continuation(continuation, &state);
+      stack_push(continuation);
       stack_push(return_value);
       break;
     }

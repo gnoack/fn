@@ -7,6 +7,7 @@
 #include "cons.h"
 #include "strings.h"
 #include "symbols.h"
+#include "interpreter.h"
 
 /* Debugging helpers. */
 
@@ -82,6 +83,8 @@ void print_value_internal(oop v) {
       printf(" %02x", ((unsigned char*) v.mem)[i]);
     }
     printf(">");
+  } else if (is_continuation(v)) {
+    printf("#<CONTINUATION>");
   } else if (is_procedure(v)) {
     print_procedure(v);
   } else if (is_string(v)) {

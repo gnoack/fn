@@ -16,6 +16,9 @@ extern void set_var(oop frame, unsigned int index, oop value);
 
 extern oop get_var(oop frame, unsigned int index);
 
+boolean is_continuation(oop continuation);
+
+
 typedef struct {
   // Current frame.
   oop reg_frm;
@@ -25,8 +28,6 @@ typedef struct {
   oop bytecode;
   oop oop_lookups;
 } interpreter_state_t;
-
-extern oop serialize_retptr(interpreter_state_t* state);
 
 
 // Bytecodes

@@ -44,6 +44,7 @@ extern boolean fn_nested_args(oop fn);
 // Apply stack.
 extern void apply_stack_push(oop values);
 extern void apply_stack_pop();
+extern int apply_stack_pos;
 
 extern void init_procedures();
 

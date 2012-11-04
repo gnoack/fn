@@ -5,16 +5,30 @@
   (defn-compiled _call/cc (proc)
     (read-var 0 0)  ; proc
     (call/cc)
+    (invalidate-continuation)
     (return))
   (defn-compiled _invoke (continuation value)
     (read-var 0 0)  ; continuation
     (read-var 0 1)  ; value
     (restore-continuation))
   (_call/cc (lambda (_continuation)
-              (proc (lambda (value)
-                      (_invoke _continuation value))))))
+              (proc (lambda (continuation-result)
+                      (_invoke _continuation continuation-result))))))
 
 (def *unwind-handler* error)
+
+(defn dynamic-wind (in thunk out)
+  (in)
+  (let ((old-unwind-handler *unwind-handler*))
+    (set! *unwind-handler*
+          (lambda (reason)
+            (set! *unwind-handler* old-unwind-handler)
+            (out)
+            (raise reason)))
+    (let ((result (thunk)))
+      (set! *unwind-handler* old-unwind-handler)
+      (out)
+      result)))
 
 (defn catch (thunk handler)
   (let ((old-unwind-handler *unwind-handler*))
@@ -22,10 +36,12 @@
      (lambda (continuation)
        (set! *unwind-handler*
              (lambda (reason)
+               (set! *unwind-handler* old-unwind-handler)
                (continuation (handler reason))))
        (let ((result (thunk)))
          (set! *unwind-handler* old-unwind-handler)
          result)))))
+
 
 (defn raise (reason)
   (*unwind-handler* reason))
