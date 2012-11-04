@@ -87,6 +87,7 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   // Types.
   accept(&symbols._array);
   accept(&symbols._cons);
+  accept(&symbols._continuation);
   accept(&symbols._dict);
   accept(&symbols._frame);
   accept(&symbols._string);
@@ -112,6 +113,7 @@ void init_symbols() {
   // The types are finished when types are initialized.
   symbols._array = mem_alloc(2);
   symbols._cons = mem_alloc(2);
+  symbols._continuation = mem_alloc(2);
   symbols._dict = mem_alloc(2);
   symbols._frame = mem_alloc(2);
   symbols._string = mem_alloc(2);

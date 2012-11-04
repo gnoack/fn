@@ -20,7 +20,7 @@
 #ifdef INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b) CHECK(a,b)
 #define MEM_GET(obj,idx) mem_get((obj),(idx))
-#define MEM_SET(obj,idx,val) mem_get((obj),(idx),(val))
+#define MEM_SET(obj,idx,val) mem_set((obj),(idx),(val))
 #else  // INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b)
 #define MEM_GET(obj,idx) (obj).mem[(idx)]
@@ -246,6 +246,22 @@ void deserialize_retptr(oop retptr, interpreter_state_t* state) {
   state->oop_lookups = MEM_GET(retptr, 3);
 }
 
+
+// Continuations
+oop make_continuation(interpreter_state_t* state) {
+  oop result = mem_alloc(3);
+  MEM_SET(result, 0, NIL);  // TODO: Type.
+  MEM_SET(result, 1, serialize_retptr(state));
+  MEM_SET(result, 2, make_smallint(stack.size));
+  return result;
+}
+
+void restore_continuation(oop continuation, interpreter_state_t* state) {
+  deserialize_retptr(MEM_GET(continuation, 1), state);
+  stack.size = get_smallint(MEM_GET(continuation, 2));
+}
+
+
 // Interpreter
 oop interpret(oop frame, oop code) {
   interpreter_state_t state;
@@ -371,6 +387,29 @@ oop interpret(oop frame, oop code) {
         deserialize_retptr(retptr, &state);
       }
       break;
+    case BC_CALL_CC: {
+      IPRINT("call/cc\n");
+      // TODO: Optimize proc pop/push.
+      oop proc = stack_pop();
+      oop continuation = make_continuation(&state);
+      stack_push(proc);
+      stack_push(continuation);
+      apply_into_interpreter(2, &state, NO);
+      break;
+    }
+    case BC_INVALIDATE_CONTINUATION: {
+      IPRINT("invalidate-continuation\n");
+      // TODO: Invalidate continuations properly.
+      break;
+    }
+    case BC_RESTORE_CONTINUATION: {
+      IPRINT("restore-continuation\n");
+      oop return_value = stack_pop();
+      oop continuation = stack_pop();
+      restore_continuation(continuation, &state);
+      stack_push(return_value);
+      break;
+    }
     default:
       printf("Fatal: Unknown byte code!\n");
       exit(1);

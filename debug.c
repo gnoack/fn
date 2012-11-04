@@ -116,6 +116,8 @@ void print_value_internal(oop v) {
       printf("@array");
     } else if (value_eq(symbols._cons, v)) {
       printf("@cons");
+    } else if (value_eq(symbols._continuation, v)) {
+      printf("@continuation");
     } else if (value_eq(symbols._dict, v)) {
       printf("@dict");
     } else if (value_eq(symbols._frame, v)) {

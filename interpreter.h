@@ -24,9 +24,6 @@ typedef struct {
   fn_uint ip;
   oop bytecode;
   oop oop_lookups;
-
-  // What to do on return.
-  oop retptr;
 } interpreter_state_t;
 
 extern oop serialize_retptr(interpreter_state_t* state);
@@ -45,6 +42,9 @@ extern oop serialize_retptr(interpreter_state_t* state);
 #define BC_CALL 9
 #define BC_TAIL_CALL 10
 #define BC_RETURN 11
+#define BC_CALL_CC 12
+#define BC_INVALIDATE_CONTINUATION 13
+#define BC_RESTORE_CONTINUATION 14
 
 #define _INTERPRETER_H_ 0
 #endif  // _INTERPRETER_H_

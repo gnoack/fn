@@ -59,6 +59,7 @@ void init_eval() {
   register_globally("false", symbols._false);
   register_globally("@array", symbols._array);
   register_globally("@cons", symbols._cons);
+  register_globally("@continuation", symbols._continuation);
   register_globally("@dict", symbols._dict);
   register_globally("@frame", symbols._frame);
   register_globally("@string", symbols._string);
@@ -135,11 +136,22 @@ oop eval_set(oop program, oop env) {
   return new_value;
 }
 
+// TODO: Write REPL and file loading more in Lisp and remove the weird
+// compilation code from here.
 extern
 oop eval_global(oop program) {
   if (dict_has_key(global_env, symbols._macroexpand)) {
     oop macroexpand_fn = dict_get(global_env, symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
+  }
+  oop _compile_for_global_eval =
+    make_symbol("compile-and-assemble-expr-for-global-eval");
+  if (dict_has_key(global_env, _compile_for_global_eval)) {
+    oop code = eval(LIST(_compile_for_global_eval,
+                         LIST(make_symbol("quote"),
+                              program)),
+                    global_env);
+    return interpret(global_env, code);
   }
   return eval(program, global_env);
 }

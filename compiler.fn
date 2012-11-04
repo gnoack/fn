@@ -201,6 +201,9 @@
     ('call (argnum)               (byte 9) (byte argnum))
     ('tail-call (argnum)          (byte 10) (byte argnum))
     ('return ()                   (byte 11))
+    ('call/cc ()                  (byte 12))
+    ('invalidate-continuation ()  (byte 13))
+    ('restore-continuation ()     (byte 14))
     ('label (l)                   (save-label! l))))
 
 (defn lower-byte (n) (mod n 256))
@@ -292,5 +295,47 @@
 ;; Keep around references to uncompiled versions of these functions,
 ;; for performance testing.  TODO: Remove this.
 (def meeeh (list make-assembler make-byte-stream assemble))
+
+;; Invoked from C to compile top-level expressions.
+;; Should only be defined once compilation works.
+(defn compile-and-assemble-expr-for-global-eval (expr)
+  (assemble (compile-lambda-body (list expr) global-env)))
+
+;; TODO: Extract `lambda-compiled'?
+(defmacro defn-compiled (name lambda-list &rest bytecode)
+  `(def ,name
+     (make-compiled-procedure
+      (quote ,name)
+      (quote ,lambda-list)
+      (assemble (quote ,bytecode))
+      nil)))
+
+(defn call/cc (proc)
+  (defn-compiled _call/cc (proc)
+    (read-var 0 0)  ; proc
+    (call/cc)
+    (return))
+  (defn-compiled _invoke (continuation value)
+    (read-var 0 0)  ; continuation
+    (read-var 0 1)  ; value
+    (restore-continuation))
+  (_call/cc (lambda (_continuation)
+              (proc (lambda (value)
+                      (_invoke _continuation value))))))
+
+(def *unwind-handler* error)
+(defn catch (thunk handler)
+  (let ((old-unwind-handler *unwind-handler*))
+    (call/cc
+     (lambda (continuation)
+       (set! *unwind-handler*
+             (lambda (reason)
+               (continuation (handler reason))))
+       (let ((result (thunk)))
+         (set! *unwind-handler* old-unwind-handler)
+         result)))))
+
+(defn raise (reason)
+  (*unwind-handler* reason))
 
 )
