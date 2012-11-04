@@ -7,7 +7,7 @@
 #include "symbols.h"
 
 /* Hash map for looking up symbols. */
-#define HASH_MAP_SIZE 2048
+#define HASH_MAP_SIZE 8192
 fn_uint number_of_symbols = 0;
 char* interned_symbols_keys[HASH_MAP_SIZE];
 oop interned_symbols_values[HASH_MAP_SIZE];

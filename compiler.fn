@@ -19,12 +19,6 @@
 ;;; Static variable environments                                  ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn %globalop (op)
-  (case op
-    ((write-var) 'write-global-var)
-    ((read-var)  'read-global-var)
-    (else        (error "Unknown variable access mode: " op))))
-
 (def global-env
   (dispatcher self
     ('prettyprint ()                "GLOBAL")
@@ -33,7 +27,9 @@
     ('linked-with-vars (vars)       (linked-env-with-vars self vars))
 
     ;; Code generation
-    ('generate-access (depth op x)  `((,(%globalop op) ,x)))
+    ('generate-access (depth op x)  `((,(case op
+                                          ((write-var) 'write-global-var)
+                                          ((read-var)  'read-global-var)) ,x)))
     ('generate-read (x)             (send self 'generate-access 0 'read-var x))
     ('generate-write (x)            (send self 'generate-access 0 'write-var x))))
 
