@@ -257,6 +257,7 @@ oop make_continuation(interpreter_state_t* state) {
 }
 
 void restore_continuation(oop continuation, interpreter_state_t* state) {
+  // TODO: Also unwind stack trace (see procedures.c).
   deserialize_retptr(MEM_GET(continuation, 1), state);
   stack.size = get_smallint(MEM_GET(continuation, 2));
 }

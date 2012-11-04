@@ -3,6 +3,7 @@
 
 #include "arrays.h"
 #include "compiler.h"
+#include "continuations.h"
 #include "data.h"
 #include "dispatcher.h"
 #include "eval.h"
@@ -23,6 +24,7 @@
 #include "arrays-test.h"
 #include "compiler-test.h"
 #include "cons-test.h"
+#include "continuations-test.h"
 #include "data-test.h"
 #include "dispatcher-test.h"
 #include "interpreter-test.h"
@@ -142,6 +144,7 @@ void init() {
   load_decls(pegs_parser_decls());
   load_decls(pprint_decls());
   load_decls(compiler_decls());
+  load_decls(continuations_decls());
 }
 
 #define HISTORY_FILE "/.fn_history"
@@ -263,6 +266,7 @@ int main(int argc, char* argv[]) {
   arrays_tests();
   compiler_tests();
   data_tests();
+  continuations_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
 	 assertion_count, failure_count);

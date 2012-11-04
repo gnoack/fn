@@ -5,6 +5,8 @@ arrays-test.c
 arrays.c
 compiler-test.c
 compiler.c
+continuations-test.c
+continuations.c
 data-test.c
 dispatcher-test.c
 dispatcher.c

@@ -1,0 +1,33 @@
+
+(
+
+(defn call/cc (proc)
+  (defn-compiled _call/cc (proc)
+    (read-var 0 0)  ; proc
+    (call/cc)
+    (return))
+  (defn-compiled _invoke (continuation value)
+    (read-var 0 0)  ; continuation
+    (read-var 0 1)  ; value
+    (restore-continuation))
+  (_call/cc (lambda (_continuation)
+              (proc (lambda (value)
+                      (_invoke _continuation value))))))
+
+(def *unwind-handler* error)
+
+(defn catch (thunk handler)
+  (let ((old-unwind-handler *unwind-handler*))
+    (call/cc
+     (lambda (continuation)
+       (set! *unwind-handler*
+             (lambda (reason)
+               (continuation (handler reason))))
+       (let ((result (thunk)))
+         (set! *unwind-handler* old-unwind-handler)
+         result)))))
+
+(defn raise (reason)
+  (*unwind-handler* reason))
+
+)
