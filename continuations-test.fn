@@ -30,4 +30,18 @@
   (and (= y 99)
        (= x 2)))
 
+(let ((x 0)
+      (y 0))
+  (set! y
+        (catch
+            (lambda ()
+              (dynamic-wind
+               (lambda () (set! x (+ x 1)))
+               (lambda () (raise 10))
+               (lambda () (set! x (+ x 1)))))
+          (lambda (reason)
+            99)))
+  (and (= y 99)
+       (= x 2)))
+
 )
