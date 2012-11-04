@@ -47,7 +47,7 @@ void print_zone(oop obj) {
 // Prints values, for debugging.
 void print_value_internal(oop v) {
   if (is_global_env(v)) {
-    printf("[global-env]");
+    printf("#<GLOBAL ENVIRONMENT>");
   } else if (is_smallint(v)) {
     printf("%lu", (fn_uint) get_smallint(v));
   } else if (is_char(v)) {
@@ -91,7 +91,7 @@ void print_value_internal(oop v) {
   } else if (is_array(v)) {
     fn_uint i;
     fn_uint size = array_size(v);
-    printf("#[ARRAY:");
+    printf("#[");
     for (i=0; i<size; i++) {
       putchar(' ');
       print_value_internal(array_get(v, i));
@@ -129,7 +129,7 @@ void print_value_internal(oop v) {
     } else if (value_eq(symbols._native_procedure, v)) {
       printf("@native-procedure");
     } else {
-      printf("#[OBJECT]");
+      printf("#<OBJECT>");
     }
   }
 }
