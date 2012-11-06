@@ -183,6 +183,16 @@
     ,@(map (lambda (var) `(gensym ,(symbol->string var)))
            vars)))
 
+(defn with-gensym-scope-fn (thunk)
+  (let ((saved-label-counter global-label-counter))
+    (set! global-label-counter 0)
+    (let ((result (thunk)))
+      (set! global-label-counter saved-label-counter)
+      result)))
+
+(defmacro with-gensym-scope (expr)
+  `(with-gensym-scope-fn (lambda () ,expr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; More general purpose macros                                    ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

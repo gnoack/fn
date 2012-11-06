@@ -266,18 +266,19 @@
        (global-env? (fn-env fn))))
 
 (defn compile-fn (fn)
-  (if (compilable? fn)
-      (let ((env-in-body (send global-env 'linked-with-vars
-                               (vars-from-ll (fn-lambda-list fn)))))
-        (make-compiled-procedure
-         (fn-name fn)
-         (fn-lambda-list fn)
-         (assemble (compile-lambda-body (fn-body fn) env-in-body))
-         nil))
-    (progn
-      ;; TODO: This is a hack to make compiling by hand convenient.
-      (println "This procedure is not compilable, returning it as it is.")
-      fn)))
+  (with-gensym-scope
+   (if (compilable? fn)
+       (let ((env-in-body (send global-env 'linked-with-vars
+                                (vars-from-ll (fn-lambda-list fn)))))
+         (make-compiled-procedure
+          (fn-name fn)
+          (fn-lambda-list fn)
+          (assemble (compile-lambda-body (fn-body fn) env-in-body))
+          nil))
+     (progn
+       ;; TODO: This is a hack to make compiling by hand convenient.
+       (println "This procedure is not compilable, returning it as it is.")
+       fn))))
 
 (defn compile-fn* (fn)
   (with-asserts ((compilable? fn))
@@ -299,7 +300,8 @@
 ;; Invoked from C to compile top-level expressions.
 ;; Should only be defined once compilation works.
 (defn compile-and-assemble-expr-for-global-eval (expr)
-  (assemble (compile-lambda-body (list expr) global-env)))
+  (with-gensym-scope
+   (assemble (compile-lambda-body (list expr) global-env))))
 
 ;; TODO: Extract `lambda-compiled'?
 (defmacro defn-compiled (name lambda-list &rest bytecode)
