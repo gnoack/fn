@@ -229,13 +229,14 @@ void repl() {
 boolean compile_arg = NO;
 boolean deserialize_arg = NO;
 boolean exit_arg = NO;
+boolean load_twice_arg = NO;
 boolean serialize_arg = NO;
 boolean test_arg = NO;
 void parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
-    if (strcmp(argv[i], "-t") == 0) {
-      test_arg = YES; continue;
+    if (strcmp(argv[i], "-2") == 0) {
+      load_twice_arg = YES; continue;
     }
     if (strcmp(argv[i], "-c") == 0) {
       compile_arg = YES; continue;
@@ -245,6 +246,9 @@ void parse_args(int argc, char* argv[]) {
     }
     if (strcmp(argv[i], "-S") == 0) {
       deserialize_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-t") == 0) {
+      test_arg = YES; continue;
     }
     if (strcmp(argv[i], "-x") == 0) {
       exit_arg = YES; continue;
@@ -260,6 +264,15 @@ int main(int argc, char* argv[]) {
     gc_deserialize_from_file("fn.img");
   } else {
     init_decls();
+    if (load_twice_arg) {
+      /*
+       * Evaluate top level forms again.  The second time, they will
+       * all be compiled.  This compiled even the more dubious stuff
+       * like functions that haven't been originally defined at
+       * top-level.
+       */
+      init_decls();
+    }
   }
   if (compile_arg) {
     compile_system();
