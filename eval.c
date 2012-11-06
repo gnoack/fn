@@ -1,15 +1,16 @@
 
 #include <stdio.h>
 
-#include "gc.h"
-#include "cons.h"
-#include "value.h"
-#include "data.h"
 #include "carcdr.h"
-#include "procedures.h"
-#include "symbols.h"
-
+#include "cons.h"
+#include "data.h"
+#include "debug.h"
 #include "eval.h"
+#include "gc.h"
+#include "procedures.h"
+#include "strings.h"
+#include "symbols.h"
+#include "value.h"
 
 oop global_env;
 

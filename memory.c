@@ -1,9 +1,10 @@
 
-#include "malloc.h"
+#include <malloc.h>
 
-#include "value.h"
-#include "memory.h"
+#include "debug.h"
 #include "gc.h"
+#include "memory.h"
+#include "value.h"
 
 oop mem_alloc(fn_uint amount) {
   CHECK(amount > 0, "Allocated memory regions need to be larger than 0.");

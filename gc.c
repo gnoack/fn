@@ -1,10 +1,11 @@
 
 #include <string.h>
 
+#include "debug.h"
 #include "eval.h"  // for global_env
-#include "value.h"
 #include "gc.h"
 #include "symbols.h"
+#include "value.h"
 
 // TODO: Eliminate a lot of code duplication here!
 
@@ -253,8 +254,7 @@ void object_save(oop obj) {
 
   // Mark as broken heart.
   obj.mem[-1] = NIL;
-  obj.mem[0] = newobj;
-  SANE(newobj);
+  obj.mem[0] = SANE(newobj);
 }
 
 oop object_update(oop obj) {

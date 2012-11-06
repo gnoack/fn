@@ -1,13 +1,14 @@
 
 #include <stdio.h>
 
-#include "gc.h"
-#include "eval.h"
-#include "value.h"
 #include "cons.h"
+#include "debug.h"
+#include "eval.h"
+#include "gc.h"
 #include "memory.h"
 #include "procedures.h"
 #include "symbols.h"
+#include "value.h"
 
 // Characters are mapped to char_start in memory;
 // the nth ASCII character corresponds to the value

@@ -1,10 +1,10 @@
 
-#include "malloc.h"
-
+#include <malloc.h>
 #include <string.h>
 
 #include "carcdr.h"
 #include "cons.h"
+#include "debug.h"
 #include "memory.h"
 #include "symbols.h"
 #include "value.h"

@@ -2,6 +2,7 @@
 #include "data.h"
 
 #include "cons.h"
+#include "debug.h"
 #include "eval.h"
 #include "memory.h"
 #include "primitives.h"
@@ -152,7 +153,7 @@ void dict_resize(oop dict, fn_uint new_table_size) {
   oop old_table = dict_table(dict);
   oop new_table = make_array(new_table_size * 2);
   fn_uint old_table_size = array_size(old_table) >> 1;
-  int i, j;
+  int i;
   for (i=0; i<old_table_size; i++) {
     oop key = array_get(old_table, i);
     if (is_nil(key)) {
@@ -193,6 +194,7 @@ oop dict_put(oop dict, oop key, oop value) {
   // TODO: Only resize when a new entry had to be added.
   int added_amount = dict_table_put(dict_table(dict), key, value);
   dict_change_count(dict, added_amount);
+  return value;
 }
 
 oop dict_key_value_pairs(oop dict) {

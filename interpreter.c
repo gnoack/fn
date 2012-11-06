@@ -1,16 +1,16 @@
 
 #include <string.h>
 
-#include "gc.h"
+#include "carcdr.h"
 #include "cons.h"
+#include "debug.h"
 #include "eval.h"  // TODO: Break dependency to lookup_globally().
+#include "gc.h"
+#include "interpreter.h"
 #include "memory.h"
+#include "procedures.h"
 #include "symbols.h"
 #include "value.h"
-#include "procedures.h"
-
-#include "carcdr.h"
-#include "interpreter.h"
 
 #define MAX_STACK_SIZE 0x4000
 
@@ -259,14 +259,14 @@ oop make_continuation(interpreter_state_t* state) {
   return result;
 }
 
+boolean is_continuation_valid(oop continuation) {
+  return TO_BOOL(!value_eq(MEM_GET(continuation, 1), NIL));
+}
+
 void invalidate_continuation(oop continuation) {
   CHECKV(is_continuation_valid(continuation), continuation,
          "Not a valid continuation.");
   MEM_SET(continuation, 1, NIL);
-}
-
-boolean is_continuation_valid(oop continuation) {
-  return TO_BOOL(!value_eq(MEM_GET(continuation, 1), NIL));
 }
 
 boolean is_continuation(oop continuation) {
@@ -364,9 +364,9 @@ oop interpret(oop frame, oop code) {
       break;
     }
     case BC_POP: {
-      oop value = stack_pop();
-      IPRINT("pop            .oO stack-size=%d, ", stack.size);
-      IVALUE(value);
+      // TODO: Rename to BC_DISCARD.
+      stack_pop();
+      IPRINT("pop            .oO stack-size=%d\n", stack.size);
       break;
     }
     case BC_MAKE_LAMBDA: {

@@ -1,11 +1,12 @@
 
 #include <string.h>  // strdup
 
+#include "debug.h"
 #include "gc.h"
-#include "value.h"
 #include "memory.h"
-#include "symbols.h"
 #include "strings.h"
+#include "symbols.h"
+#include "value.h"
 
 /* Hash map for looking up symbols. */
 #define HASH_MAP_SIZE 8192

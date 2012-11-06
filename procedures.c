@@ -1,15 +1,16 @@
 
 #include <stdio.h>
 
-#include "gc.h"
-#include "data.h"
-#include "value.h"
-#include "cons.h"
 #include "carcdr.h"
+#include "cons.h"
+#include "data.h"
+#include "debug.h"
 #include "eval.h"
+#include "gc.h"
 #include "interpreter.h"
 #include "memory.h"
 #include "symbols.h"
+#include "value.h"
 
 #include "procedures.h"
 

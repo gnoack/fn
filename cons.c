@@ -2,11 +2,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "cons.h"
+#include "debug.h"
 #include "gc.h"
 #include "memory.h"
-#include "cons.h"
-#include "value.h"
 #include "symbols.h"
+#include "value.h"
 
 extern
 oop make_cons(oop car, oop cdr) {

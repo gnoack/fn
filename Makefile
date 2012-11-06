@@ -1,6 +1,6 @@
 
 LIBS = -lreadline -lrt
-CFLAGS = -g
+CFLAGS = -g -Wall
 HEADERS = *.h
 OBJECTS = \
 	arrays.o \

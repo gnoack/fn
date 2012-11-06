@@ -5,6 +5,7 @@
 #include "compiler.h"
 #include "continuations.h"
 #include "data.h"
+#include "debug.h"
 #include "dispatcher.h"
 #include "eval.h"
 #include "gc.h"
@@ -27,7 +28,9 @@
 #include "continuations-test.h"
 #include "data-test.h"
 #include "dispatcher-test.h"
+#include "eval-test.h"
 #include "interpreter-test.h"
+#include "lang-test.h"
 #include "macros-test.h"
 #include "memory-test.h"
 #include "objects-test.h"
@@ -38,6 +41,7 @@
 #include "primitives-test.h"
 #include "strings-test.h"
 #include "utils-test.h"
+#include "value-test.h"
 
 #include "carcdr.h"
 

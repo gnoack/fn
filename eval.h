@@ -21,6 +21,9 @@ extern
 void register_globally_fn(const char* name, function fn);
 
 extern
+void set_globally_oop(oop key, oop value);
+
+extern
 oop lookup_globally(oop key);
 
 extern

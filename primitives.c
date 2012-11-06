@@ -1,13 +1,14 @@
 
-#include "stdio.h"
-#include "time.h"
-
-#include "primitives.h"
+#include <stdio.h>
+#include <time.h>
 
 #include "carcdr.h"
 #include "cons.h"
+#include "debug.h"
 #include "eval.h"
+#include "gc.h"
 #include "memory.h"
+#include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
 
@@ -196,6 +197,7 @@ oop primitive_primitive_mem_set(oop args) {
 oop primitive_run_gc(oop args) {
   CHECKV(is_nil(args), args, "No arguments allowed for run-gc.");
   run_gc_soon();
+  return NIL;
 }
 
 oop primitive_make_compiled_procedure(oop args) {
