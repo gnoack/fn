@@ -29,6 +29,9 @@ typedef struct {
 
 extern symbols_t symbols;
 
+extern void symbol_hashmap_clear();
+extern void symbol_hashmap_register(oop symbol);
+
 extern void init_symbols();
 
 extern oop make_or_lookup_symbol(const char* str);

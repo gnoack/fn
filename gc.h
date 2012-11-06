@@ -23,6 +23,12 @@ void gc_register_persistent_refs(enumerator_t enumerator);
 extern
 void gc_run();
 
+extern
+void gc_serialize_to_file(char* filename);
+
+extern
+void gc_deserialize_from_file(char* filename);
+
 
 #define _GC_H_ 0
 #endif  // _GC_H_

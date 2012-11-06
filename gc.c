@@ -1,6 +1,7 @@
 
 #include <string.h>
 
+#include "eval.h"  // for global_env
 #include "value.h"
 #include "gc.h"
 #include "symbols.h"
@@ -100,6 +101,62 @@ void half_space_swap(half_space* a, half_space* b) {
   memcpy(b, &tmp, sizeof(half_space));
 }
 
+#ifdef GC_DEBUG
+void print_half_space(const char* name, half_space* a) {
+  printf("Half space %s\n", name);
+  printf("... start: %016lx\n", a->start);
+  printf("... free : %016lx\n", a->free);
+  printf("... end  : %016lx\n", a->end);
+  printf("... size : %016lx\n", a->size);
+}
+#define PRINT_HALF_SPACE(name, space) (print_half_space(name, space))
+#else  // GC_DEBUG
+#define PRINT_HALF_SPACE(name, space)
+#endif  // GC_DEBUG
+
+// Write half space into file.
+void half_space_serialize_to_file(half_space* space, FILE* out) {
+  fwrite(space, sizeof(half_space), 1, out);
+  fwrite(space->start, sizeof(oop), space->free - space->start, out);
+  PRINT_HALF_SPACE("written", space);
+}
+
+// Resize and clear half space.
+void half_space_resize(half_space* a, fn_uint size) {
+  if (a->size != size) {
+    a->size = size;
+    a->start = realloc(a->start, sizeof(oop) * size);
+    a->free = a->start;
+    a->end = a->start + size;
+  }
+  half_space_clear(a);
+}
+
+void half_space_deserialize_from_file(
+    FILE* in, half_space* current, half_space* old,
+    half_space* in_old_process) {
+  fread(in_old_process, sizeof(half_space), 1, in);
+  half_space_resize(current, in_old_process->size);
+  half_space_resize(old, in_old_process->size);
+  fread(current->start,
+        sizeof(oop), in_old_process->free - in_old_process->start, in);
+  current->free += (in_old_process->free - in_old_process->start);
+  PRINT_HALF_SPACE("des old", current);
+  PRINT_HALF_SPACE("des current", current);
+}
+
+void pointered_half_space_enumerate_objects(
+    half_space* a, void(*callback)(oop object)) {
+  oop* current;
+  for (current = a->start + 1;
+       current < a->free;
+       current += get_smallint(current[-1]) + 1) {
+    oop object;
+    object.mem = current;
+    callback(object);
+  }
+}
+
 /*
  * Allocate an object of the given size in the half space.
  * This doesn't care about storing object size within the half space.
@@ -128,7 +185,7 @@ void half_space_print_fill(const half_space* space, const char* name) {
   fn_uint fill = space->free - space->start;
   fn_uint size = space->size;
   printf("GC: %6s: Fill: %d of %d (%d %%)\n",
-	 name, (int) fill, (int) size, (int) (100*fill / size));
+         name, (int) fill, (int) size, (int) (100*fill / size));
 }
 #endif  // GC_LOGGING
 
@@ -185,7 +242,7 @@ boolean object_is_saved(oop obj) {
 void object_save(oop obj) {
   CHECKV(!object_is_saved(obj), obj, "Must be unsaved.");
   CHECKV(half_space_contains(&object_memory.old, obj),
-	 obj, "Object must be in old half-space to be saved.");
+         obj, "Object must be in old half-space to be saved.");
   // Move.
   fn_uint size = get_smallint(obj.mem[-1]);
   oop newobj = gc_object_alloc(size);
@@ -214,6 +271,28 @@ void object_update_all_refs() {
        ptr < object_memory.current.free;
        ptr++) {
     *ptr = region(*ptr)->update(*ptr);
+  }
+}
+
+// TODO: Move to a better place.
+void relocate_ref(oop* ptr, half_space* old_space, half_space* new_space) {
+  if (half_space_contains(old_space, *ptr)) {
+    ptr->mem = ptr->mem - old_space->start + new_space->start;
+#ifdef GC_DEBUG
+    CHECK(!half_space_contains(old_space, *ptr), "Bad relocation.");
+#endif  // GC_DEBUG
+  }
+}
+
+void object_relocate_all_refs(half_space* old_space, half_space* new_space) {
+  if (old_space->start == new_space->start) {
+    return;
+  }
+  oop* ptr;
+  for (ptr = object_memory.current.start;
+       ptr < object_memory.current.free;
+       ptr++) {
+    relocate_ref(ptr, old_space, new_space);
   }
 }
 
@@ -437,6 +516,13 @@ void gc_run() {
   primitive_memory_region.update_all_refs();
   immediate_region.update_all_refs();
   object_region.update_all_refs();
+
+  // TODO: Also update refs from within symbol hash map,
+  // but only if they point to a broken heart.  If they don't,
+  // discard the entry in the symbol hash map.  (It's not used.)
+  // We then have 'compacted' symbols.  Don't forget to unregister the
+  // symbol hash map from the regular persistent refs list.
+
   // Tell regions that the collection has finished.
   primitive_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
@@ -449,6 +535,68 @@ void gc_run() {
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&primitive_memory.current);
   #endif  // GC_DEBUG
+}
+
+void gc_serialize_to_file(char* filename) {
+  run_gc_soon();
+  gc_run();
+  FILE* out = fopen(filename, "w");
+  fwrite(&global_env, sizeof(oop), 1, out);
+  fwrite(&symbols, sizeof(symbols), 1, out);
+  half_space_serialize_to_file(&object_memory.current, out);
+  half_space_serialize_to_file(&primitive_memory.current, out);
+  fclose(out);
+}
+
+void relocate_symbols_struct(half_space* old_space, half_space* new_space) {
+  oop* ptr = (oop*) &symbols;
+  oop* end = (oop*) ((&symbols) + 1);
+  while (ptr < end) {
+    relocate_ref(ptr, old_space, new_space);
+    ptr++;
+  }
+}
+
+/*
+ * Deserializes the program state from a file.
+ */
+void gc_deserialize_from_file(char* filename) {
+  FILE* in = fopen(filename, "r");
+
+  // Copy file contents over existing symbols map and global env ptr.
+  fread(&global_env, sizeof(oop), 1, in);
+  fread(&symbols, sizeof(symbols), 1, in);
+
+  // Copy file contents over existing half spaces.
+  half_space object_space_in_old_process;
+  half_space_deserialize_from_file(
+      in, &object_memory.current, &object_memory.old,
+      &object_space_in_old_process);
+
+  half_space primitive_space_in_old_process;
+  half_space_deserialize_from_file(
+      in, &primitive_memory.current, &primitive_memory.old,
+      &primitive_space_in_old_process);
+
+  // Update pointers in object space.
+  object_relocate_all_refs(&object_space_in_old_process,
+                           &object_memory.current);
+  object_relocate_all_refs(&primitive_space_in_old_process,
+                           &primitive_memory.current);
+
+  // Update pointers in symbols struct in C. (Save it.)
+  relocate_symbols_struct(&object_space_in_old_process, &object_memory.current);
+
+  // Update pointers in symbol hashmap.
+  // Note: We need to have structs._symbol updated for this to work!
+  symbol_hashmap_clear();
+  pointered_half_space_enumerate_objects(
+      &object_memory.current, symbol_hashmap_register);
+
+  relocate_ref(&global_env, &object_space_in_old_process,
+               &object_memory.current);
+
+  fclose(in);
 }
 
 

@@ -5,6 +5,7 @@
 #include "value.h"
 #include "memory.h"
 #include "symbols.h"
+#include "strings.h"
 
 /* Hash map for looking up symbols. */
 #define HASH_MAP_SIZE 8192
@@ -68,6 +69,37 @@ oop make_or_lookup_symbol(const char* str) {
   }
 }
 
+void symbol_hashmap_clear() {
+  bzero(interned_symbols_keys, sizeof(char*) * HASH_MAP_SIZE);
+  bzero(interned_symbols_values, sizeof(oop) * HASH_MAP_SIZE);
+}
+
+/*
+ * Register a new symbol in the symbol map.  The passed symbol is not
+ * created through make_or_lookup_symbol, but through a side-channel
+ * like deserializing the complete heap from a file.
+ *
+ * You may also pass other objects, in which case this will return
+ * without doing any work.
+ */
+void symbol_hashmap_register(oop symbol) {
+  if (!is_symbol(symbol)) {
+    return;
+  }
+  // TODO: Use hash value from symbol itself.
+  const char* str = get_symbol(symbol);
+  fn_uint idx = find_place(str);
+  if (interned_symbols_keys[idx]) {
+    CHECKV(value_eq(interned_symbols_values[idx], symbol),
+           symbol, "Conflicting symbol instances; should not happen.");
+    return;
+  } else {
+    interned_symbols_keys[idx] = strdup(str);
+    interned_symbols_values[idx] = symbol;
+    return;
+  }
+}
+
 
 
 symbols_t symbols;
@@ -106,8 +138,7 @@ void init_symbols() {
   static boolean initialized = NO;
   if (initialized) return;
   // Note: Symbol map must be zeroed before creating symbols.
-  bzero(interned_symbols_keys, sizeof(char*) * HASH_MAP_SIZE);
-  bzero(interned_symbols_values, sizeof(oop) * HASH_MAP_SIZE);
+  symbol_hashmap_clear();
 
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.

@@ -133,6 +133,9 @@ void init() {
   init_primitives();
   init_interpreter();
   init_data();
+}
+
+void init_decls() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
@@ -219,26 +222,49 @@ void repl() {
   }
 }
 
-boolean test_arg = NO;
 boolean compile_arg = NO;
-
+boolean deserialize_arg = NO;
+boolean exit_arg = NO;
+boolean serialize_arg = NO;
+boolean test_arg = NO;
 void parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
     if (strcmp(argv[i], "-t") == 0) {
-      test_arg = YES;
+      test_arg = YES; continue;
     }
     if (strcmp(argv[i], "-c") == 0) {
-      compile_arg = YES;
+      compile_arg = YES; continue;
     }
+    if (strcmp(argv[i], "-s") == 0) {
+      serialize_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-S") == 0) {
+      deserialize_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-x") == 0) {
+      exit_arg = YES; continue;
+    }
+    CHECK(1==0, "Unknown argument");
   }
 }
 
 int main(int argc, char* argv[]) {
-  init();
   parse_args(argc, argv);
+  init();
+  if (deserialize_arg) {
+    gc_deserialize_from_file("fn.img");
+  } else {
+    init_decls();
+  }
   if (compile_arg) {
     compile_system();
+  }
+  if (serialize_arg) {
+    gc_serialize_to_file("fn.img");
+  }
+  if (exit_arg) {
+    exit(0);
   }
   if (test_arg == NO) {
     puts("FN " __DATE__ ".");

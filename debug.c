@@ -127,6 +127,8 @@ void print_value_internal(oop v) {
       printf("@frame");
     } else if (value_eq(symbols._string, v)) {
       printf("@string");
+    } else if (value_eq(symbols._symbol, v)) {
+      printf("@symbol");
     } else if (value_eq(symbols._procedure, v)) {
       printf("@procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {
