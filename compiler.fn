@@ -99,7 +99,7 @@
 (defn compile-lambda-body (exprs environment)
   ;; Only the last expression keeps the tail call property.
   `(,@(apply append (map (lambda (e) `(,@(compile e environment 'call)
-                                       (pop)))
+                                       (discard)))
                          (all-but-last exprs)))
     ,@(compile (last exprs) environment 'tail-call)
     (return)))
@@ -196,7 +196,7 @@
     ('write-var (f-depth v-index) (byte 4) (byte f-depth) (byte v-index))
     ('read-global-var (oop)       (byte 5) (oop-ref oop))
     ('write-global-var (oop)      (byte 6) (oop-ref oop))
-    ('pop ()                      (byte 7))
+    ('discard ()                  (byte 7))
     ('make-lambda (label ll)      (byte 8) (address-of label) (oop-ref ll))
     ('call (argnum)               (byte 9) (byte argnum))
     ('tail-call (argnum)          (byte 10) (byte argnum))

@@ -38,7 +38,7 @@ typedef struct {
 #define BC_WRITE_VAR 4
 #define BC_READ_GLOBAL_VAR 5
 #define BC_WRITE_GLOBAL_VAR 6
-#define BC_POP 7
+#define BC_DISCARD 7
 #define BC_MAKE_LAMBDA 8
 #define BC_CALL 9
 #define BC_TAIL_CALL 10

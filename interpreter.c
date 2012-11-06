@@ -363,10 +363,9 @@ oop interpret(oop frame, oop code) {
       IVALUE(value);
       break;
     }
-    case BC_POP: {
-      // TODO: Rename to BC_DISCARD.
+    case BC_DISCARD: {
       stack_pop();
-      IPRINT("pop            .oO stack-size=%d\n", stack.size);
+      IPRINT("discard        .oO stack-size=%d\n", stack.size);
       break;
     }
     case BC_MAKE_LAMBDA: {
