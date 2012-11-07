@@ -284,15 +284,19 @@ void relocate_ref(oop* ptr, half_space* old_space, half_space* new_space) {
   }
 }
 
-void object_relocate_all_refs(half_space* old_space, half_space* new_space) {
-  if (old_space->start == new_space->start) {
+void object_relocate_all_refs(
+    half_space* old_space_a, half_space* new_space_a,
+    half_space* old_space_b, half_space* new_space_b) {
+  if (old_space_a->start == new_space_a->start &&
+      old_space_b->start == new_space_b->start) {
     return;
   }
   oop* ptr;
   for (ptr = object_memory.current.start;
        ptr < object_memory.current.free;
        ptr++) {
-    relocate_ref(ptr, old_space, new_space);
+    relocate_ref(ptr, old_space_a, new_space_a);
+    relocate_ref(ptr, old_space_b, new_space_b);
   }
 }
 
@@ -580,8 +584,8 @@ void gc_deserialize_from_file(char* filename) {
 
   // Update pointers in object space.
   object_relocate_all_refs(&object_space_in_old_process,
-                           &object_memory.current);
-  object_relocate_all_refs(&raw_space_in_old_process,
+                           &object_memory.current,
+                           &raw_space_in_old_process,
                            &raw_memory.current);
 
   // Update pointers in symbols struct in C. (Save it.)
