@@ -26,12 +26,12 @@ oop mem_get(oop target, fn_uint index) {
   return target.mem[index];
 }
 
-oop mem_primitive_mem_alloc(fn_uint amount) {
-  return gc_primitive_memory_alloc(amount);  // in gc.c
+oop mem_raw_mem_alloc(fn_uint amount) {
+  return gc_raw_memory_alloc(amount);  // in gc.c
 }
 
-oop mem_primitive_mem_get(oop target, fn_uint index) {
-  CHECKV(is_primitive_mem(target), target, "Must be primitive memory object.");
+oop mem_raw_mem_get(oop target, fn_uint index) {
+  CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
   CHECK(0 <= index, "Need 0 <= index.");
   CHECKV(index < sizeof(oop) * (get_smallint(target.mem[-1])),
          target.mem[-1],
@@ -40,8 +40,8 @@ oop mem_primitive_mem_get(oop target, fn_uint index) {
   return make_smallint((fn_uint) ptr[index]);
 }
 
-void mem_primitive_mem_set(oop target, fn_uint index, fn_uint value) {
-  CHECKV(is_primitive_mem(target), target, "Must be primitive memory object.");
+void mem_raw_mem_set(oop target, fn_uint index, fn_uint value) {
+  CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
   CHECK(0 <= value && value <= 255, "Need value in byte range.");
   CHECK(0 <= index, "Need 0 <= index.");
   CHECKV(index < sizeof(oop) * (get_smallint(target.mem[-1])),

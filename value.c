@@ -40,9 +40,9 @@ boolean value_eq(oop a, oop b) {
   return TO_BOOL(a.mem == b.mem);
 }
 
-// TODO(gnoack): Reduce the is_* to a function that returns the
-//   primitive type from the value.  This would ensure a value
-//   can have only one type.
+// TODO: Reduce the is_* to a function that returns the
+// primitive type from the value.  This would ensure a value
+// can have only one type.
 boolean is_nil(oop a) {
   return TO_BOOL(a.smallint == 0L);
 }
@@ -62,8 +62,8 @@ boolean is_mem(oop v) {
   return gc_is_object(v);
 }
 
-boolean is_primitive_mem(oop v) {
-  return gc_is_primitive_memory(v);
+boolean is_raw_mem(oop v) {
+  return gc_is_raw_memory(v);
 }
 
 boolean is_char(oop v) {

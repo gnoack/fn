@@ -38,7 +38,7 @@ oop make_compiled_procedure(oop lambda_list, oop code, oop env) {
   CHECKV(is_cons(code), code,
          "Code has to be a three tuple.");
   CHECKNUMBER(first(code));
-  CHECKV(is_primitive_mem(cadr(code)), cadr(code), "Needs to have bytecode.");
+  CHECKV(is_raw_mem(cadr(code)), cadr(code), "Needs to have bytecode.");
   oop result = mem_alloc(6);
   mem_set(result, 0, symbols._compiled_procedure);
   mem_set(result, 1, NIL);  // Name.

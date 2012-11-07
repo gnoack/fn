@@ -18,7 +18,7 @@
 oop make_string(const char* str) {
   fn_uint len = strlen(str);
   oop result = mem_alloc(4);
-  oop raw_string = mem_primitive_mem_alloc(len);
+  oop raw_string = mem_raw_mem_alloc(len);
   memcpy((void*) raw_string.mem, (void*) str, len);
   mem_set(result, 0, symbols._string);
   mem_set(result, 1, make_smallint(len));

@@ -328,44 +328,44 @@ void object_region_init(fn_uint size) {
 
 
 /*
- * Primitive memory.
+ * Raw byte memory.
  *
- * The most dangerous form of memory available.  Each oop in primitive
+ * The most dangerous form of memory available.  Each oop in raw
  * memory is prepended with the object size before allocation.
  */
 struct {
   half_space current;
   half_space old;
-} primitive_memory;
+} raw_memory;
 
-region_t primitive_memory_region;
+region_t raw_memory_region;
 
-void primitive_memory_on_gc_start() {
-  half_space_swap(&primitive_memory.current, &primitive_memory.old);
-  half_space_clear(&primitive_memory.current);
+void raw_memory_on_gc_start() {
+  half_space_swap(&raw_memory.current, &raw_memory.old);
+  half_space_clear(&raw_memory.current);
 }
 
 // Size in bytes
-extern oop gc_primitive_memory_alloc(fn_uint size) {
+extern oop gc_raw_memory_alloc(fn_uint size) {
   // Round up to oop size and express in number of oops.
   size = (size + sizeof(oop) - 1) / sizeof(oop);
   // This is a hack to make sure we're always allocating enough for GC.
   if (size == 0) {
     size = 1;
   }
-  oop result = half_space_alloc(&primitive_memory.current, size + 1);
+  oop result = half_space_alloc(&raw_memory.current, size + 1);
   result.mem[0] = make_smallint(size);
   result.mem = result.mem + 1;
   return result;
 }
 
-void primitive_memory_save(oop obj) {
+void raw_memory_save(oop obj) {
   // Sharing the same is_saved method with the object allocator.
   GC_CHECK(!object_is_saved(obj), "Must be unsaved.");
-  GC_CHECK(half_space_contains(&primitive_memory.old, SANE(obj)), "obj is old");
+  GC_CHECK(half_space_contains(&raw_memory.old, SANE(obj)), "obj is old");
   // Move.
   fn_uint size = get_smallint(obj.mem[-1]);
-  oop newobj = gc_primitive_memory_alloc(size * sizeof(oop));
+  oop newobj = gc_raw_memory_alloc(size * sizeof(oop));
   fn_uint i;
   for (i = 0; i < size; i++) {
     newobj.mem[i] = obj.mem[i];
@@ -376,26 +376,26 @@ void primitive_memory_save(oop obj) {
   obj.mem[0] = newobj;
 
   GC_CHECK(object_is_saved(obj), "Must be saved now.");
-  GC_CHECK(half_space_contains(&primitive_memory.current, SANE(newobj)), "newobj is current");
-  GC_CHECK(half_space_contains(&primitive_memory.old, SANE(obj)), "obj is old");
+  GC_CHECK(half_space_contains(&raw_memory.current, SANE(newobj)), "newobj is current");
+  GC_CHECK(half_space_contains(&raw_memory.old, SANE(obj)), "obj is old");
 }
 
 // Only valid outside of GC run.
-extern boolean gc_is_primitive_memory(oop obj) {
-  return half_space_contains(&primitive_memory.current, SANE(obj));
+extern boolean gc_is_raw_memory(oop obj) {
+  return half_space_contains(&raw_memory.current, SANE(obj));
 }
 
-void primitive_memory_region_init(fn_uint size) {
-  half_space_init(&primitive_memory.current, size);
-  half_space_init(&primitive_memory.old, size);
+void raw_memory_region_init(fn_uint size) {
+  half_space_init(&raw_memory.current, size);
+  half_space_init(&raw_memory.old, size);
   // Hooks.
-  primitive_memory_region.on_gc_start = primitive_memory_on_gc_start;
-  primitive_memory_region.on_gc_stop = noop;
-  primitive_memory_region.save = primitive_memory_save;
-  primitive_memory_region.is_saved = object_is_saved;  // Shared.
-  primitive_memory_region.update = object_update;  // Shared.
-  primitive_memory_region.update_all_refs = noop;
-  primitive_memory_region.enumerate_refs = enumerate_refs_none;
+  raw_memory_region.on_gc_start = raw_memory_on_gc_start;
+  raw_memory_region.on_gc_stop = noop;
+  raw_memory_region.save = raw_memory_save;
+  raw_memory_region.is_saved = object_is_saved;  // Shared.
+  raw_memory_region.update = object_update;  // Shared.
+  raw_memory_region.update_all_refs = noop;
+  raw_memory_region.enumerate_refs = enumerate_refs_none;
 }
 
 
@@ -448,10 +448,10 @@ region_t* region(oop obj) {
              half_space_contains(&object_memory.current, obj)) {
     return &object_region;
   } else {
-    CHECK(half_space_contains(&primitive_memory.old, obj) ||
-          half_space_contains(&primitive_memory.current, obj),
-          "Must be a primitive object.");
-    return &primitive_memory_region;
+    CHECK(half_space_contains(&raw_memory.old, obj) ||
+          half_space_contains(&raw_memory.current, obj),
+          "Must be a raw object.");
+    return &raw_memory_region;
   }
 }
 
@@ -474,7 +474,7 @@ void run_gc_soon() {
 void init_gc() {
   _run_gc_soon = NO;
   object_region_init(1 << 27);  // TODO: Enough?
-  primitive_memory_region_init(1 << 18);  // TODO: Enough?
+  raw_memory_region_init(1 << 18);  // TODO: Enough?
   immediate_region_init();
 }
 
@@ -485,9 +485,9 @@ boolean should_skip_gc() {
     return NO;
   }
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
-  fn_uint pri_fill = primitive_memory.current.free - primitive_memory.current.start;
+  fn_uint pri_fill = raw_memory.current.free - raw_memory.current.start;
   return TO_BOOL((100*obj_fill / object_memory.current.size) < 50 &&
-                 (100*pri_fill / primitive_memory.current.size) < 50);
+                 (100*pri_fill / raw_memory.current.size) < 50);
 }
 
 #ifdef GC_DEBUG
@@ -501,19 +501,19 @@ void gc_run() {
   }
   #ifdef GC_LOGGING
   half_space_print_fill(&object_memory.current, "object before");
-  half_space_print_fill(&primitive_memory.current, "primitive before");
+  half_space_print_fill(&raw_memory.current, "raw before");
   #endif  // GC_LOGGING
   #ifdef GC_DEBUG
   pointered_half_space_sanity_check(&object_memory.current);
-  pointered_half_space_sanity_check(&primitive_memory.current);
+  pointered_half_space_sanity_check(&raw_memory.current);
   #endif  // GC_DEBUG
-  primitive_memory_region.on_gc_start();
+  raw_memory_region.on_gc_start();
   immediate_region.on_gc_start();
   object_region.on_gc_start();
   // Traverse roots
   traverse_persistent_refs();
   // Tell regions to update all refs.
-  primitive_memory_region.update_all_refs();
+  raw_memory_region.update_all_refs();
   immediate_region.update_all_refs();
   object_region.update_all_refs();
 
@@ -524,16 +524,16 @@ void gc_run() {
   // symbol hash map from the regular persistent refs list.
 
   // Tell regions that the collection has finished.
-  primitive_memory_region.on_gc_stop();
+  raw_memory_region.on_gc_stop();
   immediate_region.on_gc_stop();
   object_region.on_gc_stop();
   #ifdef GC_LOGGING
   half_space_print_fill(&object_memory.current, "object after");
-  half_space_print_fill(&primitive_memory.current, "primitive after");
+  half_space_print_fill(&raw_memory.current, "raw after");
   #endif  // GC_LOGGING
   #ifdef GC_DEBUG
   pointered_half_space_sanity_check(&object_memory.current);
-  pointered_half_space_sanity_check(&primitive_memory.current);
+  pointered_half_space_sanity_check(&raw_memory.current);
   #endif  // GC_DEBUG
 }
 
@@ -544,7 +544,7 @@ void gc_serialize_to_file(char* filename) {
   fwrite(&global_env, sizeof(oop), 1, out);
   fwrite(&symbols, sizeof(symbols), 1, out);
   half_space_serialize_to_file(&object_memory.current, out);
-  half_space_serialize_to_file(&primitive_memory.current, out);
+  half_space_serialize_to_file(&raw_memory.current, out);
   fclose(out);
 }
 
@@ -573,16 +573,16 @@ void gc_deserialize_from_file(char* filename) {
       in, &object_memory.current, &object_memory.old,
       &object_space_in_old_process);
 
-  half_space primitive_space_in_old_process;
+  half_space raw_space_in_old_process;
   half_space_deserialize_from_file(
-      in, &primitive_memory.current, &primitive_memory.old,
-      &primitive_space_in_old_process);
+      in, &raw_memory.current, &raw_memory.old,
+      &raw_space_in_old_process);
 
   // Update pointers in object space.
   object_relocate_all_refs(&object_space_in_old_process,
                            &object_memory.current);
-  object_relocate_all_refs(&primitive_space_in_old_process,
-                           &primitive_memory.current);
+  object_relocate_all_refs(&raw_space_in_old_process,
+                           &raw_memory.current);
 
   // Update pointers in symbols struct in C. (Save it.)
   relocate_symbols_struct(&object_space_in_old_process, &object_memory.current);
@@ -609,10 +609,10 @@ void gc_deserialize_from_file(char* filename) {
 oop sane(oop obj) {
   boolean is_mem = (half_space_contains(&object_memory.old, obj) ||
                     half_space_contains(&object_memory.current, obj));
-  boolean is_primitive = (half_space_contains(&primitive_memory.old, obj) ||
-                          half_space_contains(&primitive_memory.current, obj));
-  if (is_mem || is_primitive) {
-    const char* allocation_type = is_mem ? "Pointer" : "Primitive";
+  boolean is_raw = (half_space_contains(&raw_memory.old, obj) ||
+                    half_space_contains(&raw_memory.current, obj));
+  if (is_mem || is_raw) {
+    const char* allocation_type = is_mem ? "Pointer" : "Raw";
     if (is_nil(obj.mem[-1])) {
       return obj;  // Broken heart.
     }

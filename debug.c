@@ -75,8 +75,8 @@ void print_value_internal(oop v) {
       }
     }
     printf(")");
-  } else if (is_primitive_mem(v)) {
-    printf("<PRIMITIVE-MEMORY #%08llx ", (unsigned long long) v.smallint);
+  } else if (is_raw_mem(v)) {
+    printf("<RAW-MEMORY #%08llx ", (unsigned long long) v.smallint);
     fn_uint size = get_smallint(v.mem[-1]);
     fn_uint i;
     for (i=0; i<size*sizeof(oop); i++) {

@@ -44,7 +44,7 @@ oop construct_symbol(const char* str) {
   fn_uint hash = string_to_hash(str);
   hash = (hash << 1) >> 1;  // Strip most significant bit.
 
-  oop raw_mem = mem_primitive_mem_alloc(len + 1);
+  oop raw_mem = mem_raw_mem_alloc(len + 1);
   char* target = (char*) raw_mem.mem;
   memcpy(target, str, len);
   target[len] = '\0';

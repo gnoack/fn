@@ -144,7 +144,7 @@ UNARY_PREDICATE(primitive_mem_p, is_mem);
 UNARY_PREDICATE(primitive_char_p, is_char);
 UNARY_PREDICATE(primitive_number_p, is_smallint);
 UNARY_PREDICATE(primitive_symbol_p, is_symbol);
-UNARY_PREDICATE(primitive_mem_block_p, is_primitive_mem);
+UNARY_PREDICATE(primitive_raw_mem_p, is_raw_mem);
 UNARY_PREDICATE(primitive_global_env_p, is_global_env);
 
 oop primitive_list(oop args) {
@@ -174,23 +174,23 @@ oop primitive_kill_lisp(oop args) {
   exit(get_smallint(exit_status));
 }
 
-oop primitive_primitive_mem_alloc(oop args) {
+oop primitive_raw_mem_alloc(oop args) {
   PARSE_ONE_ARG(size);
   CHECKNUMBER(size);
-  return mem_primitive_mem_alloc(get_smallint(size));
+  return mem_raw_mem_alloc(get_smallint(size));
 }
 
-oop primitive_primitive_mem_get(oop args) {
+oop primitive_raw_mem_get(oop args) {
   PARSE_TWO_ARGS(target, index);
   CHECKNUMBER(index);
-  return mem_primitive_mem_get(target, get_smallint(index));
+  return mem_raw_mem_get(target, get_smallint(index));
 }
 
-oop primitive_primitive_mem_set(oop args) {
+oop primitive_raw_mem_set(oop args) {
   PARSE_THREE_ARGS(target, index, value);
   CHECKNUMBER(index);
   CHECKNUMBER(value);
-  mem_primitive_mem_set(target, get_smallint(index), get_smallint(value));
+  mem_raw_mem_set(target, get_smallint(index), get_smallint(value));
   return value;
 }
 
@@ -235,15 +235,15 @@ void init_primitives() {
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
   register_globally_fn("symbol?", primitive_symbol_p);
+  register_globally_fn("global-env?", primitive_global_env_p);
   register_globally_fn("list", primitive_list);
   register_globally_fn("apply", primitive_apply);
   register_globally_fn("writeout", primitive_write_out);
   register_globally_fn("kill-lisp", primitive_kill_lisp);
-  register_globally_fn("$make-mem-block", primitive_primitive_mem_alloc);
-  register_globally_fn("mem-block?", primitive_mem_block_p);
-  register_globally_fn("global-env?", primitive_global_env_p);
-  register_globally_fn("$mem-block-byte-get", primitive_primitive_mem_get);
-  register_globally_fn("$mem-block-byte-set!", primitive_primitive_mem_set);
+  register_globally_fn("$make-mem-block", primitive_raw_mem_alloc);
+  register_globally_fn("mem-block?", primitive_raw_mem_p);
+  register_globally_fn("$mem-block-byte-get", primitive_raw_mem_get);
+  register_globally_fn("$mem-block-byte-set!", primitive_raw_mem_set);
   register_globally_fn("run-gc", primitive_run_gc);
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);

@@ -73,7 +73,7 @@ extern boolean is_symbol(oop v);
 
 extern boolean is_mem(oop v);
 
-extern boolean is_primitive_mem(oop v);
+extern boolean is_raw_mem(oop v);
 
 extern boolean is_char(oop v);
 
