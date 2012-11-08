@@ -13,6 +13,7 @@
 #include "value.h"
 
 oop global_env;
+oop remaining_declarations;
 
 void set_globally_oop(oop key, oop value) {
   // If it's a procedure, set its name.
@@ -49,12 +50,14 @@ oop lookup_globally(oop key) {
 
 void enumerate_gc_roots(void (*accept)(oop* place)) {
   accept(&global_env);
+  accept(&remaining_declarations);
 }
 
 void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
   global_env = make_dict(47);
+  remaining_declarations = NIL;
   register_globally("nil", NIL);
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
@@ -218,7 +221,9 @@ void load_decls(oop decls) {
   while (!is_nil(decls)) {
     eval_global(car(decls));
 
-    decls = cdr(decls);
+    // Protect the remaining declarations during GC.
+    remaining_declarations = cdr(decls);
+    gc_run();
+    decls = remaining_declarations;
   }
-  gc_run();
 }
