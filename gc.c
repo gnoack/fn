@@ -10,6 +10,8 @@
 // TODO: Eliminate a lot of code duplication here!
 
 
+// #define GC_SUMMARY 1
+// #define GC_DEBUG 1
 // #define GC_LOGGING 1
 
 #ifdef GC_DEBUG
@@ -495,9 +497,14 @@ boolean should_skip_gc() {
 }
 
 #ifdef GC_DEBUG
-  // Forward declaration.
-  oop pointered_half_space_sanity_check(half_space* space);
+// Forward declaration.
+oop pointered_half_space_sanity_check(half_space* space);
 #endif  // GC_DEBUG
+
+#ifdef GC_SUMMARY
+// Forward declaration.
+void pointered_half_space_print_object_types(half_space* a);
+#endif
 
 void gc_run() {
   if (should_skip_gc()) {
@@ -507,6 +514,9 @@ void gc_run() {
   half_space_print_fill(&object_memory.current, "object before");
   half_space_print_fill(&raw_memory.current, "raw before");
   #endif  // GC_LOGGING
+  #ifdef GC_SUMMARY
+  pointered_half_space_print_object_types(&object_memory.current);
+  #endif  // GC_SUMMARY
   #ifdef GC_DEBUG
   pointered_half_space_sanity_check(&object_memory.current);
   pointered_half_space_sanity_check(&raw_memory.current);
@@ -656,3 +666,41 @@ oop pointered_half_space_sanity_check(half_space* space) {
 }
 #endif  // GC_DEBUG
 
+
+// Counting summaries about how many objects of what type exist.
+
+#ifdef GC_SUMMARY
+#define MAX_TYPE_COUNT 100
+int seen_type_count;
+struct { oop type; unsigned int count; } object_counts[MAX_TYPE_COUNT];
+
+void print_object_type(oop obj) {
+  oop type = obj.mem[0];
+  int i;
+  for (i=0; i<seen_type_count; i++) {
+    if (value_eq(object_counts[i].type, type)) {
+      object_counts[i].count ++;
+      return;
+    }
+  }
+  seen_type_count++;
+  object_counts[i].type = type;
+  object_counts[i].count = 1;
+  CHECK(seen_type_count < MAX_TYPE_COUNT, "Too many object types found.");
+}
+
+void print_summary() {
+  int i;
+  for (i=0; i<seen_type_count; i++) {
+    printf("%9u ", object_counts[i].count);
+    print_value(object_counts[i].type);
+  }
+}
+
+// Output of this can be piped into | sort | uniq -c to count.
+void pointered_half_space_print_object_types(half_space* a) {
+  seen_type_count = 0;
+  pointered_half_space_enumerate_objects(a, print_object_type);
+  print_summary();
+}
+#endif  // GC_SUMMARY
