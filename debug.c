@@ -127,6 +127,8 @@ void print_value_internal(oop v) {
       printf("@dict");
     } else if (value_eq(symbols._frame, v)) {
       printf("@frame");
+    } else if (value_eq(symbols._retptr, v)) {
+      printf("@retptr");
     } else if (value_eq(symbols._string, v)) {
       printf("@string");
     } else if (value_eq(symbols._symbol, v)) {

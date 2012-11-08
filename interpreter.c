@@ -232,20 +232,23 @@ oop read_oop(interpreter_state_t* state) {
 }
 
 oop serialize_retptr(interpreter_state_t* state) {
-  oop result = mem_alloc(4);
-  // TODO: Type marker?
-  MEM_SET(result, 0, state->reg_frm);
-  MEM_SET(result, 1, make_smallint(state->ip));
-  MEM_SET(result, 2, state->bytecode);
-  MEM_SET(result, 3, state->oop_lookups);
+  oop result = mem_alloc(5);
+  MEM_SET(result, 0, symbols._retptr);
+  MEM_SET(result, 1, state->reg_frm);
+  MEM_SET(result, 2, make_smallint(state->ip));
+  MEM_SET(result, 3, state->bytecode);
+  MEM_SET(result, 4, state->oop_lookups);
   return result;
 }
 
 void deserialize_retptr(oop retptr, interpreter_state_t* state) {
-  state->reg_frm     = MEM_GET(retptr, 0);
-  state->ip          = get_smallint(MEM_GET(retptr, 1));
-  state->bytecode    = MEM_GET(retptr, 2);
-  state->oop_lookups = MEM_GET(retptr, 3);
+  // Comment this out for performance.
+  // CHECKV(value_eq(symbols._retptr, MEM_GET(retptr, 0)), retptr,
+  //        "Needs to be a retptr to deserialize it.");
+  state->reg_frm     = MEM_GET(retptr, 1);
+  state->ip          = get_smallint(MEM_GET(retptr, 2));
+  state->bytecode    = MEM_GET(retptr, 3);
+  state->oop_lookups = MEM_GET(retptr, 4);
 }
 
 

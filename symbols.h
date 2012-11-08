@@ -20,6 +20,7 @@ typedef struct {
   oop _dframe;
   oop _dict;
   oop _frame;
+  oop _retptr;
   oop _string;
   oop _symbol;
 
