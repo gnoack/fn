@@ -275,10 +275,10 @@
           (fn-lambda-list fn)
           (assemble (compile-lambda-body (fn-body fn) env-in-body))
           nil))
-     (progn
-       ;; TODO: This is a hack to make compiling by hand convenient.
-       (println "This procedure is not compilable, returning it as it is.")
-       fn))))
+     ;; If not compilable, we simply return the thing itself.  Chances
+     ;; are, the procedure is already compiled.  This is a hack to
+     ;; make compiling by hand convenient.
+     fn)))
 
 (defn compile-fn* (fn)
   (with-asserts ((compilable? fn))
