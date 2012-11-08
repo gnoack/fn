@@ -479,8 +479,8 @@ void run_gc_soon() {
 
 void init_gc() {
   _run_gc_soon = NO;
-  object_region_init(1 << 24);  // TODO: Enough?
-  raw_memory_region_init(1 << 18);  // TODO: Enough?
+  object_region_init(1 << 23);  // TODO: Enough?
+  raw_memory_region_init(1 << 15);  // TODO: Enough?
   immediate_region_init();
 }
 
