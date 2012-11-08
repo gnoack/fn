@@ -21,6 +21,7 @@
 ($patch-type! @array)
 ($patch-type! @cons)
 ($patch-type! @continuation)
+($patch-type! @dframe)
 ($patch-type! @dict)
 ($patch-type! @frame)
 ($patch-type! @string)

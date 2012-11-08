@@ -121,6 +121,8 @@ void print_value_internal(oop v) {
       printf("@cons");
     } else if (value_eq(symbols._continuation, v)) {
       printf("@continuation");
+    } else if (value_eq(symbols._dframe, v)) {
+      printf("@dframe");
     } else if (value_eq(symbols._dict, v)) {
       printf("@dict");
     } else if (value_eq(symbols._frame, v)) {

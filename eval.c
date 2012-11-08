@@ -64,6 +64,7 @@ void init_eval() {
   register_globally("@array", symbols._array);
   register_globally("@cons", symbols._cons);
   register_globally("@continuation", symbols._continuation);
+  register_globally("@dframe", symbols._dframe);
   register_globally("@dict", symbols._dict);
   register_globally("@frame", symbols._frame);
   register_globally("@string", symbols._string);
