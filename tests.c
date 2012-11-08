@@ -105,9 +105,9 @@ void assert_eq(const char* filename,
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
     printf("  Expected: ");
-    print_value(a);
+    println_value(a);
     printf("       Got: ");
-    print_value(b);
+    println_value(b);
   }
 }
 
@@ -119,9 +119,9 @@ void run_lisp_tests(oop tests) {
     init_assert();
     if (!value_eq(symbols._true, result)) {
       fail("from lisp", 0, "Expected true for expression:");
-      print_value(test);
+      println_value(test);
       printf("  --> ");
-      print_value(result);
+      println_value(result);
     }
 
     tests = cdr(tests);
@@ -217,7 +217,7 @@ void repl() {
     }
     oop cmd = make_string(input);
     oop sexpr = eval_global(LIST(make_symbol("read-all"), cmd));
-    print_value(eval_global(sexpr));
+    println_value(eval_global(sexpr));
     
     // GC if needed.
     gc_run();

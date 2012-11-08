@@ -243,10 +243,10 @@ void print_procedure(oop fn) {
   } else if (is_native_procedure(fn)) {
     printf("<NATIVE-PROCEDURE ");
   }
-  print_value_internal(fn_name(fn));
+  print_value(fn_name(fn));
   if (!is_native_procedure(fn)) {
     printf(" ");
-    print_value_internal(fn_lambda_list(fn));
+    print_value(fn_lambda_list(fn));
   }
   printf(">");
 }
@@ -267,7 +267,7 @@ void print_apply_stack() {
   int i;
   for (i=apply_stack_pos-1; i>=0; i--) {
     printf("%3d ", i);
-    print_value(apply_stack[i]);
+    println_value(apply_stack[i]);
   }
 }
 

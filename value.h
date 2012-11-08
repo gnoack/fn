@@ -33,7 +33,7 @@ void (*print_stack_frame)();
   if (!(x)) {                                        \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     printf("Offending value: ");                     \
-    print_value(value);                              \
+    println_value(value);                              \
     print_stack_frame();                             \
     exit(1);                                         \
   }

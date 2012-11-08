@@ -693,7 +693,7 @@ void print_summary() {
   int i;
   for (i=0; i<seen_type_count; i++) {
     printf("%9u ", object_counts[i].count);
-    print_value(object_counts[i].type);
+    println_value(object_counts[i].type);
   }
 }
 

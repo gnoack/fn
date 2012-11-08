@@ -46,7 +46,7 @@ void print_zone(oop obj) {
 
 
 // Prints values, for debugging.
-void print_value_internal(oop v) {
+void print_value(oop v) {
   if (is_global_env(v)) {
     printf("#<GLOBAL ENVIRONMENT>");
   } else if (is_smallint(v)) {
@@ -62,7 +62,7 @@ void print_value_internal(oop v) {
     while (!is_nil(v)) {
       // is_cons(v) holds.
       if (is_cons(v)) {
-	print_value_internal(first(v));
+	print_value(first(v));
 	v = rest(v);
 	if (!is_nil(v)) {
 	  printf(" ");
@@ -70,7 +70,7 @@ void print_value_internal(oop v) {
       } else {
 	// not a cons, print it.
 	printf(" . ");
-	print_value_internal(v);
+	print_value(v);
 	v = NIL;
       }
     }
@@ -97,16 +97,16 @@ void print_value_internal(oop v) {
     printf("#[");
     for (i=0; i<size; i++) {
       putchar(' ');
-      print_value_internal(array_get(v, i));
+      print_value(array_get(v, i));
     }
     putchar(']');
   } else if (is_dict(v)) {
     oop kv_pairs = dict_key_value_pairs(v);
     printf("#{");
     while (is_cons(kv_pairs)) {
-      print_value_internal(first(first(kv_pairs)));
+      print_value(first(first(kv_pairs)));
       printf(": ");
-      print_value_internal(rest(first(kv_pairs)));
+      print_value(rest(first(kv_pairs)));
       if (!is_nil(rest(kv_pairs))) {
         printf(", ");
       }
@@ -146,8 +146,8 @@ void print_value_internal(oop v) {
 }
 
 extern
-void print_value(oop v) {
-  print_value_internal(v);
+void println_value(oop v) {
+  print_value(v);
   printf("\n");
 }
 

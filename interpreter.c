@@ -29,7 +29,7 @@
 
 #ifdef INTERPRETER_LOGGING
 #define IPRINT(...) printf(__VA_ARGS__)
-#define IVALUE(x) print_value(x)
+#define IVALUE(x) println_value(x)
 #else
 #define IPRINT(...)
 #define IVALUE(x)
@@ -64,7 +64,7 @@ void stack_push(oop value) {
   if (stack.size >= MAX_STACK_SIZE) {
     int i;
     for (i=0; i<MAX_STACK_SIZE; i++) {
-      print_value(stack.stack[i]);
+      println_value(stack.stack[i]);
     }
   }
   CHECK(stack.size < MAX_STACK_SIZE, "Stack too large, can't push.");
@@ -112,7 +112,7 @@ void print_stack() {
   int i;
   for (i=stack.size-1; i>=0; i--) {
     printf(" [s] %03d ", i);
-    print_value(stack.stack[i]);
+    println_value(stack.stack[i]);
   }
 }
 #endif  // INTERPRETER_DEBUG
