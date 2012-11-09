@@ -437,6 +437,18 @@ oop interpret(oop frame, oop code) {
       stack_push(return_value);
       break;
     }
+    case BC_TAIL_CALL_APPLY: {
+      IPRINT("apply\n");
+      fn_uint arg_count = 1;
+      oop arglist = stack_pop();
+      while (!is_nil(arglist)) {
+        stack_push(first(arglist));
+        arglist = rest(arglist);
+        arg_count++;
+      }
+      apply_into_interpreter(arg_count, &state, YES);
+      break;
+    }
     default:
       printf("Fatal: Unknown byte code!\n");
       exit(1);

@@ -204,6 +204,7 @@
     ('call/cc ()                  (byte 12))
     ('invalidate-continuation ()  (byte 13))
     ('restore-continuation ()     (byte 14))
+    ('tail-call-apply ()          (byte 15))
     ('label (l)                   (save-label! l))))
 
 (defn lower-byte (n) (mod n 256))
@@ -311,5 +312,12 @@
       (quote ,lambda-list)
       (assemble (quote ,bytecode))
       nil)))
+
+;; Replaces the C implementation of `apply'.
+(defn-compiled apply (proc args)
+  (read-var 0 0)  ; proc
+  (read-var 0 1)  ; args
+  (tail-call-apply)
+  (return))
 
 )
