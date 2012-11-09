@@ -153,10 +153,7 @@ oop eval_global(oop program) {
   oop _compile_for_global_eval =
     make_symbol("compile-and-assemble-expr-for-global-eval");
   if (dict_has_key(global_env, _compile_for_global_eval)) {
-    oop code = eval(LIST(_compile_for_global_eval,
-                         LIST(make_symbol("quote"),
-                              program)),
-                    global_env);
+    oop code = apply(LIST(lookup_globally(_compile_for_global_eval), program));
     return interpret(global_env, code);
   }
   return eval(program, global_env);
