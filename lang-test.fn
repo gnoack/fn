@@ -54,6 +54,9 @@
 	   (cons 2 (cons 3 nil)))
      '((1) 2 3))
 
+;; progn
+(eq 'result (progn 1 2 3 'result))
+
 ;; &rest lambda list decomposition.
 (eql (list 1 2 3)
      ((lambda (&rest rest) rest) 1 2 3))

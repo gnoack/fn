@@ -6,9 +6,6 @@
 (eql (list 'a 'b 'c)
      (filter symbol? (list "a" 'a 1 'b 'c 99)))
 
-;; Progn
-(eq 'result (progn 1 2 3 'result))
-
 ;; Strings
 (string=? "abc" "abc")
 (not (string=? "x" "y"))
