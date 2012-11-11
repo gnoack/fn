@@ -113,6 +113,7 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept(&symbols._let);
   accept(&symbols._true);
   accept(&symbols._false);
+  accept(&symbols._progn);
   accept(&symbols._quote);
   accept(&symbols._rest);
   accept(&symbols._macroexpand);
@@ -164,6 +165,7 @@ void init_symbols() {
   symbols._let = make_symbol("let");
   symbols._true = make_symbol("true");
   symbols._false = make_symbol("false");
+  symbols._progn = make_symbol("progn");
   symbols._quote = make_symbol("quote");
   symbols._rest = make_symbol("&rest");
   symbols._macroexpand = make_symbol("macroexpand");

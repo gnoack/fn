@@ -8,6 +8,7 @@ typedef struct {
   oop _let;
   oop _true;
   oop _false;
+  oop _progn;
   oop _quote;
   oop _rest;
   oop _macroexpand;

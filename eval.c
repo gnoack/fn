@@ -142,6 +142,21 @@ oop eval_set(oop program, oop env) {
   return new_value;
 }
 
+// Evaluate all expressions in the environment, return last result.
+// (Imperative).
+oop eval_all(oop expressions, oop env) {
+  CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
+  while (!is_nil(rest(expressions))) {
+    eval(first(expressions), env);  // Discarding result.
+    expressions = rest(expressions);
+  }
+  return eval(first(expressions), env);
+}
+
+oop eval_progn(oop program, oop env) {
+  return eval_all(rest(program), env);
+}
+
 // TODO: Write REPL and file loading more in Lisp and remove the weird
 // compilation code from here.
 extern
@@ -168,17 +183,6 @@ oop map_eval(oop list, oop env) {
     oop mycar = eval(car(list), env);
     return make_cons(mycar, map_eval(cdr(list), env));
   }
-}
-
-// Evaluate all expressions in the environment, return last result.
-// (Imperative).
-oop eval_all(oop expressions, oop env) {
-  CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
-  while (!is_nil(rest(expressions))) {
-    eval(first(expressions), env);  // Discarding result.
-    expressions = rest(expressions);
-  }
-  return eval(first(expressions), env);
 }
 
 extern
@@ -210,6 +214,9 @@ oop eval(oop program, oop env) {
   }
   if (value_eq(command, symbols._set)) {
     return eval_set(program, env);
+  }
+  if (value_eq(command, symbols._progn)) {
+    return eval_progn(program, env);
   }
   // Otherwise, it must be a function application.
   return apply(map_eval(program, env));
