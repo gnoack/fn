@@ -12,10 +12,6 @@
     (cons (first l)
           (all-but-last (rest l)))))
 
-;; Progn
-(defn progn (&rest args)
-  (last args))
-
 ;; Lists
 (defn length (seq)
   (if (cons? seq)
