@@ -148,49 +148,6 @@
 ;;; Assembler                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Byte streams
-;; TODO: Move to a more appropriate file?
-(defn make-byte-stream ()
-  (let ((buffer ($make-mem-block 256))
-        (index 0)
-        (buffer-size 256))
-    (dispatcher self
-      ('put-byte! (byte)
-         ; (println "[b] " index ": " byte)
-         (when (<= buffer-size index)
-           (let ((new-buffer ($make-mem-block (* index 2))))
-             ($memcpy new-buffer 0
-                      buffer 0
-                      index)
-             (set! buffer new-buffer)
-             (set! buffer-size (* index 2))))
-         ($mem-block-byte-set! buffer index byte)
-         (set! index (+ 1 index))
-         byte)
-      ('put-byte-at! (trg-index byte)
-         ; (println "[B] " trg-index ": " byte)
-         (with-asserts ((< trg-index index))
-           ($mem-block-byte-set! buffer trg-index byte)))
-      ('size ()
-         index)
-      ('slice (first last)
-         (if (eq first last)
-             (list)
-             (cons ($mem-block-byte-get buffer first)
-                   (send self 'slice (+ 1 first) last))))
-      ('buffer ()
-         (let ((new-buffer ($make-mem-block index)))
-           ($memcpy new-buffer 0
-                    buffer 0
-                    index)
-           new-buffer))
-      ('display ()
-         (println "Byte stream:")
-         (apply println
-                (map (lambda (x)
-                       (string-append " " (int->string x 16)))
-                     (send self 'slice 0 index)))))))
-
 (defn make-assembler (byte address-of oop-ref save-label!)
   (dispatcher self
     ('jump (label)                (byte 0) (address-of label))

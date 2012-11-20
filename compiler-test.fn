@@ -86,30 +86,6 @@
        (write-global-var meaning-of-life))
      (pcompile '(set! meaning-of-life 42) global-env))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Tests for byte stream.                                  ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(progn
-  (def %buf (make-byte-stream))
-  (= 0 (send %buf 'size)))
-
-(progn
-  (send %buf 'put-byte! 0)
-  (send %buf 'put-byte! 1)
-  (send %buf 'put-byte! 2)
-  (send %buf 'put-byte! 3)
-  (send %buf 'put-byte! 4)
-  (send %buf 'put-byte! 5)
-  (send %buf 'put-byte! 6)
-  (send %buf 'put-byte-at! 2 20)
-  (eql '(0 1 20 3 4 5 6)
-       (send %buf 'slice 0 7)))
-
-(= 7 (send %buf 'size))
-
-(= 57 (lower-byte 12345))
-(= 48 (upper-byte 12345))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Execute some real compiled functions!                    ;;;

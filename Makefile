@@ -5,6 +5,7 @@ CFLAGS = -g -Wall
 HEADERS = *.h
 OBJECTS = \
 	arrays.o \
+	byte-buffer.o \
 	compiler.o \
 	cons.o \
 	continuations.o \
@@ -31,6 +32,7 @@ OBJECTS = \
 
 TESTOBJECTS = \
 	arrays-test.o \
+	byte-buffer-test.o \
 	compiler-test.o \
 	cons-test.o \
 	continuations-test.o \
@@ -58,6 +60,8 @@ ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
 LISPTARGETS = \
 	arrays-test.c \
 	arrays.c \
+	byte-buffer-test.c \
+	byte-buffer.c \
 	compiler-test.c \
 	compiler.c \
 	continuations-test.c \

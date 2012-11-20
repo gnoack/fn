@@ -3,6 +3,8 @@
 *~
 arrays-test.c
 arrays.c
+byte-buffer-test.c
+byte-buffer.c
 compiler-test.c
 compiler.c
 continuations-test.c
@@ -32,3 +34,5 @@ utils-test.c
 utils.c
 x86-test.c
 x86.c
+.emacs*
+fn.img*

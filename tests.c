@@ -2,6 +2,7 @@
 #include "tests.h"
 
 #include "arrays.h"
+#include "byte-buffer.h"
 #include "compiler.h"
 #include "continuations.h"
 #include "data.h"
@@ -23,6 +24,7 @@
 #include "value.h"
 
 #include "arrays-test.h"
+#include "byte-buffer-test.h"
 #include "compiler-test.h"
 #include "cons-test.h"
 #include "continuations-test.h"
@@ -150,6 +152,7 @@ void init_decls() {
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
   load_decls(pprint_decls());
+  load_decls(byte_buffer_decls());
   load_decls(compiler_decls());
   load_decls(continuations_decls());
 }
@@ -307,6 +310,7 @@ int main(int argc, char* argv[]) {
   dispatcher_tests();
   objects_tests();
   arrays_tests();
+  byte_buffer_tests();
   compiler_tests();
   data_tests();
   continuations_tests();
