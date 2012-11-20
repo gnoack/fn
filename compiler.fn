@@ -177,29 +177,29 @@
         (label-addrs        (make-dict))
         (known-oops         (list)))
     (flet ((put-byte! (b)
-             (send byte-stream 'put-byte! b))
+             (byte-buffer-append! byte-stream b))
            (put-label! (l)
-             (let ((pos (send byte-stream 'size)))
-               (send byte-stream 'put-byte! 0)
-               (send byte-stream 'put-byte! 0)
+             (let ((pos (byte-buffer-size byte-stream)))
+               (byte-buffer-append! byte-stream 0)
+               (byte-buffer-append! byte-stream 0)
                (add-to-list! postponed-actions
                              (lambda ()
                                (let ((label-addr (dict-get label-addrs l)))
-                                 (send byte-stream 'put-byte-at! pos
-                                       (upper-byte label-addr))
-                                 (send byte-stream 'put-byte-at! (+ pos 1)
-                                       (lower-byte label-addr)))))))
+                                 (byte-buffer-set! byte-stream pos
+                                                   (upper-byte label-addr))
+                                 (byte-buffer-set! byte-stream (+ pos 1)
+                                                   (lower-byte label-addr)))))))
            (put-oop! (o)
              (when (not (list-contains? known-oops o))
                (add-to-list! known-oops o))
-             (let ((pos (send byte-stream 'size)))
-               (send byte-stream 'put-byte! 0)
+             (let ((pos (byte-buffer-size byte-stream)))
+               (byte-buffer-append! byte-stream 0)
                (add-to-list! postponed-actions
                              (lambda ()
-                               (send byte-stream 'put-byte-at! pos
-                                     (list-index-of known-oops o))))))
+                               (byte-buffer-set! byte-stream pos
+                                                 (list-index-of known-oops o))))))
            (save-label! (l)
-             (dict-put! label-addrs l (send byte-stream 'size))))
+             (dict-put! label-addrs l (byte-buffer-size byte-stream))))
       (let ((translate!
              (make-assembler put-byte! put-label! put-oop! save-label!)))
         (dolist (cmd program)
@@ -207,7 +207,7 @@
         (dolist (todo postponed-actions)
           (todo))
         (list 0  ; Position where to start.
-              (send byte-stream 'buffer)
+              (byte-buffer->rawmem byte-stream)
               (list->array known-oops))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

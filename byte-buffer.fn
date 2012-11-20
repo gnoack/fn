@@ -44,5 +44,21 @@
                        (string-append " " (int->string x 16)))
                      (send self 'slice 0 index)))))))
 
+(def make-byte-buffer make-byte-stream)
+
+(defn byte-buffer-append! (byte-buffer byte)
+  (send byte-buffer 'put-byte! byte))
+
+(defn byte-buffer-set! (byte-buffer position byte)
+  (send byte-buffer 'put-byte-at! position byte))
+
+(defn byte-buffer-size (byte-buffer)
+  (send byte-buffer 'size))
+
+(defn byte-buffer-slice (byte-buffer first last)
+  (send byte-buffer 'slice first last))
+
+(defn byte-buffer->rawmem (byte-buffer)
+  (send byte-buffer 'buffer))
 
 )
