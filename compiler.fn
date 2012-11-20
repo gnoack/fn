@@ -172,7 +172,7 @@
 (defn upper-byte (n) (/ (mod n 65536) 256))
 
 (defn assemble (program)
-  (let ((byte-stream        (make-byte-stream))
+  (let ((byte-stream        (make-byte-buffer))
         (postponed-actions  (list))
         (label-addrs        (make-dict))
         (known-oops         (list)))
@@ -257,7 +257,7 @@
 
 ;; Keep around references to uncompiled versions of these functions,
 ;; for performance testing.  TODO: Remove this.
-(def meeeh (list make-assembler make-byte-stream assemble))
+(def meeeh (list make-assembler make-byte-buffer assemble))
 
 ;; Invoked from C to compile top-level expressions.
 ;; Should only be defined once compilation works.

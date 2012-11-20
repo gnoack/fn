@@ -2,63 +2,55 @@
 (
 
 ;; Byte streams
-;; TODO: Move to a more appropriate file?
-(defn make-byte-stream ()
-  (let ((buffer ($make-mem-block 256))
-        (index 0)
-        (buffer-size 256))
-    (dispatcher self
-      ('put-byte! (byte)
-         ; (println "[b] " index ": " byte)
-         (when (<= buffer-size index)
-           (let ((new-buffer ($make-mem-block (* index 2))))
-             ($memcpy new-buffer 0
-                      buffer 0
-                      index)
-             (set! buffer new-buffer)
-             (set! buffer-size (* index 2))))
-         ($mem-block-byte-set! buffer index byte)
-         (set! index (+ 1 index))
-         byte)
-      ('put-byte-at! (trg-index byte)
-         ; (println "[B] " trg-index ": " byte)
-         (with-asserts ((< trg-index index))
-           ($mem-block-byte-set! buffer trg-index byte)))
-      ('size ()
-         index)
-      ('slice (first last)
-         (if (eq first last)
-             (list)
-             (cons ($mem-block-byte-get buffer first)
-                   (send self 'slice (+ 1 first) last))))
-      ('buffer ()
-         (let ((new-buffer ($make-mem-block index)))
-           ($memcpy new-buffer 0
-                    buffer 0
-                    index)
-           new-buffer))
-      ('display ()
-         (println "Byte stream:")
-         (apply println
-                (map (lambda (x)
-                       (string-append " " (int->string x 16)))
-                     (send self 'slice 0 index)))))))
 
-(def make-byte-buffer make-byte-stream)
+(deftype @byte-buffer)
+
+(defn make-byte-buffer ()
+  ($make @byte-buffer
+         ($make-mem-block 256)  ; buffer
+         0  ; index
+         256  ; buffer-size
+))
+
+(defn byte-buffer-size (byte-buffer)    ($mem-get byte-buffer 2))
+(defn byte-buffer-bufsize (byte-buffer) ($mem-get byte-buffer 3))
 
 (defn byte-buffer-append! (byte-buffer byte)
-  (send byte-buffer 'put-byte! byte))
+  (let ((buffer  ($mem-get byte-buffer 1))
+        (index   ($mem-get byte-buffer 2))
+        (bufsize ($mem-get byte-buffer 3)))
+    (when (<= bufsize index)
+      (let ((new-buffer ($make-mem-block (* index 2))))
+        ($memcpy new-buffer 0
+                 buffer 0
+                 index)
+        (set! buffer new-buffer)
+        ($mem-set! byte-buffer 1 new-buffer)
+        ($mem-set! byte-buffer 3 (* index 2))))
+    ($mem-block-byte-set! buffer index byte)
+    ($mem-set! byte-buffer 2 (+ 1 index)) ; size
+    byte))
 
-(defn byte-buffer-set! (byte-buffer position byte)
-  (send byte-buffer 'put-byte-at! position byte))
+(defn byte-buffer-set! (byte-buffer pos byte)
+  (with-asserts ((< pos (byte-buffer-bufsize byte-buffer)))
+    ($mem-block-byte-set! ($mem-get byte-buffer 1) pos byte)))
 
-(defn byte-buffer-size (byte-buffer)
-  (send byte-buffer 'size))
+(defn byte-buffer-ref (byte-buffer pos)
+  (with-asserts ((< pos (byte-buffer-bufsize byte-buffer)))
+    ($mem-block-byte-get ($mem-get byte-buffer 1) pos)))
 
 (defn byte-buffer-slice (byte-buffer first last)
-  (send byte-buffer 'slice first last))
+  (if (eq first last)
+      (list)
+    (cons ($mem-block-byte-get ($mem-get byte-buffer 1) first)
+          (byte-buffer-slice byte-buffer (+ 1 first) last))))
 
 (defn byte-buffer->rawmem (byte-buffer)
-  (send byte-buffer 'buffer))
+  (let ((index (byte-buffer-size byte-buffer)))
+    (let ((new-buffer ($make-mem-block index)))
+      ($memcpy new-buffer 0
+               ($mem-get byte-buffer 1) 0
+               index)
+      new-buffer)))
 
 )
