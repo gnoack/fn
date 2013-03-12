@@ -87,12 +87,12 @@
           (nth (rest seq) (- n 1)))
       nil)))  ; Nothing found.  TODO: Make this an error.
 
-;; Reversing sequences.
-(def %xcons (lambda (l r)
+;; Reversing sequences.  (As in SRFI-1)
+(def xcons (lambda (l r)
 	     (cons r l)))
 
 (def reverse (lambda (seq)
-	       (reduce %xcons seq '())))
+	       (reduce xcons seq '())))
 
 ;; cons, cons?
 (def cons
