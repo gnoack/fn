@@ -2,6 +2,9 @@
 
 #include "value.h"
 
+extern
+unsigned int gc_protect_counter;
+
 extern oop gc_object_alloc(fn_uint size);
 extern boolean gc_is_object(oop obj);
 
@@ -28,7 +31,6 @@ void gc_serialize_to_file(char* filename);
 
 extern
 void gc_deserialize_from_file(char* filename);
-
 
 #define _GC_H_ 0
 #endif  // _GC_H_

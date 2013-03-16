@@ -23,6 +23,9 @@
 #endif  // GC_DEBUG
 
 
+unsigned int gc_protect_counter;
+
+
 // TODO: enumerate_refs only calls traverse_object_graph.  Hardcode it?
 typedef struct {
   // Executed before a GC run.
@@ -482,10 +485,14 @@ void init_gc() {
   object_region_init(1 << 23);  // TODO: Enough?
   raw_memory_region_init(1 << 15);  // TODO: Enough?
   immediate_region_init();
+  gc_protect_counter = 0;
 }
 
 // Decide whether to do the garbage collection at all.
 boolean should_skip_gc() {
+  if (gc_protect_counter > 0) {
+    return YES;
+  }
   if (_run_gc_soon) {
     _run_gc_soon = NO;
     return NO;

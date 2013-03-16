@@ -115,6 +115,7 @@ void assert_eq(const char* filename,
 
 extern
 void run_lisp_tests(oop tests) {
+  gc_protect_counter++;
   while (!is_nil(tests)) {
     oop test = car(tests);
     oop result = eval_global(test);
@@ -128,6 +129,7 @@ void run_lisp_tests(oop tests) {
 
     tests = cdr(tests);
   }
+  gc_protect_counter--;
   gc_run();
 }
 
@@ -221,9 +223,6 @@ void repl() {
     oop cmd = make_string(input);
     oop sexpr = eval_global(LIST(make_symbol("read-all"), cmd));
     println_value(eval_global(sexpr));
-    
-    // GC if needed.
-    gc_run();
 
     free(input);
   }

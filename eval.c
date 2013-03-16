@@ -171,7 +171,10 @@ oop eval_global(oop program) {
     oop code = apply(LIST(lookup_globally(_compile_for_global_eval), program));
     return interpret(global_env, code);
   }
-  return eval(program, global_env);
+  gc_protect_counter++;
+  oop result = eval(program, global_env);
+  gc_protect_counter--;
+  return result;
 }
 
 // C equivalent to calling (map eval list).
@@ -225,11 +228,12 @@ oop eval(oop program, oop env) {
 extern
 void load_decls(oop decls) {
   while (!is_nil(decls)) {
-    eval_global(car(decls));
-
     // Protect the remaining declarations during GC.
     remaining_declarations = cdr(decls);
+
+    eval_global(car(decls));
     gc_run();
+
     decls = remaining_declarations;
   }
 }

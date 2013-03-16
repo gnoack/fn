@@ -42,11 +42,20 @@ typedef struct {
 
 stack_t stack;
 
+// Pointer to an interpreter state that's protected.
+// This will be the first interpreter state on the stack.
+interpreter_state_t* protected_interpreter_state = NULL;
+
 void enumerate_interpreter_roots(void (*accept)(oop* place)) {
   // TODO: Also enumerate roots in running process?
   int i;
   for (i=0; i<stack.size; i++) {
     accept(&stack.stack[i]);
+  }
+  if (protected_interpreter_state != NULL) {
+    accept(&(protected_interpreter_state->reg_frm));
+    accept(&(protected_interpreter_state->bytecode));
+    accept(&(protected_interpreter_state->oop_lookups));
   }
 }
 
@@ -289,9 +298,13 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
 oop interpret(oop frame, oop code) {
   interpreter_state_t state;
   state.reg_frm = frame;
-  state.ip = get_smallint(first(code));
-  state.bytecode = first(rest(code));
-  state.oop_lookups = first(rest(rest(code)));
+  state.ip = get_smallint(car(code));
+  state.bytecode = cadr(code);
+  state.oop_lookups = caddr(code);
+
+  if (protected_interpreter_state == NULL) {
+    protected_interpreter_state = &state;
+  }
 
   #ifdef INTERPRETER_DEBUG
   unsigned int stack_size_before = stack.size;
@@ -383,6 +396,9 @@ oop interpret(oop frame, oop code) {
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
       apply_into_interpreter(arg_count, &state, NO);
+      if (protected_interpreter_state == &state) {
+	gc_run();
+      }
       break;
     }
     case BC_TAIL_CALL: {
@@ -402,11 +418,17 @@ oop interpret(oop frame, oop code) {
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
+	if (protected_interpreter_state == &state) {
+	  protected_interpreter_state = NULL;
+	}
         return retvalue;
       } else {
         apply_stack_pop();
         stack_push(retvalue);
         deserialize_retptr(retptr, &state);
+	if (protected_interpreter_state == &state) {
+	  gc_run();
+	}
       }
       break;
     case BC_CALL_CC: {

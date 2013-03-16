@@ -223,13 +223,18 @@ oop apply_compiled_lisp_procedure(oop cfn, oop args) {
 oop apply_lisp_procedure(oop fn, oop args) {
   oop env = make_dframe(fn_env(fn), fn_argnum(fn));
   destructure_lambda_list_into_dframe(fn_lambda_list(fn), args, env, 0);
-  return eval_all(fn_code(fn), env);
+  gc_protect_counter++;
+  oop result = eval_all(fn_code(fn), env);
+  gc_protect_counter--;
+  return result;
 }
 
-
-oop native_fn_apply(oop fn, oop args) {
+oop apply_native_fn(oop fn, oop args) {
   function c_function = native_fn_function(fn);
-  return c_function(args);
+  gc_protect_counter++;
+  oop result = c_function(args);
+  gc_protect_counter--;
+  return result;
 }
 
 
@@ -292,7 +297,7 @@ oop apply(oop values) {
     result = apply_compiled_lisp_procedure(fn, cdr(values));
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
-    result = native_fn_apply(fn, cdr(values));
+    result = apply_native_fn(fn, cdr(values));
   }
   apply_stack_pop();
   return result;
