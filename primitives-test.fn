@@ -1,6 +1,3 @@
-
-(
-
 ;; Cons, first, rest
 (eq 3 (first (cons 3 4)))
 (eq 4 (rest (cons 3 4)))
@@ -98,5 +95,3 @@
   (def m ($make-mem-block 5))
   ($mem-block-byte-set! m 0 3)
   (eq 3 ($mem-block-byte-get m 0)))
-
-)

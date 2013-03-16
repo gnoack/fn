@@ -73,12 +73,19 @@
             (c-vardecl basename
                        cdecls))))
 
+(define (read-all input-port)
+  (let ((item (read input-port)))
+    (if (eof-object? item)
+	'()
+	(cons item
+	      (read-all input-port)))))
+
 (define (actual-convert formatter file-basename)
   (call-with-output-file (format #f "~a.c" file-basename)
     (lambda (out)
       (call-with-input-file (format #f "~a.fn" file-basename)
         (lambda (in)
-          (formatter out (translate (read in))))))))
+          (formatter out (translate (read-all in))))))))
 
 (define (convert-prod basename)
   (actual-convert (make-prod-formatter basename)

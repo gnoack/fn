@@ -1,6 +1,3 @@
-
-(
-
 (= 2 (call/cc (lambda (proc) 2)))
 (= 3 (call/cc (lambda (proc) (proc 3))))
 
@@ -43,5 +40,3 @@
             99)))
   (and (= y 99)
        (= x 2)))
-
-)

@@ -1,4 +1,3 @@
-(
 ;; MACROS
 
 ;; Global variable *macros* stores a dictionary of all macros to be
@@ -280,5 +279,3 @@
 
 (defmacro with-timer (&rest body)
   `(with-timer-function (lambda () ,@body)))
-
-)

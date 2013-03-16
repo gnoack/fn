@@ -1,5 +1,3 @@
-(
-
 (->true
  (def %dict (make-dict))
  (dict-put! %dict 'foo 1)
@@ -42,5 +40,3 @@
 (= 2 (dframe-get %dfb 'b))
 (= 1 (dframe-get %dfb 'd))
 (= 2 (dframe-get %dfa 'b))
-
-)

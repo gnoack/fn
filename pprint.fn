@@ -1,5 +1,3 @@
-(
-
 (defn pprint (item)
   ;; TODO: Memory consumption.
   (defn char-escape (ch)
@@ -43,5 +41,3 @@
   (map display args)
   (newline)
   nil)
-
-)

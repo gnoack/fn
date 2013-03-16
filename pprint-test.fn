@@ -1,6 +1,3 @@
-
-(
-
 (string=? "123" (pprint 123))
 (string=? "\"abc\"" (pprint "abc"))
 (string=? "\\a" (pprint #\a))
@@ -12,5 +9,3 @@
     (string=? "<PROCEDURE pprint (item)>" (pprint pprint)))
 (string=? "<COMPILED-PROCEDURE display (item)>"
           (pprint (compile-fn display)))
-
-)

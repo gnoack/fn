@@ -1,5 +1,3 @@
-
-(
 ;; Transcribed from the paper
 ;; 'Parsing Expression Grammars' by Bryan Ford.
 
@@ -109,5 +107,3 @@
 
 (defn parse-fail? (peg input)
   (not (parses? peg input)))
-
-)

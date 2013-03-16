@@ -1,6 +1,3 @@
-
-(
-
 ;; Variable environments
 (->true
  (def %xyz-env (global-env 'linked-with-vars (list 'x 'y 'z)))
@@ -111,5 +108,3 @@
 (progn
   ((compile-fn (lambda (x) "xx" (def __just_a_test x))) 99)
   (= 99 __just_a_test))
-
-)

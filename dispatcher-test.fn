@@ -1,5 +1,3 @@
-(
-
 (send (dispatcher self
         ('foo () true)
         ('bar () false)) 'foo)
@@ -17,5 +15,3 @@
         ('hello () 'discard
                    true))
       'hello)
-
-)

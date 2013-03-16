@@ -1,6 +1,3 @@
-
-(
-
 ;; Accessing elements in lists.
 (defn list-index-of (list value)
   (with-asserts ((cons? list))
@@ -280,5 +277,3 @@
   (read-var 0 1)  ; args
   (tail-call-apply)
   (return))
-
-)

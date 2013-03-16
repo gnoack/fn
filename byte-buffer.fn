@@ -1,6 +1,3 @@
-
-(
-
 ;; Byte streams
 
 (deftype @byte-buffer)
@@ -52,5 +49,3 @@
                ($mem-get byte-buffer 1) 0
                index)
       new-buffer)))
-
-)

@@ -1,5 +1,3 @@
-(
-
 (def not (lambda (a)
 	   (if a false true)))
 
@@ -126,5 +124,3 @@
 ;; See procedures.c for what fields mean what.
 (def procedure-name (lambda (proc) ($mem-get proc 1)))
 (def lisp-procedure-lambda-list (lambda (proc) ($mem-get proc 2)))
-
-)

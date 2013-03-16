@@ -1,5 +1,3 @@
-(
-
 ; Some helper defs
 (->true  ; we need true for all top-level exprs.
  (defn eq-peg (x)
@@ -96,4 +94,3 @@
 		      (list c b a))))
 
 ;; TODO: Test PEG-not
-)

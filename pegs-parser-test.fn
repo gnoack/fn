@@ -1,5 +1,3 @@
-(
-
 (eql (list '(peg-seq (peg= #\x)) '())
      (_pp_expr3 (string->list "\"x\"") list '*error*))
 
@@ -77,5 +75,3 @@
 ;;   _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
 
 ;; TODO: Grammar:  "meta" identifier "{" rule*:rs "}"
-
-)

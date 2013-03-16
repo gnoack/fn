@@ -1,6 +1,3 @@
-
-(
-
 (defn last (l)
   (if (nil? (rest l))
       (first l)
@@ -256,5 +253,3 @@
             names)))
   (append (completions-for-dict $global-env)
           (completions-for-dict *macros*)))
-
-)

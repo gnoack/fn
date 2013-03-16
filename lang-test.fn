@@ -1,5 +1,3 @@
-(
-
 ;; if-true
 ;; (if true 5 50) --> 5
 (eq 5 (if true 5 50))
@@ -155,5 +153,3 @@
 (procedure? (lambda () 123))
 ;(procedure? (compile-fn (lambda () 123)))
 (procedure? +)
-
-)

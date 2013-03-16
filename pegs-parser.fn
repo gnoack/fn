@@ -1,4 +1,3 @@
-(
 ;; Everything is prefixed _PP, to avoid namespace collisions.
 
 (def _pp_singlequote (peg= #\'))
@@ -100,5 +99,3 @@
     (peg=> (peg-listof _pp_expr2 (_pp_token (peg= #\|)))
            (lambda (x)
              (cons 'peg-alt x))))
-
-)

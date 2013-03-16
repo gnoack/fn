@@ -1,5 +1,3 @@
-(
-
 (eql '(if a a-case
       (if b b-case
       (if c c-case
@@ -120,5 +118,3 @@
                      (defn y (p)
                        p)
                      (y q))))
-
-)

@@ -1,5 +1,3 @@
-
-(
 ;; Don't forget to use eql.
 (eql (list 123 '())
      (read (string->list "123")))
@@ -38,4 +36,3 @@
 	     (a (unquote b) (unquote-splicing c) d))
 	   '())
      (read (string->list "`(a ,b ,@c d)")))
-)
