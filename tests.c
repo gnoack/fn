@@ -180,30 +180,6 @@ char* symbol_completion_entry(const char* text, int state) {
   }
 }
 
-void compile_system() {
-  char* status = "-\\|/";
-  int statusidx = 0;
-
-  oop uncompiled_functions = NIL;
-  for (;;) {
-    // TODO: Querying all of this everytime from scratch is slow.
-    uncompiled_functions =
-      apply(LIST(lookup_globally(make_symbol("uncompiled-functions"))));
-    if (is_nil(uncompiled_functions)) {
-      break;
-    }
-    oop symbol = first(uncompiled_functions);
-    printf("\rCompiling [%c] %-60s", status[statusidx], get_symbol(symbol));
-    fflush(stdout);
-
-    eval_global(LIST(make_symbol("c!"), symbol));
-    
-    gc_run();
-    statusidx = (statusidx + 1) & 3;
-  }
-  printf("\rCompiling done.                                \n");
-}
-
 void repl() {
   char* histfile = get_histfile();
   read_history(histfile);
@@ -228,7 +204,6 @@ void repl() {
   }
 }
 
-boolean compile_arg = NO;
 boolean deserialize_arg = NO;
 boolean exit_arg = NO;
 boolean load_twice_arg = NO;
@@ -239,9 +214,6 @@ void parse_args(int argc, char* argv[]) {
   for (i=1; i<argc; i++) {
     if (strcmp(argv[i], "-2") == 0) {
       load_twice_arg = YES; continue;
-    }
-    if (strcmp(argv[i], "-c") == 0) {
-      compile_arg = YES; continue;
     }
     if (strcmp(argv[i], "-s") == 0) {
       serialize_arg = YES; continue;
@@ -275,9 +247,6 @@ int main(int argc, char* argv[]) {
        */
       init_decls();
     }
-  }
-  if (compile_arg) {
-    compile_system();
   }
   if (serialize_arg) {
     gc_serialize_to_file("fn.img");
