@@ -219,8 +219,8 @@
 ;; Wraps a method to print out its arguments.  (trace)
 (defn debugging-wrap (func)
   (lambda (&rest args)
-    (let ((old-indent %trace-indent))
-      (set! *trace-indent* (string-append "  " %trace-indent))
+    (let ((old-indent *trace-indent*))
+      (set! *trace-indent* (string-append "  " *trace-indent*))
       (println *trace-indent* (pprint (cons func args)))
       (let ((result (apply func args)))
         (println *trace-indent* (pprint func) " returned " (pprint result))
@@ -228,7 +228,7 @@
         result))))
 
 ;; Call like (trace macroexpand) for instance to log method calls.
-(defmacro trace (sym)
+(defmacro trace! (sym)
   `(set! ,sym (debugging-wrap ,sym)))
 
 
