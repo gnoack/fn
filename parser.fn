@@ -91,9 +91,10 @@
 ;; _whitespaces ::= _whitespace*
 (def _whitespaces (peg* _whitespace))
 
-;; _sexpression ::= '(' _expr*:es ')'  ==> es
+;; _sexpression ::= '(' _expr*:es _whitespaces ')'  ==> es
 (def _sexpression (peg=> (peg-seq _openparen
 				  (peg* _expr)
+				  _whitespaces
 				  _closeparen)
 			 second))
 
@@ -127,17 +128,26 @@
 				     _symbol))
 		   second))
 
-;; Def
-(def _lisp_grammar _expr)
-
+;; Used from pegs-parser
+(def _lisp_expr _expr)
 
 ;; Public interface.
 ;; Returns a list of result, rest.
 (defn read (in)
-  (_lisp_grammar in
-		 list
-		 (lambda (&rest failure-reason)
-		   (apply error failure-reason))))
+  (_expr in
+	 list
+	 (lambda (&rest failure-reason)
+	   (apply error failure-reason))))
 
-(defn read-all (in)
-  (first (read (string->list in))))
+(defn read-and-check-empty-remainder (rule)
+  (lambda (in)
+    (rule (string->list in)
+	  (lambda (result rest)
+	    (if (all? whitespace? rest)
+		result
+	      (error "There's something left.")))
+	  (lambda (&rest failure-reason)
+	    (apply error failure-reason)))))
+
+(def read-one (read-and-check-empty-remainder _expr))
+(def read-all (read-and-check-empty-remainder (peg* _expr)))

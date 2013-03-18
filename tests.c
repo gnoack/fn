@@ -197,7 +197,7 @@ void repl() {
       add_history(input);
     }
     oop cmd = make_string(input);
-    oop sexpr = eval_global(LIST(make_symbol("read-all"), cmd));
+    oop sexpr = eval_global(LIST(make_symbol("read-one"), cmd));
     println_value(eval_global(sexpr));
 
     free(input);

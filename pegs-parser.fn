@@ -83,7 +83,7 @@
     (peg-let ((bindings (peg-listof _pp_binding
                                     _pp_optional_whitespaces))
               (_ (_pp_token _pp_arrow))
-              (action _lisp_grammar))
+              (action _lisp_expr))
       (list 'peg-let bindings action)))
 
 (def _pp_sequence
