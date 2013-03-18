@@ -28,16 +28,23 @@
 (def _any (peg-terminal ->true))
 (def _digit (peg-terminal digit?))
 (def _alpha (peg-terminal alpha?))
-(def _whitespace (peg-terminal whitespace?))
 
 (def _dblquote (peg= #\"))
+(def _hash (peg= #\#))
 (def _backslash (peg= #\\))
 (def _openparen (peg= #\())
 (def _closeparen (peg= #\)))
 (def _quote (peg= #\'))
 (def _comma (peg= #\,))
+(def _semicolon (peg= #\;))
 (def _backquote (peg= #\`))
 (def _at (peg= #\@))
+
+(def _comment (peg-seq _semicolon
+		       (peg* (peg-terminal (lambda (c) (not (eq c #\Newline)))))))
+
+(def _whitespace (peg-alt _comment
+			  (peg-terminal whitespace?)))
 
 ;; Indirection.
 (defn _expr (input win lose)
@@ -68,10 +75,11 @@
 		    (lambda (x)
                       (list->string (second x)))))
 
-;; _character ::= '\' _escapedchar:c  ==> c
-(def _character (peg=> (peg-seq _backslash
-				_escapedchar)
-		       second))
+;; _character ::= '#' '\' _escapedchar:c  ==> c
+(def _character (peg=> (peg-seq _hash
+				_backslash
+				_any)
+		       third))
 
 ;; _anything_but_separator
 ;;     ::= ~(_whitespace | '(' | ')') _any:e ==> e
@@ -136,8 +144,7 @@
 (defn read (in)
   (_expr in
 	 list
-	 (lambda (&rest failure-reason)
-	   (apply error failure-reason))))
+	 error))
 
 (defn read-and-check-empty-remainder (rule)
   (lambda (in)
@@ -145,9 +152,8 @@
 	  (lambda (result rest)
 	    (if (all? whitespace? rest)
 		result
-	      (error "There's something left.")))
-	  (lambda (&rest failure-reason)
-	    (apply error failure-reason)))))
+	      (error "There's something left: " (list->string rest))))
+	  error)))
 
 (def read-one (read-and-check-empty-remainder _expr))
 (def read-all (read-and-check-empty-remainder (peg* _expr)))

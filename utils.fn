@@ -97,13 +97,14 @@
                                     (+ (%string-offset str) n)))))
 
 (defn string->list (str)
-  (defn %string->list-inner (str n str-length)
-    (if (= n str-length)
-        (list)
-      (cons (string-at str n)
-            (%string->list-inner str (+ n 1) str-length))))
+  (defn %string->list-inner (str n acc)
+    (if (= n 0)
+        acc
+      (%string->list-inner str (- n 1)
+			   (cons (string-at str (- n 1)) acc))))
   (with-asserts ((string? str))
-    (%string->list-inner str 0 (string-size str))))
+    (%string->list-inner str (string-size str)
+			 (list))))
 
 (defn string=? (a b)
   (with-asserts ((string? a)

@@ -8,8 +8,10 @@
 (string=? "abc" "abc")
 (not (string=? "x" "y"))
 
+(eql (list) (string->list ""))
 (eql (list #\a #\b #\c)
      (string->list "abc"))
+(string=? "" "")
 (string=? "hello" "hello")
 (string=? "hello" (list->string (list #\h #\e #\l #\l #\o)))
 

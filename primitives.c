@@ -1,6 +1,9 @@
 
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "carcdr.h"
 #include "cons.h"
@@ -214,6 +217,26 @@ oop primitive_get_process_time(oop args) {
   return make_smallint(time.tv_sec * 1000 + time.tv_nsec / 1000000);
 }
 
+oop primitive_file_to_string(oop args) {
+  PARSE_ONE_ARG(filename);
+  const char* c_filename = c_string(filename);
+  FILE* file = fopen(c_filename, "r");
+  struct stat stat;
+  fstat(fileno(file), &stat);
+  char* buffer = malloc(stat.st_size + 1);
+  CHECK(buffer != NULL, "malloc() failed.");
+  unsigned int position = 0;
+  while (position < stat.st_size) {
+    int diff = fread(buffer + position, 1, stat.st_size - position, file);
+    CHECK(diff != 0, "fread() returned 0.");
+    position += diff;
+  }
+  buffer[stat.st_size] = '\0';
+  oop result = make_string(buffer);
+  free(buffer);
+  return result;
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -248,4 +271,5 @@ void init_primitives() {
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);
   register_globally_fn("get-time", primitive_get_process_time);
+  register_globally_fn("file->string", primitive_file_to_string);
 }

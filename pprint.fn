@@ -1,7 +1,7 @@
 (defn pprint (item)
   ;; TODO: Memory consumption.
   (defn char-escape (ch)
-    (cond ((eq ch #\") "\\\"")
+    (cond ((eq ch #\") "#\\\"")
           (true (list->string (list ch)))))
   (cond ((string? item) (string-append "\""
                                        (apply string-append
