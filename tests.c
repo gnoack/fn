@@ -204,61 +204,7 @@ void repl() {
   }
 }
 
-boolean deserialize_arg = NO;
-boolean exit_arg = NO;
-boolean load_twice_arg = NO;
-boolean serialize_arg = NO;
-boolean test_arg = NO;
-void parse_args(int argc, char* argv[]) {
-  int i;
-  for (i=1; i<argc; i++) {
-    if (strcmp(argv[i], "-2") == 0) {
-      load_twice_arg = YES; continue;
-    }
-    if (strcmp(argv[i], "-s") == 0) {
-      serialize_arg = YES; continue;
-    }
-    if (strcmp(argv[i], "-S") == 0) {
-      deserialize_arg = YES; continue;
-    }
-    if (strcmp(argv[i], "-t") == 0) {
-      test_arg = YES; continue;
-    }
-    if (strcmp(argv[i], "-x") == 0) {
-      exit_arg = YES; continue;
-    }
-    CHECK(1==0, "Unknown argument");
-  }
-}
-
-int main(int argc, char* argv[]) {
-  parse_args(argc, argv);
-  init();
-  if (deserialize_arg) {
-    gc_deserialize_from_file("fn.img");
-  } else {
-    init_decls();
-    if (load_twice_arg) {
-      /*
-       * Evaluate top level forms again.  The second time, they will
-       * all be compiled.  This compiled even the more dubious stuff
-       * like functions that haven't been originally defined at
-       * top-level.
-       */
-      init_decls();
-    }
-  }
-  if (serialize_arg) {
-    gc_serialize_to_file("fn.img");
-  }
-  if (exit_arg) {
-    exit(0);
-  }
-  if (test_arg == NO) {
-    puts("FN " __DATE__ ".");
-    repl();
-    exit(0);
-  }
+void run_all_tests() {
   printf("Test execution:\n");
   /* Register tests here. */
   interpreter_tests();
@@ -288,5 +234,75 @@ int main(int argc, char* argv[]) {
   if (failure_count == 0) {
     printf("Well done!\n");
   }
+}
+
+void load_file(const char* filename) {
+  apply(LIST(lookup_globally(make_symbol("load-file")),
+	     make_string(filename)));
+}
+
+boolean deserialize_arg = NO;
+boolean exit_arg = NO;
+boolean load_twice_arg = NO;
+boolean serialize_arg = NO;
+boolean test_arg = NO;
+const char* file_to_load = NULL;
+void parse_args(int argc, char* argv[]) {
+  int i;
+  for (i=1; i<argc; i++) {
+    if (strcmp(argv[i], "-2") == 0) {
+      load_twice_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-s") == 0) {
+      serialize_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-S") == 0) {
+      deserialize_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-t") == 0) {
+      test_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-x") == 0) {
+      exit_arg = YES; continue;
+    }
+    CHECK(file_to_load == NULL, "Only one file can be loaded at once.");
+    file_to_load = argv[i];
+  }
+}
+
+int main(int argc, char* argv[]) {
+  parse_args(argc, argv);
+  init();
+  if (deserialize_arg) {
+    gc_deserialize_from_file("fn.img");
+  } else {
+    init_decls();
+    if (load_twice_arg) {
+      /*
+       * Evaluate top level forms again.  The second time, they will
+       * all be compiled.  This compiled even the more dubious stuff
+       * like functions that haven't been originally defined at
+       * top-level.
+       */
+      init_decls();
+    }
+  }
+  if (serialize_arg) {
+    gc_serialize_to_file("fn.img");
+  }
+  if (exit_arg) {
+    exit(0);
+  }
+  if (test_arg) {
+    CHECK(file_to_load == NULL, "Can't run tests *and* load a file.");
+    run_all_tests();
+  } else if (file_to_load != NULL) {
+    load_file(file_to_load);
+  } else {
+    puts("FN " __DATE__ ".");
+    repl();
+    exit(0);
+  }
   return 0;
 }
+

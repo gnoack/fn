@@ -254,3 +254,14 @@
             names)))
   (append (completions-for-dict $global-env)
           (completions-for-dict *macros*)))
+
+(defn eval (expr)
+  ;; Evaluate the expression in the global environment.
+  ;; This actually compiles the expression, creates a
+  ;; zero-argument function from it, and calls that.
+  ((let ((code (compile-and-assemble-expr-for-global-eval
+		(macroexpand expr))))
+      (make-compiled-procedure nil '() code nil))))
+
+(defn load-file (filename)
+  (map eval (read-all (file->string filename))))
