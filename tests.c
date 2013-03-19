@@ -62,16 +62,16 @@ void init_assert() {
 
 extern
 void fail(const char* filename,
-	  unsigned int line,
-	  const char* msg) {
+          unsigned int line,
+          const char* msg) {
   printf("\n%s:%d: FAIL -- %s\n", filename, line, msg);
   failure_count++;
 }
 
 extern
 void assert_true(const char* filename,
-		 unsigned int line,
-		 boolean b) {
+                 unsigned int line,
+                 boolean b) {
   init_assert();
   if (!b) {
     fail(filename, line, "Expected true, got false.");
@@ -80,8 +80,8 @@ void assert_true(const char* filename,
 
 extern
 void assert_false(const char* filename,
-		  unsigned int line,
-		  boolean b) {
+                  unsigned int line,
+                  boolean b) {
   init_assert();
   if (b) {
     fail(filename, line, "Expected false, got true.");
@@ -90,8 +90,8 @@ void assert_false(const char* filename,
 
 extern
 void assert_nil(const char* filename,
-		unsigned int line,
-		oop value) {
+                unsigned int line,
+                oop value) {
   init_assert();
   if (!is_nil(value)) {
     fail(filename, line, "Expected nil.");
@@ -100,9 +100,9 @@ void assert_nil(const char* filename,
 
 extern
 void assert_eq(const char* filename,
-	       unsigned int line,
-	       oop a,
-	       oop b) {
+               unsigned int line,
+               oop a,
+               oop b) {
   init_assert();
   if (value_eq(a, b) == NO) {
     fail(filename, line, "Values not equal.");
@@ -230,7 +230,7 @@ void run_all_tests() {
   continuations_tests();
   /* Summing up. */
   printf("\n%d assertions executed, %d failures.\n",
-	 assertion_count, failure_count);
+         assertion_count, failure_count);
   if (failure_count == 0) {
     printf("Well done!\n");
   }
@@ -238,7 +238,7 @@ void run_all_tests() {
 
 void load_file(const char* filename) {
   apply(LIST(lookup_globally(make_symbol("load-file")),
-	     make_string(filename)));
+             make_string(filename)));
 }
 
 boolean deserialize_arg = NO;
