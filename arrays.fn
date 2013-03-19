@@ -20,7 +20,16 @@
 
 (defn list->array (l)
   ;; XXX: Space needed after `,', we don't want to splice!
+  ;; ...and this is why variable names don't start with `@'.
   (apply $make `(, @array ,(length l) ,@l)))
+
+(defn array->list (a)
+  (defn _convert (n acc)
+    (if (= 0 n)
+        acc
+      (_convert (- n 1)
+                (cons (send a 'get (- n 1)) acc))))
+  (_convert (send a 'size) (list)))
 
 (defm @array 'get (n)
   (with-asserts ((number? n)

@@ -5,3 +5,6 @@
   (send obj 'set! 1 'b)
   (send obj 'set! 2 'c)
   (eq 'b (send obj 'get 1)))
+
+(eql (list 1 2 3)
+     (array->list (list->array (list 1 2 3))))

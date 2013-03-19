@@ -1,0 +1,12 @@
+;;; Pipe this output into `dot -Tpng > deps.png'.
+
+(println "digraph dependencies {")
+(dolist (pair (dict-key-value-pairs $global-env))
+  (let ((key (first pair))
+        (value (rest pair)))
+    (when (compiled-procedure? value)
+      (dolist (symbol (array->list (third ($mem-get value 3))))
+        (when (symbol? symbol)
+          (println "  \"" (symbol->string key) "\" -> \""
+                   (symbol->string symbol) "\";"))))))
+(println "}")
