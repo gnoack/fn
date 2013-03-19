@@ -34,10 +34,7 @@
       (writeout item)
     (writeout (pprint item))))
 
-(defn newline ()
-  (writeout "\n"))
-
 (defn println (&rest args)
   (map display args)
-  (newline)
+  (writeout "\n")
   nil)
