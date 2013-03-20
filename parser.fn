@@ -132,7 +132,9 @@
 ;;                | ',' '@' _expr:e  ==> `(unquote-list ,e)
 ;;                | ',' _expr:e      ==> `(unquote ,e)
 (def _prefix_expr
-  ;; TODO: Fix these once quasiquote works properly.
+  ;; Quasiquote doesn't expand the quasiquote-related macros nicely,
+  ;; so we have to write them out.  (Check against a Scheme
+  ;; implementation if you don't believe it.)
   (peg-alt
    (peg-let ((_ _quote) (e _expr))
      (list 'quote e))
