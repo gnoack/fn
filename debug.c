@@ -52,7 +52,13 @@ void print_value(oop v) {
   } else if (is_smallint(v)) {
     printf("%lu", (fn_uint) get_smallint(v));
   } else if (is_char(v)) {
-    printf("#\\%c", get_char(v));
+    char c = get_char(v);
+    switch (c) {
+    case '\n': printf("#\\Newline"); break;
+    case '\t': printf("#\\Tab"); break;
+    case ' ': printf("#\\Space"); break;
+    default: printf("#\\%c", get_char(v)); break;
+    }
   } else if (is_symbol(v)) {
     printf("%s", get_symbol(v));
   } else if (is_nil(v)) {

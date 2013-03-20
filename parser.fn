@@ -20,6 +20,9 @@
 (defn peg= (item)
   (peg-terminal (lambda (x) (eq x item))))
 
+(defn peg-string= (string)
+  (apply peg-seq (map peg= (string->list string))))
+
 ;;; ==================================
 ;;; Grammar
 ;;; ==================================
@@ -75,26 +78,43 @@
 		    (lambda (x)
                       (list->string (second x)))))
 
-;; _character ::= '#' '\' _escapedchar:c  ==> c
-(def _character (peg=> (peg-seq _hash
-				_backslash
-				_any)
-		       third))
+;; _separator ::= _whitespace | '(' | ')' | peg-empty
+(def _separator (peg-alt _whitespace _openparen _closeparen peg-empty))
 
-;; _anything_but_separator
-;;     ::= ~(_whitespace | '(' | ')') _any:e ==> e
+;; _anything_but_separator ::= ~_separator _any:e ==> e
 (def _anything_but_separator
-    (peg=> (peg-seq (peg-not (peg-alt _whitespace
-				      _openparen
-				      _closeparen))
-		    _any)
+    (peg=> (peg-seq (peg-not _separator) _any)
 	   second))
 
-;; _symbol
-;;     ::= _anything_but_separator+:x ==> (string->symbol (list->string x))
-(def _symbol (peg=> (peg+ _anything_but_separator)
-		    (lambda (x)
-                      (string->symbol (list->string x)))))
+;; _symbol ::= ~_hash _anything_but_separator+:x
+;;             ==> (string->symbol (list->string x))
+(def _symbol
+  (peg=> (peg-seq (peg-not _hash)
+                  (peg=> (peg+ _anything_but_separator)
+                         (lambda (x) (string->symbol (list->string x)))))
+         second))
+
+;; Helper for _literal_escapedchar
+(defn peg-result-string= (string result)
+  (peg=> (peg-string= string) (lambda (x) result)))
+
+;; _literal_escapedchar ::= ( "Newline" ==> #\Newline
+;;                          | "Space" ==> #\Space
+;;                          | "Tab" ==> #\Tab
+;;                          | _any ):x ~_anything_but_separator  ==> x
+(def _literal_escapedchar
+  (peg=> (peg-seq (peg-alt (peg-result-string= "Newline" #\Newline)
+                           (peg-result-string= "Space" #\Space)
+                           (peg-result-string= "Tab" #\Tab)
+                           _anything_but_separator)
+                  (peg-not (peg-not _separator)))
+         first))
+
+;; _character ::= '#' '\' _literal_escapedchar:c  ==> c
+(def _character (peg=> (peg-seq _hash
+                                _backslash
+                                _literal_escapedchar)
+		       third))
 
 ;; _whitespaces ::= _whitespace*
 (def _whitespaces (peg* _whitespace))

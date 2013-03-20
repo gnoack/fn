@@ -17,6 +17,20 @@
 (eql (list #\a '())
      (read (string->list "#\\a")))
 
+(eql (list #\Newline '())
+     (read (string->list "#\\Newline")))
+
+(eql (list #\Tab '())
+     (read (string->list "#\\Tab")))
+
+(eql (list #\Space '())
+     (read (string->list "#\\Space")))
+
+(_lisp_expr (string->list "#\\Spacestation")
+            (lambda (result rest)
+              `(successfully parsed ,result but expected failure))
+            ->true)
+
 (eql (list #\' '())
      (read (string->list "#\\'")))
 

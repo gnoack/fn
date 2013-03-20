@@ -1,19 +1,26 @@
 (defn pprint (item)
   ;; TODO: Memory consumption.
-  (defn char-escape (ch)
-    (cond ((eq ch #\") "#\\\"")
+  (defn string-char-escape (ch)
+    ;; TODO: Some cases are missing.
+    (cond ((eq ch #\") "\\\"")
+          ((eq ch #\Newline) "\\n")
+          ((eq ch #\Tab) "\\t")
+          (true (list->string (list ch)))))
+  (defn literal-char-escape (ch)
+    (cond ((eq ch #\Newline) "Newline")
+          ((eq ch #\Tab) "Tab")
+          ((eq ch #\Space) "Space")
           (true (list->string (list ch)))))
   (cond ((string? item) (string-append "\""
                                        (apply string-append
-                                              (map char-escape
+                                              (map string-char-escape
                                                    (string->list item)))
                                        "\""))
-        ((cons? item)   (if (and (eq 'quote (first item))
-                                 (= 2 (length item)))
-                            (string-append "'" (pprint (second item)))
-                          (string-append "("
-                                         (string-join (map pprint item) " ")
-                                         ")")))
+        ((cons? item)
+         (if (and (eq 'quote (first item))
+                  (= 2 (length item)))
+             (string-append "'" (pprint (second item)))
+           (string-append "(" (string-join (map pprint item) " ") ")")))
         ((native-procedure? item)
          (string-append "<NATIVE-PROCEDURE "
                         (pprint (procedure-name item)) ">"))
@@ -23,7 +30,7 @@
         ((compiled-procedure? item)
          (string-append "<COMPILED-PROCEDURE " (pprint (procedure-name item))
                         " " (pprint (lisp-procedure-lambda-list item)) ">"))
-        ((char? item)   (string-append "\\" (char-escape item)))
+        ((char? item)   (string-append "#\\" (literal-char-escape item)))
         ((number? item) (int->string item 10))
         ((nil? item)    "nil")
         ((symbol? item) (symbol->string item))
