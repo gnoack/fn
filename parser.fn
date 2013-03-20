@@ -62,36 +62,38 @@
 ;; _escapedchar ::= '\' _any:e  ==> e
 ;;                | _any
 (def _escapedchar
-    (peg-alt (peg=> (peg-seq _backslash _any)
-		    second)
+    (peg-alt (peg-let ((_ _backslash)
+                       (e _any))
+               e)
 	     _any))
 
 ;; _string-char ::= ~'"' _escapedchar:c  ==> c
-(def _string-char (peg=> (peg-seq (peg-not _dblquote)
-				  _escapedchar)
-			 second))
+(def _string-char (peg-let ((_ (peg-not _dblquote))
+                            (c _escapedchar))
+                    c))
 
 ;; _string ::= '"' _string-char*:cs '"'  ==> (list->string cs)
-(def _string (peg-let ((_ignore1 _dblquote)
-                       (chars    (peg* _string-char))
-                       (_ignore2 _dblquote))
-               (list->string chars)))
+(def _string (peg-let ((_a _dblquote)
+                       (cs (peg* _string-char))
+                       (_b _dblquote))
+               (list->string cs)))
 
 ;; _separator ::= _whitespace | '(' | ')' | peg-empty
 (def _separator (peg-alt _whitespace _openparen _closeparen peg-empty))
 
 ;; _anything_but_separator ::= ~_separator _any:e ==> e
 (def _anything_but_separator
-    (peg=> (peg-seq (peg-not _separator) _any)
-	   second))
+  (peg-let ((_ (peg-not _separator))
+            (e _any))
+    e))
 
 ;; _symbol ::= ~_hash _anything_but_separator+:x
 ;;             ==> (string->symbol (list->string x))
 (def _symbol
-  (peg=> (peg-seq (peg-not _hash)
-                  (peg=> (peg+ _anything_but_separator)
-                         (lambda (x) (string->symbol (list->string x)))))
-         second))
+  (peg-let ((_a  (peg-not _hash))
+            (res (peg=> (peg+ _anything_but_separator)
+                        (lambda (x) (string->symbol (list->string x))))))
+    res))
 
 ;; Helper for _literal_escapedchar
 (defn peg-result-string= (string result)
@@ -102,43 +104,44 @@
 ;;                          | "Tab" ==> #\Tab
 ;;                          | _any ):x ~_anything_but_separator  ==> x
 (def _literal_escapedchar
-  (peg=> (peg-seq (peg-alt (peg-result-string= "Newline" #\Newline)
-                           (peg-result-string= "Space" #\Space)
-                           (peg-result-string= "Tab" #\Tab)
-                           _anything_but_separator)
-                  (peg-not (peg-not _separator)))
-         first))
+  (peg-let ((x (peg-alt (peg-result-string= "Newline" #\Newline)
+                        (peg-result-string= "Space" #\Space)
+                        (peg-result-string= "Tab" #\Tab)
+                        _anything_but_separator))
+            (_ (peg-not (peg-not _separator))))
+    x))
 
 ;; _character ::= '#' '\' _literal_escapedchar:c  ==> c
-(def _character (peg=> (peg-seq _hash
-                                _backslash
-                                _literal_escapedchar)
-		       third))
+(def _character (peg-let ((_1 _hash)
+                          (_2 _backslash)
+                          (c  _literal_escapedchar))
+                  c))
 
 ;; _whitespaces ::= _whitespace*
 (def _whitespaces (peg* _whitespace))
 
 ;; _sexpression ::= '(' _expr*:es _whitespaces ')'  ==> es
-(def _sexpression (peg=> (peg-seq _openparen
-				  (peg* _expr)
-				  _whitespaces
-				  _closeparen)
-			 second))
+(def _sexpression (peg-let ((_a  _openparen)
+                            (res (peg* _expr))
+                            (_b  _whitespaces)
+                            (_c  _closeparen))
+                    res))
 
 ;; _prefix_expr ::= '\'' _expr:e     ==> `(quote ,e)
 ;;                | '`' _expr:e      ==> `(backquote ,e)
 ;;                | ',' '@' _expr:e  ==> `(unquote-list ,e)
 ;;                | ',' _expr:e      ==> `(unquote ,e)
 (def _prefix_expr
-    (peg-alt
-     (peg=> (peg-seq _quote _expr)
-	    (lambda (x) (list 'quote (second x))))
-     (peg=> (peg-seq _backquote _expr)
-	    (lambda (x) (list 'quasiquote (second x))))
-     (peg=> (peg-seq _comma _at _expr)
-	    (lambda (x) (list 'unquote-splicing (third x))))
-     (peg=> (peg-seq _comma _expr)
-	    (lambda (x) (list 'unquote (second x))))))
+  ;; TODO: Fix these once quasiquote works properly.
+  (peg-alt
+   (peg-let ((_ _quote) (e _expr))
+     (list 'quote e))
+   (peg-let ((_ _backquote) (e _expr))
+     (list 'quasiquote e))
+   (peg-let ((_1 _comma) (_2 _at) (e _expr))
+     (list 'unquote-splicing e))
+   (peg-let ((_ _comma) (e _expr))
+     (list 'unquote e))))
 
 ;; _expr1 ::= _whitespaces ( _prefix_expr
 ;;                         | _sexpression
@@ -146,14 +149,14 @@
 ;;                         | _string
 ;;                         | _character
 ;;                         | _symbol ):e  ==> e
-(def _expr1 (peg=> (peg-seq _whitespaces
-			    (peg-alt _prefix_expr
-				     _sexpression
-				     _integer
-				     _string
-				     _character
-				     _symbol))
-		   second))
+(def _expr1 (peg-let ((_  _whitespaces)
+                      (e (peg-alt _prefix_expr
+                                  _sexpression
+                                  _integer
+                                  _string
+                                  _character
+                                  _symbol)))
+              e))
 
 ;; Used from pegs-parser
 (def _lisp_expr _expr)
