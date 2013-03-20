@@ -13,10 +13,11 @@
            (lambda (l) (string->symbol (list->string l)))))
 
 (def _pp_string-expr
-    (peg=> _string  ; like in Lisp.
-           (lambda (str)
-             `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
-                              (string->list str))))))
+  (peg=> (peg-seq _pp_optional_whitespaces
+                  _string)  ; like in Lisp.
+         (lambda (results)
+           `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
+                            (string->list (second results)))))))
 
 (def _pp_symbol-expr
     (peg=> (peg-seq _pp_optional_whitespaces

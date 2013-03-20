@@ -26,10 +26,7 @@
 (eql (list #\Space '())
      (read (string->list "#\\Space")))
 
-(_lisp_expr (string->list "#\\Spacestation")
-            (lambda (result rest)
-              `(successfully parsed ,result but expected failure))
-            ->true)
+(parse-fail? _lisp_expr (string->list "#\\Spacestation"))
 
 (eql (list #\' '())
      (read (string->list "#\\'")))

@@ -72,11 +72,10 @@
 			 second))
 
 ;; _string ::= '"' _string-char*:cs '"'  ==> (list->string cs)
-(def _string (peg=> (peg-seq _dblquote
-			     (peg* _string-char)
-			     _dblquote)
-		    (lambda (x)
-                      (list->string (second x)))))
+(def _string (peg-let ((_ignore1 _dblquote)
+                       (chars    (peg* _string-char))
+                       (_ignore2 _dblquote))
+               (list->string chars)))
 
 ;; _separator ::= _whitespace | '(' | ')' | peg-empty
 (def _separator (peg-alt _whitespace _openparen _closeparen peg-empty))

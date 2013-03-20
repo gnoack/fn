@@ -1,6 +1,9 @@
 (eql (list '(peg-seq (peg= #\x)) '())
      (_pp_expr3 (string->list "\"x\"") list error))
 
+(eql (list '(peg-seq (peg= #\x)) '())
+     (_pp_expr3 (string->list " \"x\"") list error))
+
 (eql (list '(peg-seq (peg= #\")) '())
      (_pp_expr3 (string->list "\"\\\"\"") list error))
 
