@@ -1,43 +1,47 @@
 (eql (list '(peg-seq (peg= #\x)) '())
-     (_pp_expr3 (string->list "\"x\"") list '*error*))
+     (_pp_expr3 (string->list "\"x\"") list error))
 
 (eql (list '(peg-seq (peg= #\")) '())
-     (_pp_expr3 (string->list "\"\\\"\"") list '*error*))
+     (_pp_expr3 (string->list "\"\\\"\"") list error))
 
 (eql (list '(peg= (quote foo)) '())
-     (_pp_expr3 (string->list "'foo") list '*error*))
+     (_pp_expr3 (string->list "'foo") list error))
 
 (eql (list (list 'var '(peg= (quote gaa)))
 	   '())
-     (_pp_binding (string->list "'gaa:var") list '*error*))
+     (_pp_binding (string->list "'gaa:var") list error))
+
+(eql (list (list 'var '(peg= (quote gaa)))
+	   '())
+     (_pp_binding (string->list " 'gaa:var") list error))
 
 (eql (list (string->list "   ") (string->list "gaa"))
-     (_pp_optional_whitespaces (string->list "   gaa") list '*error*))
+     (_pp_optional_whitespaces (string->list "   gaa") list error))
 
 (eql (list (list 'foo 'bar 'baz)
 	   '())
      ((peg-listof _pp_symbol _pp_optional_whitespaces)
-      (string->list "foo bar  baz") list '*error*))
+      (string->list "foo bar  baz") list error))
 
 (eql (list '(peg-let ((a (peg= (quote x)))
 		      (b (peg= (quote y)))
 		      (c (peg= (quote z))))
 	       (list c b a))
 	   '())
-     (_pp_expr2 (string->list "'x:a 'y:b 'z:c => (list c b a)") list '*error*))
+     (_pp_expr2 (string->list "'x:a 'y:b 'z:c => (list c b a)") list error))
 
 (eql (list '(peg-let ((a (peg= (quote x)))
 		      (_ (peg= (quote y)))
 		      (c (peg-seq (peg= #\c))))
 	       (list a c))
 	   '())
-     (_pp_expr2 (string->list "'x:a 'y \"c\":c => (list a c)") list '*error*))
+     (_pp_expr2 (string->list "'x:a 'y \"c\":c => (list a c)") list error))
 
 (eql (list '(peg-seq (peg= (quote x))
 		     (peg= (quote y))
 		     (peg-seq (peg= #\c)))
            '())
-     (_pp_expr2 (string->list "'x 'y \"c\"") list '*error*))
+     (_pp_expr2 (string->list "'x 'y \"c\"") list error))
 
 (eql (list '(peg-alt (peg-seq (peg= (quote x)))
                      (peg-seq (peg= (quote y))))
@@ -53,13 +57,13 @@
                      (peg-seq (peg= (quote d))))
             '())
      (_pp_expr1 (string->list "'aa:a 'bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
-		list '*error*))
+		list error))
 
 (eql (list '(peg* (peg= 'foo)) '())
-     (_pp_expr3 (string->list "'foo*") list '*error*))
+     (_pp_expr3 (string->list "'foo*") list error))
 
 (eql (list '(peg+ (peg= 'foo)) '())
-     (_pp_expr3 (string->list "'foo+") list '*error*))
+     (_pp_expr3 (string->list "'foo+") list error))
 
 ;; Tests expression nesting and precedence.
 (eql (list '(peg-alt
@@ -69,7 +73,7 @@
 	      (peg-seq (peg= 'foo) (peg= 'bar)))
 	   '())
      (_pp_expr1 (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
-		list '*error*))
+		list error))
 
 ;; TODO: Rules:    identifier "::=" expr1
 ;;   _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)

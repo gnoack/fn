@@ -15,18 +15,15 @@
 (def _pp_string-expr
     (peg=> _string  ; like in Lisp.
            (lambda (str)
-             ;; `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
-             ;;                  (string->list chars))))
-             (cons 'peg-seq
-                   (map (lambda (ch) (list 'peg= ch))
-                        (string->list str))))))
+             `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
+                              (string->list str))))))
 
 (def _pp_symbol-expr
-    (peg=> (peg-seq _pp_singlequote
+    (peg=> (peg-seq _pp_optional_whitespaces
+                    _pp_singlequote
                     _pp_symbol)  ; like in Lisp.
            (lambda (result)
-             ;; `(peg= (quote ,(second result)))
-             (list 'peg= (list 'quote (second result))))))
+             `(peg= (quote ,(third result))))))
 
 ;; An individual parsing expression.
 (def _pp_expr4 (peg-alt _pp_string-expr
