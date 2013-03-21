@@ -78,7 +78,10 @@
      (_pp_expr1 (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
 		list error))
 
-;; TODO: Rules:    identifier "::=" expr1
-;;   _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
+(eql (list '(defrule foobar (peg-alt (peg-seq (peg= 'baz))))
+           '())
+     (_pp_rule (string->list "foobar ::= 'baz;")
+               list error))
+
 
 ;; TODO: Grammar:  "meta" identifier "{" rule*:rs "}"

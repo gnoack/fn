@@ -46,8 +46,8 @@
 (def _comment (peg-seq _semicolon
 		       (peg* (peg-terminal (lambda (c) (not (eq c #\Newline)))))))
 
-(def _whitespace (peg-alt _comment
-			  (peg-terminal whitespace?)))
+(def _whitespace (peg-terminal whitespace?))
+(def _lisp_whitespace (peg-alt _comment _whitespace))
 
 ;; Indirection.
 (defn _expr (input win lose)
@@ -78,8 +78,8 @@
                        (_b _dblquote))
                (list->string cs)))
 
-;; _separator ::= _whitespace | '(' | ')' | peg-empty
-(def _separator (peg-alt _whitespace _openparen _closeparen peg-empty))
+;; _separator ::= _lisp_whitespace | '(' | ')' | peg-empty
+(def _separator (peg-alt _lisp_whitespace _openparen _closeparen peg-empty))
 
 ;; _anything_but_separator ::= ~_separator _any:e ==> e
 (def _anything_but_separator
@@ -107,6 +107,7 @@
   (peg-let ((x (peg-alt (peg-result-string= "Newline" #\Newline)
                         (peg-result-string= "Space" #\Space)
                         (peg-result-string= "Tab" #\Tab)
+                        (peg-result-string= ";" #\;)
                         _anything_but_separator))
             (_ (peg-not (peg-not _separator))))
     x))
@@ -117,13 +118,13 @@
                           (c  _literal_escapedchar))
                   c))
 
-;; _whitespaces ::= _whitespace*
-(def _whitespaces (peg* _whitespace))
+;; _lisp_whitespaces ::= _lisp_whitespace*
+(def _lisp_whitespaces (peg* _lisp_whitespace))
 
-;; _sexpression ::= '(' _expr*:es _whitespaces ')'  ==> es
+;; _sexpression ::= '(' _expr*:es _lisp_whitespaces ')'  ==> es
 (def _sexpression (peg-let ((_a _openparen)
                             (es (peg* _expr))
-                            (_b _whitespaces)
+                            (_b _lisp_whitespaces)
                             (_c _closeparen))
                     es))
 
@@ -145,13 +146,13 @@
    (peg-let ((_ _comma) (e _expr))
      (list 'unquote e))))
 
-;; _expr1 ::= _whitespaces ( _prefix_expr
-;;                         | _sexpression
-;;                         | _integer
-;;                         | _string
-;;                         | _character
-;;                         | _symbol ):e  ==> e
-(def _expr1 (peg-let ((_  _whitespaces)
+;; _expr1 ::= _lisp_whitespaces ( _prefix_expr
+;;                              | _sexpression
+;;                              | _integer
+;;                              | _string
+;;                              | _character
+;;                              | _symbol ):e  ==> e
+(def _expr1 (peg-let ((_  _lisp_whitespaces)
                       (e (peg-alt _prefix_expr
                                   _sexpression
                                   _integer
