@@ -25,22 +25,26 @@
            (lambda (l) (string->symbol (list->string l)))))
 
 (def _pp_string-expr
-  (peg=> (peg-seq _pp_optional_whitespaces
-                  _string)  ; like in Lisp.
-         (lambda (results)
-           `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
-                            (string->list (second results)))))))
+  (peg-let ((_ _pp_optional_whitespaces)
+            (s _string))  ; Like in Lisp.
+    `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
+                     (string->list s)))))
 
 (def _pp_symbol-expr
-    (peg=> (peg-seq _pp_optional_whitespaces
-                    _pp_singlequote
-                    _pp_symbol)  ; like in Lisp.
-           (lambda (result)
-             `(peg= (quote ,(third result))))))
+  (peg-let ((_ _pp_optional_whitespaces)
+            (_ _pp_singlequote)
+            (s _pp_symbol))  ; Like in Lisp.
+    `(peg= (quote ,s))))
+
+(def _pp_invocation-expr
+  (peg-let ((_ _pp_optional_whitespaces)
+            (s _pp_symbol))  ; Like in Lisp.
+    `(invoke ,s)))
 
 ;; An individual parsing expression.
 (def _pp_expr4 (peg-alt _pp_string-expr
-                        _pp_symbol-expr))
+                        _pp_symbol-expr
+                        _pp_invocation-expr))
 
 ;; Just parse nothing, always succeeds.
 (def _pp_epsilon (peg-seq))

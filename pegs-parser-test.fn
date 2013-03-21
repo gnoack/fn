@@ -10,6 +10,9 @@
 (eql (list '(peg= (quote foo)) '())
      (_pp_expr3 (string->list "'foo") list error))
 
+(eql (list '(invoke foo) '())
+     (_pp_expr3 (string->list "foo") list error))
+
 (eql (list (list 'var '(peg= (quote gaa)))
 	   '())
      (_pp_binding (string->list "'gaa:var") list error))
@@ -98,3 +101,4 @@
      (_pp_grammar (string->list "grammar trivial {}")
                   list error))
 
+;; TODO: Bracketing expressions for evaluation order.
