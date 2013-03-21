@@ -26,6 +26,11 @@
      ((peg-listof _pp_symbol _pp_optional_whitespaces)
       (string->list "foo bar  baz") list error))
 
+(eql (list (list)
+	   '(#\Space))
+     ((peg-listof _pp_symbol _pp_optional_whitespaces)
+      (string->list " ") list error))
+
 (eql (list '(peg-let ((a (peg= (quote x)))
 		      (b (peg= (quote y)))
 		      (c (peg= (quote z))))
@@ -80,8 +85,16 @@
 
 (eql (list '(defrule foobar (peg-alt (peg-seq (peg= 'baz))))
            '())
-     (_pp_rule (string->list "foobar ::= 'baz;")
+     (_pp_rule (string->list "foobar ::= 'baz")
                list error))
 
+(eql (list '(defgrammar fancy
+              (defrule foo (peg-alt (peg-seq (peg= 'x))))
+              (defrule bar (peg-alt (peg-seq (peg= 'y))))) '())
+     (_pp_grammar (string->list "grammar fancy { foo ::= 'x; bar ::= 'y }")
+                  list error))
 
-;; TODO: Grammar:  "meta" identifier "{" rule*:rs "}"
+(eql (list '(defgrammar trivial) '())
+     (_pp_grammar (string->list "grammar trivial {}")
+                  list error))
+

@@ -14,6 +14,9 @@
 (def _pp_semicolon (_pp_token (peg= #\;)))
 (def _pp_arrow (_pp_token (peg-string= "=>")))
 (def _pp_define (_pp_token (peg-string= "::=")))
+(def _pp_grammar_keyword (_pp_token (peg-string= "grammar")))
+(def _pp_opencurly (_pp_token (peg= #\{)))
+(def _pp_closecurly (_pp_token (peg= #\})))
 
 ;; TODO: Should be like lisp symbol, but also take
 ;; into account the separators in the grammar language.
@@ -69,10 +72,12 @@
 
 ;; Parser for a list of items separated by a separator.
 (defn peg-listof (item sep)
-  (peg-let ((a item)
-            (as (peg* (peg=> (peg-seq sep item)
-                             second))))
-    (cons a as)))
+  (peg-alt
+   (peg-let ((a  item)
+             (as (peg* (peg-let ((_ sep) (it item))
+                         it))))
+     (cons a as))
+   (peg-seq)))
 
 ;; _pp_binding ::= _pp_expr3:e _pp_bindingvar:v => (list v e)
 (def _pp_binding
@@ -106,6 +111,14 @@
   (peg-let ((_    _pp_optional_whitespaces)
             (name _pp_symbol)
             (_    _pp_define)
-            (expr _pp_expr1)
-            (_    _pp_semicolon))
+            (expr _pp_expr1))
     `(defrule ,name ,expr)))
+
+(def _pp_grammar
+  (peg-let ((_  _pp_optional_whitespaces)
+            (_  _pp_grammar_keyword)
+            (n  _pp_symbol)
+            (_  _pp_opencurly)
+            (rs (peg-listof _pp_rule _pp_semicolon))
+            (_  _pp_closecurly))
+    `(defgrammar ,n ,@rs)))
