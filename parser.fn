@@ -121,11 +121,11 @@
 (def _whitespaces (peg* _whitespace))
 
 ;; _sexpression ::= '(' _expr*:es _whitespaces ')'  ==> es
-(def _sexpression (peg-let ((_a  _openparen)
-                            (res (peg* _expr))
-                            (_b  _whitespaces)
-                            (_c  _closeparen))
-                    res))
+(def _sexpression (peg-let ((_a _openparen)
+                            (es (peg* _expr))
+                            (_b _whitespaces)
+                            (_c _closeparen))
+                    es))
 
 ;; _prefix_expr ::= '\'' _expr:e     ==> `(quote ,e)
 ;;                | '`' _expr:e      ==> `(backquote ,e)
