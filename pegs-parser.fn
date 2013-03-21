@@ -19,6 +19,7 @@
 (def _pp_closecurly (_pp_token (peg= #\})))
 (def _pp_openbracket (_pp_token (peg= #\()))
 (def _pp_closbracket (_pp_token (peg= #\))))
+(def _pp_negation_sign (_pp_token (peg= #\~)))
 
 ;; Indirection for recursive calls.
 (defn _pp_expr (input win lose)
@@ -53,8 +54,18 @@
             (_ _pp_closbracket))
     e))
 
+;; Forward declaration for recursive call.
+(defn _pp_expr4_indirect (input win lose)
+  (_pp_expr4 input win lose))
+
+(def _pp_negated-expr
+  (peg-let ((_ _pp_negation_sign)
+            (e _pp_expr4_indirect))
+    `(peg-not ,e)))
+
 ;; An individual parsing expression.
-(def _pp_expr4 (peg-alt _pp_string-expr
+(def _pp_expr4 (peg-alt _pp_negated-expr
+                        _pp_string-expr
                         _pp_symbol-expr
                         _pp_invocation-expr
                         _pp_bracketed-expr))

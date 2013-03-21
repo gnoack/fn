@@ -1,3 +1,4 @@
+
 (eql (list '(peg-seq (peg= #\x)) '())
      (_pp_expr3 (string->list "\"x\"") list error))
 
@@ -11,7 +12,12 @@
      (_pp_expr3 (string->list "'foo") list error))
 
 (eql (list '(invoke foo) '())
-     (_pp_expr3 (string->list "foo") list error))
+     (_pp_expr4 (string->list "foo") list error))
+
+(eql (list '(peg-not (invoke a))
+           '())
+     (_pp_expr4 (string->list "~a")
+                list error))
 
 (eql (list (list 'var '(peg= (quote gaa)))
 	   '())
@@ -65,14 +71,14 @@
                 list error))
 
 (eql (list '(peg-alt (peg-let ((a (peg= (quote aa)))
-			       (b (peg= (quote bb))))
+			       (b (peg-not (invoke bb))))
 		       (cons a b))
 	             (peg-let ((_ (peg-seq (peg= #\=) (peg= #\>)))
 			       (c (peg= (quote cc))))
 		       c)
                      (peg-seq (peg= (quote d))))
             '())
-     (_pp_expr1 (string->list "'aa:a 'bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
+     (_pp_expr1 (string->list "'aa:a ~bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
 		list error))
 
 (eql (list '(peg* (peg= 'foo)) '())
