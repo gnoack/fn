@@ -17,6 +17,12 @@
 (def _pp_grammar_keyword (_pp_token (peg-string= "grammar")))
 (def _pp_opencurly (_pp_token (peg= #\{)))
 (def _pp_closecurly (_pp_token (peg= #\})))
+(def _pp_openbracket (_pp_token (peg= #\()))
+(def _pp_closbracket (_pp_token (peg= #\))))
+
+;; Indirection for recursive calls.
+(defn _pp_expr (input win lose)
+  (_pp_expr1 input win lose))
 
 ;; TODO: Should be like lisp symbol, but also take
 ;; into account the separators in the grammar language.
@@ -41,10 +47,17 @@
             (s _pp_symbol))  ; Like in Lisp.
     `(invoke ,s)))
 
+(def _pp_bracketed-expr
+  (peg-let ((_ _pp_openbracket)
+            (e _pp_expr)
+            (_ _pp_closbracket))
+    e))
+
 ;; An individual parsing expression.
 (def _pp_expr4 (peg-alt _pp_string-expr
                         _pp_symbol-expr
-                        _pp_invocation-expr))
+                        _pp_invocation-expr
+                        _pp_bracketed-expr))
 
 ;; Just parse nothing, always succeeds.
 (def _pp_epsilon (peg-seq))

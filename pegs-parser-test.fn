@@ -57,7 +57,12 @@
 (eql (list '(peg-alt (peg-seq (peg= (quote x)))
                      (peg-seq (peg= (quote y))))
 	   '())
-     (_pp_expr1 (string->list "'x | 'y") list '*error))
+     (_pp_expr1 (string->list "'x | 'y") list error))
+
+(eql (list '(peg-alt (peg-seq (peg+ (peg-alt (peg-seq (invoke a) (invoke b))))))
+           '())
+     (_pp_expr1 (string->list "(a b)+")
+                list error))
 
 (eql (list '(peg-alt (peg-let ((a (peg= (quote aa)))
 			       (b (peg= (quote bb))))
@@ -101,5 +106,5 @@
      (_pp_grammar (string->list "grammar trivial {}")
                   list error))
 
-;; TODO: Bracketing expressions for evaluation order.
 ;; TODO: Support comments in expression grammars.
+;; TODO: Support negation.
