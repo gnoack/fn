@@ -44,7 +44,8 @@
 (def _at (peg= #\@))
 
 (def _comment (peg-seq _semicolon
-		       (peg* (peg-terminal (lambda (c) (not (eq c #\Newline)))))))
+		       (peg* (peg-seq (peg-not (peg= #\Newline))
+                                      _any))))
 
 (def _whitespace (peg-terminal whitespace?))
 (def _lisp_whitespace (peg-alt _comment _whitespace))
