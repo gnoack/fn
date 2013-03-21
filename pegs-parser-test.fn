@@ -113,4 +113,4 @@
                   list error))
 
 ;; TODO: Support comments in expression grammars.
-;; TODO: Support negation.
+;; TODO: Support more characters in symbol names.
