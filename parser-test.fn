@@ -54,3 +54,5 @@
 	     (a (unquote b) (unquote-splicing c) d))
 	   '())
      (read (string->list "`(a ,b ,@c d)")))
+
+;; TODO: Parser doesn't recognize in-string escapes like "\n".
