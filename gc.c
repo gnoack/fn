@@ -585,8 +585,10 @@ void gc_deserialize_from_file(char* filename) {
   FILE* in = fopen(filename, "r");
 
   // Copy file contents over existing symbols map and global env ptr.
-  fread(&global_env, sizeof(oop), 1, in);
-  fread(&symbols, sizeof(symbols), 1, in);
+  size_t items_read = fread(&global_env, sizeof(oop), 1, in);
+  CHECK(items_read == 1, "Read error.");
+  items_read = fread(&symbols, sizeof(symbols), 1, in);
+  CHECK(items_read == 1, "Read error.");
 
   // Copy file contents over existing half spaces.
   half_space object_space_in_old_process;

@@ -22,15 +22,20 @@ typedef int boolean;
 
 void (*print_stack_frame)();
 
+// GCC only.
+#define unlikely(x) __builtin_expect(x, 0)
+#define likely(x) __builtin_expect(x, 1)
+
+
 #define CHECK(x, msg)                                \
-  if (!(x)) {                                        \
+  if (unlikely(!(x))) {                              \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     print_stack_frame();                             \
     exit(1);                                         \
   }
 
 #define CHECKV(x, value, msg)                        \
-  if (!(x)) {                                        \
+  if (unlikely(!(x))) {                              \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     printf("Offending value: ");                     \
     println_value(value);                              \
@@ -41,7 +46,7 @@ void (*print_stack_frame)();
 // A check where only the error message is printed out.
 // Useful during GC.
 #define GC_CHECK(x, msg)                             \
-  if (!(x)) {                                        \
+  if (unlikely(!(x))) {                              \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     exit(1);                                         \
   }
