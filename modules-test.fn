@@ -17,3 +17,12 @@
 (import ((test-module (test/a a) (test/b b)))
   (and (= test/a 1)
        (= test/b 2)))
+
+(->true (def other-test-module (let ((x 10)
+                                     (y 20)
+                                     (z 30))
+                                 (make-module x y z))))
+
+(import ((test-module (a a) (b b))
+         (other-test-module (x x) (y y) (z z)))
+  (eq? 63 (+ a b x y z)))
