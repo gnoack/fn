@@ -36,7 +36,7 @@
                  (first xs)) ; bindings
             (map macroexpand-rec (rest xs))))))
 
-(def false? (lambda (f) (eq false f)))
+(def false? (lambda (f) (eq? false f)))
 
 ;; CAN'T USE ANY MACROS ITSELF!
 ; if, def are handled by regular function application rules
@@ -45,9 +45,9 @@
       (if (cons? e)
 	  (let ((x (first e))
 		(xs (rest e)))
-	    (if (eq x 'quote) e  ; just leave it
-	    (if (eq x 'lambda) (me-lambda-rec xs)
-	    (if (eq x 'let) (me-let-rec xs)
+	    (if (eq? x 'quote) e  ; just leave it
+	    (if (eq? x 'lambda) (me-lambda-rec xs)
+	    (if (eq? x 'let) (me-let-rec xs)
               (if (if (symbol? x)
                       (dict-has-key? *macros* x)
                     false)
@@ -93,7 +93,7 @@
 
 (defn smatch? (symbol e)
   (and (cons? e)
-       (eq symbol (first e))))
+       (eq? symbol (first e))))
 
 (defn list-expr? (e)
   (smatch? 'list e))
@@ -201,9 +201,9 @@
        (cond
         ,@(map (lambda (clause)
                  (cond ((list? (first clause))
-                        `((eq (quote ,(first (first clause))) ,value)
+                        `((eq? (quote ,(first (first clause))) ,value)
                           ,(second clause)))
-                       ((eq 'else (first clause))
+                       ((eq? 'else (first clause))
                         `(true ,(second clause)))))
                clauses)))))
 

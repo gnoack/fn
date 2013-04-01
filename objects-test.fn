@@ -1,21 +1,21 @@
 ;; Types
 ;; Anything has a type, even types have a type, namely @type.
-(eq @type (type-of @type))
-(eq @cons (type-of (cons 'a 'b)))
-(eq @type (type-of (type-of (cons 'a 'b))))
-(eq @smallint (type-of 12))
-(eq @character (type-of #\b))
-(eq @nil (type-of nil))
-(eq @symbol (type-of 'foobar))
-(eq @mem-block (type-of ($make-mem-block 4)))
+(eq? @type (type-of @type))
+(eq? @cons (type-of (cons 'a 'b)))
+(eq? @type (type-of (type-of (cons 'a 'b))))
+(eq? @smallint (type-of 12))
+(eq? @character (type-of #\b))
+(eq? @nil (type-of nil))
+(eq? @symbol (type-of 'foobar))
+(eq? @mem-block (type-of ($make-mem-block 4)))
 
-(eql '(install-method! @foo 'bar
-       (lambda (self x y) (+ self x y)))
-     (macroexpand '(defm @foo 'bar (x y)
-                    (+ self x y))))
+(eql? '(install-method! @foo 'bar
+                        (lambda (self x y) (+ self x y)))
+      (macroexpand '(defm @foo 'bar (x y)
+                          (+ self x y))))
 
 (->true (defm @nil 'is-nil? () true))
 (send nil 'is-nil?)
 
 (->true (defm @smallint 'plus (x) (+ self x)))
-(eq 7 (send 4 'plus 3))
+(eq? 7 (send 4 'plus 3))

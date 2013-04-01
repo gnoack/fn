@@ -3,7 +3,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn dispatch-clause->cond-clause (clause)
-  `((eq ,(first clause) selector)
+  `((eq? ,(first clause) selector)
     (lambda ,(second clause) ,@(rest (rest clause)))))
 
 ;; Constructs an object with identity and able to receive messages.

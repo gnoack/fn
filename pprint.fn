@@ -4,14 +4,14 @@
   ;; TODO: Pretty-printing dictionaries.
   (defn string-char-escape (ch)
     ;; TODO: Some cases are missing.
-    (cond ((eq ch #\") "\\\"")
-          ((eq ch #\Newline) "\\n")
-          ((eq ch #\Tab) "\\t")
+    (cond ((eq? ch #\") "\\\"")
+          ((eq? ch #\Newline) "\\n")
+          ((eq? ch #\Tab) "\\t")
           (true (list->string (list ch)))))
   (defn literal-char-escape (ch)
-    (cond ((eq ch #\Newline) "Newline")
-          ((eq ch #\Tab) "Tab")
-          ((eq ch #\Space) "Space")
+    (cond ((eq? ch #\Newline) "Newline")
+          ((eq? ch #\Tab) "Tab")
+          ((eq? ch #\Space) "Space")
           (true (list->string (list ch)))))
   (cond ((string? item) (string-append "\""
                                        (apply string-append
@@ -19,7 +19,7 @@
                                                    (string->list item)))
                                        "\""))
         ((cons? item)
-         (if (and (eq 'quote (first item))
+         (if (and (eq? 'quote (first item))
                   (= 2 (length item)))
              (string-append "'" (pprint (second item)))
            (string-append "(" (string-join (map pprint item) " ") ")")))

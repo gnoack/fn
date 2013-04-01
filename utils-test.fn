@@ -1,16 +1,16 @@
 ;; Lists
-(eq 3 (last '(1 2 3)))
-(eql '(1 2) (all-but-last '(1 2 3)))
-(eql (list 'a 'b 'c)
-     (filter symbol? (list "a" 'a 1 'b 'c 99)))
+(eq? 3 (last '(1 2 3)))
+(eql? '(1 2) (all-but-last '(1 2 3)))
+(eql? (list 'a 'b 'c)
+      (filter symbol? (list "a" 'a 1 'b 'c 99)))
 
 ;; Strings
 (string=? "abc" "abc")
 (not (string=? "x" "y"))
 
-(eql (list) (string->list ""))
-(eql (list #\a #\b #\c)
-     (string->list "abc"))
+(eql? (list) (string->list ""))
+(eql? (list #\a #\b #\c)
+      (string->list "abc"))
 (string=? "" "")
 (string=? "hello" "hello")
 (string=? "hello" (list->string (list #\h #\e #\l #\l #\o)))
@@ -29,14 +29,14 @@
 (not (string-prefix? "bar" "foobar"))
 (not (string-prefix? "foobar" "foo"))
 
-(eq #\d (string-at "abcdefg" 3))
-(eq 6 (string-size "abcdef"))
+(eq? #\d (string-at "abcdefg" 3))
+(eq? 6 (string-size "abcdef"))
 
 ;; Integer parsing.
-(eq 123 (string->int "123"))
+(eq? 123 (string->int "123"))
 
 ;; Digit to int
-(eq 3 (digit->int #\3))
+(eq? 3 (digit->int #\3))
 
 ;; Integer coding
 (string=? "0" (int->string 0 10))
@@ -59,10 +59,10 @@
 (not (char<= #\a #\c #\b))
 
 ;; Reducing
-(eql (cons (cons (cons nil 'a) 'b) 'c)
-     (reduce cons (list 'a 'b 'c) nil))
+(eql? (cons (cons (cons nil 'a) 'b) 'c)
+      (reduce cons (list 'a 'b 'c) nil))
 
-(eql (list 'a 'b 'c)
-     (reduce-right cons (list 'a 'b 'c) nil))
+(eql? (list 'a 'b 'c)
+      (reduce-right cons (list 'a 'b 'c) nil))
 
 ;; Readline completion.

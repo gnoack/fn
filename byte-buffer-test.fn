@@ -15,7 +15,7 @@
   (byte-buffer-append! %buf 5)
   (byte-buffer-append! %buf 6)
   (byte-buffer-set! %buf 2 20)
-  (eql '(0 1 20 3 4 5 6)
-       (byte-buffer-slice %buf 0 7)))
+  (eql? '(0 1 20 3 4 5 6)
+        (byte-buffer-slice %buf 0 7)))
 
 (= 7 (byte-buffer-size %buf))

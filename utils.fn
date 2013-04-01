@@ -15,12 +15,12 @@
       (+ 1 (length (rest seq)))
       0))
 
-(defn eql (a b)
-  (cond ((eq a b)
+(defn eql? (a b)
+  (cond ((eq? a b)
          true)
         ((and (cons? a) (cons? b))
-         (and (eql (first a) (first b))
-              (eql (rest a) (rest b))))
+         (and (eql? (first a) (first b))
+              (eql? (rest a) (rest b))))
         ((and (string? a) (string? b))
          (string=? a b))
         (true
@@ -37,8 +37,8 @@
 ;; TODO: For speed, write in C using memcmp().
 (defn $mem=? (a a-offset b b-offset size)
   (or (= 0 size)
-      (and (eq ($mem-block-byte-get a a-offset)
-               ($mem-block-byte-get b b-offset))
+      (and (eq? ($mem-block-byte-get a a-offset)
+                ($mem-block-byte-get b b-offset))
            ($mem=? a (+ 1 a-offset)
                    b (+ 1 b-offset)
                    (- size 1)))))
@@ -85,7 +85,7 @@
          trg (+ trg-offset (string-size src-string))
          (rest strings)))))
 
-(defn string? (str)        (eq @string (type-of str)))
+(defn string? (str)        (eq? @string (type-of str)))
 (defn string-size (str)    ($mem-get str 1))
 (defn %string-offset (str) ($mem-get str 2))
 (defn %string-raw (str)    ($mem-get str 3))

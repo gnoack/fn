@@ -253,7 +253,7 @@ void init_primitives() {
   register_globally_fn("/", primitive_div);
   register_globally_fn("mod", primitive_mod);
   register_globally_fn("integer<=", primitive_le);
-  register_globally_fn("eq", primitive_eq);
+  register_globally_fn("eq?", primitive_eq);
   register_globally_fn("mem?", primitive_mem_p);
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);

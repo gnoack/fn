@@ -5,7 +5,7 @@
     (lambda ()
       (raise 'fail))
   (lambda (reason)
-    (eq 'fail reason)))
+    (eq? 'fail reason)))
 
 (= 6 (catch
          (lambda (x)

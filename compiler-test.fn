@@ -6,19 +6,19 @@
 (string=? "GLOBAL" (send global-env 'prettyprint))
 (string=? "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
 
-(eql '((read-var 0 0)) (send %xyz-env 'generate-read 'x))
-(eql '((read-var 0 1)) (send %xyz-env 'generate-read 'y))
-(eql '((read-var 0 2)) (send %xyz-env 'generate-read 'z))
-(eql '((read-global-var foo)) (send %xyz-env 'generate-read 'foo))
+(eql? '((read-var 0 0)) (send %xyz-env 'generate-read 'x))
+(eql? '((read-var 0 1)) (send %xyz-env 'generate-read 'y))
+(eql? '((read-var 0 2)) (send %xyz-env 'generate-read 'z))
+(eql? '((read-global-var foo)) (send %xyz-env 'generate-read 'foo))
 
-(eql '((read-var 0 0)) (send %abz-env 'generate-read 'a))
-(eql '((read-var 0 1)) (send %abz-env 'generate-read 'b))
-(eql '((read-var 0 2)) (send %abz-env 'generate-read 'z)) ; Shadows z in xyz-env
-(eql '((read-var 1 0)) (send %abz-env 'generate-read 'x))
-(eql '((read-var 1 1)) (send %abz-env 'generate-read 'y))
+(eql? '((read-var 0 0)) (send %abz-env 'generate-read 'a))
+(eql? '((read-var 0 1)) (send %abz-env 'generate-read 'b))
+(eql? '((read-var 0 2)) (send %abz-env 'generate-read 'z)) ; Shadows z in xyz-env
+(eql? '((read-var 1 0)) (send %abz-env 'generate-read 'x))
+(eql? '((read-var 1 1)) (send %abz-env 'generate-read 'y))
 
-(eql '((write-var 1 1)) (send %abz-env 'generate-write 'y))
-(eql '((write-var 0 2)) (send %abz-env 'generate-write 'z))
+(eql? '((write-var 1 1)) (send %abz-env 'generate-write 'y))
+(eql? '((write-var 0 2)) (send %abz-env 'generate-write 'z))
 
 (->true
  ;; Predictable version of compile
@@ -27,61 +27,61 @@
    (set! global-label-counter 1000)
    (compile expr env 'call)))
 
-(eql '((load-value 123))
-     (pcompile 123 global-env))
+(eql? '((load-value 123))
+      (pcompile 123 global-env))
 
-(eql '((load-value #\a))
-     (pcompile #\a global-env))
+(eql? '((load-value #\a))
+      (pcompile #\a global-env))
 
-(eql '((load-value (+ 1 2 3)))
-     (pcompile '(quote (+ 1 2 3)) global-env))
+(eql? '((load-value (+ 1 2 3)))
+      (pcompile '(quote (+ 1 2 3)) global-env))
 
-(eql '((read-var 0 0)  ; first var
-       (load-value 42)
-       (load-value 99)
-       (call 3))  ; 2 arguments and one procedure.
-     (pcompile '(x 42 99) %xyz-env))
+(eql? '((read-var 0 0)  ; first var
+        (load-value 42)
+        (load-value 99)
+        (call 3))  ; 2 arguments and one procedure.
+      (pcompile '(x 42 99) %xyz-env))
 
-(eql '((read-var 0 0)
-       (jump-if-true true-branch-1001)
-       ; False branch
-       (load-value 0)
-       (jump after-if-1002)
-       ; True branch
-       (label true-branch-1001)
-       (load-value 10)
-       (label after-if-1002))
-     (pcompile '(if x 10 0) %xyz-env))
+(eql? '((read-var 0 0)
+        (jump-if-true true-branch-1001)
+        ;; False branch
+        (load-value 0)
+        (jump after-if-1002)
+        ;; True branch
+        (label true-branch-1001)
+        (load-value 10)
+        (label after-if-1002))
+      (pcompile '(if x 10 0) %xyz-env))
 
-(eql '((make-lambda lambda-entry-1001 (x))
-       (jump after-lambda-1002)
-       ; -- this is where the lambda starts
-       (label lambda-entry-1001)
-       (read-global-var +)
-       (read-var 0 0)  ; x
-       (read-global-var +)
-       (read-var 1 1)  ; b
-       (read-var 1 1)  ; b
-       (call 3)  ; 2 arguments and one procedure.
-       (tail-call 3)  ; 2 arguments and one procedure.
-       (return)
-       ;; -- this is where the lambda ends
-       (label after-lambda-1002))
-     (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
+(eql? '((make-lambda lambda-entry-1001 (x))
+        (jump after-lambda-1002)
+        ;; -- this is where the lambda starts
+        (label lambda-entry-1001)
+        (read-global-var +)
+        (read-var 0 0)  ; x
+        (read-global-var +)
+        (read-var 1 1)  ; b
+        (read-var 1 1)  ; b
+        (call 3)        ; 2 arguments and one procedure.
+        (tail-call 3)   ; 2 arguments and one procedure.
+        (return)
+        ;; -- this is where the lambda ends
+        (label after-lambda-1002))
+      (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
 
-(eql '((load-value 5)
-       (write-global-var foo))
-     (pcompile '(def foo 5) %xyz-env))
+(eql? '((load-value 5)
+        (write-global-var foo))
+      (pcompile '(def foo 5) %xyz-env))
 
-(eql '((lambda (x y) (+ x y)) 1 2)
-     (transform-let->lambda '(let ((x 1) (y 2)) (+ x y))))
+(eql? '((lambda (x y) (+ x y)) 1 2)
+      (transform-let->lambda '(let ((x 1) (y 2)) (+ x y))))
 
-(eql (pcompile '((lambda (x y) (+ x y)) 1 2) global-env)
-     (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
+(eql? (pcompile '((lambda (x y) (+ x y)) 1 2) global-env)
+      (pcompile '(let ((x 1) (y 2)) (+ x y)) global-env))
 
-(eql '((load-value 42)
-       (write-global-var meaning-of-life))
-     (pcompile '(set! meaning-of-life 42) global-env))
+(eql? '((load-value 42)
+        (write-global-var meaning-of-life))
+      (pcompile '(set! meaning-of-life 42) global-env))
 
 (= 57 (lower-byte 12345))
 (= 48 (upper-byte 12345))
@@ -90,11 +90,11 @@
 ;; Execute some real compiled functions!                    ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(eql (cons 1 2)
-     ((compile-fn cons) 1 2))
+(eql? (cons 1 2)
+      ((compile-fn cons) 1 2))
 
-(eql (list 1 2 3)
-     ((compile-fn map) identity (list 1 2 3)))
+(eql? (list 1 2 3)
+      ((compile-fn map) identity (list 1 2 3)))
 
 (string=? "hello"
           ((compile-fn (lambda () "hello"))))
@@ -102,8 +102,8 @@
 ;; It works!
 (progn
   (set! map (compile-fn map))
-  (eql '(97 98 99)
-       (map char->num (list #\a #\b #\c))))
+  (eql? '(97 98 99)
+        (map char->num (list #\a #\b #\c))))
 
 (progn
   ((compile-fn (lambda (x) "xx" (def __just_a_test x))) 99)

@@ -1,106 +1,106 @@
 ;; if-true
 ;; (if true 5 50) --> 5
-(eq 5 (if true 5 50))
+(eq? 5 (if true 5 50))
 
 ;; if-false
 ;; (if false 5 50) --> 50
-(eq 50 (if false 5 50))
+(eq? 50 (if false 5 50))
 
 ;; cascaded ifs
 ;;     (if (if false false true) 5 50)
 ;; --> (if true 5 50)
 ;; --> 5
-(eq 5 (if (if false false true)
-	  5
-	  50))
+(eq? 5 (if (if false false true)
+           5
+         50))
 
 ;; globally bound function
 ;; (+ 3 7) --> 10
-(eq 10 (+ 3 7))
+(eq? 10 (+ 3 7))
 
 ;; simple lambda expression
 ;; ((lambda (x) (+ x 1)) 5) --> 6
-(eq 6 ((lambda (x)
-	 (+ x 1))
-       5))
+(eq? 6 ((lambda (x)
+          (+ x 1))
+        5))
 
 ;; Lambda expression with multiple expressions in body.
-(eq 6 ((lambda (x)
-         'discard
-         (+ x 1))
-       5))
+(eq? 6 ((lambda (x)
+          'discard
+          (+ x 1))
+        5))
 
 ;; simple let
-(eq 3 (let ((x 3)) x))
+(eq? 3 (let ((x 3)) x))
 
 ;; let with multiple commands returns last
-(eq 2 (let ((x 1))
-        1
-        2))
+(eq? 2 (let ((x 1))
+         1
+         2))
 
 ;; let with setting inside
-(eq 4 (let ((x 3))
-        (set! x 4)
-        x))
+(eq? 4 (let ((x 3))
+         (set! x 4)
+         x))
 
 ;; Quote
-(eq 3 '3)
-(eq #\a '#\a)
-(eql (cons 1 (cons 2 (cons 3 nil)))
-     '(1 2 3))
-(eql (cons (cons 1 nil)
-	   (cons 2 (cons 3 nil)))
-     '((1) 2 3))
+(eq? 3 '3)
+(eq? #\a '#\a)
+(eql? (cons 1 (cons 2 (cons 3 nil)))
+      '(1 2 3))
+(eql? (cons (cons 1 nil)
+            (cons 2 (cons 3 nil)))
+      '((1) 2 3))
 
 ;; progn
-(eq 'result (progn 1 2 3 'result))
+(eq? 'result (progn 1 2 3 'result))
 
 ;; &rest lambda list decomposition.
-(eql (list 1 2 3)
-     ((lambda (&rest rest) rest) 1 2 3))
+(eql? (list 1 2 3)
+      ((lambda (&rest rest) rest) 1 2 3))
 
-(eq 1
-    ((lambda (a &rest as) a) 1 2 3))
+(eq? 1
+     ((lambda (a &rest as) a) 1 2 3))
 
-(eql (list 2 3)
-    ((lambda (a &rest as) as) 1 2 3))
+(eql? (list 2 3)
+      ((lambda (a &rest as) as) 1 2 3))
 
 ;; def -- already tested in utils
 ;; evaluation in environments
 
 ; _and
-(eq true (_and true true))
-(eq false (_and true false))
-(eq false (_and false true))
-(eq false (_and false false))
+(eq? true (_and true true))
+(eq? false (_and true false))
+(eq? false (_and false true))
+(eq? false (_and false false))
 
 ; _or
-(eq true (_or true true))
-(eq true (_or true false))
-(eq true (_or false true))
-(eq false (_or false false))
+(eq? true (_or true true))
+(eq? true (_or true false))
+(eq? true (_or false true))
+(eq? false (_or false false))
 
 ; Map
-(eql (cons 2 (cons 3 nil))
-     (cons 2 (cons 3 nil)))
+(eql? (cons 2 (cons 3 nil))
+      (cons 2 (cons 3 nil)))
 
-(eql (cons 3 (cons 4 nil))
-     (map (lambda (x) (+ 1 x))
-	  (cons 2 (cons 3 nil))))
+(eql? (cons 3 (cons 4 nil))
+      (map (lambda (x) (+ 1 x))
+           (cons 2 (cons 3 nil))))
 
 ; Reduce
-(eq 6 (reduce + (list 1 2 3) 0))
+(eq? 6 (reduce + (list 1 2 3) 0))
 
 ;; Reverse
-(eql '() (reverse '()))
-(eql '(a b c) (reverse '(c b a)))
+(eql? '() (reverse '()))
+(eql? '(a b c) (reverse '(c b a)))
 
 ; First, second, third
-(eq 1 (first '(1 2 3 4 5 6)))
-(eq 2 (second '(1 2 3 4 5 6)))
-(eq 3 (third '(1 2 3 4 5 6)))
-(eq 4 (fourth '(1 2 3 4 5 6)))
-(eq 6 (last '(1 2 3 4 5 6)))
+(eq? 1 (first '(1 2 3 4 5 6)))
+(eq? 2 (second '(1 2 3 4 5 6)))
+(eq? 3 (third '(1 2 3 4 5 6)))
+(eq? 4 (fourth '(1 2 3 4 5 6)))
+(eq? 6 (last '(1 2 3 4 5 6)))
 
 ;; List-predicate.
 (list? '(1 2 3))
@@ -120,36 +120,36 @@
 (not (any? identity (list)))
 
 ; Appending lists
-(eql (list 'a 'b 'c 'd 'e)
-     (append (list 'a 'b 'c)
-	     (list 'd 'e)))
+(eql? (list 'a 'b 'c 'd 'e)
+      (append (list 'a 'b 'c)
+              (list 'd 'e)))
 
-(eql (list 'a 'b)
-     (append '() (list 'a 'b)))
+(eql? (list 'a 'b)
+      (append '() (list 'a 'b)))
 
-(eql (list 'a 'b)
-     (append (list 'a 'b) '()))
+(eql? (list 'a 'b)
+      (append (list 'a 'b) '()))
 
-(eql '() (append))
+(eql? '() (append))
 
 ; Lists
-(eq 3 (nth (list 1 2 3 4 5) 2))
-(eq 5 (nth (list 5 6) 0))
-(eq 6 (nth (list 5 6) 1))
-(eq 2 (length (list 1 2)))
+(eq? 3 (nth (list 1 2 3 4 5) 2))
+(eq? 5 (nth (list 5 6) 0))
+(eq? 6 (nth (list 5 6) 1))
+(eq? 2 (length (list 1 2)))
 
 ; TODO: Fix bug: ((lambda (f o o) (list f o o)) 1 2 3) => '(1 2 2) !!!
 ;; Destructure lambda lists
-(eql (list (list 1 2 3)
-           (list 4 5 6)
-           (list 7 8 9))
-     ((lambda ((f o l &rest bar) baz)
-	(list (list f o l) bar baz))
-      (list 1 2 3 4 5 6) (list 7 8 9)))
+(eql? (list (list 1 2 3)
+            (list 4 5 6)
+            (list 7 8 9))
+      ((lambda ((f o l &rest bar) baz)
+         (list (list f o l) bar baz))
+       (list 1 2 3 4 5 6) (list 7 8 9)))
 
 ;; Procedure predicate.
-(eq false (procedure? 123))
-(eq false (procedure? (cons 1 2)))
+(eq? false (procedure? 123))
+(eq? false (procedure? (cons 1 2)))
 (procedure? (lambda () 123))
 ;(procedure? (compile-fn (lambda () 123)))
 (procedure? +)

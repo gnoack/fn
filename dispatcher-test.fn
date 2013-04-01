@@ -3,11 +3,11 @@
         ('bar () false)) 'foo)
 
 (send (dispatcher self
-        ('is-123 (&rest args) (eql '(1 2 3) args)))
+        ('is-123 (&rest args) (eql? '(1 2 3) args)))
       'is-123 1 2 3)
 
 (not (send (dispatcher self
-             ('is-123 (&rest args) (eql '(1 2 3) args)))
+             ('is-123 (&rest args) (eql? '(1 2 3) args)))
            'is-123 1 2 99))
 
 ;; Multiple statements.

@@ -1,58 +1,58 @@
-;; Don't forget to use eql.
-(eql (list 123 '())
-     (read (string->list "123")))
+;; Don't forget to use `eql?'.
+(eql? (list 123 '())
+      (read (string->list "123")))
 
-(eql (list "abc" '())
-     (read (string->list "\"abc\"")))
+(eql? (list "abc" '())
+      (read (string->list "\"abc\"")))
 
-(eql (list "foo" '())
-     (read (string->list "\"foo\"")))
+(eql? (list "foo" '())
+      (read (string->list "\"foo\"")))
 
 ;; A string containing a doublequote, an 'x'
 ;; and a backslash.
-(eql (list "\"x\\" '())
-     (read (string->list "\"\\\"x\\\\\"")))
+(eql? (list "\"x\\" '())
+      (read (string->list "\"\\\"x\\\\\"")))
 
 ; A character.
-(eql (list #\a '())
-     (read (string->list "#\\a")))
+(eql? (list #\a '())
+      (read (string->list "#\\a")))
 
-(eql (list #\Newline '())
-     (read (string->list "#\\Newline")))
+(eql? (list #\Newline '())
+      (read (string->list "#\\Newline")))
 
-(eql (list #\Tab '())
-     (read (string->list "#\\Tab")))
+(eql? (list #\Tab '())
+      (read (string->list "#\\Tab")))
 
-(eql (list #\Space '())
-     (read (string->list "#\\Space")))
+(eql? (list #\Space '())
+      (read (string->list "#\\Space")))
 
 (parse-fail? _lisp_expr (string->list "#\\Spacestation"))
 
-(eql (list #\' '())
-     (read (string->list "#\\'")))
+(eql? (list #\' '())
+      (read (string->list "#\\'")))
 
-(eql (list #\\ '(#\space))
-     (read (string->list " #\\\\ ")))
+(eql? (list #\\ '(#\space))
+      (read (string->list " #\\\\ ")))
 
-(eql (list (list 1 2 3)
-	   '())
-     (read (string->list "(1 2 3)")))
+(eql? (list (list 1 2 3)
+            '())
+      (read (string->list "(1 2 3)")))
 
-(eql (list (list 1 2 3)
-	   '())
-     (read (string->list "(1 2 3  )")))
+(eql? (list (list 1 2 3)
+            '())
+      (read (string->list "(1 2 3  )")))
 
-(eql (list '(if (< 0 1) (+ 2 1) #\a)
-	   '())
-     (read (string->list "(if (< 0 1) (+ 2 1) #\\a)")))
+(eql? (list '(if (< 0 1) (+ 2 1) #\a)
+            '())
+      (read (string->list "(if (< 0 1) (+ 2 1) #\\a)")))
 
-(eql (list '(abc (quote 123))
-	   '())
-     (read (string->list "(abc '123)")))
+(eql? (list '(abc (quote 123))
+            '())
+      (read (string->list "(abc '123)")))
 
-(eql (list '(quasiquote
-	     (a (unquote b) (unquote-splicing c) d))
-	   '())
-     (read (string->list "`(a ,b ,@c d)")))
+(eql? (list '(quasiquote
+              (a (unquote b) (unquote-splicing c) d))
+            '())
+      (read (string->list "`(a ,b ,@c d)")))
 
 ;; TODO: Parser doesn't recognize in-string escapes like "\n".

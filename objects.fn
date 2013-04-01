@@ -7,7 +7,7 @@
 ($mem-set! @type 0 @type)
 ($mem-set! @type 1 (make-dict))
 (defn type? (x)
-  (eq (type-of x) @type))
+  (eq? (type-of x) @type))
 
 ; @cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:

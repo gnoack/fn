@@ -9,11 +9,11 @@
 
 ;; Nil?
 (def nil? (lambda (x)
-	    (eq nil x)))
+	    (eq? nil x)))
 
-;; =, a nicer eq for numbers.
+;; =, a nicer eq? for numbers.
 ;; TODO: Support more number types.
-(def = eq)
+(def = eq?)
 
 ;; Map
 (def map (lambda (proc sequence)
@@ -100,7 +100,7 @@
 (def %has-mem-type?
   (lambda (value type)
     (if (mem? value)
-        (eq type ($mem-get value 0))
+        (eq? type ($mem-get value 0))
       false)))
 
 (def cons?

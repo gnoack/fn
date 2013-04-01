@@ -1,7 +1,7 @@
 ; Some helper defs
 (->true  ; we need true for all top-level exprs.
  (defn eq-peg (x)
-   (peg-terminal (lambda (y) (eq x y))))
+   (peg-terminal (lambda (y) (eq? x y))))
 
  (def peg-a (eq-peg 'a))
  (def peg-b (eq-peg 'b))
@@ -9,8 +9,8 @@
 
 
 ; PEG terminal, success
-(eql (list 'a '(b c))
-     (peg-a '(a b c) list '*error*))
+(eql? (list 'a '(b c))
+      (peg-a '(a b c) list '*error*))
 
 ; PEG terminal, failure
 (parse-fail?
@@ -22,75 +22,75 @@
   '())  ; empty input
 
 ; PEG*
-(eql (list '(a a a) '(b c))
-     ((peg* peg-a) '(a a a b c) list '*error*))
+(eql? (list '(a a a) '(b c))
+      ((peg* peg-a) '(a a a b c) list '*error*))
 
-(eql (list '() '(b c))
-     ((peg* peg-a) '(b c) list '*error*))
+(eql? (list '() '(b c))
+      ((peg* peg-a) '(b c) list '*error*))
 
 ; PEG+
-(eql (list '(a a) '(b c))
-     ((peg+ peg-a) '(a a b c) list '*error*))
+(eql? (list '(a a) '(b c))
+      ((peg+ peg-a) '(a a b c) list '*error*))
 
 (parse-fail? (peg+ peg-a) '(b c))
 
 ; PEG empty
-(eql (list '() '())
-     (peg-empty '() list '*error*))
+(eql? (list '() '())
+      (peg-empty '() list '*error*))
 
 (parse-fail? peg-empty '(a b c))
 
 ; PEG-seq
 
-(eql (list '(a b) '(c d e))
-     ((peg-seq2 peg-a
-		(peg-seq2 peg-b peg-winseq))
-      '(a b c d e)
-      list '*error*))
+(eql? (list '(a b) '(c d e))
+      ((peg-seq2 peg-a
+                 (peg-seq2 peg-b peg-winseq))
+       '(a b c d e)
+       list '*error*))
 
-(eql (list '(a b) '(c d e))
-     ((peg-seq peg-a peg-b)
-      '(a b c d e)
-      list '*error*))
+(eql? (list '(a b) '(c d e))
+      ((peg-seq peg-a peg-b)
+       '(a b c d e)
+       list '*error*))
 
 ;; PEG alt
-(eql (list 'a '(b c))
-     ((peg-alt2 peg-a peg-b)
-      '(a b c)
-      list '*error*))
+(eql? (list 'a '(b c))
+      ((peg-alt2 peg-a peg-b)
+       '(a b c)
+       list '*error*))
 
-(eql (list 'b '(b c))
-     ((peg-alt2 peg-a peg-b)
-      '(b b c)
-      list '*error*))
+(eql? (list 'b '(b c))
+      ((peg-alt2 peg-a peg-b)
+       '(b b c)
+       list '*error*))
 
-(eql (list 'a '(b c))
-     ((peg-alt2 peg-a  ; priority.
-		(peg-seq peg-a peg-b))
-      '(a b c)
-      list '*error*))
+(eql? (list 'a '(b c))
+      ((peg-alt2 peg-a  ; priority.
+                 (peg-seq peg-a peg-b))
+       '(a b c)
+       list '*error*))
 
 
-(eql (list 'a '(b c))
-     ((peg-alt peg-a  ; priority
-	       (peg-seq peg-a peg-b))
-      '(a b c)
-      list '*error*))
+(eql? (list 'a '(b c))
+      ((peg-alt peg-a  ; priority
+                (peg-seq peg-a peg-b))
+       '(a b c)
+       list '*error*))
 
-(eql (list '(a b) '(c))
-     ((peg-alt peg-c  ; no match
-	       (peg-seq peg-a peg-b)  ; priority
-	       (peg-seq peg-a peg-b peg-c))
-      '(a b c)
-      list '*error*))
+(eql? (list '(a b) '(c))
+      ((peg-alt peg-c  ; no match
+                (peg-seq peg-a peg-b)  ; priority
+                (peg-seq peg-a peg-b peg-c))
+       '(a b c)
+       list '*error*))
 
-(eql '(peg=>
-       (peg-seq (peg= #\a) (peg= #\b) (peg= #\c))
-       (applicator (lambda (a b c)
-		     (list c b a))))
-     (macroexpand '(peg-let ((a (peg= #\a))
-			     (b (peg= #\b))
-			     (c (peg= #\c)))
+(eql? '(peg=>
+        (peg-seq (peg= #\a) (peg= #\b) (peg= #\c))
+        (applicator (lambda (a b c)
+                      (list c b a))))
+      (macroexpand '(peg-let ((a (peg= #\a))
+                              (b (peg= #\b))
+                              (c (peg= #\c)))
 		      (list c b a))))
 
 ;; TODO: Test PEG-not

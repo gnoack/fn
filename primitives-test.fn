@@ -1,30 +1,30 @@
 ;; Cons, first, rest
-(eq 3 (first (cons 3 4)))
-(eq 4 (rest (cons 3 4)))
+(eq? 3 (first (cons 3 4)))
+(eq? 4 (rest (cons 3 4)))
 
 ;; Character conversion
-(eq 65 (char->num #\A))
-(eq #\A (num->char 65))
+(eq? 65 (char->num #\A))
+(eq? #\A (num->char 65))
 
 ;; Symbol conversion.
-(eq 'quuux (string->symbol "quuux"))
+(eq? 'quuux (string->symbol "quuux"))
 (string=? "quuux" (symbol->string 'quuux))
 
 ;; Arithmetic primitives.
-(eq 3 (+ 1 2))
-(eq 10 (+ 1 2 3 4))
-(eq 12 (* 3 4))
-(eq 3 (- 10 7))
+(eq? 3 (+ 1 2))
+(eq? 10 (+ 1 2 3 4))
+(eq? 12 (* 3 4))
+(eq? 3 (- 10 7))
 
 ;; Division.
-(eq 3 (/ 12 4))
-(eq 3 (/ 13 4))
-(eq 3 (/ 14 4))
-(eq 3 (/ 15 4))
-(eq 0 (mod 12 4))
-(eq 1 (mod 13 4))
-(eq 2 (mod 14 4))
-(eq 3 (mod 15 4))
+(eq? 3 (/ 12 4))
+(eq? 3 (/ 13 4))
+(eq? 3 (/ 14 4))
+(eq? 3 (/ 15 4))
+(eq? 0 (mod 12 4))
+(eq? 1 (mod 13 4))
+(eq? 2 (mod 14 4))
+(eq? 3 (mod 15 4))
 
 ;; Comparison
 (integer<= 1 2)
@@ -68,8 +68,8 @@
 (not (symbol? 3))
 
 ; Apply
-(eql (list 1 2 3)
-     (apply list (list 1 2 3)))
+(eql? (list 1 2 3)
+      (apply list (list 1 2 3)))
 
 ; Writeout
 ; Prints its argument and returns it.
@@ -81,12 +81,12 @@
 (cons? ($make @cons 1 2))
 (not (cons? ($make 'blubb 1 2)))
 
-(eq 'b ($mem-get ($make 'a 'b 'c) 1))
+(eq? 'b ($mem-get ($make 'a 'b 'c) 1))
 
 (progn
   (def alphabet ($make 'a 'b 'c 'd 'e 'f))
   ($mem-set! alphabet 3 'surprise)
-  (eq 'surprise ($mem-get alphabet 3)))
+  (eq? 'surprise ($mem-get alphabet 3)))
 
 ;; UNSAFE functions for unsafe memory block allocation.
 (mem-block? ($make-mem-block 10))
@@ -94,4 +94,4 @@
 (progn
   (def m ($make-mem-block 5))
   ($mem-block-byte-set! m 0 3)
-  (eq 3 ($mem-block-byte-get m 0)))
+  (eq? 3 ($mem-block-byte-get m 0)))

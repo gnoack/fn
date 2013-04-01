@@ -1,13 +1,13 @@
 ;; Accessing elements in lists.
 (defn list-index-of (list value)
   (with-asserts ((cons? list))
-    (if (eq value (first list))
+    (if (eq? value (first list))
         0
       (+ 1 (list-index-of (rest list) value)))))
 
 (defn list-contains? (list value)
   (if (cons? list)
-      (or (eq value (first list))
+      (or (eq? value (first list))
           (list-contains? (rest list) value))
       false))
 
@@ -225,7 +225,7 @@
   ;; If we compile a function captured in a deeper environment, we
   ;; don't know what other functions have been captured in the same.
   ;; We can't convert the environment itself to a @frame.
-  (and (eq @procedure (type-of fn))
+  (and (eq? @procedure (type-of fn))
        (global-env? (fn-env fn))))
 
 (defn compile-fn (fn)

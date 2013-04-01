@@ -10,15 +10,15 @@
 (defn char-predicate (x)
   (lambda (c)
     (and (char? c)
-	 (eq x c))))
+	 (eq? x c))))
 
 (defn whitespace? (c)
-  (or (eq c #\Tab)
-      (eq c #\Newline)
-      (eq c #\Space)))
+  (or (eq? c #\Tab)
+      (eq? c #\Newline)
+      (eq? c #\Space)))
 
 (defn peg= (item)
-  (peg-terminal (lambda (x) (eq x item))))
+  (peg-terminal (lambda (x) (eq? x item))))
 
 (defn peg-string= (string)
   (apply peg-seq (map peg= (string->list string))))

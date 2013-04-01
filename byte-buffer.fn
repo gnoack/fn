@@ -37,7 +37,7 @@
     ($mem-block-byte-get ($mem-get byte-buffer 1) pos)))
 
 (defn byte-buffer-slice (byte-buffer first last)
-  (if (eq first last)
+  (if (eq? first last)
       (list)
     (cons ($mem-block-byte-get ($mem-get byte-buffer 1) first)
           (byte-buffer-slice byte-buffer (+ 1 first) last))))
