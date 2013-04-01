@@ -13,12 +13,28 @@
        ,result)))
 
 (defn expand-module-clauses (module-clauses)
+  (defn normalize-var-clause (var)
+    ;; Calls emit with the binding name and the var name in the module.
+    (cond ((symbol? var)  (list var var))
+          ((list? var)    (list (first var) (second var)))
+          (true           (error "Unsupported module import clause " var))))
   (defn expand-module-clause ((module-name &rest vars))
     (map (lambda ((new-var-name old-var-name))
            `(,new-var-name (dict-get ,module-name ',old-var-name)))
-         vars))
+         (map normalize-var-clause vars)))
   (apply append (map expand-module-clause module-clauses)))
 
+;; Import and locally bind symbols from the given modules.
+;; For example, for a module M that defines `a' and `b',
+;; `a' and `b' can be imported as:
+;;
+;; (import ((M a b)) BODY)
+;;
+;; They can also be renamed as `my-a', `my-b' by
+;;
+;; (import ((M (my-a a) (my-b b))) BODY)
+;;
+;; The bindings are only valid within the BODY.
 (defmacro import (module-clauses &rest body)
   `(let ,(expand-module-clauses module-clauses)
      ,@body))

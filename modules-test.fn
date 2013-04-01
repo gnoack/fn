@@ -18,6 +18,10 @@
   (and (= test/a 1)
        (= test/b 2)))
 
+(import ((test-module a b))
+  (and (= a 1)
+       (= b 2)))
+
 (->true (def other-test-module (let ((x 10)
                                      (y 20)
                                      (z 30))
