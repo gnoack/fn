@@ -1,0 +1,19 @@
+
+;; Defining a module.
+(->true (def test-module (let ((a 1)
+                               (b 2)
+                               (c 3))
+                           (make-module a b))))
+
+(eq? 1 (dict-get test-module 'a))
+(eq? 2 (dict-get test-module 'b))
+(eq? 2 (dict-size test-module))
+
+;; Importing values from a module.
+
+(import ((test-module (test/a a)))
+  (= test/a 1))
+
+(import ((test-module (test/a a) (test/b b)))
+  (and (= test/a 1)
+       (= test/b 2)))

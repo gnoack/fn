@@ -12,6 +12,7 @@
 #include "gc.h"
 #include "lang.h"
 #include "macros.h"
+#include "modules.h"
 #include "objects.h"
 #include "parser.h"
 #include "pegs-parser.h"
@@ -35,6 +36,7 @@
 #include "lang-test.h"
 #include "macros-test.h"
 #include "memory-test.h"
+#include "modules-test.h"
 #include "objects-test.h"
 #include "parser-test.h"
 #include "pegs-parser-test.h"
@@ -147,6 +149,7 @@ void init_decls() {
   load_decls(lang_decls());
   load_decls(macros_decls());
   load_decls(utils_decls());
+  load_decls(modules_decls());
   load_decls(dispatcher_decls());
   load_decls(objects_decls());
   load_decls(arrays_decls());
@@ -207,6 +210,7 @@ void repl() {
 void run_all_tests() {
   printf("Test execution:\n");
   /* Register tests here. */
+  modules_tests();
   interpreter_tests();
   cons_tests();
   eval_tests();
