@@ -18,7 +18,7 @@
 (def _pp_opencurly (_pp_token (peg= #\{)))
 (def _pp_closecurly (_pp_token (peg= #\})))
 (def _pp_openbracket (_pp_token (peg= #\()))
-(def _pp_closbracket (_pp_token (peg= #\))))
+(def _pp_closebracket (_pp_token (peg= #\))))
 (def _pp_negation_sign (_pp_token (peg= #\~)))
 
 ;; Indirection for recursive calls.
@@ -51,7 +51,7 @@
 (def _pp_bracketed-expr
   (peg-let ((_ _pp_openbracket)
             (e _pp_expr)
-            (_ _pp_closbracket))
+            (_ _pp_closebracket))
     e))
 
 ;; Forward declaration for recursive call.

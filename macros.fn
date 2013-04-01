@@ -36,8 +36,6 @@
                  (first xs)) ; bindings
             (map macroexpand-rec (rest xs))))))
 
-(def false? (lambda (f) (eq? false f)))
-
 ;; CAN'T USE ANY MACROS ITSELF!
 ; if, def are handled by regular function application rules
 (def macroexpand-rec
