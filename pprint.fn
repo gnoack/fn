@@ -1,5 +1,7 @@
+
 (defn pprint (item)
   ;; TODO: Memory consumption.
+  ;; TODO: Pretty-printing dictionaries.
   (defn string-char-escape (ch)
     ;; TODO: Some cases are missing.
     (cond ((eq ch #\") "\\\"")
