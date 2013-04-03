@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 #include "carcdr.h"
 #include "cons.h"
@@ -237,6 +238,40 @@ oop primitive_file_to_string(oop args) {
   return result;
 }
 
+oop primitive_dlopen(oop args) {
+  PARSE_ONE_ARG(name);
+  char* c_name = c_string(name);
+  void* handle = dlopen(c_name, RTLD_LOCAL | RTLD_NOW);
+  free(c_name);
+  return make_smallint((fn_uint) handle);
+}
+
+oop primitive_dlsym(oop args) {
+  PARSE_TWO_ARGS(handle, symbolname);
+  char* c_symbolname = c_string(symbolname);
+  void* c_handle = (void*) get_smallint(handle);
+  void* (*c_sym)(void* arg, ...) = dlsym(c_handle, c_symbolname);
+  free(c_symbolname);
+  return make_smallint((fn_uint) c_sym);
+}
+
+oop primitive_call_dlsym(oop args) {
+  // TOOD: Varargs.
+  PARSE_TWO_ARGS(sym, arg);
+  void* (*c_sym)(void* arg, ...) = (void* (*)(void*, ...)) get_smallint(sym);
+  char* c_arg = c_string(arg);
+  void* c_result = c_sym(c_arg);
+  free(c_arg);
+  oop result;
+  if (c_result) {
+    result = make_string((const char*) c_result);
+  } else {
+    result = NIL;
+  }
+  free(c_result);
+  return result;
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -272,4 +307,8 @@ void init_primitives() {
                        primitive_make_compiled_procedure);
   register_globally_fn("get-time", primitive_get_process_time);
   register_globally_fn("file->string", primitive_file_to_string);
+
+  register_globally_fn("_dlopen", primitive_dlopen);
+  register_globally_fn("_dlsym", primitive_dlsym);
+  register_globally_fn("_call_dlsym", primitive_call_dlsym);
 }

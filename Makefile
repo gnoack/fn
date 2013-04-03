@@ -1,5 +1,5 @@
 
-LIBS = -lreadline -lrt
+LIBS = -lreadline -lrt -ldl
 PROFILING_CFLAGS = -pg -fprofile-arcs
 CFLAGS = -g -Wall
 HEADERS = *.h
