@@ -79,6 +79,8 @@ LISPTARGETS = \
 	objects.c \
 	parser-test.c \
 	parser.c \
+	modules.c \
+	modules-test.c \
 	pegs-parser-test.c \
 	pegs-parser.c \
 	pegs-test.c \
