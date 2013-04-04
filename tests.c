@@ -8,6 +8,7 @@
 #include "data.h"
 #include "debug.h"
 #include "dispatcher.h"
+#include "dl.h"
 #include "eval.h"
 #include "gc.h"
 #include "lang.h"
@@ -31,6 +32,7 @@
 #include "continuations-test.h"
 #include "data-test.h"
 #include "dispatcher-test.h"
+#include "dl-test.h"
 #include "eval-test.h"
 #include "interpreter-test.h"
 #include "lang-test.h"
@@ -143,6 +145,7 @@ void init() {
   init_primitives();
   init_interpreter();
   init_data();
+  init_dl();
 }
 
 void init_decls() {
@@ -211,6 +214,7 @@ void run_all_tests() {
   printf("Test execution:\n");
   /* Register tests here. */
   modules_tests();
+  dl_tests();
   interpreter_tests();
   cons_tests();
   eval_tests();

@@ -12,6 +12,7 @@ continuations.c
 data-test.c
 dispatcher-test.c
 dispatcher.c
+dl-test.c
 lang-test.c
 lang.c
 macros-test.c

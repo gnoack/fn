@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
+#include "eval.h"
 #include "strings.h"
 #include "dl.h"
 #include "primitives.h"

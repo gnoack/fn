@@ -12,6 +12,7 @@ OBJECTS = \
 	data.o \
 	debug.o \
 	dispatcher.o \
+	dl.o \
 	eval.o \
 	gc.o \
 	interpreter.o \
@@ -39,6 +40,7 @@ TESTOBJECTS = \
 	continuations-test.o \
 	data-test.o \
 	dispatcher-test.o \
+	dl-test.o \
 	eval-test.o \
 	interpreter-test.o \
 	lang-test.o \
@@ -71,6 +73,7 @@ LISPTARGETS = \
 	data-test.c \
 	dispatcher-test.c \
 	dispatcher.c \
+	dl-test.c \
 	lang-test.c \
 	lang.c \
 	macros-test.c \
