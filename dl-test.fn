@@ -1,2 +1,16 @@
 
-(number? (_dlopen "libm.so"))
+(progn
+  (defn loadsym (lib name resulttype argtypes)
+    (let ((lib (if (nil? lib)
+                   0
+                 (_dlopen lib))))
+      (let ((funcptr (_dlsym lib name))
+            (argnum  (length argtypes)))
+        (lambda (&rest args)
+          (_call_dlsym funcptr resulttype argnum argtypes args)))))
+  (def atoi (loadsym nil "atoi" 'int '(str)))
+  (def strspn (loadsym nil "strspn" 'int '(str str)))
+  true)
+
+(= 123 (atoi "123"))
+(= 6 (strspn "ababbaXXabab" "ab"))

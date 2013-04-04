@@ -9,3 +9,6 @@
 #define caddr(x) cadr(cdr(x))
 #define cdddr(x) cddr(cdr(x))
 #define cadddr(x) caddr(cdr(x))
+#define cddddr(x) cdddr(cdr(x))
+#define caddddr(x) cadddr(cdr(x))
+#define cdddddr(x) cadddr(cdr(x))

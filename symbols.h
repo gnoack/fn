@@ -25,9 +25,14 @@ typedef struct {
   oop _string;
   oop _symbol;
 
+  // Procedure types.
   oop _procedure;
   oop _native_procedure;
   oop _compiled_procedure;
+
+  // C types.
+  oop _c_int;
+  oop _c_str;
 } symbols_t;
 
 extern symbols_t symbols;

@@ -3,6 +3,8 @@
 #include "value.h"
 #include "carcdr.h"
 
+// TODO: Remove unnecessary list traversal.
+
 #define PARSE_ONE_ARG(first_arg)    \
   check_argument_number(args, 1);   \
   oop first_arg = first(args);      \
@@ -24,6 +26,14 @@
   oop second_arg = cadr(args);      \
   oop third_arg = caddr(args);      \
   oop fourth_arg = cadddr(args);    \
+
+#define PARSE_FIVE_ARGS(first_arg, second_arg, third_arg, fourth_arg, fifth_arg) \
+  check_argument_number(args, 5);   \
+  oop first_arg = first(args);      \
+  oop second_arg = cadr(args);      \
+  oop third_arg = caddr(args);      \
+  oop fourth_arg = cadddr(args);    \
+  oop fifth_arg = caddddr(args);    \
 
 #define UNARY_PREDICATE(name, c_tester) \
 oop name(oop args) {                    \
