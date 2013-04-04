@@ -19,6 +19,8 @@ macros-test.c
 macros.c
 maps-test.c
 maps.c
+modules-test.c
+modules.c
 objects-test.c
 objects.c
 parser-test.c
