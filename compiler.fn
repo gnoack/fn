@@ -190,7 +190,7 @@
                                  (byte-buffer-set! byte-stream (+ pos 1)
                                                    (lower-byte label-addr)))))))
            (put-oop! (o)
-             (when (not (list-contains? known-oops o))
+             (unless (list-contains? known-oops o)
                (add-to-list! known-oops o))
              (let ((pos (byte-buffer-size byte-stream)))
                (byte-buffer-append! byte-stream 0)

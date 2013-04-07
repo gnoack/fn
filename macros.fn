@@ -258,10 +258,14 @@
      ,@body))
 
 ;; One-sided `if' for imperative code.
-(defmacro when (condition &rest statements)
+(defmacro when (condition &rest body)
   `(if ,condition
-       (progn ,@statements)
+       (progn ,@body)
      nil))
+
+(defmacro unless (condition &rest body)
+  `(when (not ,condition)
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Macros for performance measurements.                             ;;;
