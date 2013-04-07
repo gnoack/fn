@@ -7,11 +7,6 @@
   (and (char? c)
        (char<= #\a c #\z)))
 
-(defn char-predicate (x)
-  (lambda (c)
-    (and (char? c)
-	 (eq? x c))))
-
 (defn whitespace? (c)
   (or (eq? c #\Tab)
       (eq? c #\Newline)
