@@ -19,16 +19,18 @@
 (def _pp_closecurly (_pp_token (peg= #\})))
 (def _pp_openbracket (_pp_token (peg= #\()))
 (def _pp_closebracket (_pp_token (peg= #\))))
-(def _pp_negation_sign (_pp_token (peg= #\~)))
 
 ;; Indirection for recursive calls.
 (defn _pp_expr (input win lose)
   (_pp_expr1 input win lose))
 
+
 ;; TODO: Should be like lisp symbol, but also take
 ;; into account the separators in the grammar language.
 (def _pp_symbol
-  (peg=> (peg+ _alpha)
+  (peg=> (peg+ (peg-alt _alpha
+                        (peg= #\-)
+                        (peg= #\_)))
          (lambda (l) (string->symbol (list->string l)))))
 
 (def _pp_string-expr
@@ -59,7 +61,7 @@
   (_pp_expr4 input win lose))
 
 (def _pp_negated-expr
-  (peg-let ((_ _pp_negation_sign)
+  (peg-let ((_ (_pp_token (peg= #\~)))
             (e _pp_expr4_indirect))
     `(peg-not ,e)))
 

@@ -221,6 +221,7 @@ oop primitive_file_to_string(oop args) {
   PARSE_ONE_ARG(filename);
   const char* c_filename = c_string(filename);
   FILE* file = fopen(c_filename, "r");
+  CHECK(file != NULL, "Couldn't open file.");
   struct stat stat;
   fstat(fileno(file), &stat);
   char* buffer = malloc(stat.st_size + 1);
