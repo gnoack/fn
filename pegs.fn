@@ -8,7 +8,7 @@
     (lambda (input win lose)
       (if (empty? input)
 	  (win '() nil)
-	  (lose "Empty expected, got " input))))
+        (lose "Empty expected, got " input))))
 
 (defn peg-terminal (predicate?)
   (lambda (input win lose)
@@ -17,7 +17,7 @@
 	(let ((x (first input)))
 	  (if (predicate? x)
 	      (win x (rest input))
-	      (lose "Predicate not matching, got " x))))))
+            (lose "Predicate not matching, got " x))))))
 
 ;; We assume peg2 yields a list as win result.
 (defn peg-seq2 (peg1 peg2)

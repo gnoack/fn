@@ -32,13 +32,16 @@
 
 (eql? (list (list 'foo 'bar 'baz)
             '())
-      ((peg-listof _pp_symbol _pp_optional_whitespaces)
+      ((peg-listof* _pp_symbol _pp_optional_whitespaces)
        (string->list "foo bar  baz") list error))
 
 (eql? (list (list)
             '(#\Space))
-      ((peg-listof _pp_symbol _pp_optional_whitespaces)
+      ((peg-listof* _pp_symbol _pp_optional_whitespaces)
        (string->list " ") list error))
+
+(parse-fail? (peg-listof+ _pp_symbol _pp_optional_whitespaces)
+             (string->list " "))
 
 (eql? (list '(peg-let ((a (peg= (quote x)))
                        (b (peg= (quote y)))

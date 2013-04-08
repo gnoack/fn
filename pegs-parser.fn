@@ -99,12 +99,15 @@
                   (lambda (x) '_))))
 
 ;; Parser for a list of items separated by a separator.
-(defn peg-listof (item sep)
+(defn peg-listof+ (item sep)
+  (peg-let ((a  item)
+            (as (peg* (peg-let ((_ sep) (it item))
+                        it))))
+    (cons a as)))
+
+(defn peg-listof* (item sep)
   (peg-alt
-   (peg-let ((a  item)
-             (as (peg* (peg-let ((_ sep) (it item))
-                         it))))
-     (cons a as))
+   (peg-listof+ item sep)
    (peg-seq)))
 
 ;; _pp_binding ::= _pp_expr3:e _pp_bindingvar:v => (list v e)
@@ -114,8 +117,8 @@
     (list v e)))
 
 (def _pp_action_sequence
-  (peg-let ((bindings (peg-listof _pp_binding
-                                  _pp_optional_whitespaces))
+  (peg-let ((bindings (peg-listof+ _pp_binding
+                                   _pp_optional_whitespaces))
             (_ _pp_arrow)
             (action _lisp_expr))
     (list 'peg-let bindings action)))
@@ -130,7 +133,7 @@
            _pp_sequence))
 
 (def _pp_expr1
-  (peg=> (peg-listof _pp_expr2 (_pp_token (peg= #\|)))
+  (peg=> (peg-listof+ _pp_expr2 (_pp_token (peg= #\|)))
          (lambda (x)
            (cons 'peg-alt x))))
 
@@ -147,6 +150,6 @@
             (_  _pp_grammar_keyword)
             (n  _pp_symbol)
             (_  _pp_opencurly)
-            (rs (peg-listof _pp_rule _pp_semicolon))
+            (rs (peg-listof* _pp_rule _pp_semicolon))
             (_  _pp_closecurly))
     `(defgrammar ,n ,@rs)))

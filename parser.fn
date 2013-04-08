@@ -5,7 +5,8 @@
 
 (defn alpha? (c)
   (and (char? c)
-       (char<= #\a c #\z)))
+       (or (char<= #\a c #\z)
+           (char<= #\A c #\Z))))
 
 (defn whitespace? (c)
   (or (eq? c #\Tab)
