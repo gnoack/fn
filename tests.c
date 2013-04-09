@@ -178,7 +178,7 @@ char* get_histfile() {
 char* symbol_completion_entry(const char* text, int state) {
   oop result =
     apply(LIST(lookup_globally(make_symbol("readline-completion-entry")),
-               make_string(text), make_smallint(state)));
+               make_string(text), make_smallint(state), global_env));
   if (is_nil(result)) {
     return NULL;
   } else {

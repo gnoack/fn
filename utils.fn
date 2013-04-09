@@ -234,16 +234,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Readline completion.                                           ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; A slightly hacky way to figure out the global environment. :)
-(def $global-env ($mem-get (lambda () 42) 4))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Called into from C.  (See REPL implementation.)
-(defn readline-completion-entry (text state)
+(defn readline-completion-entry (text state global-env)
   (when (= 0 state)
     (set! *current-completions*
-          (readline-calculate-completions text)))
+          (readline-calculate-completions text global-env)))
   (if (cons? *current-completions*)
       (let ((result (first *current-completions*)))
         (set! *current-completions* (rest *current-completions*))
@@ -251,14 +248,14 @@
     nil))
 
 ;; TODO: Optimize memory usage?
-(defn readline-calculate-completions (text)
+(defn readline-calculate-completions (text global-env)
   (defn completions-for-dict (dict)
     (let ((names (map (lambda (x) (symbol->string (first x)))
                       (dict-key-value-pairs dict))))
     (filter (lambda (name)
               (string-prefix? text name))
             names)))
-  (append (completions-for-dict $global-env)
+  (append (completions-for-dict global-env)
           (completions-for-dict *macros*)))
 
 (defn eval (expr)
