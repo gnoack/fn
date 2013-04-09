@@ -1,6 +1,6 @@
 
 // Lisp grammar.
-grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
+grammar lisp-grammar ((base ANY END-OF-INPUT WHITESPACE)) {
   comment     ::= ";" (~"\n" ANY)*;
   whitespace  ::= WHITESPACE | comment;
 
