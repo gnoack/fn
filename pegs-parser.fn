@@ -1,3 +1,14 @@
+
+(defn make-peg-seq-expr (args)
+  (if (= 1 (length args))
+      (first args)  ;; Shortcut
+    `(peg-seq ,@args)))
+
+(defn make-peg-alt-expr (args)
+  (if (= 1 (length args))
+      (first args)  ;; Shortcut
+    `(peg-alt ,@args)))
+
 ;; Everything is prefixed _PP, to avoid namespace collisions.
 
 (def _pp_optional_whitespaces (peg* _whitespace))
@@ -36,8 +47,8 @@
 (def _pp_string-expr
   (peg-let ((_ _pp_optional_whitespaces)
             (s _string))  ; Like in Lisp.
-    `(peg-seq ,@(map (lambda (ch) `(peg= ,ch))
-                     (string->list s)))))
+    (make-peg-seq-expr (map (lambda (ch) `(peg= ,ch))
+                            (string->list s)))))
 
 (def _pp_symbol-expr
   (peg-let ((_ _pp_optional_whitespaces)
@@ -48,7 +59,7 @@
 (def _pp_invocation-expr
   (peg-let ((_ _pp_optional_whitespaces)
             (s _pp_symbol))  ; Like in Lisp.
-    `(invoke ,s)))
+    `(peg-indirect ,s)))
 
 (def _pp_bracketed-expr
   (peg-let ((_ _pp_openbracket)
@@ -127,7 +138,7 @@
 
 (def _pp_sequence
   (peg=> (peg+ (_pp_token _pp_expr3))
-         (lambda (x) `(peg-seq ,@x))))
+         make-peg-seq-expr))
 
 ;; An action with bound variables.
 (def _pp_expr2
@@ -136,8 +147,7 @@
 
 (def _pp_expr1
   (peg=> (peg-listof+ _pp_expr2 (_pp_token (peg= #\|)))
-         (lambda (x)
-           (cons 'peg-alt x))))
+         make-peg-alt-expr))
 
 ;; _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
 (def _pp_rule

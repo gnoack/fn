@@ -1,6 +1,3 @@
-
-(load-file "examples/grammars.fn")
-
 (eval (_pp_grammar
        (string->list
         "grammar abba {

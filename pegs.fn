@@ -107,3 +107,21 @@
 
 (defn parse-fail? (peg input)
   (not (parses? peg input)))
+
+
+
+(defmacro peg-indirect (name)
+  `(lambda (input win lose)
+     (,name input win lose)))
+
+(defmacro defrule (name peg)
+  `(def ,name ,peg))
+
+(defmacro defgrammar (name &rest rules)
+  (let ((rules (map macroexpand rules)))
+    `(def ,name
+       (lambda ()
+         ,@rules
+         (make-module ,@(map (lambda ((_def name rule)) name)
+                             rules))))))
+

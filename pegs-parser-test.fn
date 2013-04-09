@@ -1,20 +1,20 @@
 
-(eql? (list '(peg-seq (peg= #\x)) '())
+(eql? (list '(peg= #\x) '())
       (_pp_expr3 (string->list "\"x\"") list error))
 
-(eql? (list '(peg-seq (peg= #\x)) '())
+(eql? (list '(peg= #\x) '())
       (_pp_expr3 (string->list " \"x\"") list error))
 
-(eql? (list '(peg-seq (peg= #\")) '())
+(eql? (list '(peg= #\") '())
       (_pp_expr3 (string->list "\"\\\"\"") list error))
 
 (eql? (list '(peg= (quote foo)) '())
       (_pp_expr3 (string->list "'foo") list error))
 
-(eql? (list '(invoke foo) '())
+(eql? (list '(peg-indirect foo) '())
       (_pp_expr4 (string->list "foo") list error))
 
-(eql? (list '(peg-not (invoke a))
+(eql? (list '(peg-not (peg-indirect a))
             '())
       (_pp_expr4 (string->list "~a")
                  list error))
@@ -52,34 +52,34 @@
 
 (eql? (list '(peg-let ((a (peg= (quote x)))
                        (_ (peg= (quote y)))
-                       (c (peg-seq (peg= #\c))))
+                       (c (peg= #\c)))
 	       (list a c))
             '())
       (_pp_expr2 (string->list "'x:a 'y \"c\":c => (list a c)") list error))
 
 (eql? (list '(peg-seq (peg= (quote x))
                       (peg= (quote y))
-                      (peg-seq (peg= #\c)))
+                      (peg= #\c))
             '())
       (_pp_expr2 (string->list "'x 'y \"c\"") list error))
 
-(eql? (list '(peg-alt (peg-seq (peg= (quote x)))
-                      (peg-seq (peg= (quote y))))
+(eql? (list '(peg-alt (peg= (quote x))
+                      (peg= (quote y)))
             '())
       (_pp_expr1 (string->list "'x | 'y") list error))
 
-(eql? (list '(peg-alt (peg-seq (peg+ (peg-alt (peg-seq (invoke a) (invoke b))))))
+(eql? (list '(peg+ (peg-seq (peg-indirect a) (peg-indirect b)))
             '())
       (_pp_expr1 (string->list "(a b)+")
                  list error))
 
 (eql? (list '(peg-alt (peg-let ((a (peg= (quote aa)))
-                                (b (peg-not (invoke bb))))
+                                (b (peg-not (peg-indirect bb))))
                         (cons a b))
                       (peg-let ((_ (peg-seq (peg= #\=) (peg= #\>)))
                                 (c (peg= (quote cc))))
                         c)
-                      (peg-seq (peg= (quote d))))
+                      (peg= (quote d)))
             '())
       (_pp_expr1 (string->list "'aa:a ~bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
                  list error))
@@ -100,14 +100,14 @@
       (_pp_expr1 (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
                  list error))
 
-(eql? (list '(defrule foobar (peg-alt (peg-seq (peg= 'baz))))
+(eql? (list '(defrule foobar (peg= 'baz))
             '())
       (_pp_rule (string->list "foobar ::= 'baz")
                 list error))
 
 (eql? (list '(defgrammar fancy
-               (defrule foo (peg-alt (peg-seq (peg= 'x))))
-               (defrule bar (peg-alt (peg-seq (peg= 'y))))) '())
+               (defrule foo (peg= 'x))
+               (defrule bar (peg= 'y))) '())
       (_pp_grammar (string->list "grammar fancy { foo ::= 'x; bar ::= 'y }")
                    list error))
 
