@@ -164,4 +164,4 @@
             (_  _pp_opencurly)
             (rs (peg-listof* _pp_rule _pp_semicolon))
             (_  _pp_closecurly))
-    `(defgrammar ,n ,@rs)))
+    `(defgrammar ,n () ,@rs)))

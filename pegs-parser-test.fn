@@ -105,13 +105,13 @@
       (_pp_rule (string->list "foobar ::= 'baz")
                 list error))
 
-(eql? (list '(defgrammar fancy
+(eql? (list '(defgrammar fancy ()
                (defrule foo (peg= 'x))
                (defrule bar (peg= 'y))) '())
       (_pp_grammar (string->list "grammar fancy { foo ::= 'x; bar ::= 'y }")
                    list error))
 
-(eql? (list '(defgrammar trivial) '())
+(eql? (list '(defgrammar trivial ()) '())
       (_pp_grammar (string->list "grammar trivial {}")
                    list error))
 

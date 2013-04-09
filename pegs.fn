@@ -117,11 +117,12 @@
 (defmacro defrule (name peg)
   `(def ,name ,peg))
 
-(defmacro defgrammar (name &rest rules)
+(defmacro defgrammar (name import-clauses &rest rules)
   (let ((rules (map macroexpand rules)))
     `(def ,name
-       (lambda ()
-         ,@rules
-         (make-module ,@(map (lambda ((_def name rule)) name)
-                             rules))))))
+       (lambda ,(map first import-clauses)
+         (import ,@import-clauses
+           ,@rules
+           (make-module ,@(map (lambda ((_def name rule)) name)
+                               rules)))))))
 
