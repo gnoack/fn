@@ -2,23 +2,15 @@
 // Lisp grammar.
 grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
   dblquote    ::= "\"";
-  hash        ::= "#";
   backslash   ::= "\\";
-  openparen   ::= "(";
-  closeparen  ::= ")";
-  quote       ::= "'";
-  comma       ::= ",";
   semicolon   ::= ";";
-  backquote   ::= "`";
-  at          ::= "@";
   newline     ::= "\n";
 
   comment     ::= semicolon (~newline ANY)*;
 
   whitespace ::= comment | WHITESPACE;
 
-  separator   ::= whitespace | openparen
-                | closeparen | EMPTY;
+  separator   ::= whitespace | "(" | ")" | EMPTY;
 
   anything-but-separator ::= ~separator ANY:e       => e;
 
@@ -38,6 +30,7 @@ grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
 
   integer     ::= DIGIT+:ds                         => (string->int (list->string ds));
 
+  exprs       ::= expr*:es whitespace*              => es;
   sexpression ::= "(" expr*:es whitespace* ")"      => es;
 
   prefix-expr ::= "\'" expr:e                       => (list (quote quote) e)

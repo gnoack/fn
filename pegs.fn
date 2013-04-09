@@ -24,7 +24,7 @@
 	(let ((x (first input)))
 	  (if (predicate? x)
 	      (win x (rest input))
-            (lose input "Expected " displayable-name ", got " x))))))
+            (lose input 'expected displayable-name 'got x))))))
 
 ;; We assume peg2 yields a list as win result.
 (defn peg-seq2 (peg1 peg2)
@@ -53,8 +53,10 @@
   (lambda (input win lose)
     (peg1 input
 	  win
-	  (lambda (&rest failure-reason)
-	    (peg2 input win lose)))))
+	  (lambda (remainder &rest reason)
+	    (peg2 input win
+                  (lambda (input &rest reason2)
+                    (lose input reason 'AND reason2)))))))
 
 (defn peg-alt (&rest ps)
   (reduce-right peg-alt2

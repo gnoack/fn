@@ -1,3 +1,4 @@
+
 (defn load-grammar! (filename)
   (_pp_grammar (string->list (file->string filename))
                (lambda (result rest)
@@ -11,11 +12,13 @@
 (defgrammar base-grammar ()
   (def ANY        _any)
   (def DIGIT      _digit)
-  (def EMPTY      (peg-seq))
+  (def EMPTY      peg-empty)
   (def WHITESPACE _whitespace)
+  (def EPSILON    (peg-seq))
 )
-(set! base-grammar (base-grammar))
 
-(def parse-lisp (dict-get (lisp-grammar base-grammar) 'expr))
+(def parse-lisp-exprs (dict-get (lisp-grammar (base-grammar)) 'exprs))
 
-(println (parse-lisp (string->list "123") list list))
+(println (parse-lisp-exprs (string->list (file->string "compiler.fn"))
+                           list
+                           print-parse-error-and-die))
