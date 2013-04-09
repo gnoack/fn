@@ -3,7 +3,7 @@
         "grammar abba {
            A    ::= \"A\" | \"a\";
            B    ::= \"B\" | \"b\";
-           expr ::= A B+ A
+           expr ::= A B+ A;
          }")
        (lambda (result rest) result)
        error))
