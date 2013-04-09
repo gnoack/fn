@@ -1,16 +1,10 @@
 
 // Lisp grammar.
 grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
-  dblquote    ::= "\"";
-  backslash   ::= "\\";
-  semicolon   ::= ";";
-  newline     ::= "\n";
+  comment     ::= ";" (~"\n" ANY)*;
+  whitespace  ::= WHITESPACE | comment;
 
-  comment     ::= semicolon (~newline ANY)*;
-
-  whitespace ::= comment | WHITESPACE;
-
-  separator   ::= whitespace | "(" | ")" | EMPTY;
+  separator   ::= whitespace | "(" | ")" | END-OF-INPUT;
 
   anything-but-separator ::= ~separator ANY:e       => e;
 
@@ -23,20 +17,19 @@ grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
                            | ANY ):c
                   ~anything-but-separator           => c;
 
-  escapedchar ::= backslash ANY:e                   => e
+  escapedchar ::= "\\" ANY:e                        => e
                 | ANY;
-  stringchar  ::= ~dblquote escapedchar:c           => c;
-  string      ::= dblquote stringchar*:cs dblquote  => (list->string cs);
+  stringchar  ::= ~"\"" escapedchar:c               => c;
+  string      ::= "\"" stringchar*:cs "\""          => (list->string cs);
 
   integer     ::= DIGIT+:ds                         => (string->int (list->string ds));
 
-  exprs       ::= expr*:es whitespace*              => es;
   sexpression ::= "(" expr*:es whitespace* ")"      => es;
 
   prefix-expr ::= "\'" expr:e                       => (list (quote quote) e)
                 | "`" expr:e                        => (list (quote backquote) e)
                 | "`" "@" expr:e                    => (list (quote unquote-list) e)
-                | "`" expr:e                        => (list (quote unquote) e);
+                | "," expr:e                        => (list (quote unquote) e);
 
   expr        ::= whitespace* ( prefix-expr
                               | sexpression
@@ -47,4 +40,5 @@ grammar lisp-grammar ((base ANY EMPTY WHITESPACE)) {
 
   // Also consumes trailing whitespaces and comments.
   expr_whitespace ::= expr:e whitespace*            => e;
+  exprs           ::= expr*:es whitespace*          => es;
 }

@@ -10,11 +10,11 @@
 
 
 (defgrammar base-grammar ()
-  (def ANY        _any)
-  (def DIGIT      _digit)
-  (def EMPTY      peg-empty)
-  (def WHITESPACE _whitespace)
-  (def EPSILON    (peg-seq))
+  (def ANY          _any)
+  (def DIGIT        _digit)
+  (def END-OF-INPUT peg-empty)
+  (def WHITESPACE   _whitespace)
+  (def EPSILON      (peg-seq))
 )
 
 (def parse-lisp-exprs (dict-get (lisp-grammar (base-grammar)) 'exprs))
