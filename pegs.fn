@@ -54,9 +54,7 @@
     (peg1 input
 	  win
 	  (lambda (remainder &rest reason)
-	    (peg2 input win
-                  (lambda (input &rest reason2)
-                    (lose input reason 'AND reason2)))))))
+	    (peg2 input win lose)))))
 
 (defn peg-alt (&rest ps)
   (reduce-right peg-alt2
