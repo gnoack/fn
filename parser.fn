@@ -165,17 +165,21 @@
 ;; Returns a list of result, rest.
 (defn read (in)
   (_expr in
-	 list
-	 error))
+         list
+         error))
 
 (defn read-and-check-empty-remainder (rule)
+  (defn print-position-and-give-up (remainder &rest reason)
+    (println "At: " (pprint (list->string (take 50 remainder))))
+    (println "     ^")
+    (apply error reason))
   (lambda (in)
     (rule (string->list in)
 	  (lambda (result rest)
 	    (if (all? whitespace? rest)
 		result
-	      (error "There's something left: " (list->string rest))))
-	  error)))
+	      (print-position-and-give-up rest "Something left.")))
+	  print-position-and-give-up)))
 
 (def read-one (read-and-check-empty-remainder _expr))
 (def read-all (read-and-check-empty-remainder (peg* _expr)))

@@ -9,6 +9,12 @@
     (cons (first l)
           (all-but-last (rest l)))))
 
+(defn take (n l)
+  (if (and (< 0 n) (cons? l))
+      (cons (first l)
+            (take (- n 1) (rest l)))
+    '()))
+
 ;; Lists
 (defn length (seq)
   (if (cons? seq)
