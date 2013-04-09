@@ -158,7 +158,13 @@
                                   _symbol)))
               e))
 
-;; Used from pegs-parser
+;; _expr_whitespace ::= _expr:e _lisp_whitespaces ==> e
+(def _expr_whitespace
+  (peg-let ((e _expr)
+            (_ _lisp_whitespaces))
+    e))
+
+;; Used from pegs-parser (does not consume more whitespace)
 (def _lisp_expr _expr)
 
 ;; Public interface.
@@ -181,5 +187,5 @@
 	      (print-position-and-give-up rest "Something left.")))
 	  print-position-and-give-up)))
 
-(def read-one (read-and-check-empty-remainder _expr))
-(def read-all (read-and-check-empty-remainder (peg* _expr)))
+(def read-one (read-and-check-empty-remainder _expr_whitespace))
+(def read-all (read-and-check-empty-remainder (peg* _expr_whitespace)))
