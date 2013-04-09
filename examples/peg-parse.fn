@@ -3,7 +3,7 @@
                (lambda (result rest)
                  (println "Loaded grammar " filename)
                  (eval result))
-               error))
+               print-parse-error-and-die))
 
 (load-grammar! "examples/lisp.g")
 
