@@ -157,11 +157,21 @@
             (expr _pp_expr1))
     `(defrule ,name ,expr)))
 
+;; _pp_imports ::= _pp_openbracket _lisp_expr*:es _pp_closebracket => es
+;;               | EMPTY.
+(def _pp_imports
+  (peg-alt (peg-let ((_  _pp_openbracket)
+                     (es (peg* _lisp_expr))
+                     (_  _pp_closebracket))
+             es)
+           (peg-seq)))
+
 (def _pp_grammar
   (peg-let ((_  _pp_optional_whitespaces)
             (_  _pp_grammar_keyword)
             (n  _pp_symbol)
+            (im _pp_imports)
             (_  _pp_opencurly)
             (rs (peg-listof* _pp_rule _pp_semicolon))
             (_  _pp_closecurly))
-    `(defgrammar ,n () ,@rs)))
+    `(defgrammar ,n ,im ,@rs)))

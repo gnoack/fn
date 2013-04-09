@@ -14,7 +14,7 @@
       (eq? c #\Space)))
 
 (defn peg= (item)
-  (peg-terminal (lambda (x) (eq? x item))))
+  (peg-terminal (lambda (x) (eq? x item)) item))
 
 (defn peg-string= (string)
   (apply peg-seq (map peg= (string->list string))))
@@ -24,9 +24,9 @@
 ;;; ==================================
 
 ;; Terminals
-(def _any (peg-terminal ->true))
-(def _digit (peg-terminal digit?))
-(def _alpha (peg-terminal alpha?))
+(def _any (peg-terminal ->true "anything"))
+(def _digit (peg-terminal digit? "digit"))
+(def _alpha (peg-terminal alpha? "alphabetic"))
 
 (def _dblquote (peg= #\"))
 (def _hash (peg= #\#))
@@ -43,7 +43,7 @@
 		       (peg* (peg-seq (peg-not (peg= #\Newline))
                                       _any))))
 
-(def _whitespace (peg-terminal whitespace?))
+(def _whitespace (peg-terminal whitespace? "whitespace"))
 (def _lisp_whitespace (peg-alt _comment _whitespace))
 
 ;; Indirection.

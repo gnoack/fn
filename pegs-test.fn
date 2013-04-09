@@ -1,11 +1,8 @@
 ; Some helper defs
 (->true  ; we need true for all top-level exprs.
- (defn eq-peg (x)
-   (peg-terminal (lambda (y) (eq? x y))))
-
- (def peg-a (eq-peg 'a))
- (def peg-b (eq-peg 'b))
- (def peg-c (eq-peg 'c)))
+ (def peg-a (peg= 'a))
+ (def peg-b (peg= 'b))
+ (def peg-c (peg= 'c)))
 
 
 ; PEG terminal, success
@@ -14,11 +11,11 @@
 
 ; PEG terminal, failure
 (parse-fail?
- (peg-terminal ->false)
+ (peg-terminal ->false "the impossible input")
  '(a b c))
 
 (parse-fail?
-  (peg-terminal ->true)
+  (peg-terminal ->true "any character")
   '())  ; empty input
 
 ; PEG*
