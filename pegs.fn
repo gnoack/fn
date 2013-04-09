@@ -1,6 +1,13 @@
 ;; Transcribed from the paper
 ;; 'Parsing Expression Grammars' by Bryan Ford.
 
+;; A parsing expression grammar is a function with arguments
+;; (input win lose) that parses the input.  On success, `win'
+;; is called with the parse result and the input remainder as
+;; arguments.  On failure, `lose' is called with the input
+;; remainder as first argument and potentially more arguments
+;; describing the error.
+
 (defn empty? (x)
   (nil? x))
 
@@ -8,16 +15,16 @@
     (lambda (input win lose)
       (if (empty? input)
 	  (win '() nil)
-        (lose "Empty expected, got " input))))
+        (lose input "Empty input expected."))))
 
 (defn peg-terminal (predicate? displayable-name)
   (lambda (input win lose)
     (if (empty? input)
-	(lose "Wanted input, got nothing.")
+	(lose input "Wanted input, got nothing.")
 	(let ((x (first input)))
 	  (if (predicate? x)
 	      (win x (rest input))
-            (lose "Expected " displayable-name ", got " x))))))
+            (lose input "Expected " displayable-name ", got " x))))))
 
 ;; We assume peg2 yields a list as win result.
 (defn peg-seq2 (peg1 peg2)
@@ -35,7 +42,7 @@
   (win '() input))
 
 (defn peg-alwaysfail (input win lose)
-  (lose "Fail."))
+  (lose input "Fail."))
 
 (defn peg-seq (&rest ps)
   (reduce-right peg-seq2
@@ -80,7 +87,7 @@
   (lambda (input win lose)
     (peg input
 	 (lambda (result rest)
-	   (lose "Should not match."))
+	   (lose input "Should not match."))
 	 (lambda (&rest failure-reason)
 	   (win nil input)))))
 
