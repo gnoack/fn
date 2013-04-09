@@ -1,0 +1,38 @@
+
+(load-file "examples/grammars.fn")
+
+(eval (_pp_grammar
+       (string->list
+        "grammar abba {
+           A    ::= \"A\" | \"a\";
+           B    ::= \"B\" | \"b\";
+           expr ::= A B+ A
+         }")
+       (lambda (result rest) result)
+       error))
+
+(set! abba (abba))
+
+(defmacro assert (&rest stuff)
+  (if (= 1 (length stuff))
+      `(unless ,(first stuff)
+         (error "Assertion failed: " ',(first stuff)))
+    `(assert (,@stuff))))
+
+(import ((abba (parse-abba expr)))
+  (defn parses? (input)
+    (parse-abba (string->list input)
+                (lambda (result rest)
+                  (println " * Parsed: \"" input "\" -----> " result)
+                  (unless (nil? rest)
+                    (println "   Rest: " rest))
+                  true)
+                (lambda (&rest reason)
+                  (println " * Didn't parse: \"" input "\" --x-> " reason)
+                  false)))
+  (assert parses? "ABa")
+  (assert parses? "ABBBBBBA")
+  (assert parses? "abbba")
+  (assert not (parses? "baba"))
+  (println "Test run succeeded, all as expected. :)")
+)
