@@ -149,12 +149,13 @@
   (peg=> (peg-listof+ _pp_expr2 (_pp_token (peg= #\|)))
          make-peg-alt-expr))
 
-;; _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e  => `(rule ,n ,e)
+;; _pp_rule ::= _pp_symbol:n "::=" _pp_expr1:e ";"  => `(rule ,n ,e)
 (def _pp_rule
   (peg-let ((_    _pp_optional_whitespaces)
             (name _pp_symbol)
             (_    _pp_define)
-            (expr _pp_expr1))
+            (expr _pp_expr1)
+            (_    _pp_semicolon))
     `(defrule ,name ,expr)))
 
 ;; _pp_imports ::= _pp_openbracket _lisp_expr*:es _pp_closebracket => es
@@ -172,6 +173,6 @@
             (n  _pp_symbol)
             (im _pp_imports)
             (_  _pp_opencurly)
-            (rs (peg-listof* _pp_rule _pp_semicolon))
+            (rs (peg* _pp_rule))
             (_  _pp_closecurly))
     `(defgrammar ,n ,im ,@rs)))
