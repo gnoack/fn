@@ -11,7 +11,11 @@
 
 ;; Everything is prefixed _PP, to avoid namespace collisions.
 
-(def _pp_optional_whitespaces (peg* _whitespace))
+(def _pp_optional_whitespaces
+  (peg* (peg-alt _whitespace
+                 (peg-seq (peg-string= "//")
+                          (peg* (peg-seq (peg-not (peg= #\Newline))
+                                         _any))))))
 
 (defn _pp_token (rule)
   (peg-let ((_ _pp_optional_whitespaces)

@@ -19,18 +19,3 @@
 (def parse-lisp (dict-get (lisp-grammar base-grammar) 'expr))
 
 (println (parse-lisp (string->list "123") list list))
-
-;; (def content (file->string file))
-;; (_pp_grammar (string->list content)
-;;              (lambda (result rest)
-;;                (println "INPUT:")
-;;                (println content)
-;;                (println "OUTPUT:")
-;;                (println result)
-;;                (println "MACROEXPANDED:")
-;;                (println (macroexpand result))
-;;                (println (dict-get ((eval result)) 'newline))
-;;                (println "Rest was \"" (list->string rest) "\""))
-;;              error)
-
-true

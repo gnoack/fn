@@ -259,7 +259,7 @@ void print_procedure(oop fn) {
 
 // Application
 
-#define MAX_APPLY_STACK 4000
+#define MAX_APPLY_STACK 6000
 oop apply_stack[MAX_APPLY_STACK];
 int apply_stack_pos = 0;
 
