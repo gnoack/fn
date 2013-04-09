@@ -115,6 +115,7 @@
       (_pp_grammar (string->list "grammar trivial {}")
                    list error))
 
+;; With imports.
 (eql? (list '(defgrammar trivial ((x A B C)
                                   (y D E))) '())
       (_pp_grammar (string->list "grammar trivial ((x A B C) (y D E)) {}")

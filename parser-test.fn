@@ -31,7 +31,7 @@
 (eql? (list #\' '())
       (read (string->list "#\\'")))
 
-(eql? (list #\\ '(#\space))
+(eql? (list #\\ '(#\Space))
       (read (string->list " #\\\\ ")))
 
 (eql? (list (list 1 2 3)

@@ -149,7 +149,7 @@
 ;;                              | _string
 ;;                              | _character
 ;;                              | _symbol ):e  ==> e
-(def _expr1 (peg-let ((_  _lisp_whitespaces)
+(def _expr1 (peg-let ((_ _lisp_whitespaces)
                       (e (peg-alt _prefix_expr
                                   _sexpression
                                   _integer
