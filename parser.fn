@@ -59,7 +59,9 @@
 ;; _escapedchar ::= '\' _any:e  ==> e
 ;;                | _any
 (def _escapedchar
-    (peg-alt (peg-let ((_ _backslash)
+    (peg-alt (peg=> (peg-string= "\\n") (lambda (_) #\Newline))
+             (peg=> (peg-string= "\\t") (lambda (_) #\Tab))
+             (peg-let ((_ _backslash)
                        (e _any))
                e)
 	     _any))

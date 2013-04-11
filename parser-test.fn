@@ -5,6 +5,9 @@
 (eql? (list "abc" '())
       (read (string->list "\"abc\"")))
 
+(eql? (list "\n" '())
+      (read (string->list "\"\\n\"")))
+
 (eql? (list "foo" '())
       (read (string->list "\"foo\"")))
 

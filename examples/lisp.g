@@ -1,6 +1,6 @@
 
 // Lisp grammar.
-grammar lisp-grammar ((base ANY END-OF-INPUT WHITESPACE)) {
+grammar lisp-grammar ((base ANY DIGIT END-OF-INPUT WHITESPACE)) {
   comment     ::= ";" (~"\n" ANY)*;
   whitespace  ::= WHITESPACE | comment;
 
@@ -17,7 +17,9 @@ grammar lisp-grammar ((base ANY END-OF-INPUT WHITESPACE)) {
                            | ANY ):c
                   ~anything-but-separator           => c;
 
-  escapedchar ::= "\\" ANY:e                        => e
+  escapedchar ::= "\\n"                             => #\Newline
+                | "\\t"                             => #\Tab
+                | "\\" ANY:e                        => e
                 | ANY;
   stringchar  ::= ~"\"" escapedchar:c               => c;
   string      ::= "\"" stringchar*:cs "\""          => (list->string cs);
@@ -28,7 +30,7 @@ grammar lisp-grammar ((base ANY END-OF-INPUT WHITESPACE)) {
 
   prefix-expr ::= "\'" expr:e                       => (list (quote quote) e)
                 | "`" expr:e                        => (list (quote backquote) e)
-                | "`" "@" expr:e                    => (list (quote unquote-list) e)
+                | "`@" expr:e                       => (list (quote unquote-list) e)
                 | "," expr:e                        => (list (quote unquote) e);
 
   expr        ::= whitespace* ( prefix-expr
