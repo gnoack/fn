@@ -22,36 +22,36 @@
 (dict-put! *macros* 'defmacro macroexpand-defmacro)
 
 (def me-lambda-rec
-    (lambda (xs)
-      (cons 'lambda
-      (cons (first xs) ; lambda-list
-            (map macroexpand-rec (rest xs)))))) ; body
+  (lambda ((lambda-list &rest body))
+    (cons 'lambda
+    (cons lambda-list
+          (map macroexpand-rec body)))))
 
 (def me-let-rec
-    (lambda (xs)
-      (cons 'let
-      (cons (map (lambda (binding)
-                   (cons (first binding)
-                         (map macroexpand-rec (rest binding))))
-                 (first xs)) ; bindings
-            (map macroexpand-rec (rest xs))))))
+  (lambda (xs)
+    (cons 'let
+    (cons (map (lambda (binding)
+                 (cons (first binding)
+                       (map macroexpand-rec (rest binding))))
+               (first xs)) ; bindings
+          (map macroexpand-rec (rest xs))))))
 
 ;; CAN'T USE ANY MACROS ITSELF!
 ; if, def are handled by regular function application rules
 (def macroexpand-rec
-    (lambda (e)
-      (if (cons? e)
-	  (let ((x (first e))
-		(xs (rest e)))
-	    (if (eq? x 'quote) e  ; just leave it
-	    (if (eq? x 'lambda) (me-lambda-rec xs)
-	    (if (eq? x 'let) (me-let-rec xs)
-              (if (if (symbol? x)
-                      (dict-has-key? *macros* x)
-                    false)
-                  (macroexpand-rec (apply (dict-get *macros* x) xs))
-                (map macroexpand-rec e))))))
-	  e)))
+  (lambda (e)
+    (if (cons? e)
+        (let ((x (first e))
+              (xs (rest e)))
+          (if (eq? x 'quote) e  ; just leave it
+          (if (eq? x 'lambda) (me-lambda-rec xs)
+          (if (eq? x 'let) (me-let-rec xs)
+            (if (if (symbol? x)
+                    (dict-has-key? *macros* x)
+                  false)
+                (macroexpand-rec (apply (dict-get *macros* x) xs))
+              (map macroexpand-rec e))))))
+      e)))
 
 ;; 'macroexpand' is special in that the evaluator transforms any
 ;; expression with it before evaluating it.  This only happens though,
@@ -77,13 +77,15 @@
       (list 'if p true (cons 'or ps))))
 
 ;; XXX: Only for now.  Rebound after `labels' is defined.
-(def defn-body-exprs->let-form identity)
+(def macroexpand-sequence
+  (lambda (exprs)
+    (map macroexpand-rec exprs)))
 
 (defmacro defn (name lambda-list &rest body)
-  ;; `(def ,name (lambda ,lambda-list ,@body))
+  ;; `(def ,name (lambda ,lambda-list ,@(macroexpand-sequence body)))
   (list 'def name
-	(cons 'lambda (cons lambda-list
-                            (defn-body-exprs->let-form body)))))
+        (cons 'lambda (cons lambda-list
+                            (macroexpand-sequence body)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Quasiquote implementation                                      ;;;
@@ -114,8 +116,8 @@
 
 (defn %quasiquote-splice (expr)
   (cond ((smatch? 'unquote expr)           (list 'list (second expr)))
-	((smatch? 'unquote-splicing expr)  (second expr))
-	(true                              (list 'list (list 'quasiquote expr)))))
+        ((smatch? 'unquote-splicing expr)  (second expr))
+        (true                              (list 'list (list 'quasiquote expr)))))
 
 
 
@@ -148,7 +150,7 @@
       (list-without-prefix-where predicate? (rest l))
     l))
 
-(set! defn-body-exprs->let-form
+(set! macroexpand-sequence
       (lambda (exprs)
         (let ((exprs (map macroexpand exprs))
               (def-expr? (lambda (e) (smatch? 'def e))))
