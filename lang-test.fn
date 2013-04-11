@@ -65,8 +65,21 @@
 (eql? (list 2 3)
       ((lambda (a &rest as) as) 1 2 3))
 
-;; def -- already tested in utils
+;; def
+(->true
+ (def just-for-testing 'just-for-testing))
+
+(eq? 'just-for-testing just-for-testing)
+
 ;; evaluation in environments
+(let ()
+  ;; A local definition of `just-for-testing'.
+  (def just-for-testing 'another-value)
+  (eq? 'another-value just-for-testing))
+
+;; Local definition hasn't affected global binding.
+(eq? 'just-for-testing just-for-testing)
+
 
 ; _and
 (eq? true (_and true true))

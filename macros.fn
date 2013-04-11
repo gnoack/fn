@@ -21,11 +21,16 @@
 (def *macros* (make-dict))
 (dict-put! *macros* 'defmacro macroexpand-defmacro)
 
+;; XXX: Only for now.  Rebound after `labels' is defined.
+(def macroexpand-sequence
+  (lambda (exprs)
+    (map macroexpand-rec exprs)))
+
 (def me-lambda-rec
   (lambda ((lambda-list &rest body))
     (cons 'lambda
     (cons lambda-list
-          (map macroexpand-rec body)))))
+          (macroexpand-sequence body)))))
 
 (def me-let-rec
   (lambda (xs)
@@ -34,7 +39,7 @@
                  (cons (first binding)
                        (map macroexpand-rec (rest binding))))
                (first xs)) ; bindings
-          (map macroexpand-rec (rest xs))))))
+          (macroexpand-sequence (rest xs))))))
 
 ;; CAN'T USE ANY MACROS ITSELF!
 ; if, def are handled by regular function application rules
@@ -46,11 +51,11 @@
           (if (eq? x 'quote) e  ; just leave it
           (if (eq? x 'lambda) (me-lambda-rec xs)
           (if (eq? x 'let) (me-let-rec xs)
-            (if (if (symbol? x)
-                    (dict-has-key? *macros* x)
-                  false)
-                (macroexpand-rec (apply (dict-get *macros* x) xs))
-              (map macroexpand-rec e))))))
+          (if (if (symbol? x)
+                  (dict-has-key? *macros* x)
+                false)
+              (macroexpand-rec (apply (dict-get *macros* x) xs))
+            (map macroexpand-rec e))))))
       e)))
 
 ;; 'macroexpand' is special in that the evaluator transforms any
@@ -76,16 +81,10 @@
   (if (nil? ps) p
       (list 'if p true (cons 'or ps))))
 
-;; XXX: Only for now.  Rebound after `labels' is defined.
-(def macroexpand-sequence
-  (lambda (exprs)
-    (map macroexpand-rec exprs)))
-
 (defmacro defn (name lambda-list &rest body)
-  ;; `(def ,name (lambda ,lambda-list ,@(macroexpand-sequence body)))
+  ;; `(def ,name (lambda ,lambda-list ,@body))
   (list 'def name
-        (cons 'lambda (cons lambda-list
-                            (macroexpand-sequence body)))))
+        (cons 'lambda (cons lambda-list body))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Quasiquote implementation                                      ;;;
@@ -158,10 +157,10 @@
                 (body-exprs (list-without-prefix-where def-expr? exprs)))
             (if (nil? def-forms)
                 exprs
-              `((labels ,(map (lambda ((def_ symbol value-expr))
-                                `(,symbol ,value-expr))
-                              def-forms)
-                  ,@body-exprs)))))))
+              (list (macroexpand `(labels ,(map (lambda ((def_ symbol value-expr))
+                                                  `(,symbol ,value-expr))
+                                                def-forms)
+                                    ,@body-exprs))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
