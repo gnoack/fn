@@ -259,7 +259,7 @@ void print_procedure(oop fn) {
 
 // Application
 
-#define MAX_APPLY_STACK 6000
+#define MAX_APPLY_STACK 10000
 oop apply_stack[MAX_APPLY_STACK];
 int apply_stack_pos = 0;
 
@@ -277,8 +277,10 @@ void print_apply_stack() {
 }
 
 void apply_stack_push(oop values) {
-  CHECK(apply_stack_pos < MAX_APPLY_STACK, "Stack exhausted.");
-  apply_stack[apply_stack_pos++] = values;
+  if (apply_stack_pos < MAX_APPLY_STACK) {
+    apply_stack[apply_stack_pos] = values;
+  }
+  apply_stack_pos++;
 }
 
 void apply_stack_pop() {
