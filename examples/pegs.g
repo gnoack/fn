@@ -41,9 +41,9 @@ grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
                     | symbol_expr
                     | invocation_expr
                     | bracketed_expr;
-  negated_expr    ::= "~" expr4:e                       => e;
-  plus_expr       ::= expr4:e "+"                       => e;
-  star_expr       ::= expr4:e "*"                       => e;
+  negated_expr    ::= "~" expr4:e                       => `(peg-not ,e);
+  plus_expr       ::= expr4:e "+"                       => `(peg+ ,e);
+  star_expr       ::= expr4:e "*"                       => `(peg* ,e);
   expr3           ::= plus_expr | star_expr | expr4;
 
   bindingvar      ::= colon symbol:s                    => s

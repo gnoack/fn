@@ -128,8 +128,8 @@
                     es))
 
 ;; _prefix_expr ::= '\'' _expr:e     ==> `(quote ,e)
-;;                | '`' _expr:e      ==> `(backquote ,e)
-;;                | ',' '@' _expr:e  ==> `(unquote-list ,e)
+;;                | '`' _expr:e      ==> `(quasiquote ,e)
+;;                | ',' '@' _expr:e  ==> `(unquote-splicing ,e)
 ;;                | ',' _expr:e      ==> `(unquote ,e)
 (def _prefix_expr
   ;; Quasiquote doesn't expand the quasiquote-related macros nicely,

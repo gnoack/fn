@@ -29,8 +29,8 @@ grammar lisp-grammar ((base ANY DIGIT END-OF-INPUT WHITESPACE)) {
   sexpression ::= "(" expr*:es whitespace* ")"      => es;
 
   prefix-expr ::= "\'" expr:e                       => (list (quote quote) e)
-                | "`" expr:e                        => (list (quote backquote) e)
-                | "`@" expr:e                       => (list (quote unquote-list) e)
+                | "`" expr:e                        => (list (quote quasiquote) e)
+                | ",@" expr:e                       => (list (quote unquote-splicing) e)
                 | "," expr:e                        => (list (quote unquote) e);
 
   expr        ::= whitespace* ( prefix-expr

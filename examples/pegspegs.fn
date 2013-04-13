@@ -28,11 +28,22 @@
 
 (defn try-parse (rule str)
   (println "   " (pprint str) " '" rule)
-  ((dict-get pegs-grammar rule)
-   (string->list str)
-   (lambda (result rest)
-     (println "   OK. " (pprint result)))
-   print-parse-error-and-die))
+  (let ((str (string->list str)))
+    ((dict-get pegs-grammar rule)
+     str
+     (lambda (result rest)
+       (println "   OK. " (pprint result))
+       (when (eq? 'grammar rule)
+         (println "And the outputs...")
+         (_pp_grammar str (lambda (orig-result orig-rest)
+                            (let ((do-eql (eql? result orig-result)))
+                              (if do-eql
+                                  (println "OUTPUTS EQUAL!")
+                                (progn
+                                  (println "DO NOT EQUAL: "
+                                           (pprint orig-result))))))
+                      print-parse-error-and-die)))
+     print-parse-error-and-die)))
 
 (try-parse 'symbol "a")
 (try-parse 'expr4 "a")

@@ -3,8 +3,6 @@
   (_pp_grammar (string->list (file->string filename))
                (lambda (result rest)
                  (println "Loaded grammar " filename)
-                 (println ":::" result)
-                 (println ":::" (macroexpand result))
                  (eval result))
                print-parse-error-and-die))
 
