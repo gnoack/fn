@@ -1,0 +1,11 @@
+
+(load-file "examples/grammar-utils.fn")
+(load-grammar! "examples/simple.g")
+
+(defgrammar base-grammar ()
+  (def ANY _any)
+)
+
+(def parse-simple (dict-get (example-grammar (base-grammar)) 'example))
+
+(println (parse-simple (string->list "a,b,c,a") list print-parse-error-and-die))

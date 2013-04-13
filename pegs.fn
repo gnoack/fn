@@ -116,17 +116,22 @@
   (not (parses? peg input)))
 
 (defn print-parse-error-and-die (remainder &rest reason)
+  (println "*PARSE ERROR")
   (println "At: " (pprint (list->string (take 50 remainder))))
   (println "     ^")
   (apply error reason))
 
 
-(defmacro peg-indirect (name)
-  `(lambda (input win lose)
-     (,name input win lose)))
+(defmacro peg-indirect (name &rest args)
+  (if (nil? args)
+      `(lambda (input win lose)
+         (,name input win lose))
+    `(,name ,@args)))
 
-(defmacro defrule (name peg)
-  `(def ,name ,peg))
+(defmacro defrule (name params peg)
+  (if (nil? params)
+      `(def ,name ,peg)
+    `(defn ,name ,params ,peg)))
 
 (defmacro defgrammar (name import-clauses &rest rules)
   (let ((rules (map macroexpand rules)))

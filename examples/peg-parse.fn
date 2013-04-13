@@ -1,13 +1,7 @@
 
-(defn load-grammar! (filename)
-  (_pp_grammar (string->list (file->string filename))
-               (lambda (result rest)
-                 (println "Loaded grammar " filename)
-                 (eval result))
-               print-parse-error-and-die))
+(load-file "examples/grammar-utils.fn")
 
 (load-grammar! "examples/lisp.g")
-
 
 (defgrammar base-grammar ()
   (def ANY          _any)
@@ -17,7 +11,8 @@
   (def EPSILON      (peg-seq))
 )
 
-(def parse-lisp-exprs (dict-get (lisp-grammar (base-grammar)) 'exprs))
+(def parse-lisp-exprs (dict-get (lisp-grammar (base-grammar))
+                                'exprs))
 
 (println (parse-lisp-exprs (string->list (file->string "examples/peg-parse.fn"))
                            list

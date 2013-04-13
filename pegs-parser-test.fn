@@ -14,6 +14,10 @@
 (eql? (list '(peg-indirect foo) '())
       (_pp_expr4 (string->list "foo") list error))
 
+(eql? (list '(peg-indirect list-of (peg-indirect sep) (peg-indirect item))
+            '())
+      (_pp_expr4 (string->list "list-of(sep, item)") list error))
+
 (eql? (list '(peg-not (peg-indirect a))
             '())
       (_pp_expr4 (string->list "~a")
@@ -100,14 +104,19 @@
       (_pp_expr1 (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
                  list error))
 
-(eql? (list '(defrule foobar (peg= 'baz))
+(eql? (list '(defrule foobar () (peg= 'baz))
             '())
       (_pp_rule (string->list "foobar ::= 'baz;")
                 list error))
 
+(eql? (list '(defrule a (b c) (peg= 'baz))
+            '())
+      (_pp_rule (string->list "a b c ::= 'baz;")
+                list print-parse-error-and-die))
+
 (eql? (list '(defgrammar fancy ()
-               (defrule foo (peg= 'x))
-               (defrule bar (peg= 'y))) '())
+               (defrule foo () (peg= 'x))
+               (defrule bar () (peg= 'y))) '())
       (_pp_grammar (string->list "grammar fancy { foo ::= 'x; bar ::= 'y; }")
                    list error))
 

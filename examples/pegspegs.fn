@@ -1,0 +1,43 @@
+
+(println "Running.")
+
+(println "Load grammar utils...")
+(load-file "examples/grammar-utils.fn")
+
+(println "Load Lisp grammar...")
+(load-grammar! "examples/lisp.g")
+
+(println "Load PEG grammar...")
+(load-grammar! "examples/pegs.g")
+
+(defgrammar base-grammar ()
+  (def ALPHA        _alpha)
+  (def ANY          _any)
+  (def DIGIT        _digit)
+  (def END-OF-INPUT peg-empty)
+  (def EPSILON      (peg-seq))
+  (def WHITESPACE   _whitespace)
+)
+
+(set! base-grammar (base-grammar))
+(set! pegs-grammar (pegs-grammar base-grammar
+                                 (lisp-grammar base-grammar)))
+(def parse-simple (dict-get pegs-grammar 'grammar))
+
+(println "Parsing something with the bootstrapped PEG parser.")
+
+(defn try-parse (rule str)
+  (println "   " (pprint str) " '" rule)
+  ((dict-get pegs-grammar rule)
+   (string->list str)
+   (lambda (result rest)
+     (println "   OK. " (pprint result)))
+   print-parse-error-and-die))
+
+(try-parse 'symbol "a")
+(try-parse 'expr4 "a")
+(try-parse 'expr3 "a")
+(try-parse 'expr2 "a")
+(try-parse 'expr1 "a")
+(try-parse 'rule "foo ::= a;")
+(try-parse 'grammar (file->string "examples/pegs.g"))
