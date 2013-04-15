@@ -231,15 +231,6 @@
   `(set! ,sym (debugging-wrap ,sym)))
 
 
-;; Example: (with-asserts ((number? n)) (+ 1 n))
-(defmacro with-asserts (asserts body)
-  (reduce (lambda (b assertion)
-            `(if ,assertion
-                 ,b
-               (error "Assertion failed: " (quote ,assertion))))
-          (reverse asserts)
-          body))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Macros for imperative code.                                      ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -262,6 +253,10 @@
   `(when (not ,condition)
      ,@body))
 
+(defmacro assert (condition)
+  `(unless ,condition
+     (error "Assertion failed: " (quote ,condition))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Macros for performance measurements.                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,9 +265,8 @@
   (let ((old-milliseconds (get-time)))
     (thunk)
     (let ((new-milliseconds (get-time)))
-      (with-asserts ((<= old-milliseconds new-milliseconds))
-        (println (- new-milliseconds old-milliseconds) " milliseconds elapsed."))
-      nil)))
+      (assert (<= old-milliseconds new-milliseconds))
+      (println (- new-milliseconds old-milliseconds) " milliseconds elapsed."))))
 
 (defmacro with-timer (&rest body)
   `(with-timer-function (lambda () ,@body)))

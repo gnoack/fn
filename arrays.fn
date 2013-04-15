@@ -32,14 +32,14 @@
   (_convert (send a 'size) (list)))
 
 (defm @array 'get (n)
-  (with-asserts ((number? n)
-		 (< n (send self 'size)))
-    ($mem-get self (+ 2 n))))
+  (assert (number? n))
+  (assert (< n (send self 'size)))
+  ($mem-get self (+ 2 n)))
 
 (defm @array 'set! (n value)
-  (with-asserts ((number? n)
-		 (< n (send self 'size)))
-    ($mem-set! self (+ 2 n) value)))
+  (assert (number? n))
+  (assert (< n (send self 'size)))
+  ($mem-set! self (+ 2 n) value))
 
 (defm @array 'size ()
   ($mem-get self 1))

@@ -29,12 +29,12 @@
     byte))
 
 (defn byte-buffer-set! (byte-buffer pos byte)
-  (with-asserts ((< pos (byte-buffer-bufsize byte-buffer)))
-    ($mem-block-byte-set! ($mem-get byte-buffer 1) pos byte)))
+  (assert (< pos (byte-buffer-bufsize byte-buffer)))
+  ($mem-block-byte-set! ($mem-get byte-buffer 1) pos byte))
 
 (defn byte-buffer-ref (byte-buffer pos)
-  (with-asserts ((< pos (byte-buffer-bufsize byte-buffer)))
-    ($mem-block-byte-get ($mem-get byte-buffer 1) pos)))
+  (assert (< pos (byte-buffer-bufsize byte-buffer)))
+  ($mem-block-byte-get ($mem-get byte-buffer 1) pos))
 
 (defn byte-buffer-slice (byte-buffer first last)
   (if (eq? first last)

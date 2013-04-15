@@ -7,8 +7,8 @@
   (with-gensyms (result)
     `(let ((,result (make-dict)))
        ,@(map (lambda (sym)
-                (with-asserts ((symbol? sym))
-                  `(dict-put! ,result ',sym ,sym)))
+                (assert (symbol? sym))
+                `(dict-put! ,result ',sym ,sym))
               symbols)
        ,result)))
 

@@ -55,12 +55,12 @@
 ;;; Method definition
 
 (defn install-method! (type selector method)
-  (with-asserts ((type? type))
-    (dict-put! ($mem-get type 1) selector method)))
+  (assert (type? type))
+  (dict-put! ($mem-get type 1) selector method))
 
-(defmacro defm (type selector args body)
+(defmacro defm (type selector args &rest body)
   `(install-method! ,type ,selector
-                    (lambda (self ,@args) ,body)))
+                    (lambda (self ,@args) ,@body)))
 
 
 ;;; Message sending

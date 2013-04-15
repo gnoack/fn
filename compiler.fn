@@ -1,9 +1,9 @@
 ;; Accessing elements in lists.
 (defn list-index-of (list value)
-  (with-asserts ((cons? list))
-    (if (eq? value (first list))
-        0
-      (+ 1 (list-index-of (rest list) value)))))
+  (assert (cons? list))
+  (if (eq? value (first list))
+      0
+    (+ 1 (list-index-of (rest list) value))))
 
 (defn list-contains? (list value)
   (if (cons? list)
@@ -139,7 +139,8 @@
        ((def)        (compile-def expr environment))
        ((set!)       (compile-set! expr environment))
        ((progn)      (compile-sequence (rest expr) environment call-style))
-       (else         (with-asserts ((list? expr))
+       (else         (progn
+                       (assert (list? expr))
                        (compile-application expr environment call-style)))))))
 
 
@@ -245,10 +246,10 @@
      fn)))
 
 (defn compile-fn* (fn)
-  (with-asserts ((compilable? fn))
-    (compile-lambda-body (fn-body fn)
-                         (send global-env 'linked-with-vars
-                               (vars-from-ll (fn-lambda-list fn))))))
+  (assert (compilable? fn))
+  (compile-lambda-body (fn-body fn)
+                       (send global-env 'linked-with-vars
+                             (vars-from-ll (fn-lambda-list fn)))))
 
 (defmacro c! (s)
   `(set! ,s (compile-fn ,s)))
