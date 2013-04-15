@@ -52,8 +52,6 @@
   (_pp_expr1 input win lose))
 
 
-;; TODO: Should be like lisp symbol, but also take
-;; into account the separators in the grammar language.
 (def _pp_symbol_start
   (peg-alt _alpha (peg= #\_)))
 
