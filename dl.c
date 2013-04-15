@@ -11,6 +11,7 @@
 #include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
+#include "carcdr.h"
 
 
 oop primitive_dlopen(oop args) {

@@ -124,9 +124,9 @@ oop procedure_set_name(oop fn, oop name) {
 fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
-    oop item = car(ll);
-    if (is_symbol(item)) {
-      if (value_eq(item, symbols._rest)) {
+    oop ll_item = car(ll);
+    if (is_symbol(ll_item)) {
+      if (value_eq(ll_item, symbols._rest)) {
         ll = cdr(ll);
         CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
         CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
@@ -137,8 +137,8 @@ fn_uint num_vars_in_ll(oop ll) {
       } else {
         count += 2;
       }
-    } else if (is_cons(item)) {
-      count = (count + num_vars_in_ll(item)) | 1;
+    } else if (is_cons(ll_item)) {
+      count = (count + num_vars_in_ll(ll_item)) | 1;
     }
     ll = cdr(ll);
   }

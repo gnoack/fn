@@ -16,10 +16,6 @@
 #include "symbols.h"
 
 /* Utility. */
-void check_argument_number(oop args, int expected) {
-  CHECKV(length_int(args) == expected, args, "Argument number");
-}
-
 oop primitive_first(oop args) {
   PARSE_ONE_ARG(cons_cell);
   return first(cons_cell);
@@ -167,7 +163,7 @@ oop primitive_write_out(oop args) {
   char* c_str = c_string(str);
   printf("%s", c_str);
   free(c_str);
-  return car(args);
+  return str;
 }
 
 oop primitive_kill_lisp(oop args) {

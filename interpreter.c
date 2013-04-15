@@ -206,8 +206,10 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     // Position.
     oop code = fn_code(cfn);
     state->ip = get_smallint(car(code));
-    state->bytecode = cadr(code);
-    state->oop_lookups = caddr(code);
+    code = cdr(code);
+    state->bytecode = car(code);
+    code = cdr(code);
+    state->oop_lookups = car(code);
   } else {
     // Call recursively on the C stack.
     oop values = stack_pop_list(arg_count);

@@ -1,39 +1,36 @@
 #ifndef _PRIMITIVES_H_
 
 #include "value.h"
-#include "carcdr.h"
 
-// TODO: Remove unnecessary list traversal.
+#define PARSE_ONE_ARG(first_arg)                                 \
+  oop first_arg = first(args); args = rest(args);                \
+  CHECKV(is_nil(args), args, "More than 1 argument provided.");  \
 
-#define PARSE_ONE_ARG(first_arg)    \
-  check_argument_number(args, 1);   \
-  oop first_arg = first(args);      \
+#define PARSE_TWO_ARGS(first_arg, second_arg)                    \
+  oop first_arg = first(args); args = rest(args);                \
+  oop second_arg = first(args); args = rest(args);               \
+  CHECKV(is_nil(args), args, "More than 2 argument provided.");  \
 
-#define PARSE_TWO_ARGS(first_arg, second_arg) \
-  check_argument_number(args, 2);   \
-  oop first_arg = first(args);      \
-  oop second_arg = cadr(args);      \
+#define PARSE_THREE_ARGS(first_arg, second_arg, third_arg)       \
+  oop first_arg = first(args); args = rest(args);                \
+  oop second_arg = first(args); args = rest(args);               \
+  oop third_arg = first(args); args = rest(args);                \
+  CHECKV(is_nil(args), args, "More than 3 argument provided.");  \
 
-#define PARSE_THREE_ARGS(first_arg, second_arg, third_arg) \
-  check_argument_number(args, 3);   \
-  oop first_arg = first(args);      \
-  oop second_arg = cadr(args);      \
-  oop third_arg = caddr(args);      \
-
-#define PARSE_FOUR_ARGS(first_arg, second_arg, third_arg, fourth_arg) \
-  check_argument_number(args, 4);   \
-  oop first_arg = first(args);      \
-  oop second_arg = cadr(args);      \
-  oop third_arg = caddr(args);      \
-  oop fourth_arg = cadddr(args);    \
+#define PARSE_FOUR_ARGS(first_arg, second_arg, third_arg, fourth_arg)   \
+  oop first_arg = first(args); args = rest(args);                       \
+  oop second_arg = first(args); args = rest(args);                      \
+  oop third_arg = first(args); args = rest(args);                       \
+  oop fourth_arg = first(args); args = rest(args);                      \
+  CHECKV(is_nil(args), args, "More than 4 argument provided.");         \
 
 #define PARSE_FIVE_ARGS(first_arg, second_arg, third_arg, fourth_arg, fifth_arg) \
-  check_argument_number(args, 5);   \
-  oop first_arg = first(args);      \
-  oop second_arg = cadr(args);      \
-  oop third_arg = caddr(args);      \
-  oop fourth_arg = cadddr(args);    \
-  oop fifth_arg = caddddr(args);    \
+  oop first_arg = first(args); args = rest(args);                       \
+  oop second_arg = first(args); args = rest(args);                      \
+  oop third_arg = first(args); args = rest(args);                       \
+  oop fourth_arg = first(args); args = rest(args);                      \
+  oop fifth_arg = first(args); args = rest(args);                       \
+  CHECKV(is_nil(args), args, "More than 5 argument provided.");         \
 
 #define UNARY_PREDICATE(name, c_tester) \
 oop name(oop args) {                    \
@@ -41,7 +38,6 @@ oop name(oop args) {                    \
   return lisp_bool(c_tester(value));    \
 }
 
-extern void check_argument_number(oop args, int expected);
 extern void init_primitives();
 extern oop lisp_bool(boolean b);
 
