@@ -81,6 +81,12 @@
        '(a b c)
        list '*error*))
 
+(parse-fail? (peg-not peg-a) '(a b))
+(eql? (list '() '(b a))
+      ((peg-not peg-a)
+       '(b a)
+       list '*error*))
+
 (eql? '(peg=>
         (peg-seq (peg= #\a) (peg= #\b) (peg= #\c))
         (applicator (lambda (a b c)
@@ -90,4 +96,3 @@
                               (c (peg= #\c)))
 		      (list c b a))))
 
-;; TODO: Test PEG-not
