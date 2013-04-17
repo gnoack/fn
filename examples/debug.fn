@@ -57,4 +57,4 @@
   (inspect-from-scratch))
 
 (defn inspect-generic (obj)
-  (println "Generic object " obj "."))
+  (println "Object " (pprint obj) "."))

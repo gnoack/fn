@@ -22,11 +22,16 @@
                                                    (string->list item)))
                                        "\""))
         ((dict? item)
-         (string-append "{"
+         (string-append "#{"
                         (string-join (map pprint-kv-pair
                                           (dict-key-value-pairs item))
                                      ", ")
                         "}"))
+        ((array? item)
+         (string-append "#["
+                        (string-join (map pprint (array->list item)) ", ")
+                        "]"))
+        ((mem-block? item) "#<MEM-BLOCK>")
         ((cons? item)
          (if (and (eq? 'quote (first item))
                   (= 2 (length item)))
@@ -45,7 +50,9 @@
         ((number? item) (int->string item 10))
         ((nil? item)    "nil")
         ((symbol? item) (symbol->string item))
-        ((type? item)   (type-name item))
+        ((type? item)   (string-append "#<TYPE "
+                                       (type-name item)
+                                       ">"))
         ((mem? item)    "#<OBJECT>")
         (true           "?UNPRINTABLE?")))
 
