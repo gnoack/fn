@@ -1,10 +1,11 @@
-(eq? 3 (send (make-array 3) 'size))
+
+(= 3 (array-size (make-array 3)))
 
 (let ((obj (make-array 3)))
-  (send obj 'set! 0 'a)
-  (send obj 'set! 1 'b)
-  (send obj 'set! 2 'c)
-  (eq? 'b (send obj 'get 1)))
+  (array-set! obj 0 'a)
+  (array-set! obj 1 'b)
+  (array-set! obj 2 'c)
+  (eq? 'b (array-ref obj 1)))
 
 (eql? (list 1 2 3)
       (array->list (list->array (list 1 2 3))))

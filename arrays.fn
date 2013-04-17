@@ -28,18 +28,22 @@
     (if (= 0 n)
         acc
       (_convert (- n 1)
-                (cons (send a 'get (- n 1)) acc))))
-  (_convert (send a 'size) (list)))
+                (cons (array-ref a (- n 1)) acc))))
+  (_convert (array-size a) (list)))
 
-(defm @array 'get (n)
+(defn array-ref (arr n)
   (assert (number? n))
-  (assert (< n (send self 'size)))
-  ($mem-get self (+ 2 n)))
+  (assert (< n (array-size arr)))
+  ($mem-get arr (+ 2 n)))
 
-(defm @array 'set! (n value)
+(defn array-set! (arr n value)
   (assert (number? n))
-  (assert (< n (send self 'size)))
-  ($mem-set! self (+ 2 n) value))
+  (assert (< n (array-size arr)))
+  ($mem-set! arr (+ 2 n) value))
 
-(defm @array 'size ()
-  ($mem-get self 1))
+(defn array-size (arr)
+  (assert (array? arr))
+  ($mem-get arr 1))
+
+(defn array? (arr)
+  (eq? @array (type-of arr)))
