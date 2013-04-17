@@ -239,7 +239,8 @@ fn_uint read_index(interpreter_state_t* state) {
 
 // TODO: Only one byte: Will it be enough?
 oop read_oop(interpreter_state_t* state) {
-  return MEM_GET(state->oop_lookups, 2 + read_byte(state));
+  // TODO: Depends on memory layout in arrays.
+  return MEM_GET(state->oop_lookups, 1 + read_byte(state));
 }
 
 oop serialize_retptr(interpreter_state_t* state) {

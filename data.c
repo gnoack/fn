@@ -17,12 +17,10 @@ fn_uint symbol_to_hash(oop symbol) {
 }
 
 
-
 oop make_array(fn_uint array_size) {
-  fn_uint header_size = 2;
+  fn_uint header_size = 1;
   oop result = mem_alloc(header_size + array_size);
   mem_set(result, 0, symbols._array);
-  mem_set(result, 1, make_smallint(array_size));  // Size
   fn_uint i;
   for (i = 0; i < array_size; i++) {
     mem_set(result, header_size + i, NIL);
@@ -31,17 +29,17 @@ oop make_array(fn_uint array_size) {
 }
 
 fn_uint array_size(oop array) {
-  return get_smallint(mem_get(array, 1));
+  return mem_size(array) - 1;
 }
 
 oop array_set(oop array, fn_uint index, oop value) {
   // mem_set catches index out of bounds already.
-  return mem_set(array, 2 + index, value);
+  return mem_set(array, 1 + index, value);
 }
 
 oop array_get(oop array, fn_uint index) {
   // mem_get catches index out of bounds already.
-  return mem_get(array, 2 + index);
+  return mem_get(array, 1 + index);
 }
 
 boolean is_array(oop array) {
