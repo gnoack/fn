@@ -9,6 +9,10 @@
 (eq? @symbol (type-of 'foobar))
 (eq? @mem-block (type-of ($make-mem-block 4)))
 
+(string=? "@type" (type-name @type))
+(string=? "@cons" (type-name @cons))
+(string=? "@mem-block" (type-name @mem-block))
+
 (eql? '(install-method! @foo 'bar
                         (lambda (self x y) (+ self x y)))
       (macroexpand '(defm @foo 'bar (x y)

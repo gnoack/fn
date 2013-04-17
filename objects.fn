@@ -3,42 +3,48 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; The type type links to itself: @type = ($make @type (make-dict))
-(def @type ($make 1 2))
+(def @type ($make 1 2 3))
 ($mem-set! @type 0 @type)
 ($mem-set! @type 1 (make-dict))
+($mem-set! @type 2 "@type")
 (defn type? (x)
   (eq? (type-of x) @type))
 
 ; @cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:
 ;  (def @cons ($make @type (make-dict)))
-(defn $patch-type! (type)
+(defn $patch-type! (type name)
   ($mem-set! type 0 @type)
-  ($mem-set! type 1 (make-dict)))
+  ($mem-set! type 1 (make-dict))
+  ($mem-set! type 2 name))
 
-($patch-type! @array)
-($patch-type! @cons)
-($patch-type! @continuation)
-($patch-type! @dframe)
-($patch-type! @dict)
-($patch-type! @frame)
-($patch-type! @string)
-($patch-type! @symbol)
+;; TODO: Refactor duplication in strings and symbols.
+($patch-type! @array "@array")
+($patch-type! @cons "@cons")
+($patch-type! @continuation "@continuation")
+($patch-type! @dframe "@dframe")
+($patch-type! @dict "@dict")
+($patch-type! @frame "@frame")
+($patch-type! @string "@string")
+($patch-type! @symbol "@symbol")
 
 ; Same procedure for @procedure.
-($patch-type! @procedure)
-($patch-type! @native-procedure)
-($patch-type! @compiled-procedure)
+($patch-type! @procedure "@procedure")
+($patch-type! @native-procedure "@native-procedure")
+($patch-type! @compiled-procedure "@compiled-procedure")
 
 ;; TODO: Supertypes?
 (defmacro deftype (name)
-  `(def ,name ($make @type (make-dict))))
+  `(def ,name ($make @type (make-dict) ,(symbol->string name))))
 
 (deftype @mem)
 (deftype @smallint)
 (deftype @character)
 (deftype @nil)
 (deftype @mem-block)
+
+(defn dict? (obj)
+  (eq? (type-of obj) @dict))
 
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
@@ -51,6 +57,9 @@
         ((mem-block? x) @mem-block)
 	((mem? x) ($mem-get x 0))))
 
+(defn type-name (type)
+  (assert (type? type))
+  ($mem-get type 2))
 
 ;;; Method definition
 

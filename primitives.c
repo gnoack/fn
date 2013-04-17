@@ -52,6 +52,11 @@ oop primitive_mem_set(oop args) {
   return mem_set(obj, get_smallint(index), value);
 }
 
+oop primitive_mem_size(oop args) {
+  PARSE_ONE_ARG(obj);
+  return make_smallint(mem_size(obj));
+}
+
 oop primitive_char_to_num(oop args) {
   PARSE_ONE_ARG(c);
   CHECKV(is_char(c), c, "Must be a char");
@@ -240,6 +245,7 @@ void init_primitives() {
   register_globally_fn("$make", primitive_mem_make);
   register_globally_fn("$mem-get", primitive_mem_get);
   register_globally_fn("$mem-set!", primitive_mem_set);
+  register_globally_fn("$mem-size", primitive_mem_size);
   register_globally_fn("char->num", primitive_char_to_num);
   register_globally_fn("num->char", primitive_num_to_char);
   register_globally_fn("string->symbol", primitive_string_to_symbol);

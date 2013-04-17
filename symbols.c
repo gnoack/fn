@@ -149,18 +149,18 @@ void init_symbols() {
 
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.
-  symbols._array = mem_alloc(2);
-  symbols._cons = mem_alloc(2);
-  symbols._continuation = mem_alloc(2);
-  symbols._dframe = mem_alloc(2);
-  symbols._dict = mem_alloc(2);
-  symbols._frame = mem_alloc(2);
-  symbols._retptr = mem_alloc(2);
-  symbols._string = mem_alloc(2);
-  symbols._symbol = mem_alloc(2);  // Must be known before creating symbols.
-  symbols._procedure = mem_alloc(2);
-  symbols._native_procedure = mem_alloc(2);
-  symbols._compiled_procedure = mem_alloc(2);
+  symbols._array = mem_alloc(3);
+  symbols._cons = mem_alloc(3);
+  symbols._continuation = mem_alloc(3);
+  symbols._dframe = mem_alloc(3);
+  symbols._dict = mem_alloc(3);
+  symbols._frame = mem_alloc(3);
+  symbols._retptr = mem_alloc(3);
+  symbols._string = mem_alloc(3);
+  symbols._symbol = mem_alloc(3);  // Must be known before creating symbols.
+  symbols._procedure = mem_alloc(3);
+  symbols._native_procedure = mem_alloc(3);
+  symbols._compiled_procedure = mem_alloc(3);
 
   symbols._if = make_symbol("if");
   symbols._def = make_symbol("def");

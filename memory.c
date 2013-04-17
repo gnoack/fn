@@ -26,6 +26,10 @@ oop mem_get(oop target, fn_uint index) {
   return target.mem[index];
 }
 
+fn_uint mem_size(oop target) {
+  return get_smallint(target.mem[-1]);
+}
+
 oop mem_raw_mem_alloc(fn_uint amount) {
   return gc_raw_memory_alloc(amount);  // in gc.c
 }

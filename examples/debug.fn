@@ -1,0 +1,60 @@
+
+(defn loadsym (lib name resulttype argtypes)
+  (let ((funcptr (_dlsym lib name))
+        (argnum  (length argtypes)))
+    (lambda (&rest args)
+      (_call_dlsym funcptr resulttype argnum argtypes args))))
+
+(defmacro @@ (module name)
+  `(dict-get ,module (quote ,name)))
+
+
+
+(def RTLD_DEFAULT 0)
+(def getenv (loadsym RTLD_DEFAULT "getenv"
+                     'str '(str)))
+
+
+(def readline
+  (progn
+    (def libreadline (_dlopen "libreadline.so"))
+
+    (def readline
+      (loadsym libreadline "readline"
+               'str '(str)))
+  
+    (def read-history
+      (loadsym libreadline "read_history"
+               'int '(str)))
+  
+    (make-module readline read-history)))
+
+
+;;; -----------------------------------------------------------
+
+
+(defn inspect (obj)
+  (cond ((mem? obj)  (inspect-mem obj))
+        (true        (inspect-generic obj))))
+
+(defn inspect-mem (obj)
+  (defn print-items (n)
+    (when (< n ($mem-size obj))
+      (println "  " n ": " (pprint ($mem-get obj n)))
+      (print-items (+ n 1))))
+  (defn inspect-from-scratch ()
+    (println)
+    (println "INSPECT " (pprint obj) ":")
+    (print-items 0)
+    (let ((input ((@@ readline readline) "Dig into: ")))
+      (when (and (not (or (nil? input)
+                          (string=? "" input)))
+                 (all? digit? (string->list input)))
+        (let ((x (string->int input)))
+          (if (<= 0 x (- ($mem-size obj) 1))
+              (inspect ($mem-get obj x))
+            (inspect-from-scratch))))))
+  (inspect-from-scratch))
+
+(defn inspect-generic (obj)
+  (println "Generic object " obj "."))

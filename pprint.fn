@@ -1,7 +1,8 @@
 
+
 (defn pprint (item)
+  ;; TODO: Array printing.
   ;; TODO: Memory consumption.
-  ;; TODO: Pretty-printing dictionaries.
   (defn string-char-escape (ch)
     ;; TODO: Some cases are missing.
     (cond ((eq? ch #\") "\\\"")
@@ -13,11 +14,19 @@
           ((eq? ch #\Tab) "Tab")
           ((eq? ch #\Space) "Space")
           (true (list->string (list ch)))))
+  (defn pprint-kv-pair (kv)
+    (string-append (pprint (first kv)) ": " (pprint (rest kv))))
   (cond ((string? item) (string-append "\""
                                        (apply string-append
                                               (map string-char-escape
                                                    (string->list item)))
                                        "\""))
+        ((dict? item)
+         (string-append "{"
+                        (string-join (map pprint-kv-pair
+                                          (dict-key-value-pairs item))
+                                     ", ")
+                        "}"))
         ((cons? item)
          (if (and (eq? 'quote (first item))
                   (= 2 (length item)))
@@ -36,6 +45,8 @@
         ((number? item) (int->string item 10))
         ((nil? item)    "nil")
         ((symbol? item) (symbol->string item))
+        ((type? item)   (type-name item))
+        ((mem? item)    "#<OBJECT>")
         (true           "?UNPRINTABLE?")))
 
 (defn display (item)
