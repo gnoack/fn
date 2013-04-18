@@ -1,6 +1,4 @@
 
-// TODO: This is a work in progress.
-// TODO: Implement high-level rules.
 grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
                       (lisp (LISP-STRING string) (LISP-EXPR expr))) {
   whitespace      ::= WHITESPACE | "//" (~"\n" ANY)+;

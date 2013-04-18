@@ -7,7 +7,7 @@
 (string=? "#\\Tab" (pprint #\Tab))
 (string=? "(1 2 3)" (pprint '(1 2 3)))
 (string=? "foo" (pprint 'foo))
-(string=? "nil" (pprint nil))
+(string=? "()" (pprint nil))
 (string=? "<NATIVE-PROCEDURE +>" (pprint +))
 (or (compiled-procedure? pprint)
     (string=? "<PROCEDURE pprint (item)>" (pprint pprint)))

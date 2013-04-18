@@ -38,3 +38,6 @@
 (defmacro import (module-clauses &rest body)
   `(let ,(expand-module-clauses module-clauses)
      ,@body))
+
+(defmacro @@ (module name)
+  `(dict-get ,module (quote ,name)))

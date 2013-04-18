@@ -16,165 +16,29 @@
 (defn peg= (item)
   (peg-terminal (lambda (x) (eq? x item)) item))
 
-(defn peg-string= (string)
-  (apply peg-seq (map peg= (string->list string))))
 
-;;; ==================================
-;;; Grammar
-;;; ==================================
+(defgrammar base-grammar ()
+  (def ANY          (peg-terminal ->true "anything"))
+  (def DIGIT        (peg-terminal digit? "digit"))
+  (def ALPHA        (peg-terminal alpha? "alphabetic"))
+  (def END-OF-INPUT peg-empty)
+  (def WHITESPACE   (peg-terminal whitespace? "whitespace"))
+  (def EPSILON      (peg-seq))
+)
 
-;; Terminals
-(def _any (peg-terminal ->true "anything"))
-(def _digit (peg-terminal digit? "digit"))
-(def _alpha (peg-terminal alpha? "alphabetic"))
+;; Generated from lisp.g
+(defgrammar lisp-grammar ((base ANY DIGIT END-OF-INPUT WHITESPACE)) (defrule comment () (peg-seq (peg= #\;) (peg* (peg-seq (peg-not (peg= #\Newline)) (peg-indirect ANY))))) (defrule whitespace () (peg-alt (peg-indirect WHITESPACE) (peg-indirect comment))) (defrule separator () (peg-alt (peg-indirect whitespace) (peg= #\() (peg= #\)) (peg-indirect END-OF-INPUT))) (defrule anything-but-separator () (peg-let ((_ (peg-not (peg-indirect separator))) (e (peg-indirect ANY))) e)) (defrule symbol () (peg-let ((_ (peg-not (peg= #\#))) (x (peg+ (peg-indirect anything-but-separator)))) (string->symbol (list->string x)))) (defrule character () (peg-let ((_ (peg= #\#)) (_ (peg= #\\)) (c (peg-alt (peg-let ((_ (peg-seq (peg= #\N) (peg= #\e) (peg= #\w) (peg= #\l) (peg= #\i) (peg= #\n) (peg= #\e)))) #\Newline) (peg-let ((_ (peg-seq (peg= #\S) (peg= #\p) (peg= #\a) (peg= #\c) (peg= #\e)))) #\Space) (peg-let ((_ (peg-seq (peg= #\T) (peg= #\a) (peg= #\b)))) #\Tab) (peg-let ((_ (peg= #\;))) #\;) (peg-indirect ANY))) (_ (peg-not (peg-indirect anything-but-separator)))) c)) (defrule escapedchar () (peg-alt (peg-let ((_ (peg-seq (peg= #\\) (peg= #\n)))) #\Newline) (peg-let ((_ (peg-seq (peg= #\\) (peg= #\t)))) #\Tab) (peg-let ((_ (peg= #\\)) (e (peg-indirect ANY))) e) (peg-indirect ANY))) (defrule stringchar () (peg-let ((_ (peg-not (peg= #\"))) (c (peg-indirect escapedchar))) c)) (defrule string () (peg-let ((_ (peg= #\")) (cs (peg* (peg-indirect stringchar))) (_ (peg= #\"))) (list->string cs))) (defrule integer () (peg-let ((ds (peg+ (peg-indirect DIGIT)))) (string->int (list->string ds)))) (defrule sexpression () (peg-let ((_ (peg= #\()) (es (peg* (peg-indirect expr))) (_ (peg* (peg-indirect whitespace))) (_ (peg= #\)))) es)) (defrule prefix-expr () (peg-alt (peg-let ((_ (peg= #\')) (e (peg-indirect expr))) (list 'quote e)) (peg-let ((_ (peg= #\`)) (e (peg-indirect expr))) (list 'quasiquote e)) (peg-let ((_ (peg-seq (peg= #\,) (peg= #\@))) (e (peg-indirect expr))) (list 'unquote-splicing e)) (peg-let ((_ (peg= #\,)) (e (peg-indirect expr))) (list 'unquote e)))) (defrule expr () (peg-let ((_ (peg* (peg-indirect whitespace))) (e (peg-alt (peg-indirect prefix-expr) (peg-indirect sexpression) (peg-indirect integer) (peg-indirect string) (peg-indirect character) (peg-indirect symbol)))) e)) (defrule expr_whitespace () (peg-let ((e (peg-indirect expr)) (_ (peg* (peg-indirect whitespace)))) e)) (defrule exprs () (peg-let ((es (peg* (peg-indirect expr))) (_ (peg* (peg-indirect whitespace)))) es)))
 
-(def _dblquote (peg= #\"))
-(def _hash (peg= #\#))
-(def _backslash (peg= #\\))
-(def _openparen (peg= #\())
-(def _closeparen (peg= #\)))
-(def _quote (peg= #\'))
-(def _comma (peg= #\,))
-(def _semicolon (peg= #\;))
-(def _backquote (peg= #\`))
-(def _at (peg= #\@))
-
-(def _comment (peg-seq _semicolon
-		       (peg* (peg-seq (peg-not (peg= #\Newline))
-                                      _any))))
-
-(def _whitespace (peg-terminal whitespace? "whitespace"))
-(def _lisp_whitespace (peg-alt _comment _whitespace))
-
-;; Indirection.
-(defn _expr (input win lose)
-  (_expr1 input win lose))
-
-;; Rules
-
-;; _integer ::= _digit+:ds  ==> (string->int (list->string ds))
-(def _integer (peg=> (peg+ _digit) (lambda (x)
-                                     (string->int (list->string x)))))
-
-;; _escapedchar ::= '\' _any:e  ==> e
-;;                | _any
-(def _escapedchar
-    (peg-alt (peg=> (peg-string= "\\n") (lambda (_) #\Newline))
-             (peg=> (peg-string= "\\t") (lambda (_) #\Tab))
-             (peg-let ((_ _backslash)
-                       (e _any))
-               e)
-	     _any))
-
-;; _string-char ::= ~'"' _escapedchar:c  ==> c
-(def _string-char (peg-let ((_ (peg-not _dblquote))
-                            (c _escapedchar))
-                    c))
-
-;; _string ::= '"' _string-char*:cs '"'  ==> (list->string cs)
-(def _string (peg-let ((_a _dblquote)
-                       (cs (peg* _string-char))
-                       (_b _dblquote))
-               (list->string cs)))
-
-;; _separator ::= _lisp_whitespace | '(' | ')' | peg-empty
-(def _separator (peg-alt _lisp_whitespace _openparen _closeparen peg-empty))
-
-;; _anything_but_separator ::= ~_separator _any:e ==> e
-(def _anything_but_separator
-  (peg-let ((_ (peg-not _separator))
-            (e _any))
-    e))
-
-;; _symbol ::= ~_hash _anything_but_separator+:x
-;;             ==> (string->symbol (list->string x))
-(def _symbol
-  (peg-let ((_a  (peg-not _hash))
-            (res (peg=> (peg+ _anything_but_separator)
-                        (lambda (x) (string->symbol (list->string x))))))
-    res))
-
-;; Helper for _literal_escapedchar
-(defn peg-result-string= (string result)
-  (peg=> (peg-string= string) (lambda (x) result)))
-
-;; _literal_escapedchar ::= ( "Newline" ==> #\Newline
-;;                          | "Space" ==> #\Space
-;;                          | "Tab" ==> #\Tab
-;;                          | _any ):x ~_anything_but_separator  ==> x
-(def _literal_escapedchar
-  (peg-let ((x (peg-alt (peg-result-string= "Newline" #\Newline)
-                        (peg-result-string= "Space" #\Space)
-                        (peg-result-string= "Tab" #\Tab)
-                        (peg-result-string= ";" #\;)
-                        _anything_but_separator))
-            (_ (peg-not (peg-not _separator))))
-    x))
-
-;; _character ::= '#' '\' _literal_escapedchar:c  ==> c
-(def _character (peg-let ((_1 _hash)
-                          (_2 _backslash)
-                          (c  _literal_escapedchar))
-                  c))
-
-;; _lisp_whitespaces ::= _lisp_whitespace*
-(def _lisp_whitespaces (peg* _lisp_whitespace))
-
-;; _sexpression ::= '(' _expr*:es _lisp_whitespaces ')'  ==> es
-(def _sexpression (peg-let ((_a _openparen)
-                            (es (peg* _expr))
-                            (_b _lisp_whitespaces)
-                            (_c _closeparen))
-                    es))
-
-;; _prefix_expr ::= '\'' _expr:e     ==> `(quote ,e)
-;;                | '`' _expr:e      ==> `(quasiquote ,e)
-;;                | ',' '@' _expr:e  ==> `(unquote-splicing ,e)
-;;                | ',' _expr:e      ==> `(unquote ,e)
-(def _prefix_expr
-  ;; Quasiquote doesn't expand the quasiquote-related macros nicely,
-  ;; so we have to write them out.  (Check against a Scheme
-  ;; implementation if you don't believe it.)
-  (peg-alt
-   (peg-let ((_ _quote) (e _expr))
-     (list 'quote e))
-   (peg-let ((_ _backquote) (e _expr))
-     (list 'quasiquote e))
-   (peg-let ((_1 _comma) (_2 _at) (e _expr))
-     (list 'unquote-splicing e))
-   (peg-let ((_ _comma) (e _expr))
-     (list 'unquote e))))
-
-;; _expr1 ::= _lisp_whitespaces ( _prefix_expr
-;;                              | _sexpression
-;;                              | _integer
-;;                              | _string
-;;                              | _character
-;;                              | _symbol ):e  ==> e
-(def _expr1 (peg-let ((_ _lisp_whitespaces)
-                      (e (peg-alt _prefix_expr
-                                  _sexpression
-                                  _integer
-                                  _string
-                                  _character
-                                  _symbol)))
-              e))
-
-;; _expr_whitespace ::= _expr:e _lisp_whitespaces ==> e
-(def _expr_whitespace
-  (peg-let ((e _expr)
-            (_ _lisp_whitespaces))
-    e))
+(set! base-grammar (base-grammar))
+(set! lisp-grammar (lisp-grammar base-grammar))
 
 ;; Used from pegs-parser (does not consume more whitespace)
-(def _lisp_expr _expr)
+(def _lisp_expr (@@ lisp-grammar expr))
 
 ;; Public interface.
 ;; Returns a list of result, rest.
 (defn read (in)
-  (_expr in
-         list
-         error))
+  ((@@ lisp-grammar expr) in list error))
 
 (defn read-and-check-empty-remainder (rule)
   (lambda (in)
@@ -185,5 +49,7 @@
 	      (print-parse-error-and-die rest "Something left.")))
 	  print-parse-error-and-die)))
 
-(def read-one (read-and-check-empty-remainder _expr_whitespace))
-(def read-all (read-and-check-empty-remainder (peg* _expr_whitespace)))
+(def read-one (read-and-check-empty-remainder
+               (@@ lisp-grammar expr_whitespace)))
+(def read-all (read-and-check-empty-remainder
+               (@@ lisp-grammar exprs)))

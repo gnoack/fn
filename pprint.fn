@@ -48,7 +48,7 @@
                         " " (pprint (lisp-procedure-lambda-list item)) ">"))
         ((char? item)   (string-append "#\\" (literal-char-escape item)))
         ((number? item) (int->string item 10))
-        ((nil? item)    "nil")
+        ((nil? item)    "()")
         ((symbol? item) (symbol->string item))
         ((type? item)   (string-append "#<TYPE "
                                        (type-name item)

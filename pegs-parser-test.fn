@@ -1,50 +1,57 @@
 
-(eql? (list '(peg= #\x) '())
-      (_pp_expr3 (string->list "\"x\"") list error))
+(->true
+ (defmacro pp (name)
+   `(@@ pegs-grammar ,name)))
 
 (eql? (list '(peg= #\x) '())
-      (_pp_expr3 (string->list " \"x\"") list error))
+      ((pp expr3) (string->list "\"x\"") list error))
+
+(eql? (list '(peg= #\x) '())
+      ((pp expr3) (string->list " \"x\"") list error))
 
 (eql? (list '(peg= #\") '())
-      (_pp_expr3 (string->list "\"\\\"\"") list error))
+      ((pp expr3) (string->list "\"\\\"\"") list error))
 
 (eql? (list '(peg= (quote foo)) '())
-      (_pp_expr3 (string->list "'foo") list error))
+      ((pp expr3) (string->list "'foo") list error))
 
 (eql? (list '(peg-indirect foo) '())
-      (_pp_expr4 (string->list "foo") list error))
+      ((pp expr4) (string->list "foo") list error))
 
 (eql? (list '(peg-indirect list-of (peg-indirect sep) (peg-indirect item))
             '())
-      (_pp_expr4 (string->list "list-of(sep, item)") list error))
+      ((pp expr4) (string->list "list-of(sep, item)") list error))
 
 (eql? (list '(peg-not (peg-indirect a))
             '())
-      (_pp_expr4 (string->list "~a")
-                 list error))
+      ((pp expr4) (string->list "~a")
+                  list error))
 
 (eql? (list (list 'var '(peg= (quote gaa)))
             '())
-      (_pp_binding (string->list "'gaa:var") list error))
+      ((pp binding) (string->list "'gaa:var") list error))
 
 (eql? (list (list 'var '(peg= (quote gaa)))
             '())
-      (_pp_binding (string->list " 'gaa:var") list error))
+      ((pp binding) (string->list " 'gaa:var") list error))
+
+(->true
+ (def pp_optional_whitespaces (peg* (pp whitespace))))
 
 (eql? (list (string->list "   ") (string->list "gaa"))
-      (_pp_optional_whitespaces (string->list "   gaa") list error))
+      (pp_optional_whitespaces (string->list "   gaa") list error))
 
 (eql? (list (list 'foo 'bar 'baz)
             '())
-      ((peg-listof* _pp_symbol _pp_optional_whitespaces)
+      (((pp listof_or_nothing) (pp symbol) pp_optional_whitespaces)
        (string->list "foo bar  baz") list error))
 
 (eql? (list (list)
             '(#\Space))
-      ((peg-listof* _pp_symbol _pp_optional_whitespaces)
+      (((pp listof_or_nothing) (pp symbol) pp_optional_whitespaces)
        (string->list " ") list error))
 
-(parse-fail? (peg-listof+ _pp_symbol _pp_optional_whitespaces)
+(parse-fail? ((pp listof) (pp symbol) pp_optional_whitespaces)
              (string->list " "))
 
 (eql? (list '(peg-let ((a (peg= (quote x)))
@@ -52,30 +59,30 @@
                        (c (peg= (quote z))))
 	       (list c b a))
             '())
-      (_pp_expr2 (string->list "'x:a 'y:b 'z:c => (list c b a)") list error))
+      ((pp expr2) (string->list "'x:a 'y:b 'z:c => (list c b a)") list error))
 
 (eql? (list '(peg-let ((a (peg= (quote x)))
                        (_ (peg= (quote y)))
                        (c (peg= #\c)))
 	       (list a c))
             '())
-      (_pp_expr2 (string->list "'x:a 'y \"c\":c => (list a c)") list error))
+      ((pp expr2) (string->list "'x:a 'y \"c\":c => (list a c)") list error))
 
 (eql? (list '(peg-seq (peg= (quote x))
                       (peg= (quote y))
                       (peg= #\c))
             '())
-      (_pp_expr2 (string->list "'x 'y \"c\"") list error))
+      ((pp expr2) (string->list "'x 'y \"c\"") list error))
 
 (eql? (list '(peg-alt (peg= (quote x))
                       (peg= (quote y)))
             '())
-      (_pp_expr1 (string->list "'x | 'y") list error))
+      ((pp expr1) (string->list "'x | 'y") list error))
 
 (eql? (list '(peg+ (peg-seq (peg-indirect a) (peg-indirect b)))
             '())
-      (_pp_expr1 (string->list "(a b)+")
-                 list error))
+      ((pp expr1) (string->list "(a b)+")
+                  list error))
 
 (eql? (list '(peg-alt (peg-let ((a (peg= (quote aa)))
                                 (b (peg-not (peg-indirect bb))))
@@ -85,14 +92,14 @@
                         c)
                       (peg= (quote d)))
             '())
-      (_pp_expr1 (string->list "'aa:a ~bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
-                 list error))
+      ((pp expr1) (string->list "'aa:a ~bb:b => (cons a b) | \"=>\" 'cc:c => c | 'd")
+                  list error))
 
 (eql? (list '(peg* (peg= 'foo)) '())
-      (_pp_expr3 (string->list "'foo*") list error))
+      ((pp expr3) (string->list "'foo*") list error))
 
 (eql? (list '(peg+ (peg= 'foo)) '())
-      (_pp_expr3 (string->list "'foo+") list error))
+      ((pp expr3) (string->list "'foo+") list error))
 
 ;; Tests expression nesting and precedence.
 (eql? (list '(peg-alt
@@ -101,33 +108,33 @@
 	        (list a b))
 	      (peg-seq (peg= 'foo) (peg= 'bar)))
             '())
-      (_pp_expr1 (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
-                 list error))
+      ((pp expr1) (string->list "\"ab\"*:a 'cd+:b => (list a b) | 'foo 'bar")
+                  list error))
 
 (eql? (list '(defrule foobar () (peg= 'baz))
             '())
-      (_pp_rule (string->list "foobar ::= 'baz;")
-                list error))
+      ((pp rule) (string->list "foobar ::= 'baz;")
+                 list error))
 
 (eql? (list '(defrule a (b c) (peg= 'baz))
             '())
-      (_pp_rule (string->list "a b c ::= 'baz;")
-                list print-parse-error-and-die))
+      ((pp rule) (string->list "a b c ::= 'baz;")
+                 list print-parse-error-and-die))
 
 (eql? (list '(defgrammar fancy ()
                (defrule foo () (peg= 'x))
                (defrule bar () (peg= 'y))) '())
-      (_pp_grammar (string->list "grammar fancy { foo ::= 'x; bar ::= 'y; }")
-                   list error))
+      ((pp grammar) (string->list "grammar fancy { foo ::= 'x; bar ::= 'y; }")
+                    list error))
 
 (eql? (list '(defgrammar trivial ()) '())
-      (_pp_grammar (string->list "grammar trivial {}")
-                   list error))
+      ((pp grammar) (string->list "grammar trivial {}")
+                    list error))
 
 ;; With imports.
 (eql? (list '(defgrammar trivial ((x A B C)
                                   (y D E))) '())
-      (_pp_grammar (string->list "grammar trivial ((x A B C) (y D E)) {}")
-                   list error))
+      ((pp grammar) (string->list "grammar trivial ((x A B C) (y D E)) {}")
+                    list error))
 
 ;; TODO: Support more characters in symbol names.
