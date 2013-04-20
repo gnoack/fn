@@ -3,15 +3,7 @@
 
 (load-grammar! "examples/lisp.g")
 
-(defgrammar base-grammar ()
-  (def ANY          _any)
-  (def DIGIT        _digit)
-  (def END-OF-INPUT peg-empty)
-  (def WHITESPACE   _whitespace)
-  (def EPSILON      (peg-seq))
-)
-
-(def parse-lisp-exprs (dict-get (lisp-grammar (base-grammar))
+(def parse-lisp-exprs (dict-get (lisp-grammar base-grammar)
                                 'exprs))
 
 (println (parse-lisp-exprs (string->list (file->string "examples/peg-parse.fn"))
