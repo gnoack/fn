@@ -1,4 +1,6 @@
-(eval (_pp_grammar
+
+;; Evaluate parsed grammar directly.
+(eval ((@@ pegs-grammar grammar)
        (string->list
         "grammar abba {
            A    ::= \"A\" | \"a\";
