@@ -5,9 +5,6 @@
     (lambda (&rest args)
       (_call_dlsym funcptr resulttype argnum argtypes args))))
 
-(defmacro @@ (module name)
-  `(dict-get ,module (quote ,name)))
-
 
 
 (def RTLD_DEFAULT 0)
