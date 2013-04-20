@@ -220,11 +220,16 @@ oop apply_compiled_lisp_procedure(oop cfn, oop args) {
   return interpret(make_frame_for_application(cfn, args), fn_code(cfn));
 }
 
+oop make_dframe_for_application(oop lfn, oop args) {
+  oop env = make_dframe(fn_env(lfn), fn_argnum(lfn));
+  destructure_lambda_list_into_dframe(fn_lambda_list(lfn), args, env, 0);
+  return env;
+}
+
 oop apply_lisp_procedure(oop fn, oop args) {
-  oop env = make_dframe(fn_env(fn), fn_argnum(fn));
-  destructure_lambda_list_into_dframe(fn_lambda_list(fn), args, env, 0);
+  oop env = make_dframe_for_application(fn, args);
   gc_protect_counter++;
-  oop result = eval_all(fn_code(fn), env);
+  oop result = eval(make_cons(symbols._progn, fn_code(fn)), env);
   gc_protect_counter--;
   return result;
 }

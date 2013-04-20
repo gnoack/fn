@@ -15,6 +15,23 @@
 oop global_env;
 oop remaining_declarations;
 
+struct {
+  boolean active;
+  oop expr;
+  oop env;
+} global_trampoline;
+
+
+oop trampoline(oop expr, oop env) {
+  global_trampoline.expr = expr;
+  global_trampoline.env = env;
+  global_trampoline.active = YES;
+  return NIL;
+}
+
+static inline
+oop eval_trampoline(oop program, oop env);
+
 void set_globally_oop(oop key, oop value) {
   // If it's a procedure, set its name.
   if (is_procedure(value)) {
@@ -57,6 +74,7 @@ void init_eval() {
   static boolean initialized = NO;
   if (initialized) return;
   global_env = make_dict(47);
+  global_trampoline.active = NO;
   remaining_declarations = NIL;
   register_globally("nil", NIL);
   register_globally("true", symbols._true);
@@ -85,13 +103,24 @@ oop eval_if(oop sexp, oop env) {
   oop else_branch = cadddr(sexp);
   oop condition_result = eval(condition, env);
   if (value_eq(condition_result, symbols._true)) {
-    return eval(then_branch, env);
+    return trampoline(then_branch, env);
   } else {
     CHECKV(value_eq(condition_result, symbols._false),
 	   condition_result,
 	  "Need true or false as condition value.");
-    return eval(else_branch, env);
+    return trampoline(else_branch, env);
   }
+}
+
+// Evaluate all expressions in the environment, return last result.
+// (Imperative).
+oop eval_all(oop expressions, oop env) {
+  CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
+  while (!is_nil(rest(expressions))) {
+    eval(first(expressions), env);  // Discarding result.
+    expressions = rest(expressions);
+  }
+  return trampoline(first(expressions), env);
 }
 
 oop eval_let(oop sexp, oop env) {
@@ -142,17 +171,6 @@ oop eval_set(oop program, oop env) {
   return new_value;
 }
 
-// Evaluate all expressions in the environment, return last result.
-// (Imperative).
-oop eval_all(oop expressions, oop env) {
-  CHECKV(is_cons(expressions), expressions, "Must be a list of expressions.");
-  while (!is_nil(rest(expressions))) {
-    eval(first(expressions), env);  // Discarding result.
-    expressions = rest(expressions);
-  }
-  return eval(first(expressions), env);
-}
-
 oop eval_progn(oop program, oop env) {
   return eval_all(rest(program), env);
 }
@@ -188,8 +206,20 @@ oop map_eval(oop list, oop env) {
   }
 }
 
-extern
-oop eval(oop program, oop env) {
+static inline
+oop apply_with_trampoline(oop values) {
+  oop fn = first(values);
+  if (is_lisp_procedure(fn)) {
+    oop env = make_dframe_for_application(fn, rest(values));
+    oop program = make_cons(symbols._progn, fn_code(fn));
+    return trampoline(program, env);
+  } else {
+    return apply(values);
+  }
+}
+
+static inline
+oop eval_trampoline(oop program, oop env) {
   //println_value(program);
   if (is_smallint(program) || is_nil(program) ||
       is_char(program) || is_string(program)) {
@@ -222,7 +252,26 @@ oop eval(oop program, oop env) {
     return eval_progn(program, env);
   }
   // Otherwise, it must be a function application.
-  return apply(map_eval(program, env));
+  return apply_with_trampoline(map_eval(program, env));
+}
+
+// Evaluate and bounce on returned trampolines.
+extern
+oop eval(oop program, oop env) {
+  oop result = NIL;
+  for (;;) {
+    global_trampoline.active = NO;
+    result = eval_trampoline(program, env);
+    if (global_trampoline.active) {
+      //printf("jumping into trampoline ");
+      //println_value(program);
+      program = global_trampoline.expr;
+      env = global_trampoline.env;
+      continue;
+    }
+    break;
+  };
+  return result;
 }
 
 extern

@@ -34,7 +34,9 @@ extern boolean is_procedure(oop fn);
 
 // TODO: Better name.
 extern oop make_frame_for_application(oop cfn, oop args);
+extern oop make_dframe_for_application(oop lfn, oop args);
 extern boolean is_compiled_lisp_procedure(oop fn);
+extern boolean is_lisp_procedure(oop fn);
 extern oop apply(oop values);
 extern oop fn_code(oop cfn);
 extern oop fn_env(oop fn);
