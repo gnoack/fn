@@ -203,7 +203,9 @@
                         `((eq? (quote ,(first (first clause))) ,value)
                           ,(second clause)))
                        ((eq? 'else (first clause))
-                        `(true ,(second clause)))))
+                        `(true ,(second clause)))
+                       (true
+                        (error "`case' clause has bad form: " (first clause)))))
                clauses)))))
 
 

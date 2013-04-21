@@ -75,7 +75,7 @@
 (defn compile-variable-read (expr environment)
   (send environment 'generate-read expr))
 
-(defn compile-literal (expr environment)
+(defn compile-literal (expr)
   `((load-value ,expr)))
 
 (defn vars-from-ll (lambda-list)
@@ -126,13 +126,13 @@
 
 (defn compile (expr environment call-style)
   (cond
-    ((number? expr)  (compile-literal expr environment))
-    ((char? expr)    (compile-literal expr environment))
+    ((number? expr)  (compile-literal expr))
+    ((char? expr)    (compile-literal expr))
     ((symbol? expr)  (compile-variable-read expr environment))
-    ((string? expr)  (compile-literal expr environment))
-    (true
+    ((string? expr)  (compile-literal expr))
+    ((cons? expr)
      (case (first expr)
-       ((quote)      (compile-literal (second expr) environment))
+       ((quote)      (compile-literal (second expr)))
        ((if)         (compile-if expr environment call-style))
        ((lambda)     (compile-lambda expr environment))
        ((let)        (compile-let expr environment call-style))
@@ -141,7 +141,9 @@
        ((progn)      (compile-sequence (rest expr) environment call-style))
        (else         (progn
                        (assert (list? expr))
-                       (compile-application expr environment call-style)))))))
+                       (compile-application expr environment call-style)))))
+    (true
+     (error "Don't know how to compile expression " expr))))
 
 
 
