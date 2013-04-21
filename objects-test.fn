@@ -18,8 +18,14 @@
       (macroexpand '(defm @foo 'bar (x y)
                           (+ self x y))))
 
+;; Before defining 'is-nil?
+(not (has-method? nil 'is-nil?))
+
 (->true (defm @nil 'is-nil? () true))
 (send nil 'is-nil?)
+
+;; After defining 'is-nil?
+(has-method? nil 'is-nil?)
 
 (->true (defm @smallint 'plus (x) (+ self x)))
 (eq? 7 (send 4 'plus 3))

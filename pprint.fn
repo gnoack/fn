@@ -53,6 +53,8 @@
         ((type? item)   (string-append "#<TYPE "
                                        (type-name item)
                                        ">"))
+        ((has-method?
+          item 'pprint) (send item 'pprint))
         ((mem? item)    "#<OBJECT>")
         (true           "?UNPRINTABLE?")))
 

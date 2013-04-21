@@ -82,6 +82,12 @@
       (apply (%method-for-type (type-of receiver) message)
              (cons receiver arguments))))
 
+(defn has-method? (receiver selector)
+  ;; Limitation: Only works for proper objects, not for functions.
+  (and (not (procedure? receiver))
+       (dict-has-key? ($mem-get (type-of receiver) 1)
+                      selector)))
+
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)
   (apply send (cons receiver (cons message arguments))))
