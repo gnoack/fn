@@ -99,11 +99,11 @@ LISP = ./translate.scm
 %.c: %.fn
 	$(LISP) $*
 
-tests: repl
-	./repl -t
+tests: fn
+	./fn -t
 
-repl: $(LISPTARGETS) $(ALLOBJECTS)
-	$(CC) $(CFLAGS) -o repl $(ALLOBJECTS) $(LIBS)
+fn: $(LISPTARGETS) $(ALLOBJECTS)
+	$(CC) $(CFLAGS) -o fn $(ALLOBJECTS) $(LIBS)
 
 clean:
 	rm -rf $(LISPTARGETS)
@@ -112,5 +112,5 @@ clean:
 	rm -rf *~
 	rm -rf \#*\#
 
-fn.img: repl
-	./repl -2 -s -x
+fn.img: fn
+	./fn -2 -s -x
