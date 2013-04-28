@@ -2,7 +2,8 @@
 -e main -s
 !#
 
-(use-modules (ice-9 format))
+(use-modules (ice-9 format)
+             (srfi srfi-1))
 
 (define (sanitize str)
   (string-map (lambda (ch)
@@ -80,30 +81,33 @@
 	(cons item
 	      (read-all input-port)))))
 
-(define (actual-convert formatter file-basename)
-  (call-with-output-file (format #f "~a.c" file-basename)
+(define (actual-convert formatter infile outfile)
+  (call-with-output-file outfile
     (lambda (out)
-      (call-with-input-file (format #f "~a.fn" file-basename)
+      (call-with-input-file infile
         (lambda (in)
           (formatter out (translate (read-all in))))))))
 
-(define (convert-prod basename)
+(define (convert-prod basename infile outfile)
   (actual-convert (make-prod-formatter basename)
-                  basename))
+                  infile outfile))
 
 (define (strip-suffix str suffix)
   (if (string-suffix? suffix str)
       (substring str 0 (- (string-length str) (string-length suffix)))
       str))
 
-(define (convert-test basename)
+(define (convert-test basename infile outfile)
   (actual-convert (make-test-formatter (strip-suffix basename "-test"))
-                  basename))
+                  infile outfile))
 
 (define (main args)
-  (for-each
-   (lambda (basename)
-     (if (string-suffix? "-test" basename)
-         (convert-test basename)
-         (convert-prod basename)))
-   (cdr args)))
+  (set! args (cdr args))
+  (unless (string=? "-o" (car args))
+    (raise "Bad command line options, please use: -o outfile infile"))
+  (let* ((outfile (cadr args))
+         (infile (caddr args))
+         (basename (last (string-split (car (string-split infile #\.)) #\/))))
+    (if (string-suffix? "-test.fn" infile)
+        (convert-test basename infile outfile)
+        (convert-prod basename infile outfile))))

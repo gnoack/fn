@@ -33,6 +33,7 @@ typedef struct {
   // C types.
   oop _c_int;
   oop _c_str;
+  oop _c_void;
 } symbols_t;
 
 extern symbols_t symbols;

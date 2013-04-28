@@ -74,9 +74,11 @@ void free_all(ptrs_to_free_t* ptrs_to_free) {
 oop c_to_oop(c_value value, oop type, ptrs_to_free_t* ptrs_to_free) {
   if (value_eq(type, symbols._c_int)) {
     return make_smallint(value.integer);
+  } else if (value_eq(type, symbols._c_void)) {
+    return NIL;
   } else {
     CHECKV(value_eq(type, symbols._c_str), type,
-           "Unsupported type specifier, use 'int or 'str.");
+           "Unsupported type specifier, use 'int, 'str or 'void.");
     if (value.ptr != NULL) {
       // TODO: Allow to specify whether the result needs to be free'd.
       // Some C functions (e.g. getenv) return pointers into funny memory areas.
@@ -118,7 +120,8 @@ oop primitive_call_dlsym(oop args) {
   fn_uint argnum = get_smallint(argnum_oop);
 
   // TODO: Is this the proper type for a generic C function?!?
-  c_value (*c_function)(c_value arg, ...) = (c_value (*)(c_value, ...)) get_smallint(sym_oop);
+  void* fn_addr = (void*) get_smallint(sym_oop);
+  c_value (*c_function)(c_value arg, ...) = (c_value (*)(c_value, ...)) fn_addr;
 
   // Keep track of pointers to free after execution,
   // in case we have to create some temporary C objects.
@@ -127,6 +130,11 @@ oop primitive_call_dlsym(oop args) {
 
   c_value c_result;
   switch (argnum) {
+  case 0: {
+    c_value (*c_function)() = (c_value (*)()) fn_addr;
+    c_result = c_function();
+  }
+    break;
   case 1: {
     GET_ARG(arg0);
     c_result = c_function(arg0);

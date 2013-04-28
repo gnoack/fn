@@ -232,32 +232,6 @@
                   ", ")
                  "}"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Readline completion.                                           ;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Called into from C.  (See REPL implementation.)
-(defn readline-completion-entry (text state global-env)
-  (when (= 0 state)
-    (set! *current-completions*
-          (readline-calculate-completions text global-env)))
-  (if (cons? *current-completions*)
-      (let ((result (first *current-completions*)))
-        (set! *current-completions* (rest *current-completions*))
-        result)
-    nil))
-
-;; TODO: Optimize memory usage?
-(defn readline-calculate-completions (text global-env)
-  (defn completions-for-dict (dict)
-    (let ((names (map (lambda (x) (symbol->string (first x)))
-                      (dict-key-value-pairs dict))))
-    (filter (lambda (name)
-              (string-prefix? text name))
-            names)))
-  (append (completions-for-dict global-env)
-          (completions-for-dict *macros*)))
-
 (defn eval (expr)
   ;; Evaluate the expression in the global environment.
   ;; This actually compiles the expression, creates a

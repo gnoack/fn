@@ -1,7 +1,7 @@
 
-LIBS = -lreadline -lrt -ldl
+LIBS = -lrt -ldl
 PROFILING_CFLAGS = -pg -fprofile-arcs
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -fPIC
 HEADERS = *.h
 OBJECTS = \
 	arrays.o \
@@ -97,7 +97,7 @@ LISPTARGETS = \
 LISP = ./translate.scm
 
 %.c: %.fn
-	$(LISP) $*
+	$(LISP) -o $@ $^
 
 tests: fn
 	./fn -t
@@ -107,10 +107,15 @@ fn: $(LISPTARGETS) $(ALLOBJECTS)
 
 clean:
 	rm -rf $(LISPTARGETS)
-	rm -rf tests-bin
+	rm -rf fn
 	rm -rf *.o
 	rm -rf *~
 	rm -rf \#*\#
+	$(MAKE) -C repl clean
 
 fn.img: fn
 	./fn -2 -s -x
+
+REPL: $(OBJECTS)
+	$(MAKE) -C repl
+

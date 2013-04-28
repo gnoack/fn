@@ -32,7 +32,6 @@ pegs.c
 pprint-test.c
 pprint.c
 primitives-test.c
-repl
 utils-test.c
 utils.c
 x86-test.c

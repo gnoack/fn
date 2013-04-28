@@ -134,6 +134,7 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   // C Types.
   accept(&symbols._c_int);
   accept(&symbols._c_str);
+  accept(&symbols._c_void);
   // Interned symbols.
   fn_uint i;
   for (i=0; i<HASH_MAP_SIZE; i++) {
@@ -176,6 +177,7 @@ void init_symbols() {
 
   symbols._c_int = make_symbol("int");
   symbols._c_str = make_symbol("str");
+  symbols._c_void = make_symbol("void");
 
   gc_register_persistent_refs(symbols_enumerate_oop_places);
 

@@ -1,0 +1,11 @@
+
+(defn load-c-module (libpath initializer-name)
+  (defn loadsym (lib name resulttype argtypes)
+    (let ((funcptr (_dlsym lib name))
+          (argnum  (length argtypes)))
+      (lambda (&rest args)
+        (_call_dlsym funcptr resulttype argnum argtypes args))))
+
+  ((loadsym (_dlopen libpath)
+            initializer-name
+            'void '())))

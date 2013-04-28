@@ -14,7 +14,7 @@
 
 #include "procedures.h"
 
-#define MAX_NATIVE_PROCEDURES 46
+#define MAX_NATIVE_PROCEDURES 256
 function native_procedures[MAX_NATIVE_PROCEDURES];
 fn_uint next_native_procedure = 0;
 

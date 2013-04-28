@@ -52,8 +52,7 @@
 #include "carcdr.h"
 
 #include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <string.h>
 
 unsigned int assertion_count = 0;
 unsigned int failure_count = 0;
@@ -165,51 +164,6 @@ void init_decls() {
   load_decls(continuations_decls());
 }
 
-#define HISTORY_FILE "/.fn_history"
-
-char* get_histfile() {
-  char* homedir = getenv("HOME");
-  char* result = malloc(strlen(homedir) + strlen(HISTORY_FILE) + 1);
-  strcpy(result, homedir);
-  strcat(result, HISTORY_FILE);
-  return result;
-}
-
-char* symbol_completion_entry(const char* text, int state) {
-  oop result =
-    apply(LIST(lookup_globally(make_symbol("readline-completion-entry")),
-               make_string(text), make_smallint(state), global_env));
-  if (is_nil(result)) {
-    return NULL;
-  } else {
-    return c_string(result);
-  }
-}
-
-void repl() {
-  char* histfile = get_histfile();
-  read_history(histfile);
-  rl_completion_entry_function = symbol_completion_entry;
-  char* input;
-  while (1) {
-    input = readline("fn> ");
-
-    if (input == NULL) {
-      puts("\nGoodbye.");
-      write_history(histfile);
-      return;
-    }
-    if (*input) {
-      add_history(input);
-    }
-    oop cmd = make_string(input);
-    oop sexpr = eval_global(LIST(make_symbol("read-one"), cmd));
-    println_value(eval_global(sexpr));
-
-    free(input);
-  }
-}
-
 void run_all_tests() {
   printf("Test execution:\n");
   /* Register tests here. */
@@ -288,7 +242,7 @@ int main(int argc, char* argv[]) {
     if (load_twice_arg) {
       /*
        * Evaluate top level forms again.  The second time, they will
-       * all be compiled.  This compiled even the more dubious stuff
+       * all be compiled.  This compiles even the more dubious stuff
        * like functions that haven't been originally defined at
        * top-level.
        */
@@ -308,7 +262,14 @@ int main(int argc, char* argv[]) {
     load_file(file_to_load);
   } else {
     puts("FN " __DATE__ ".");
-    repl();
+    puts("Usage:\n"
+         "   ./fn FILENAME\n"
+         "   ./fn -2 -S -x\n\n"
+         "-2 load all main modules twice (compiling on the second go)\n"
+         "-s save memory image after loading modules\n"
+         "-S load memory image instead of loading modules\n"
+         "-t execute tests and quit\n"
+         "-x quit without executing tests\n");
     exit(0);
   }
   return 0;
