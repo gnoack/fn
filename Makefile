@@ -3,7 +3,7 @@ LIBS = -lrt -ldl
 PROFILING_CFLAGS = -pg -fprofile-arcs
 CFLAGS = -g -Wall -fPIC
 HEADERS = *.h
-OBJECTS = \
+RTOBJECTS = \
 	arrays.o \
 	byte-buffer.o \
 	compiler.o \
@@ -59,7 +59,7 @@ TESTOBJECTS = \
 	value-test.o \
 
 
-ALLOBJECTS = $(TESTOBJECTS) $(OBJECTS)
+ALLOBJECTS = $(TESTOBJECTS) $(RTOBJECTS)
 
 LISPTARGETS = \
 	arrays-test.c \
@@ -102,8 +102,11 @@ LISP = ./translate.scm
 tests: fn
 	./fn -t
 
-fn: $(LISPTARGETS) $(ALLOBJECTS)
-	$(CC) $(CFLAGS) -o fn $(ALLOBJECTS) $(LIBS)
+fnrt.so: $(RTOBJECTS)
+	$(CC) $(CFLAGS) -shared -o fnrt.so $(RTOBJECTS)
+
+fn: $(TESTOBJECTS) fnrt.so tests.o
+	$(CC) $(CFLAGS) -o fn $(TESTOBJECTS) /home/me/proj/fn/fnrt.so $(LIBS)
 
 clean:
 	rm -rf $(LISPTARGETS)
@@ -116,6 +119,6 @@ clean:
 fn.img: fn
 	./fn -2 -s -x
 
-REPL: $(OBJECTS)
+REPL: $(RTOBJECTS)
 	$(MAKE) -C repl
 
