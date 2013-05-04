@@ -1,5 +1,5 @@
-
-#ifndef __SYMBOLS_H__
+#ifndef _SYMBOLS_H_
+#define _SYMBOLS_H_
 
 typedef struct {
   oop _if;
@@ -45,5 +45,4 @@ extern void init_symbols();
 
 extern oop make_or_lookup_symbol(const char* str);
 
-#define __SYMBOLS_H__ 0
-#endif // __SYMBOLS_H__
+#endif // _SYMBOLS_H_

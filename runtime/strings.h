@@ -1,5 +1,5 @@
-
-#ifndef __STRINGS_H__
+#ifndef _STRINGS_H_
+#define _STRINGS_H_
 
 #include "value.h"
 
@@ -8,9 +8,12 @@
  */
 extern oop make_string(const char* str);
 
+/*
+ * Converts a Lisp string into a plain ASCII C string.
+ * The caller takes ownership of the returned string.
+ */
 extern char* c_string(oop str);
 
 extern boolean is_string(oop str);
 
-#define __STRINGS_H__ 0
-#endif // __STRINGS_H__
+#endif // _STRINGS_H_

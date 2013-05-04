@@ -1,9 +1,9 @@
 #ifndef _GC_H_
+#define _GC_H_
 
 #include "value.h"
 
-extern
-unsigned int gc_protect_counter;
+extern unsigned int gc_protect_counter;
 
 extern oop gc_object_alloc(fn_uint size);
 extern boolean gc_is_object(oop obj);
@@ -20,17 +20,12 @@ extern void run_gc_soon();
  */
 typedef void (*enumerator_t)(void (*accept)(oop* ref));
 
-extern
-void gc_register_persistent_refs(enumerator_t enumerator);
+extern void gc_register_persistent_refs(enumerator_t enumerator);
 
-extern
-void gc_run();
+extern void gc_run();
 
-extern
-void gc_serialize_to_file(char* filename);
+extern void gc_serialize_to_file(char* filename);
 
-extern
-void gc_deserialize_from_file(char* filename);
+extern void gc_deserialize_from_file(char* filename);
 
-#define _GC_H_ 0
 #endif  // _GC_H_

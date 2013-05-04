@@ -1,4 +1,5 @@
 #ifndef _PRIMITIVES_H_
+#define _PRIMITIVES_H_
 
 #include "value.h"
 
@@ -41,5 +42,4 @@ oop name(oop args) {                    \
 extern void init_primitives();
 extern oop lisp_bool(boolean b);
 
-#define _PRIMITIVES_H_ 0
 #endif  // _PRIMITIVES_H_

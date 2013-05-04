@@ -1,6 +1,5 @@
-
 #ifndef _CONS_H_
-#define _CONS_H_ 1
+#define _CONS_H_
 
 #include "value.h"
 

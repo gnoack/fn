@@ -1,3 +1,5 @@
+#ifndef _CARCDR_H_
+#define _CARCDR_H_
 
 #include "cons.h"
 
@@ -12,3 +14,5 @@
 #define cddddr(x) cdddr(cdr(x))
 #define caddddr(x) cadddr(cdr(x))
 #define cdddddr(x) cadddr(cdr(x))
+
+#endif  // _CARCDR_H_

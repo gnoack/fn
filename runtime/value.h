@@ -1,6 +1,5 @@
-
 #ifndef _VALUE_H_
-#define _VALUE_H_ 1
+#define _VALUE_H_
 
 #include <limits.h>
 #include <stdint.h>

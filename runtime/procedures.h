@@ -1,5 +1,5 @@
-
-#ifndef __PROCEDURES_H__
+#ifndef _PROCEDURES_H_
+#define _PROCEDURES_H_
 
 #include "value.h"
 #include "interpreter.h"
@@ -50,5 +50,4 @@ extern int apply_stack_pos;
 
 extern void init_procedures();
 
-#define __PROCEDURES_H__ 0
-#endif // __PROCEDURES_H__
+#endif  // _PROCEDURES_H_

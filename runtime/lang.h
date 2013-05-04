@@ -3,7 +3,6 @@
 
 #include "value.h"
 
-extern
-oop lang_decls();
+extern oop lang_decls();
 
 #endif  // _LANG_H_

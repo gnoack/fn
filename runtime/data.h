@@ -1,4 +1,5 @@
 #ifndef _DATA_H_
+#define _DATA_H_
 
 #include "value.h"
 
@@ -25,5 +26,4 @@ extern oop dframe_get(oop dframe, oop key);
 
 extern void init_data();
 
-#define _DATA_H_ 0
 #endif  // _DATA_H_
