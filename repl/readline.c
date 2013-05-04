@@ -1,8 +1,8 @@
-#include "../value.h"
-#include "../eval.h"
-#include "../primitives.h"
-#include "../cons.h"
-#include "../strings.h"
+#include "runtime/value.h"
+#include "runtime/eval.h"
+#include "runtime/primitives.h"
+#include "runtime/cons.h"
+#include "runtime/strings.h"
 
 #include <stdio.h>
 #include <readline/readline.h>

@@ -38,3 +38,6 @@ x86-test.c
 x86.c
 .emacs*
 fn.img*
+fn
+fnrt.so
+

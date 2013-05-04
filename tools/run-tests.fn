@@ -1,0 +1,26 @@
+
+(def *assertions-executed* 0)
+
+(defmacro inc! (x)
+  `(set! ,x (+ 1 ,x)))
+
+(defn run-test-file (filename)
+  (dolist (item (read-all (file->string filename)))
+    (assert (eval item))
+    (inc! *assertions-executed*)
+    (writeout "."))
+  (println))
+
+(defn run-all-tests (filenames)
+  (dolist (filename filenames)
+    (writeout filename)
+    (writeout ": ")
+    (run-test-file filename))
+
+  (println *assertions-executed* " assertions executed, 0 failures.")
+  (println "Well done!"))
+
+(when (empty? *args*)
+  (error "You need to specify at least one file."))
+
+(run-all-tests *args*)

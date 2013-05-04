@@ -6,7 +6,7 @@ all: $(MODULES)
 clean:
 	rm -f *.o *.so
 
-CFLAGS = -fPIC
+CFLAGS = -I.. -fPIC
 
 readline.so: readline.o
 	cc $(CFLAGS) -shared -o readline.so readline.o -lreadline

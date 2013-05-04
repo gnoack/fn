@@ -1,34 +1,4 @@
 
-(defn loadsym (lib name resulttype argtypes)
-  (let ((funcptr (_dlsym lib name))
-        (argnum  (length argtypes)))
-    (lambda (&rest args)
-      (_call_dlsym funcptr resulttype argnum argtypes args))))
-
-
-
-(def RTLD_DEFAULT 0)
-(def getenv (loadsym RTLD_DEFAULT "getenv"
-                     'str '(str)))
-
-
-(def readline
-  (progn
-    (def libreadline (_dlopen "libreadline.so"))
-
-    (def readline
-      (loadsym libreadline "readline"
-               'str '(str)))
-  
-    (def read-history
-      (loadsym libreadline "read_history"
-               'int '(str)))
-  
-    (make-module readline read-history)))
-
-
-;;; -----------------------------------------------------------
-
 
 (defn inspect (obj)
   (cond ((mem? obj)  (inspect-mem obj))
@@ -43,7 +13,7 @@
     (println)
     (println "INSPECT " (pprint obj) ":")
     (print-items 0)
-    (let ((input ((@@ readline readline) "Dig into: ")))
+    (let ((input (readline "Dig into: ")))
       (when (and (not (or (nil? input)
                           (string=? "" input)))
                  (all? digit? (string->list input)))

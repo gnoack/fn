@@ -1,5 +1,7 @@
+#ifndef _TESTS_H_
+#define _TESTS_H_
 
-#include "value.h"
+#include "runtime/value.h"
 
 /* Fail a tests. Use the FAIL macro to call this. */
 extern
@@ -46,6 +48,4 @@ void assert_nil(const char* filename,
 #define TEST(name) void name()
 #define TESTRUN(name) name();
 
-extern
-void run_lisp_tests(oop tests);
-
+#endif  // _TESTS_H_

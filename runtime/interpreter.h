@@ -1,4 +1,5 @@
 #ifndef _INTERPRETER_H_
+#define _INTERPRETER_H_
 
 #include "value.h"
 
@@ -48,5 +49,4 @@ typedef struct {
 #define BC_RESTORE_CONTINUATION 14
 #define BC_TAIL_CALL_APPLY 15
 
-#define _INTERPRETER_H_ 0
 #endif  // _INTERPRETER_H_
