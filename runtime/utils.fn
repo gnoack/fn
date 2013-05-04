@@ -241,4 +241,5 @@
       (make-compiled-procedure nil '() code nil))))
 
 (defn load-file (filename)
+  ;; TODO: Break abstraction and cache compiled expressions.
   (map eval (read-all (file->string filename))))

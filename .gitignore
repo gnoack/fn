@@ -40,4 +40,5 @@ x86.c
 fn.img*
 fn
 fnrt.so
+readline.so
 
