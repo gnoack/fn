@@ -2,6 +2,7 @@
 (def *serialize-prefix-nil* (char->num #\0))
 (def *serialize-prefix-cons* (char->num #\.))
 (def *serialize-prefix-string* (char->num #\"))
+(def *serialize-prefix-symbol* (char->num #\S))
 (def *serialize-prefix-mem-block* (char->num #\#))
 
 (defn $mem-for-each-byte! (mem start-idx end-idx action!)
@@ -19,6 +20,10 @@
         (write-byte! *serialize-prefix-mem-block*)
         (serialize! ($mem-block-size item) write-byte!)
         ($mem-for-each-byte! item 0 ($mem-block-size item) write-byte!)))
+     ((eq? type @symbol)
+      (progn
+        (write-byte! *serialize-prefix-symbol*)
+        (serialize! (symbol->string item) write-byte!)))
      ((eq? type @string)
       (progn
         (write-byte! *serialize-prefix-string*)
@@ -56,6 +61,8 @@
      ((eq? type-prefix *serialize-prefix-cons*)
       (cons (deserialize! read-byte!)
             (deserialize! read-byte!)))
+     ((eq? type-prefix *serialize-prefix-symbol*)
+      (string->symbol (deserialize! read-byte!)))
      ((eq? type-prefix *serialize-prefix-string*)
       (let ((len (deserialize! read-byte!)))
         ($make @string len 0
