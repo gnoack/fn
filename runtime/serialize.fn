@@ -6,6 +6,7 @@
 (def *serialize-prefix-string* (char->num #\"))
 (def *serialize-prefix-symbol* (char->num #\S))
 (def *serialize-prefix-mem-block* (char->num #\#))
+(def *serialize-prefix-compiled-procedure* (char->num #\B))
 
 (defn $mem-for-each-byte! (mem start-idx end-idx action!)
   (when (< start-idx end-idx)
@@ -17,6 +18,14 @@
     (cond
      ((eq? type @nil)
       (write-byte! *serialize-prefix-nil*))
+     ((eq? type @compiled-procedure)
+      (progn
+        (write-byte! *serialize-prefix-compiled-procedure*)
+        (unless (nil? ($mem-get item 4))
+          (error "Can only serialize procedures in global environment."))
+        (serialize! ($mem-get item 1) write-byte!)
+        (serialize! ($mem-get item 2) write-byte!)
+        (serialize! ($mem-get item 3) write-byte!)))
      ((eq? type @mem-block)
       (progn
         (write-byte! *serialize-prefix-mem-block*)
@@ -101,6 +110,11 @@
          (* (read-byte!) 65536)
          (* (read-byte!) 256)
          (read-byte!)))
+     ((eq? type-prefix *serialize-prefix-compiled-procedure*)
+      (make-compiled-procedure (deserialize! read-byte!)
+                               (deserialize! read-byte!)
+                               (deserialize! read-byte!)
+                               nil))
      (true
       (error "Unsupported type for deserialization: "
              (num->char type-prefix))))))

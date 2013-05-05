@@ -57,3 +57,11 @@
    (eql? (array->list a)
          (array->list b)))
  (list->array (list 1 2 3 4)))
+
+(eq? 42
+     ((deserialize-from-list
+       (serialize-to-list
+        (make-compiled-procedure
+         'name '()
+         (compile-and-assemble-expr-for-global-eval '(+ 40 2))
+         nil)))))

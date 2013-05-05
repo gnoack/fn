@@ -25,6 +25,7 @@
 ($patch-type! @dframe "@dframe")
 ($patch-type! @dict "@dict")
 ($patch-type! @frame "@frame")
+($patch-type! @retptr "@retptr")
 ($patch-type! @string "@string")
 ($patch-type! @symbol "@symbol")
 
