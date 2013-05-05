@@ -22,9 +22,6 @@ runtime/fnrt.so:
 repl/readline.so:
 	$(MAKE) -C repl
 
-REPL: fn fn.img repl/readline.so
-	$(MAKE) -C repl
-
 tests: fn fn.img
 	$(MAKE) -C runtime ctests
 	./fn -S tools/run-tests.fn `find . -name "*-test.fn"`
