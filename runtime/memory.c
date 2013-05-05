@@ -35,22 +35,29 @@ oop mem_raw_mem_alloc(fn_uint amount) {
 }
 
 oop mem_raw_mem_get(oop target, fn_uint index) {
-  CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
+  // Type check for target done in mem_raw_mem_size.
   CHECK(0 <= index, "Need 0 <= index.");
-  CHECKV(index < sizeof(oop) * (get_smallint(target.mem[-1])),
-         target.mem[-1],
+  CHECKV(index < mem_raw_mem_size(target),
+         make_smallint(mem_raw_mem_size(target)),
          "Need index < range. (showing range / sizeof(oop))");
   unsigned char* ptr = (unsigned char*) target.mem;
   return make_smallint((fn_uint) ptr[index]);
 }
 
 void mem_raw_mem_set(oop target, fn_uint index, fn_uint value) {
-  CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
+  // Type check for target done in mem_raw_mem_size.
   CHECK(0 <= value && value <= 255, "Need value in byte range.");
   CHECK(0 <= index, "Need 0 <= index.");
-  CHECKV(index < sizeof(oop) * (get_smallint(target.mem[-1])),
-         target.mem[-1],
+  CHECKV(index < mem_raw_mem_size(target),
+         make_smallint(mem_raw_mem_size(target)),
          "Need index < range. (showing range / sizeof(oop))");
   unsigned char* ptr = (unsigned char*) target.mem;
   ptr[index] = (unsigned char) value;
+}
+
+// NOTE: This returns the actual allocated size, so that may be
+// higher than what was requested on allocation.
+fn_uint mem_raw_mem_size(oop target) {
+  CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
+  return sizeof(oop) * (get_smallint(target.mem[-1]));
 }

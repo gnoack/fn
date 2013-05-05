@@ -6,7 +6,7 @@
 
 (defn run-test-file (filename)
   (dolist (item (read-all (file->string filename)))
-    (assert (eval item))
+    (eval `(assert ,item))
     (inc! *assertions-executed*)
     (writeout "."))
   (println))
