@@ -48,4 +48,12 @@
 
 (roundtrip-serializes? eq? 'some-symbol)
 
-;; TODO: Serialize characters.
+(roundtrip-serializes? eq? #\a)
+(roundtrip-serializes? eq? #\#)
+(roundtrip-serializes? eq? #\,)
+
+(roundtrip-serializes?
+ (lambda (a b)
+   (eql? (array->list a)
+         (array->list b)))
+ (list->array (list 1 2 3 4)))

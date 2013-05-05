@@ -1,6 +1,8 @@
 (def *serialize-prefix-smallint* (char->num #\i))
 (def *serialize-prefix-nil* (char->num #\0))
 (def *serialize-prefix-cons* (char->num #\.))
+(def *serialize-prefix-array* (char->num #\[))
+(def *serialize-prefix-character* (char->num #\c))
 (def *serialize-prefix-string* (char->num #\"))
 (def *serialize-prefix-symbol* (char->num #\S))
 (def *serialize-prefix-mem-block* (char->num #\#))
@@ -24,6 +26,12 @@
       (progn
         (write-byte! *serialize-prefix-symbol*)
         (serialize! (symbol->string item) write-byte!)))
+     ((eq? type @array)
+      (progn
+        (write-byte! *serialize-prefix-array*)
+        (serialize! (array-size item) write-byte!)
+        (dolist (array-item (array->list item))
+          (serialize! array-item write-byte!))))
      ((eq? type @string)
       (progn
         (write-byte! *serialize-prefix-string*)
@@ -44,6 +52,10 @@
         (write-byte! (mod (/ item 65536) 256))
         (write-byte! (mod (/ item 256) 256))
         (write-byte! (mod item 256))))
+     ((eq? type @character)
+      (progn
+        (write-byte! *serialize-prefix-character*)
+        (write-byte! (char->num item))))
      (true
       (error "Unsupported type for serialization: " type)))))
 
@@ -54,6 +66,13 @@
         (deserialize-into-mem-block! target (+ 1 start-idx) end-idx read-byte!))
     target))
 
+(defn deserialize-into-array! (target start-idx end-idx read-byte!)
+  (if (< start-idx end-idx)
+      (progn
+        (array-set! target start-idx (deserialize! read-byte!))
+        (deserialize-into-array! target (+ 1 start-idx) end-idx read-byte!))
+    target))
+
 (defn deserialize! (read-byte!)
   (let ((type-prefix (read-byte!)))
     (cond
@@ -61,6 +80,11 @@
      ((eq? type-prefix *serialize-prefix-cons*)
       (cons (deserialize! read-byte!)
             (deserialize! read-byte!)))
+     ((eq? type-prefix *serialize-prefix-array*)
+      (let ((size (deserialize! read-byte!)))
+        (deserialize-into-array! (make-array size) 0 size read-byte!)))
+     ((eq? type-prefix *serialize-prefix-character*)
+      (num->char (read-byte!)))
      ((eq? type-prefix *serialize-prefix-symbol*)
       (string->symbol (deserialize! read-byte!)))
      ((eq? type-prefix *serialize-prefix-string*)
