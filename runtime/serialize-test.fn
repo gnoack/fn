@@ -47,3 +47,5 @@
 (roundtrip-serializes? string=? (substring "Hello, world!" 7 12))
 
 (roundtrip-serializes? eq? 'some-symbol)
+
+;; TODO: Serialize characters.
