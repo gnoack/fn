@@ -1,0 +1,47 @@
+(->true
+  (load-file "runtime/serialize.fn")
+  (defn serialize-to-list (value)
+    (let ((buf '()))
+      (serialize! value
+                  (lambda (byte)
+                    (set! buf (cons byte buf))))
+      (reverse buf)))
+  (defn deserialize-from-list (serialized)
+    (deserialize! (lambda ()
+                    (when (nil? serialized)
+                      (error "Trying to read from empty input."))
+                    (let ((byte (first serialized)))
+                      (set! serialized (rest serialized))
+                      byte))))
+  (defn serializes? (value serialized)
+    (eql? serialized (serialize-to-list value)))
+  (defn deserializes? (value serialized)
+    (eql? value (deserialize-from-list serialized)))
+  (defn serialize-eq? (value serialized)
+    (and (serializes? value serialized)
+         (deserializes? value serialized)))
+  (defn roundtrip-serializes? (equiv? value)
+    (equiv? value (deserialize-from-list (serialize-to-list value)))))
+
+(serialize-eq? 2000 (list (char->num #\i) 0 0 7 208))
+(roundtrip-serializes? eq? 42)
+(roundtrip-serializes? eq? 999)
+(roundtrip-serializes? eq? 100000)
+(roundtrip-serializes? eq? 20000000)
+
+(roundtrip-serializes? eq? nil)
+
+(roundtrip-serializes? eql? (cons 1 2))
+(roundtrip-serializes? eql? (list 1 2 3 4 5))
+
+(roundtrip-serializes?
+ (lambda (a b)
+   ($mem-block=? a 0 b 0 3))
+ (let ((buf ($make-mem-block 3)))
+   ($mem-block-byte-set! buf 0 42)
+   ($mem-block-byte-set! buf 1 23)
+   ($mem-block-byte-set! buf 2 99)
+   buf))
+
+(roundtrip-serializes? string=? "Hello, world.")
+(roundtrip-serializes? string=? (substring "Hello, world!" 7 12))

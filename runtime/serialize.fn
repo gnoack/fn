@@ -1,0 +1,75 @@
+(def *serialize-prefix-smallint* (char->num #\i))
+(def *serialize-prefix-nil* (char->num #\0))
+(def *serialize-prefix-cons* (char->num #\.))
+(def *serialize-prefix-string* (char->num #\"))
+(def *serialize-prefix-mem-block* (char->num #\#))
+
+(defn $mem-for-each-byte! (mem start-idx end-idx action!)
+  (when (< start-idx end-idx)
+    (action! ($mem-block-byte-get mem start-idx))
+    ($mem-for-each-byte! mem (+ 1 start-idx) end-idx action!)))
+
+(defn serialize! (item write-byte!)
+  (let ((type (type-of item)))
+    (cond
+     ((eq? type @nil)
+      (write-byte! *serialize-prefix-nil*))
+     ((eq? type @mem-block)
+      (progn
+        (write-byte! *serialize-prefix-mem-block*)
+        (serialize! ($mem-block-size item) write-byte!)
+        ($mem-for-each-byte! item 0 ($mem-block-size item) write-byte!)))
+     ((eq? type @string)
+      (progn
+        (write-byte! *serialize-prefix-string*)
+        (serialize! (string-size item) write-byte!)
+        ($mem-for-each-byte! (%string-raw item)
+                             (%string-offset item)
+                             (+ (%string-offset item) (string-size item))
+                             write-byte!)))
+     ((eq? type @cons)
+      (progn
+        (write-byte! *serialize-prefix-cons*)
+        (serialize! (first item) write-byte!)
+        (serialize! (rest item) write-byte!)))
+     ((eq? type @smallint)
+      (progn
+        (write-byte! *serialize-prefix-smallint*)
+        (write-byte! (mod (/ item 16777216) 256))
+        (write-byte! (mod (/ item 65536) 256))
+        (write-byte! (mod (/ item 256) 256))
+        (write-byte! (mod item 256))))
+     (true
+      (error "Unsupported type for serialization: " type)))))
+
+(defn deserialize-into-mem-block! (target start-idx end-idx read-byte!)
+  (if (< start-idx end-idx)
+      (progn
+        ($mem-block-byte-set! target start-idx (read-byte!))
+        (deserialize-into-mem-block! target (+ 1 start-idx) end-idx read-byte!))
+    target))
+
+(defn deserialize! (read-byte!)
+  (let ((type-prefix (read-byte!)))
+    (cond
+     ((eq? type-prefix *serialize-prefix-nil*) nil)
+     ((eq? type-prefix *serialize-prefix-cons*)
+      (cons (deserialize! read-byte!)
+            (deserialize! read-byte!)))
+     ((eq? type-prefix *serialize-prefix-string*)
+      (let ((len (deserialize! read-byte!)))
+        ($make @string len 0
+               (deserialize-into-mem-block!
+                ($make-mem-block len) 0 len read-byte!))))
+     ((eq? type-prefix *serialize-prefix-mem-block*)
+      (let ((size (deserialize! read-byte!)))
+        (deserialize-into-mem-block! ($make-mem-block size)
+                                     0 size read-byte!)))
+     ((eq? type-prefix *serialize-prefix-smallint*)
+      (+ (* (read-byte!) 16777216)
+         (* (read-byte!) 65536)
+         (* (read-byte!) 256)
+         (read-byte!)))
+     (true
+      (error "Unsupported type for deserialization: "
+             (num->char type-prefix))))))
