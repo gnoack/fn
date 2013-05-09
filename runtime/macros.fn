@@ -245,6 +245,9 @@
 (defmacro add-to-list! (name value)
   `(set! ,name (cons ,value ,name)))
 
+(defmacro inc! (name)
+  `(set! ,name (+ 1 ,name)))
+
 ;; One-sided `if' for imperative code.
 (defmacro when (condition &rest body)
   `(if ,condition

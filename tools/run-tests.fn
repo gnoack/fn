@@ -1,9 +1,6 @@
-
 (def *assertions-executed* 0)
 
-(defmacro inc! (x)
-  `(set! ,x (+ 1 ,x)))
-
+;; TODO: Cache compiled test file contents.
 (defn run-test-file (filename)
   (dolist (item (read-all (file->string filename)))
     (eval `(assert ,item))

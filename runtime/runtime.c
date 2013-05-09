@@ -18,6 +18,7 @@
 #include "pegs.h"
 #include "pprint.h"
 #include "primitives.h"
+#include "serialize.h"
 #include "strings.h"
 #include "symbols.h"
 #include "utils.h"
@@ -51,6 +52,7 @@ void fn_runtime_init_lisp_decls() {
   load_decls(pprint_decls());
   load_decls(byte_buffer_decls());
   load_decls(compiler_decls());
+  load_decls(serialize_decls());
   load_decls(continuations_decls());
 }
 

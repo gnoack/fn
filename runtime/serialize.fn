@@ -13,6 +13,26 @@
     (action! ($mem-block-byte-get mem start-idx))
     ($mem-for-each-byte! mem (+ 1 start-idx) end-idx action!)))
 
+(defn serialize-integer! (n write-byte!)
+  ;; flag is 128 or 0, depending on whether high-bit is set.
+  (defn write-bytes! (n flag)
+    (if (< n 128)
+        (write-byte! (+ flag n))
+      (progn
+        (write-bytes! (/ n 128) 128)
+        (write-byte! (+ flag (mod n 128))))))
+  (write-bytes! n 0))
+
+(defn deserialize-integer! (read-byte!)
+  (defn read-bytes! (acc)
+    (let ((byte (read-byte!)))
+      ;; TODO: This checks for the most significant bit.
+      (if (< byte 128)
+          (+ (* 128 acc) byte)
+        (read-bytes! (+ (* 128 acc)
+                        (- byte 128))))))
+  (read-bytes! 0))
+
 (defn serialize! (item write-byte!)
   (let ((type (type-of item)))
     (cond
@@ -57,10 +77,7 @@
      ((eq? type @smallint)
       (progn
         (write-byte! *serialize-prefix-smallint*)
-        (write-byte! (mod (/ item 16777216) 256))
-        (write-byte! (mod (/ item 65536) 256))
-        (write-byte! (mod (/ item 256) 256))
-        (write-byte! (mod item 256))))
+        (serialize-integer! item write-byte!)))
      ((eq? type @character)
       (progn
         (write-byte! *serialize-prefix-character*)
@@ -106,10 +123,7 @@
         (deserialize-into-mem-block! ($make-mem-block size)
                                      0 size read-byte!)))
      ((eq? type-prefix *serialize-prefix-smallint*)
-      (+ (* (read-byte!) 16777216)
-         (* (read-byte!) 65536)
-         (* (read-byte!) 256)
-         (read-byte!)))
+      (deserialize-integer! read-byte!))
      ((eq? type-prefix *serialize-prefix-compiled-procedure*)
       (make-compiled-procedure (deserialize! read-byte!)
                                (deserialize! read-byte!)

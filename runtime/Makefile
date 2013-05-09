@@ -26,6 +26,7 @@ RTOBJECTS = \
 	primitives.o \
 	procedures.o \
 	runtime.o \
+	serialize.o \
 	strings.o \
 	symbols.o \
 	utils.o \
@@ -48,11 +49,12 @@ LISPTARGETS = \
 	lang.c \
 	macros.c \
 	objects.c \
-	parser.c \
 	modules.c \
+	parser.c \
 	pegs-parser.c \
 	pegs.c \
 	pprint.c \
+	serialize.c \
 	utils.c \
 
 LISP = ../tools/translate.scm

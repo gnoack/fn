@@ -16,12 +16,15 @@ clean:
 fn.img: fn
 	./fn -2 -s -x
 
-runtime/fnrt.so:
+runtime/fnrt.so: force_look
 	$(MAKE) -C runtime -j8 fnrt.so
 
-repl/readline.so:
+repl/readline.so: force_look
 	$(MAKE) -C repl
 
 tests: fn fn.img
 	$(MAKE) -C runtime ctests
 	./fn -S tools/run-tests.fn `find . -name "*-test.fn"`
+
+force_look:
+	@true

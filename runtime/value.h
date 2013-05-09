@@ -67,7 +67,7 @@ extern oop make_smallint(fn_uint i);
 
 extern oop make_symbol(const char* str);
 
-extern oop make_char(const char c);
+extern oop make_char(const unsigned char c);
 
 extern boolean is_nil(oop a);
 
@@ -83,7 +83,7 @@ extern boolean is_char(oop v);
 
 extern fn_uint get_smallint(oop v);
 
-extern char get_char(oop v);
+extern unsigned char get_char(oop v);
 
 // Returned object is immutable, forever, and owned by the symbol.
 extern const char* get_symbol(oop v);

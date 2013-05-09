@@ -65,4 +65,5 @@
 (eql? (list 'a 'b 'c)
       (reduce-right cons (list 'a 'b 'c) nil))
 
-;; Readline completion.
+;; Evaluation
+(eq? 6 (eval '(+ 1 2 3)))

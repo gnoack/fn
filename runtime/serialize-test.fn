@@ -23,7 +23,8 @@
   (defn roundtrip-serializes? (equiv? value)
     (equiv? value (deserialize-from-list (serialize-to-list value)))))
 
-(serialize-eq? 2000 (list (char->num #\i) 0 0 7 208))
+(serialize-eq? 6 (list (char->num #\i) 6))
+(serialize-eq? (+ (* 3 128) 4) (list (char->num #\i) (+ 128 3) 4))
 (roundtrip-serializes? eq? 42)
 (roundtrip-serializes? eq? 999)
 (roundtrip-serializes? eq? 100000)

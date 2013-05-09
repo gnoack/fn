@@ -236,10 +236,64 @@
   ;; Evaluate the expression in the global environment.
   ;; This actually compiles the expression, creates a
   ;; zero-argument function from it, and calls that.
-  ((let ((code (compile-and-assemble-expr-for-global-eval
-		(macroexpand expr))))
-      (make-compiled-procedure nil '() code nil))))
+  ((compile-top-level-expr expr)))
+
+;; TODO: Move caching code to serialization module.
+(defn serialize-to-file! (filename item)
+  (let ((buf ($make-mem-block 256))
+        (pos 0)
+        (file-handle (fopen filename "w")))
+    (defn flush! ()
+      (when (< 0 pos)
+        (fwrite file-handle buf pos)
+        (set! pos 0)))
+    (defn write-byte! (byte)
+      (when (= pos 256)
+        (flush!))
+      ($mem-block-byte-set! buf pos byte)
+      (inc! pos))
+
+    ;; TODO: Use `unwind-handler'.
+    (serialize! item write-byte!)
+    (flush!)
+    (fclose file-handle)))
+
+(defn deserialize-from-file! (filename win lose)
+  (let ((contents (file->string filename))
+        (pos 0))
+    (if (string? contents)
+        (win (deserialize!
+              (lambda ()
+                (unless (< pos (string-size contents))
+                  (error "Trying to read beyond input at pos " pos))
+                (inc! pos)
+                (char->num (string-at contents (- pos 1))))))
+      (lose))))
+
+(defn deserialize-from-cache-file! (cache-filename min-timestamp calculate)
+  (defn calculate-and-save! ()
+    (let ((result (calculate)))
+      (serialize-to-file! cache-filename result)
+      result))
+  (let ((cache-timestamp (file-timestamp cache-filename)))
+    (if (and (not (nil? cache-timestamp))
+             (<= min-timestamp cache-timestamp))
+        (deserialize-from-file! cache-filename identity
+                                calculate-and-save!)
+      (calculate-and-save!))))
+
+(defn cached-load-file! (filename)
+  (map (lambda (proc) (proc))
+       (deserialize-from-cache-file!
+        (string-append filename "c")
+        (file-timestamp filename)
+        (lambda () (map compile-top-level-expr
+                        (read-all (file->string filename)))))))
+
+;; True if module loading should be cached.
+(def *module-caching* true)
 
 (defn load-file (filename)
-  ;; TODO: Break abstraction and cache compiled expressions.
-  (map eval (read-all (file->string filename))))
+  (if *module-caching*
+      (cached-load-file! filename)
+    (map eval (read-all (file->string filename)))))

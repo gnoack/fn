@@ -27,7 +27,7 @@ oop make_symbol(const char* str) {
   return make_or_lookup_symbol(str);
 }
 
-oop make_char(const char c) {
+oop make_char(const unsigned char c) {
   oop a;
   a.smallint = char_start + ((fn_uint)c << 2);
   return a;
@@ -81,7 +81,7 @@ const char* get_symbol(oop v) {
   return (char*) mem_get(v, 1).mem;
 }
 
-char get_char(oop v) {
+unsigned char get_char(oop v) {
   CHECKV(is_char(v), v, "Must be a character");
-  return (char) ((v.smallint - char_start) >> 2);
+  return (unsigned char) ((v.smallint - char_start) >> 2);
 }
