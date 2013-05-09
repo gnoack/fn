@@ -238,8 +238,8 @@
   ;; zero-argument function from it, and calls that.
   ((compile-top-level-expr expr)))
 
-;; TODO: Move caching code to serialization module.
-(defn serialize-to-file! (filename item)
+;; TODO: Move file code to another module.
+(defn with-file-writer (filename callback)
   (let ((buf ($make-mem-block 256))
         (pos 0)
         (file-handle (fopen filename "w")))
@@ -254,9 +254,18 @@
       (inc! pos))
 
     ;; TODO: Use `unwind-handler'.
-    (serialize! item write-byte!)
-    (flush!)
-    (fclose file-handle)))
+    (dynamic-wind ->true
+                  (lambda () (callback write-byte!))
+                  (lambda ()
+                    (flush!)
+                    (fclose file-handle)))))
+
+;; TODO: Move caching code to serialization module.
+(defn serialize-to-file! (filename item)
+  (with-file-writer
+   filename
+   (lambda (write-byte!)
+     (serialize! item write-byte!))))
 
 (defn deserialize-from-file! (filename win lose)
   (let ((contents (file->string filename))
