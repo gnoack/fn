@@ -67,6 +67,14 @@
         ($mem-populate-from-byte-list trg (+ 1 trg-offset) (rest src-list)))
       trg))
 
+(defn $mem-populate-from-mutable-reader! (trg trg-offset read-byte! size)
+  (if (< 0 size)
+      (progn
+        ($mem-block-byte-set! trg trg-offset (read-byte!))
+        ($mem-populate-from-mutable-reader! trg (+ 1 trg-offset)
+                                            read-byte! (- size 1)))
+    trg))
+
 ;;; Strings
 (defn list->string (src-list)
   (let ((len (length src-list)))
@@ -239,6 +247,26 @@
   ((compile-top-level-expr expr)))
 
 ;; TODO: Move file code to another module.
+(defn with-file-reader (filename callback)
+  (let ((buf ($make-mem-block 512))
+        (fill 0)
+        (pos 0)
+        (file-handle (fopen filename "r")))
+    (defn read-next-block! ()
+      (when (<= fill pos)
+        (set! fill (fread file-handle buf 512))
+        (set! pos 0)))
+    (defn read-byte! ()
+      (unless (< pos fill)
+        (read-next-block!)
+        (unless (< pos fill)
+          (error "Reading beyond file contents.")))
+      (inc! pos)
+      ($mem-block-byte-get buf (- pos 1)))
+    (dynamic-wind ->true
+                  (lambda () (callback read-byte!))
+                  (lambda () (fclose file-handle)))))
+
 (defn with-file-writer (filename callback)
   (let ((buf ($make-mem-block 256))
         (pos 0)
@@ -260,6 +288,17 @@
                     (flush!)
                     (fclose file-handle)))))
 
+
+(defn file->string (filename)
+  (let ((size (file-size filename)))
+    ($make @string size 0
+           (with-file-reader
+            filename
+            (lambda (read-byte!)
+              ($mem-populate-from-mutable-reader!
+               ($make-mem-block size) 0
+               read-byte! size))))))
+
 ;; TODO: Move caching code to serialization module.
 (defn serialize-to-file! (filename item)
   (with-file-writer
@@ -268,16 +307,12 @@
      (serialize! item write-byte!))))
 
 (defn deserialize-from-file! (filename win lose)
-  (let ((contents (file->string filename))
-        (pos 0))
-    (if (string? contents)
-        (win (deserialize!
-              (lambda ()
-                (unless (< pos (string-size contents))
-                  (error "Trying to read beyond input at pos " pos))
-                (inc! pos)
-                (char->num (string-at contents (- pos 1))))))
-      (lose))))
+  (if (not (nil? (file-size filename)))
+      (win (with-file-reader
+            filename
+            (lambda (read-byte!)
+              (deserialize! read-byte!))))
+    (lose)))
 
 (defn deserialize-from-cache-file! (cache-filename min-timestamp calculate)
   (defn calculate-and-save! ()

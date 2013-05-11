@@ -234,35 +234,15 @@ oop primitive_file_timestamp(oop args) {
   return make_smallint(c_stat.st_mtime);
 }
 
-// TODO: Make this a wrapper around fread instead, now that we have fopen, fclose.
-oop primitive_file_to_string(oop args) {
+oop primitive_file_size(oop args) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
-  FILE* file = fopen(c_filename, "r");
-  if (file == NULL) {
-    free(c_filename);
+  struct stat c_stat;
+  int stat_result = stat(c_filename, &c_stat);
+  if (stat_result == -1) {
     return NIL;
   }
-  struct stat stat;
-  fstat(fileno(file), &stat);
-  oop buffer = mem_raw_mem_alloc(stat.st_size + 1);
-
-  char* c_buffer = mem_raw_get_ptr(buffer);
-  unsigned int position = 0;
-  while (position < stat.st_size) {
-    int diff = fread(c_buffer + position, 1, stat.st_size - position, file);
-    CHECK(diff != 0, "fread() returned 0.");
-    position += diff;
-  }
-  c_buffer[stat.st_size] = '\0';
-
-  // TODO: This is the evilest thing I've ever seen.
-  oop result = mem_alloc(4);
-  mem_set(result, 0, symbols._string);
-  mem_set(result, 1, make_smallint(stat.st_size));
-  mem_set(result, 2, make_smallint(0));
-  mem_set(result, 3, buffer);
-  return result;
+  return make_smallint(c_stat.st_size);
 }
 
 oop primitive_fopen(oop args) {
@@ -281,6 +261,17 @@ oop primitive_fclose(oop args) {
   PARSE_ONE_ARG(file_handle);
   fclose((FILE*) get_smallint(file_handle));
   return NIL;
+}
+
+oop primitive_fread_buf(oop args) {
+  PARSE_THREE_ARGS(file_handle, buf, size);
+  FILE* c_file_handle = (FILE*) get_smallint(file_handle);
+  size_t c_size = (size_t) get_smallint(size);
+  CHECKV(mem_raw_mem_size(buf) >= c_size, buf,
+         "Raw memory block needs to have the required size.");
+  void* c_buf = mem_raw_get_ptr(buf);
+  size_t result = fread(c_buf, 1, c_size, c_file_handle);
+  return make_smallint(result);
 }
 
 oop primitive_fwrite_buf(oop args) {
@@ -331,9 +322,10 @@ void init_primitives() {
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);
   register_globally_fn("get-time", primitive_get_process_time);
-  register_globally_fn("file->string", primitive_file_to_string);
   register_globally_fn("file-timestamp", primitive_file_timestamp);
+  register_globally_fn("file-size", primitive_file_size);
   register_globally_fn("fopen", primitive_fopen);
   register_globally_fn("fclose", primitive_fclose);
+  register_globally_fn("fread", primitive_fread_buf);
   register_globally_fn("fwrite", primitive_fwrite_buf);
 }
