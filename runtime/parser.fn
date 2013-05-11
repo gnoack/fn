@@ -46,8 +46,8 @@
 	  (lambda (result rest)
 	    (if (all? whitespace? rest)
 		result
-	      (print-parse-error-and-die rest "Something left.")))
-	  print-parse-error-and-die)))
+	      (print-parse-error-and-raise rest "Something left.")))
+	  print-parse-error-and-raise)))
 
 (def read-one (read-and-check-empty-remainder
                (@@ lisp-grammar expr_whitespace)))

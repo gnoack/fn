@@ -119,7 +119,7 @@
 (eql? (list '(defrule a (b c) (peg= 'baz))
             '())
       ((pp rule) (string->list "a b c ::= 'baz;")
-                 list print-parse-error-and-die))
+                 list error))
 
 (eql? (list '(defgrammar fancy ()
                (defrule foo () (peg= 'x))

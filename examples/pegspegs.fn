@@ -42,8 +42,8 @@
                                 (progn
                                   (println "DO NOT EQUAL: "
                                            (pprint orig-result))))))
-                      print-parse-error-and-die)))
-     print-parse-error-and-die)))
+                      print-parse-error-and-raise)))
+     print-parse-error-and-raise)))
 
 (try-parse 'symbol "a")
 (try-parse 'expr4 "a")

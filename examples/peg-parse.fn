@@ -8,4 +8,4 @@
 
 (println (parse-lisp-exprs (string->list (file->string "examples/peg-parse.fn"))
                            list
-                           print-parse-error-and-die))
+                           print-parse-error-and-raise))

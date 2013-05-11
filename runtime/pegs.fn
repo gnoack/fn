@@ -115,11 +115,11 @@
 (defn parse-fail? (peg input)
   (not (parses? peg input)))
 
-(defn print-parse-error-and-die (remainder &rest reason)
+(defn print-parse-error-and-raise (remainder &rest reason)
   (println "*PARSE ERROR")
   (println "At: " (pprint (list->string (take 50 remainder))))
   (println "     ^")
-  (apply error reason))
+  (raise reason))
 
 
 (defmacro peg-indirect (name &rest args)

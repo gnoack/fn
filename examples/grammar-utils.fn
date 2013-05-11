@@ -6,5 +6,5 @@
      (println "Loaded grammar " filename)
      (println result)
      (eval result))
-   print-parse-error-and-die))
+   print-parse-error-and-raise))
 

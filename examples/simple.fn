@@ -8,4 +8,4 @@
 
 (def parse-simple (dict-get (example-grammar (base-grammar)) 'example))
 
-(println (parse-simple (string->list "a,b,c,a") list print-parse-error-and-die))
+(println (parse-simple (string->list "a,b,c,a") list print-parse-error-and-raise))

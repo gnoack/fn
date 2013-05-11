@@ -28,16 +28,29 @@
           (completions-for-dict *macros*)))
 
 
-(defn with-history-file-loading (proc)
+(defn with-history-file-loading (thunk)
   (lambda ()
     (let ((history-file (string-append (get-home-directory)
                                        "/.fn_history")))
       (dynamic-wind
        (lambda () (read-history history-file))
-       proc
+       thunk
        (lambda () (write-history history-file))))))
 
-;;
+(defn with-restart (thunk)
+  (lambda ()
+    (labels ((error-happened false)
+             (restart
+              (lambda ()
+                (catch thunk
+                  (lambda (reason)
+                    (println "Error: " reason)
+                    (set! error-happened true)))
+                (when error-happened
+                  (restart)))))
+      (restart))))
+
+;; Main read-eval-print loop.
 (defn repl ()
   (let ((input (readline "fn> ")))
     (if (or (nil? input)
@@ -50,4 +63,4 @@
         (println (pprint (eval (read-one input))))
         (repl)))))
 
-((with-history-file-loading repl))
+((with-history-file-loading (with-restart repl)))
