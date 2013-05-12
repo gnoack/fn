@@ -47,6 +47,7 @@
                     (println "Error: " reason)
                     (set! error-happened true)))
                 (when error-happened
+                  (set! error-happened false)
                   (restart)))))
       (restart))))
 
