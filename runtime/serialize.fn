@@ -49,7 +49,7 @@
      ((eq? type @mem-block)
       (progn
         (write-byte! *serialize-prefix-mem-block*)
-        (serialize! (mem-block-size item) write-byte!)
+        (serialize-integer! (mem-block-size item) write-byte!)
         ($mem-for-each-byte! item 0 (mem-block-size item) write-byte!)))
      ((eq? type @symbol)
       (progn
@@ -58,13 +58,13 @@
      ((eq? type @array)
       (progn
         (write-byte! *serialize-prefix-array*)
-        (serialize! (array-size item) write-byte!)
+        (serialize-integer! (array-size item) write-byte!)
         (dolist (array-item (array->list item))
           (serialize! array-item write-byte!))))
      ((eq? type @string)
       (progn
         (write-byte! *serialize-prefix-string*)
-        (serialize! (string-size item) write-byte!)
+        (serialize-integer! (string-size item) write-byte!)
         ($mem-for-each-byte! (%string-raw item)
                              (%string-offset item)
                              (+ (%string-offset item) (string-size item))
@@ -107,19 +107,19 @@
       (cons (deserialize! read-byte!)
             (deserialize! read-byte!)))
      ((eq? type-prefix *serialize-prefix-array*)
-      (let ((size (deserialize! read-byte!)))
+      (let ((size (deserialize-integer! read-byte!)))
         (deserialize-into-array! (make-array size) 0 size read-byte!)))
      ((eq? type-prefix *serialize-prefix-character*)
       (num->char (read-byte!)))
      ((eq? type-prefix *serialize-prefix-symbol*)
       (string->symbol (deserialize! read-byte!)))
      ((eq? type-prefix *serialize-prefix-string*)
-      (let ((len (deserialize! read-byte!)))
+      (let ((len (deserialize-integer! read-byte!)))
         ($make @string len 0
                (deserialize-into-mem-block!
                 ($make-mem-block len) 0 len read-byte!))))
      ((eq? type-prefix *serialize-prefix-mem-block*)
-      (let ((size (deserialize! read-byte!)))
+      (let ((size (deserialize-integer! read-byte!)))
         (deserialize-into-mem-block! ($make-mem-block size)
                                      0 size read-byte!)))
      ((eq? type-prefix *serialize-prefix-smallint*)

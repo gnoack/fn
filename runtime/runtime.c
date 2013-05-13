@@ -5,6 +5,7 @@
 #include "continuations.h"
 #include "data.h"
 #include "debug.h"
+#include "deserialize.h"
 #include "dispatcher.h"
 #include "dl.h"
 #include "eval.h"
@@ -36,6 +37,7 @@ void fn_runtime_init() {
   init_interpreter();
   init_data();
   init_dl();
+  init_deserialize();
 }
 
 void fn_runtime_init_lisp_decls() {

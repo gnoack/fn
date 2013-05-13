@@ -15,16 +15,20 @@
  * | @string | size | offset | memptr |----> raw ASCII string
  * +---------+------+--------+--------+
  */
-oop make_string(const char* str) {
-  fn_uint len = strlen(str);
+oop make_string_from_mem_block(oop raw_string, fn_uint size) {
   oop result = mem_alloc(4);
-  oop raw_string = mem_raw_mem_alloc(len);
-  memcpy((void*) raw_string.mem, (void*) str, len);
   mem_set(result, 0, symbols._string);
-  mem_set(result, 1, make_smallint(len));
+  mem_set(result, 1, make_smallint(size));
   mem_set(result, 2, make_smallint(0));
   mem_set(result, 3, raw_string);
   return result;
+}
+
+oop make_string(const char* str) {
+  fn_uint len = strlen(str);
+  oop raw_string = mem_raw_mem_alloc(len);
+  memcpy((void*) raw_string.mem, (void*) str, len);
+  return make_string_from_mem_block(raw_string, len);
 }
 
 char* c_string(oop str) {

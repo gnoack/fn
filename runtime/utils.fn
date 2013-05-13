@@ -305,12 +305,19 @@
    (lambda (write-byte!)
      (serialize! item write-byte!))))
 
+(def *use-c-impl* true)
+
 (defn deserialize-from-file! (filename win lose)
   (if (not (nil? (file-size filename)))
-      (win (with-file-reader
-            filename
-            (lambda (read-byte!)
-              (deserialize! read-byte!))))
+      (if *use-c-impl*
+          (win (let ((file-handle (fopen filename "r")))
+                 (dynamic-wind ->true
+                               (lambda () (c-deserialize! file-handle))
+                               (lambda () (fclose file-handle)))))
+          (win (with-file-reader
+                filename
+                (lambda (read-byte!)
+                  (deserialize! read-byte!)))))
     (lose)))
 
 (defn deserialize-from-cache-file! (cache-filename min-timestamp calculate)

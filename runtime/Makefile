@@ -9,6 +9,7 @@ RTOBJECTS = \
 	continuations.o \
 	data.o \
 	debug.o \
+	deserialize.o \
 	dispatcher.o \
 	dl.o \
 	eval.o \

@@ -1,4 +1,3 @@
-
 #include <string.h>
 
 #include "carcdr.h"
@@ -19,10 +18,12 @@
 
 #ifdef INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b) CHECK(a,b)
+#define DEBUG_CHECKV(a,v,b) CHECKV(a,v,b)
 #define MEM_GET(obj,idx) mem_get((obj),(idx))
 #define MEM_SET(obj,idx,val) mem_set((obj),(idx),(val))
 #else  // INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b)
+#define DEBUG_CHECKV(a,v,b)
 #define MEM_GET(obj,idx) (obj).mem[(idx)]
 #define MEM_SET(obj,idx,val) ((obj).mem[(idx)] = (val))
 #endif  // INTERPRETER_DEBUG
@@ -255,8 +256,8 @@ oop serialize_retptr(interpreter_state_t* state) {
 
 void deserialize_retptr(oop retptr, interpreter_state_t* state) {
   // Comment this out for performance.
-  // CHECKV(value_eq(symbols._retptr, MEM_GET(retptr, 0)), retptr,
-  //        "Needs to be a retptr to deserialize it.");
+  DEBUG_CHECKV(value_eq(symbols._retptr, MEM_GET(retptr, 0)), retptr,
+               "Needs to be a retptr to deserialize it.");
   state->reg_frm     = MEM_GET(retptr, 1);
   state->ip          = get_smallint(MEM_GET(retptr, 2));
   state->bytecode    = MEM_GET(retptr, 3);
