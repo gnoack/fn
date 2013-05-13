@@ -184,7 +184,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
       // TODO: Do quick calls with vararg procedures, too.
       fn_uint function_argnum = fn_argnum(cfn);
       env = make_frame_from_stack(function_argnum, fn_env(cfn));
-      CHECK(arg_count = function_argnum + 1, "Bad argument number.");
+      CHECK(arg_count == function_argnum + 1, "Bad argument number.");
       stack_shrink(arg_count);
       values = make_cons(cfn, env);  // XXX: Crappy, but just for debugging.
     }
