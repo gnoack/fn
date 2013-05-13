@@ -281,7 +281,6 @@
       ($mem-block-byte-set! buf pos byte)
       (inc! pos))
 
-    ;; TODO: Use `unwind-handler'.
     (dynamic-wind ->true
                   (lambda () (callback write-byte!))
                   (lambda ()
