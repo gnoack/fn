@@ -1,4 +1,3 @@
-
 #include <string.h>
 
 #include "debug.h"
@@ -355,15 +354,15 @@ void raw_memory_on_gc_start() {
 }
 
 // Size in bytes
-extern oop gc_raw_memory_alloc(fn_uint size) {
+extern oop gc_raw_memory_alloc(fn_uint byte_size) {
   // Round up to oop size and express in number of oops.
-  size = (size + sizeof(oop) - 1) / sizeof(oop);
+  fn_uint size = (byte_size + sizeof(oop) - 1) / sizeof(oop);
   // This is a hack to make sure we're always allocating enough for GC.
   if (size == 0) {
     size = 1;
   }
   oop result = half_space_alloc(&raw_memory.current, size + 1);
-  result.mem[0] = make_smallint(size);
+  result.mem[0] = make_smallint(byte_size);
   result.mem = result.mem + 1;
   return result;
 }
@@ -373,19 +372,18 @@ void raw_memory_save(oop obj) {
   GC_CHECK(!object_is_saved(obj), "Must be unsaved.");
   GC_CHECK(half_space_contains(&raw_memory.old, SANE(obj)), "obj is old");
   // Move.
-  fn_uint size = get_smallint(obj.mem[-1]);
-  oop newobj = gc_raw_memory_alloc(size * sizeof(oop));
+  fn_uint byte_size = get_smallint(obj.mem[-1]);
+  oop newobj = gc_raw_memory_alloc(byte_size);
   fn_uint i;
-  for (i = 0; i < size; i++) {
-    newobj.mem[i] = obj.mem[i];
-  }
+  memcpy(newobj.mem, obj.mem, byte_size);
 
   // Mark as broken heart.
   obj.mem[-1] = NIL;
   obj.mem[0] = newobj;
 
   GC_CHECK(object_is_saved(obj), "Must be saved now.");
-  GC_CHECK(half_space_contains(&raw_memory.current, SANE(newobj)), "newobj is current");
+  GC_CHECK(half_space_contains(&raw_memory.current, SANE(newobj)),
+           "newobj is current");
   GC_CHECK(half_space_contains(&raw_memory.old, SANE(obj)), "obj is old");
 }
 

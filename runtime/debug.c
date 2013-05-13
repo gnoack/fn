@@ -83,9 +83,9 @@ void print_value(oop v) {
     printf(")");
   } else if (is_raw_mem(v)) {
     printf("<RAW-MEMORY #%08llx ", (unsigned long long) v.smallint);
-    fn_uint size = get_smallint(v.mem[-1]);
+    fn_uint size = mem_raw_mem_size(v);
     fn_uint i;
-    for (i=0; i<size*sizeof(oop); i++) {
+    for (i=0; i<size; i++) {
       printf(" %02x", ((unsigned char*) v.mem)[i]);
     }
     printf(">");

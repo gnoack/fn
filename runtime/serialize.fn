@@ -49,8 +49,8 @@
      ((eq? type @mem-block)
       (progn
         (write-byte! *serialize-prefix-mem-block*)
-        (serialize! ($mem-block-size item) write-byte!)
-        ($mem-for-each-byte! item 0 ($mem-block-size item) write-byte!)))
+        (serialize! (mem-block-size item) write-byte!)
+        ($mem-for-each-byte! item 0 (mem-block-size item) write-byte!)))
      ((eq? type @symbol)
       (progn
         (write-byte! *serialize-prefix-symbol*)

@@ -1,4 +1,3 @@
-
 #include <malloc.h>
 
 #include "debug.h"
@@ -63,5 +62,5 @@ void* mem_raw_get_ptr(oop target) {
 // higher than what was requested on allocation.
 fn_uint mem_raw_mem_size(oop target) {
   CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
-  return sizeof(oop) * (get_smallint(target.mem[-1]));
+  return get_smallint(target.mem[-1]);
 }

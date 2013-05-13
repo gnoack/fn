@@ -317,7 +317,7 @@ void init_primitives() {
   register_globally_fn("mem-block?", primitive_raw_mem_p);
   register_globally_fn("$mem-block-byte-get", primitive_raw_mem_get);
   register_globally_fn("$mem-block-byte-set!", primitive_raw_mem_set);
-  register_globally_fn("$mem-block-size", primitive_raw_mem_size);
+  register_globally_fn("mem-block-size", primitive_raw_mem_size);
   register_globally_fn("run-gc", primitive_run_gc);
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);
