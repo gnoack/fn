@@ -79,7 +79,6 @@ int main(int argc, char* argv[]) {
          "-2 load all main modules twice (compiling on the second go)\n"
          "-s save memory image after loading modules\n"
          "-S load memory image instead of loading modules\n"
-         "-t execute tests and quit\n"
          "-x quit without executing tests\n");
     exit(0);
   }
