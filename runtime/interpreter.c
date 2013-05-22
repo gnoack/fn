@@ -13,7 +13,7 @@
 
 #define MAX_STACK_SIZE 0x4000
 
-// #define INTERPRETER_DEBUG 1
+#define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
 
 #ifdef INTERPRETER_DEBUG
@@ -82,6 +82,10 @@ void stack_push(oop value) {
   stack.size++;
 }
 
+unsigned int stack_size() {
+  return stack.size;
+}
+
 oop stack_peek() {
   DEBUG_CHECK(stack.size > 0, "Stack empty, can't peek.");
   return stack.stack[stack.size - 1];
@@ -90,6 +94,7 @@ oop stack_peek() {
 // Peek at position n from top, 1 being the topmost element.
 oop stack_peek_at(fn_uint n) {
   int idx = stack.size - n;
+  DEBUG_CHECK(n >= 1, "1 is the lowermost peekable index.");
   DEBUG_CHECK(idx >= 0, "Can't peek that deep.");
   return stack.stack[idx];
 }

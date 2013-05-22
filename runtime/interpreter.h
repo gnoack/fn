@@ -9,6 +9,10 @@ extern oop interpret();
 // Stack
 extern void stack_push(oop value);
 extern oop stack_pop();
+extern unsigned int stack_size();
+extern oop stack_peek();
+extern oop stack_peek_at(fn_uint n);
+extern void stack_shrink(int n);
 
 // Frame
 extern oop make_frame(fn_uint argnum, oop next_frame);
