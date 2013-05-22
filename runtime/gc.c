@@ -374,7 +374,6 @@ void raw_memory_save(oop obj) {
   // Move.
   fn_uint byte_size = get_smallint(obj.mem[-1]);
   oop newobj = gc_raw_memory_alloc(byte_size);
-  fn_uint i;
   memcpy(newobj.mem, obj.mem, byte_size);
 
   // Mark as broken heart.
