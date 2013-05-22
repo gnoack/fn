@@ -353,14 +353,21 @@ void raw_memory_on_gc_start() {
   half_space_clear(&raw_memory.current);
 }
 
-// Size in bytes
-extern oop gc_raw_memory_alloc(fn_uint byte_size) {
+// Size in oops for size in bytes.
+// This rounds up the oop size.
+static inline fn_uint raw_memory_oop_size(fn_uint byte_size) {
   // Round up to oop size and express in number of oops.
   fn_uint size = (byte_size + sizeof(oop) - 1) / sizeof(oop);
   // This is a hack to make sure we're always allocating enough for GC.
   if (size == 0) {
     size = 1;
   }
+  return size;
+}
+
+// Size in bytes
+extern oop gc_raw_memory_alloc(fn_uint byte_size) {
+  fn_uint size = raw_memory_oop_size(byte_size);
   oop result = half_space_alloc(&raw_memory.current, size + 1);
   result.mem[0] = make_smallint(byte_size);
   result.mem = result.mem + 1;
@@ -502,7 +509,7 @@ boolean should_skip_gc() {
 
 #ifdef GC_DEBUG
 // Forward declaration.
-oop pointered_half_space_sanity_check(half_space* space);
+void pointered_half_space_sanity_check(half_space* space);
 #endif  // GC_DEBUG
 
 #ifdef GC_SUMMARY
@@ -522,7 +529,9 @@ void gc_run() {
   pointered_half_space_print_object_types(&object_memory.current);
   #endif  // GC_SUMMARY
   #ifdef GC_DEBUG
+  printf("OBJ MEM (before gc):\n");
   pointered_half_space_sanity_check(&object_memory.current);
+  printf("RAW MEM (before gc):\n");
   pointered_half_space_sanity_check(&raw_memory.current);
   #endif  // GC_DEBUG
   raw_memory_region.on_gc_start();
@@ -550,7 +559,9 @@ void gc_run() {
   half_space_print_fill(&raw_memory.current, "raw after");
   #endif  // GC_LOGGING
   #ifdef GC_DEBUG
+  printf("OBJ MEM (after gc):\n");
   pointered_half_space_sanity_check(&object_memory.current);
+  printf("RAW MEM (after gc):\n");
   pointered_half_space_sanity_check(&raw_memory.current);
   #endif  // GC_DEBUG
 }
@@ -652,7 +663,7 @@ oop sane(oop obj) {
 }
 
 // Check consistency of pointered half space between GC runs.
-oop pointered_half_space_sanity_check(half_space* space) {
+void pointered_half_space_sanity_check(half_space* space) {
   printf("Start: %lx\n", (fn_uint) space->start);
   printf(" Free: %lx\n", (fn_uint) space->free);
   printf("  End: %lx\n", (fn_uint) space->end);
@@ -667,7 +678,13 @@ oop pointered_half_space_sanity_check(half_space* space) {
       exit(1);
     }
     sane(*current);
-    current += get_smallint(size) + 1;
+    // Raw memory space is allocated in bytes, not in oops.
+    if (space == &raw_memory.current ||
+        space == &raw_memory.old) {
+      current += raw_memory_oop_size(get_smallint(size)) + 1;
+    } else {
+      current += get_smallint(size) + 1;
+    }
   }
 }
 #endif  // GC_DEBUG

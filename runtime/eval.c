@@ -187,7 +187,10 @@ oop eval_global(oop program) {
     make_symbol("compile-and-assemble-expr-for-global-eval");
   if (dict_has_key(global_env, _compile_for_global_eval)) {
     oop code = apply(LIST(lookup_globally(_compile_for_global_eval), program));
-    return interpret(global_env, code);
+    apply_stack_push(make_symbol("loose execution"));
+    oop result = interpret(global_env, code);
+    apply_stack_pop();
+    return result;
   }
   gc_protect_counter++;
   oop result = eval(program, global_env);

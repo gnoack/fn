@@ -8,7 +8,7 @@
     (eq? 'fail reason)))
 
 (= 6 (catch
-         (lambda (x)
+         (lambda ()
            (catch
                (lambda ()
                  (raise 1))

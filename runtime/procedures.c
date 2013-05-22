@@ -14,6 +14,13 @@
 
 #include "procedures.h"
 
+// #define PROCEDURES_DEBUG 1
+#ifdef PROCEDURES_DEBUG
+#define PCHECK(condition, msg) CHECK(condition, msg)
+#else
+#define PCHECK(condition, msg)
+#endif
+
 #define MAX_NATIVE_PROCEDURES 256
 function native_procedures[MAX_NATIVE_PROCEDURES];
 fn_uint next_native_procedure = 0;
@@ -289,6 +296,7 @@ void apply_stack_push(oop values) {
 }
 
 void apply_stack_pop() {
+  PCHECK(apply_stack_pos > 0, "Can't pop from empty apply stack.");
   apply_stack_pos--;
 }
 
