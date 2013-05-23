@@ -19,7 +19,7 @@ typedef int boolean;
 
 #define NIL ((oop) (fn_uint) 0L)
 
-void (*print_stack_frame)();
+void (*print_stack_trace)();
 
 // GCC only.
 #define unlikely(x) __builtin_expect(x, 0)
@@ -29,7 +29,7 @@ void (*print_stack_frame)();
 #define CHECK(x, msg)                                \
   if (unlikely(!(x))) {                              \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
-    print_stack_frame();                             \
+    print_stack_trace();                             \
     exit(1);                                         \
   }
 
@@ -37,8 +37,8 @@ void (*print_stack_frame)();
   if (unlikely(!(x))) {                              \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     printf("Offending value: ");                     \
-    println_value(value);                              \
-    print_stack_frame();                             \
+    println_value(value);                            \
+    print_stack_trace();                             \
     exit(1);                                         \
   }
 

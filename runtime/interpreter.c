@@ -532,7 +532,7 @@ oop interpret(oop frame, oop code, oop proc) {
 }
 
 void init_interpreter() {
-  print_stack_frame = print_application_stack;
+  print_stack_trace = print_application_stack;
   stack = malloc(sizeof(stack_t));
   int i;
   for (i=0; i<MAX_STACK_SIZE; i++) {

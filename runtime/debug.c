@@ -3,11 +3,12 @@
 
 #include "value.h"
 #include "data.h"
-#include "eval.h"
 #include "cons.h"
+#include "eval.h"
+#include "interpreter.h"
+#include "memory.h"
 #include "strings.h"
 #include "symbols.h"
-#include "interpreter.h"
 
 /* Debugging helpers. */
 
