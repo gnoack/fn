@@ -1,7 +1,13 @@
 ;;; Pipe this output into `dot -Tpng > deps.png'.
 
+(defn procedure-env (proc)
+  (assert (procedure? proc))
+  ($mem-get proc 4))
+
+(def *global-env* (procedure-env identity))
+
 (println "digraph dependencies {")
-(dolist (pair (dict-key-value-pairs $global-env))
+(dolist (pair (dict-key-value-pairs *global-env*))
   (let ((key (first pair))
         (value (rest pair)))
     (when (compiled-procedure? value)
