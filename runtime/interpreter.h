@@ -4,7 +4,7 @@
 #include "value.h"
 
 extern void init_interpreter();
-extern oop interpret();
+extern oop interpret(oop frame, oop code, oop proc);
 
 // Stack
 extern void stack_push(oop value);
@@ -13,6 +13,13 @@ extern unsigned int stack_size();
 extern oop stack_peek();
 extern oop stack_peek_at(fn_uint n);
 extern void stack_shrink(int n);
+
+// Markers on the stack for non-byte-code functions.
+extern void marker_push(oop function, oop frame);
+extern void marker_pop();
+
+extern boolean is_retptr(oop retptr);
+extern void print_retptr(oop retptr);
 
 // Frame
 extern oop make_frame(fn_uint argnum, oop next_frame);
@@ -32,6 +39,9 @@ typedef struct {
   fn_uint ip;
   oop bytecode;
   oop oop_lookups;
+
+  // Procedure.
+  oop procedure;
 } interpreter_state_t;
 
 

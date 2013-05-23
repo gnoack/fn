@@ -38,16 +38,10 @@ extern oop make_dframe_for_application(oop lfn, oop args);
 extern boolean is_compiled_lisp_procedure(oop fn);
 extern boolean is_lisp_procedure(oop fn);
 extern oop apply(oop values);
+extern oop fn_name(oop fn);
 extern oop fn_code(oop cfn);
 extern oop fn_env(oop fn);
 extern fn_uint fn_argnum(oop fn);
 extern boolean fn_nested_args(oop fn);
-
-// Apply stack.
-extern void apply_stack_push(oop values);
-extern void apply_stack_pop();
-extern int apply_stack_pos;
-
-extern void init_procedures();
 
 #endif  // _PROCEDURES_H_

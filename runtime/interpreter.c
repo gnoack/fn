@@ -59,16 +59,6 @@ void enumerate_interpreter_roots(void (*accept)(oop* place)) {
   }
 }
 
-void init_interpreter() {
-  stack = malloc(sizeof(stack_t));
-  int i;
-  for (i=0; i<MAX_STACK_SIZE; i++) {
-    stack->stack[i] = NIL;
-  }
-  stack->size = 0;
-  gc_register_persistent_refs(enumerate_interpreter_roots);
-}
-
 // Stack
 void stack_push(oop value) {
   if (stack->size >= MAX_STACK_SIZE) {
@@ -150,6 +140,10 @@ oop make_frame_from_stack(fn_uint argnum, oop next_frame) {
   return result;
 }
 
+fn_uint frame_size(oop frame) {
+  return get_smallint(MEM_GET(frame, 2));
+}
+
 oop nth_frame(oop frame, unsigned int depth) {
   while (depth > 0) {
     frame = MEM_GET(frame, 1);  // next_frame
@@ -159,13 +153,13 @@ oop nth_frame(oop frame, unsigned int depth) {
 }
 
 void set_var(oop frame, unsigned int index, oop value) {
-  DEBUG_CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
+  DEBUG_CHECK(0 <= index && index < frame_size(frame),
               "Index out of bounds.");
   MEM_SET(frame, 3 + index, value);
 }
 
 oop get_var(oop frame, unsigned int index) {
-  DEBUG_CHECK(0 <= index && index < get_smallint(mem_get(frame, 2)),
+  DEBUG_CHECK(0 <= index && index < frame_size(frame),
               "Index out of bounds.");
   return MEM_GET(frame, 3 + index);
 }
@@ -179,11 +173,10 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
   oop cfn = stack_peek_at(arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
-    oop values, env;
+    oop env;
     if (fn_nested_args(cfn)) {
       oop args = stack_pop_list(arg_count - 1);
       stack_shrink(1);
-      values = make_cons(cfn, args);
       env = make_frame_for_application(cfn, args);
     } else {
       // TODO: Do quick calls with vararg procedures, too.
@@ -191,18 +184,13 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
       env = make_frame_from_stack(function_argnum, fn_env(cfn));
       CHECK(arg_count == function_argnum + 1, "Bad argument number.");
       stack_shrink(arg_count);
-      values = make_cons(cfn, env);  // XXX: Crappy, but just for debugging.
     }
 
     if (tailcall == NO) {
       stack_push(serialize_retptr(state));
-    } else {
-      apply_stack_pop();
     }
 
     IPRINT("call %lu         .oO ", arg_count);
-    IVALUE(values);
-    apply_stack_push(values);
 
     // Modify the interpreter state.
 
@@ -216,6 +204,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     state->bytecode = car(code);
     code = cdr(code);
     state->oop_lookups = car(code);
+    state->procedure = cfn;
   } else {
     // Call recursively on the C stack.
     oop values = stack_pop_list(arg_count);
@@ -249,34 +238,90 @@ oop read_oop(interpreter_state_t* state) {
   return MEM_GET(state->oop_lookups, 1 + read_byte(state));
 }
 
+boolean is_retptr(oop value) {
+  return is_mem(value) && value_eq(symbols._retptr, MEM_GET(value, 0));
+}
+
+void print_retptr(oop retptr) {
+  oop procedure = MEM_GET(retptr, 5);
+  oop frame = MEM_GET(retptr, 1);
+  printf("{{");
+  print_value(procedure);
+  if (is_compiled_lisp_procedure(procedure)) {
+    int i;
+    for (i=0; i<frame_size(frame); i++) {
+      printf(" ");
+      print_value(get_var(frame, i));
+    }
+  } else {
+    printf(" ");
+    print_value(frame);
+  }
+  printf("}}");
+}
+
 oop serialize_retptr(interpreter_state_t* state) {
-  oop result = mem_alloc(5);
+  oop result = mem_alloc(6);
   MEM_SET(result, 0, symbols._retptr);
   MEM_SET(result, 1, state->reg_frm);
   MEM_SET(result, 2, make_smallint(state->ip));
   MEM_SET(result, 3, state->bytecode);
   MEM_SET(result, 4, state->oop_lookups);
+  MEM_SET(result, 5, state->procedure);
   return result;
 }
 
 void deserialize_retptr(oop retptr, interpreter_state_t* state) {
   // Comment this out for performance.
-  DEBUG_CHECKV(value_eq(symbols._retptr, MEM_GET(retptr, 0)), retptr,
+  DEBUG_CHECKV(is_retptr(retptr), retptr,
                "Needs to be a retptr to deserialize it.");
   state->reg_frm     = MEM_GET(retptr, 1);
   state->ip          = get_smallint(MEM_GET(retptr, 2));
   state->bytecode    = MEM_GET(retptr, 3);
   state->oop_lookups = MEM_GET(retptr, 4);
+  state->procedure   = MEM_GET(retptr, 5);
+}
+
+
+void marker_push(oop function, oop frame) {
+  oop result = mem_alloc(6);
+  MEM_SET(result, 0, symbols._retptr);
+  MEM_SET(result, 1, frame);
+  MEM_SET(result, 2, NIL);  // IP
+  MEM_SET(result, 3, NIL);  // Bytecode
+  MEM_SET(result, 4, NIL);  // OOP lookups
+  MEM_SET(result, 5, function);
+  stack_push(result);
+}
+
+void marker_pop() {
+  oop result = stack_pop();
+  CHECK(value_eq(symbols._retptr, result.mem[0]),
+        "Expected a function marker.");
+}
+
+void print_application_stack() {
+  // TODO: Topmost frame is still missing.
+  // TODO: Are we skipping bytecode frames that call non-bytecode procedures?
+  int frame_index = 0;
+  int i;
+  for (i=stack->size-1; i>=0; i--) {
+    oop item = stack->stack[i];
+    if (is_retptr(item)) {
+      printf(" %03d ", frame_index);
+      println_value(item);
+      frame_index++;
+    }
+  }
 }
 
 
 // Continuations
 oop make_continuation(interpreter_state_t* state) {
-  oop result = mem_alloc(4);
+  oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._continuation);
   MEM_SET(result, 1, serialize_retptr(state));
   MEM_SET(result, 2, make_smallint(stack->size));
-  MEM_SET(result, 3, make_smallint(apply_stack_pos));
   return result;
 }
 
@@ -299,17 +344,17 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
          "Not a valid continuation.");
   deserialize_retptr(MEM_GET(continuation, 1), state);
   stack->size = get_smallint(MEM_GET(continuation, 2));
-  apply_stack_pos = get_smallint(MEM_GET(continuation, 3));
 }
 
 
 // Interpreter
-oop interpret(oop frame, oop code) {
+oop interpret(oop frame, oop code, oop proc) {
   interpreter_state_t state;
   state.reg_frm = frame;
   state.ip = get_smallint(car(code));
   state.bytecode = cadr(code);
   state.oop_lookups = caddr(code);
+  state.procedure = proc;
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -432,7 +477,6 @@ oop interpret(oop frame, oop code) {
 	}
         return retvalue;
       } else {
-        apply_stack_pop();
         stack_push(retvalue);
         deserialize_retptr(retptr, &state);
 	if (protected_interpreter_state == &state) {
@@ -487,3 +531,13 @@ oop interpret(oop frame, oop code) {
   }
 }
 
+void init_interpreter() {
+  print_stack_frame = print_application_stack;
+  stack = malloc(sizeof(stack_t));
+  int i;
+  for (i=0; i<MAX_STACK_SIZE; i++) {
+    stack->stack[i] = NIL;
+  }
+  stack->size = 0;
+  gc_register_persistent_refs(enumerate_interpreter_roots);
+}

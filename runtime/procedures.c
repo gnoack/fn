@@ -14,13 +14,6 @@
 
 #include "procedures.h"
 
-// #define PROCEDURES_DEBUG 1
-#ifdef PROCEDURES_DEBUG
-#define PCHECK(condition, msg) CHECK(condition, msg)
-#else
-#define PCHECK(condition, msg)
-#endif
-
 #define MAX_NATIVE_PROCEDURES 256
 function native_procedures[MAX_NATIVE_PROCEDURES];
 fn_uint next_native_procedure = 0;
@@ -224,7 +217,7 @@ oop make_frame_for_application(oop cfn, oop args) {
 }
 
 oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  return interpret(make_frame_for_application(cfn, args), fn_code(cfn));
+  return interpret(make_frame_for_application(cfn, args), fn_code(cfn), cfn);
 }
 
 oop make_dframe_for_application(oop lfn, oop args) {
@@ -235,17 +228,21 @@ oop make_dframe_for_application(oop lfn, oop args) {
 
 oop apply_lisp_procedure(oop fn, oop args) {
   oop env = make_dframe_for_application(fn, args);
+  marker_push(fn, env);
   gc_protect_counter++;
   oop result = eval(make_cons(symbols._progn, fn_code(fn)), env);
   gc_protect_counter--;
+  marker_pop();
   return result;
 }
 
 oop apply_native_fn(oop fn, oop args) {
   function c_function = native_fn_function(fn);
+  marker_push(fn, args);
   gc_protect_counter++;
   oop result = c_function(args);
   gc_protect_counter--;
+  marker_pop();
   return result;
 }
 
@@ -269,41 +266,9 @@ void print_procedure(oop fn) {
 }
 
 
-// Application
-
-#define MAX_APPLY_STACK 10000
-oop apply_stack[MAX_APPLY_STACK];
-int apply_stack_pos = 0;
-
-/*
- * Print the current stack for debugging.
- * Conflicts badly with the GC running in between,
- * it's better to only do it when you're crashing anyway. :)
- */
-void print_apply_stack() {
-  int i;
-  for (i=apply_stack_pos-1; i>=0; i--) {
-    printf("%3d ", i);
-    println_value(apply_stack[i]);
-  }
-}
-
-void apply_stack_push(oop values) {
-  if (apply_stack_pos < MAX_APPLY_STACK) {
-    apply_stack[apply_stack_pos] = values;
-  }
-  apply_stack_pos++;
-}
-
-void apply_stack_pop() {
-  PCHECK(apply_stack_pos > 0, "Can't pop from empty apply stack.");
-  apply_stack_pos--;
-}
-
 // Function application.
 // First argument is function, rest are arguments.
 oop apply(oop values) {
-  apply_stack_push(values);
   oop fn = car(values);
   oop result;
   if (is_lisp_procedure(fn)) {
@@ -314,18 +279,5 @@ oop apply(oop values) {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = apply_native_fn(fn, cdr(values));
   }
-  apply_stack_pop();
   return result;
-}
-
-void enumerate_apply_stack_roots(void (*accept)(oop* place)) {
-  int i;
-  for (i=0; i<apply_stack_pos; i++) {
-    accept(&apply_stack[i]);
-  }
-}
-
-void init_procedures() {
-  print_stack_frame = print_apply_stack;
-  gc_register_persistent_refs(enumerate_apply_stack_roots);
 }

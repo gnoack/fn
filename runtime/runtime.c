@@ -29,7 +29,6 @@
 #include <string.h>
 
 void fn_runtime_init() {
-  init_procedures();
   init_gc();
   init_symbols();
   init_eval();
