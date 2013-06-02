@@ -183,11 +183,11 @@ oop eval_global(oop program) {
     oop macroexpand_fn = dict_get(global_env, symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
   }
-  oop _compile_for_global_eval =
-    make_symbol("compile-and-assemble-expr-for-global-eval");
-  if (dict_has_key(global_env, _compile_for_global_eval)) {
-    oop code = apply(LIST(lookup_globally(_compile_for_global_eval), program));
-    oop result = interpret(global_env, code, NIL);
+  oop _compile_top_level_expr =
+    make_symbol("compile-top-level-expr");
+  if (dict_has_key(global_env, _compile_top_level_expr)) {
+    oop proc = apply(LIST(lookup_globally(_compile_top_level_expr), program));
+    oop result = apply(make_cons(proc, NIL));
     return result;
   }
   gc_protect_counter++;

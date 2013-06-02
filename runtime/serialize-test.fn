@@ -62,7 +62,4 @@
 (eq? 42
      ((deserialize-from-list
        (serialize-to-list
-        (make-compiled-procedure
-         'name '()
-         (compile-and-assemble-expr-for-global-eval '(+ 40 2))
-         nil)))))
+        (compile-top-level-expr '(+ 40 2))))))

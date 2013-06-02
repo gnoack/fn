@@ -260,19 +260,12 @@
   (map first (filter (lambda (kv) (compilable? (rest kv)))
                      (dict-key-value-pairs $global-env))))
 
-;; Invoked from C to compile top-level expressions.
+;; Invoked from C and Lisp to compile top-level expressions.
 ;; Should only be defined once compilation works.
-;; Returns a "code" triple.
-(defn compile-and-assemble-expr-for-global-eval (expr)
-  (with-gensym-scope
-   (assemble (compile-lambda-body (list expr) global-env))))
-
-;; Same, but macroexpands the expression and returns a 0-ary function
-;; that will evaluate it (at top-level).  This is more useful from
-;; Lisp, as it's easier to run it.
 (defn compile-top-level-expr (expr)
-  (let ((code (compile-and-assemble-expr-for-global-eval
-               (macroexpand expr))))
+  (let ((code (with-gensym-scope
+               (assemble (compile-lambda-body (list (macroexpand expr))
+                                              global-env)))))
       (make-compiled-procedure nil '() code nil)))
 
 ;; TODO: Extract `lambda-compiled'?
