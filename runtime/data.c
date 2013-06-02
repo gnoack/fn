@@ -250,7 +250,7 @@ oop primitive_make_dict(oop args) {
  * +---------+------+------+----+----+-----+----+----+----+-----+----+
  *
  * `size' is the number of variables.
- * `next' is the next frame.
+ * `next' is the next frame in the lexical environment.
  *
  * In order to set a variable in this frame, it first needs to be registered.
  */

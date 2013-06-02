@@ -127,7 +127,7 @@ void print_stack() {
 oop make_frame(fn_uint argnum, oop next_frame) {
   oop result = mem_alloc(5 + argnum);
   MEM_SET(result, 0, symbols._frame);
-  MEM_SET(result, 1, next_frame);
+  MEM_SET(result, 1, next_frame);  // next lexical environment.
   MEM_SET(result, 2, make_smallint(argnum));
   return result;
 }
