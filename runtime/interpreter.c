@@ -348,13 +348,16 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
 
 
 // Interpreter
-oop interpret(oop frame, oop code, oop proc) {
+oop interpret(oop frame, oop procedure) {
+  DEBUG_CHECK(is_compiled_procedure(procedure),
+              "Expected compiled procedure.");
+  oop code = fn_code(procedure);
   interpreter_state_t state;
   state.reg_frm = frame;
   state.ip = get_smallint(car(code));
   state.bytecode = cadr(code);
   state.oop_lookups = caddr(code);
-  state.procedure = proc;
+  state.procedure = procedure;
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;

@@ -4,7 +4,7 @@
 #include "value.h"
 
 extern void init_interpreter();
-extern oop interpret(oop frame, oop code, oop proc);
+extern oop interpret(oop frame, oop procedure);
 
 // Stack
 extern void stack_push(oop value);

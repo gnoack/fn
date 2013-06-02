@@ -217,7 +217,7 @@ oop make_frame_for_application(oop cfn, oop args) {
 }
 
 oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  return interpret(make_frame_for_application(cfn, args), fn_code(cfn), cfn);
+  return interpret(make_frame_for_application(cfn, args), cfn);
 }
 
 oop make_dframe_for_application(oop lfn, oop args) {
