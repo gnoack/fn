@@ -22,7 +22,9 @@ extern boolean is_retptr(oop retptr);
 extern void print_retptr(oop retptr);
 
 // Frame
-extern oop make_frame(fn_uint argnum, oop next_frame);
+extern oop make_frame(oop procedure, oop caller);
+boolean is_frame(oop obj);
+void print_frame(oop obj);
 
 extern void set_var(oop frame, unsigned int index, oop value);
 
@@ -39,9 +41,6 @@ typedef struct {
   fn_uint ip;
   oop bytecode;
   oop oop_lookups;
-
-  // Procedure.
-  oop procedure;
 } interpreter_state_t;
 
 

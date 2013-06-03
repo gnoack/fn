@@ -122,6 +122,8 @@ void print_value(oop v) {
       kv_pairs = rest(kv_pairs);
     }
     putchar('}');
+  } else if (is_frame(v)) {
+    print_frame(v);
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {
