@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 #include "carcdr.h"
@@ -216,20 +215,18 @@ oop make_frame_for_application(oop cfn, oop args, oop caller) {
   return env;
 }
 
-oop apply_compiled_lisp_procedure(oop cfn, oop args) {
-  // TODO: Pass in caller.
-  oop caller = NIL;
+oop apply_compiled_lisp_procedure(oop cfn, oop args, oop caller) {
   return interpret(make_frame_for_application(cfn, args, caller), cfn);
 }
 
-oop make_dframe_for_application(oop lfn, oop args) {
-  oop env = make_dframe(fn_env(lfn), fn_argnum(lfn));
+oop make_dframe_for_application(oop lfn, oop args, oop caller) {
+  oop env = make_dframe(fn_env(lfn), fn_argnum(lfn), caller, lfn);
   destructure_lambda_list_into_dframe(fn_lambda_list(lfn), args, env, 0);
   return env;
 }
 
-oop apply_lisp_procedure(oop fn, oop args) {
-  oop env = make_dframe_for_application(fn, args);
+oop apply_lisp_procedure(oop fn, oop args, oop caller) {
+  oop env = make_dframe_for_application(fn, args, caller);
   gc_protect_counter++;
   oop result = eval(make_cons(symbols._progn, fn_code(fn)), env);
   gc_protect_counter--;
@@ -265,17 +262,23 @@ void print_procedure(oop fn) {
 
 
 // Function application.
-// First argument is function, rest are arguments.
-oop apply(oop values) {
+// First argument in values is function, rest are arguments.
+// Caller is the calling function frame.
+oop apply_with_caller(oop values, oop caller) {
   oop fn = car(values);
   oop result;
   if (is_lisp_procedure(fn)) {
-    result = apply_lisp_procedure(fn, cdr(values));
+    result = apply_lisp_procedure(fn, cdr(values), caller);
   } else if (is_compiled_lisp_procedure(fn)) {
-    result = apply_compiled_lisp_procedure(fn, cdr(values));
+    result = apply_compiled_lisp_procedure(fn, cdr(values), caller);
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = apply_native_fn(fn, cdr(values));
   }
   return result;
+}
+
+// For convenience and top-level invocations.
+oop apply(oop values) {
+  return apply_with_caller(values, NIL);
 }

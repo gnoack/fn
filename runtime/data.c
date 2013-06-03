@@ -245,32 +245,56 @@ oop primitive_make_dict(oop args) {
 /*
  * Fixed-size dynamic frames.
  *
- * +---------+------+------+----+----+-----+----+----+----+-----+----+
- * | @dframe | size | next | k1 | k2 | ... | kn | v1 | v2 | ... | vn |
- * +---------+------+------+----+----+-----+----+----+----+-----+----+
+ * +---------+------+------+--------+-----------+
+ * | @dframe | size | next | caller | procedure |
+ * +---------+------+------+--------+-----------+
+ *
+ * +----+----+-----+----+----+----+-----+----+
+ * | k1 | k2 | ... | kn | v1 | v2 | ... | vn |
+ * +----+----+-----+----+----+----+-----+----+
  *
  * `size' is the number of variables.
  * `next' is the next frame in the lexical environment.
+ * `caller' is the creator of this dframe.
+ * `procedure` is the procedure this frame belongs to.
  *
  * In order to set a variable in this frame, it first needs to be registered.
  */
 
-#define DFRAME_HEADER_SIZE 3
+#define DFRAME_SIZE 1
+#define DFRAME_NEXT 2
+#define DFRAME_CALLER 3
+#define DFRAME_PROCEDURE 4
+#define DFRAME_HEADER_SIZE 5
 
 // Construct a fixed-size dynamic frame.
-oop make_dframe(oop next_frame, fn_uint size) {
+oop make_dframe(oop next_frame, fn_uint size, oop caller, oop procedure) {
   oop result = mem_alloc(DFRAME_HEADER_SIZE + size * 2);
   mem_set(result, 0, symbols._dframe);
   mem_set(result, 1, make_smallint(size));
   mem_set(result, 2, next_frame);
+  mem_set(result, 3, caller);
+  mem_set(result, 4, procedure);
   return result;
 }
 
+boolean is_dframe(oop obj) {
+  return TO_BOOL(is_mem(obj) && value_eq(symbols._dframe, obj.mem[0]));
+}
+
+static inline fn_uint dframe_size(oop dframe) {
+  return get_smallint(mem_get(dframe, DFRAME_SIZE));
+}
+
 void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value) {
-  fn_uint frame_size = get_smallint(mem_get(dframe, 1));
+  fn_uint frame_size = dframe_size(dframe);
   CHECK(pos < frame_size, "Index out of bounds.");
   mem_set(dframe, DFRAME_HEADER_SIZE + pos, key);
   mem_set(dframe, DFRAME_HEADER_SIZE + frame_size + pos, value);
+}
+
+oop dframe_caller(oop dframe) {
+  return mem_get(dframe, DFRAME_CALLER);
 }
 
 void dframe_set(oop dframe, oop key, oop value) {
@@ -280,7 +304,7 @@ void dframe_set(oop dframe, oop key, oop value) {
       return;
     }
 
-    fn_uint size = get_smallint(mem_get(dframe, 1));
+    fn_uint size = dframe_size(dframe);
     int i;
     for (i=0; i<size; i++) {
       oop current_key = mem_get(dframe, DFRAME_HEADER_SIZE + i);
@@ -290,7 +314,7 @@ void dframe_set(oop dframe, oop key, oop value) {
       }
     }
     // Not found, try next dframe.
-    dframe = mem_get(dframe, 2);
+    dframe = mem_get(dframe, DFRAME_NEXT);
   }
 }
 
@@ -300,7 +324,7 @@ oop dframe_get(oop dframe, oop key) {
       return lookup_globally(key);
     }
 
-    fn_uint size = get_smallint(mem_get(dframe, 1));
+    fn_uint size = dframe_size(dframe);
     int i;
     for (i=0; i<size; i++) {
       oop current_key = mem_get(dframe, DFRAME_HEADER_SIZE + i);
@@ -309,7 +333,7 @@ oop dframe_get(oop dframe, oop key) {
       }
     }
     // Not found, try next dframe.
-    dframe = mem_get(dframe, 2);
+    dframe = mem_get(dframe, DFRAME_NEXT);
   }
 }
 
@@ -325,7 +349,7 @@ oop primitive_make_dframe(oop args) {
   }
 
   fn_uint size = length_int(args);
-  oop result = make_dframe(next_frame, size);
+  oop result = make_dframe(next_frame, size, NIL, NIL);
   fn_uint i;
   for (i=0; i<size; i++) {
     oop key = first(args);

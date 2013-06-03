@@ -2,6 +2,7 @@
 
 #include "carcdr.h"
 #include "cons.h"
+#include "data.h"
 #include "debug.h"
 #include "eval.h"  // TODO: Break dependency to lookup_globally().
 #include "gc.h"
@@ -434,7 +435,16 @@ oop interpret(oop frame, oop procedure) {
       IPRINT("return\n");
       oop retvalue = stack_pop();
       oop caller = frame_caller(state.reg_frm);
-      if (is_nil(caller)) {
+      // TODO: Set caller to NIL?
+      if (is_frame(caller)) {
+        stack_push(retvalue);
+        restore_from_frame(frame_caller(state.reg_frm), &state);
+	if (protected_interpreter_state == &state) {
+	  gc_run();
+	}
+      } else {
+        DEBUG_CHECKV(is_nil(caller) || is_dframe(caller), caller,
+                     "Assumed nil or dframe.");
         #ifdef INTERPRETER_DEBUG
         if (stack_size_before != stack->size) {
           printf("The stack is a mutant!");
@@ -448,12 +458,6 @@ oop interpret(oop frame, oop procedure) {
 	  protected_interpreter_state = NULL;
 	}
         return retvalue;
-      } else {
-        stack_push(retvalue);
-        restore_from_frame(frame_caller(state.reg_frm), &state);
-	if (protected_interpreter_state == &state) {
-	  gc_run();
-	}
       }
       break;
     case BC_CALL_CC: {

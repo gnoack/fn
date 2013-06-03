@@ -126,7 +126,7 @@ oop eval_let(oop sexp, oop env) {
   CHECKV(value_eq(symbols._let, car(sexp)), sexp, "Must be a let form.");
   CHECKV(length_int(sexp) >= 3, sexp, "Bad let form length.");
   oop bindings = cadr(sexp);
-  oop new_env = make_dframe(env, length_int(bindings));
+  oop new_env = make_dframe(env, length_int(bindings), env, NIL);
   int pos = 0;
   while (!is_nil(bindings)) {
     oop binding = first(bindings);
@@ -207,14 +207,14 @@ oop map_eval(oop list, oop env) {
 }
 
 static inline
-oop apply_with_trampoline(oop values) {
+oop apply_with_trampoline(oop values, oop env) {
   oop fn = first(values);
   if (is_lisp_procedure(fn)) {
-    oop env = make_dframe_for_application(fn, rest(values));
+    oop env = make_dframe_for_application(fn, rest(values), env);
     oop program = make_cons(symbols._progn, fn_code(fn));
     return trampoline(program, env);
   } else {
-    return apply(values);
+    return apply_with_caller(values, env);
   }
 }
 
@@ -252,7 +252,7 @@ oop eval_trampoline(oop program, oop env) {
     return eval_progn(program, env);
   }
   // Otherwise, it must be a function application.
-  return apply_with_trampoline(map_eval(program, env));
+  return apply_with_trampoline(map_eval(program, env), env);
 }
 
 // Evaluate and bounce on returned trampolines.

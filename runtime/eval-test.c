@@ -17,7 +17,7 @@ TEST(eval_def_simple) {
 }
 
 TEST(eval_symbol_in_env) {
-  oop env = make_dframe(NIL, 1);
+  oop env = make_dframe(NIL, 1, NIL, NIL);
   dframe_register_key(env, 0, S("x"), I(2));
   ASSERT_EQ(I(2), eval(S("x"), env));
 }
