@@ -235,7 +235,6 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     if (tailcall == NO) {
       // Only need to writeback when frame is not discarded.
       writeback_to_frame(state);
-      stack_push(NIL);  // XXX: Get rid of this
     }
 
     IPRINT("call %lu         .oO ", arg_count);
@@ -392,8 +391,6 @@ oop interpret(oop frame, oop procedure) {
   unsigned int stack_size_before = stack->size;
   #endif  // INTERPRETER_DEBUG
 
-  stack_push(NIL);  // Return pointer.
-
   for (;;) {
     IPRINT("[i] %5lu: ", state.ip);
     unsigned char operation = read_byte(&state);
@@ -491,7 +488,6 @@ oop interpret(oop frame, oop procedure) {
     case BC_RETURN:
       IPRINT("return\n");
       oop retvalue = stack_pop();
-      oop retptr = stack_pop();
       oop caller = frame_caller(state.reg_frm);
       if (is_nil(caller)) {
         #ifdef INTERPRETER_DEBUG
