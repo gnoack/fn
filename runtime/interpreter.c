@@ -284,61 +284,6 @@ oop read_oop(interpreter_state_t* state) {
   return MEM_GET(state->oop_lookups, 1 + read_byte(state));
 }
 
-boolean is_retptr(oop value) {
-  return is_mem(value) && value_eq(symbols._retptr, MEM_GET(value, 0));
-}
-
-void print_retptr(oop retptr) {
-  oop procedure = MEM_GET(retptr, 5);
-  oop frame = MEM_GET(retptr, 1);
-  printf("{{");
-  print_value(procedure);
-  if (is_compiled_lisp_procedure(procedure)) {
-    int i;
-    for (i=0; i<frame_size(frame); i++) {
-      printf(" ");
-      print_value(get_var(frame, i));
-    }
-  } else {
-    printf(" ");
-    print_value(frame);
-  }
-  printf("}}");
-}
-
-
-void marker_push(oop function, oop frame) {
-  oop result = mem_alloc(6);
-  MEM_SET(result, 0, symbols._retptr);
-  MEM_SET(result, 1, frame);
-  MEM_SET(result, 2, NIL);  // IP
-  MEM_SET(result, 3, NIL);  // Bytecode
-  MEM_SET(result, 4, NIL);  // OOP lookups
-  MEM_SET(result, 5, function);
-  stack_push(result);
-}
-
-void marker_pop() {
-  oop result = stack_pop();
-  CHECK(value_eq(symbols._retptr, result.mem[0]),
-        "Expected a function marker.");
-}
-
-void print_application_stack() {
-  // TODO: Topmost frame is still missing.
-  // TODO: Are we skipping bytecode frames that call non-bytecode procedures?
-  int frame_index = 0;
-  int i;
-  for (i=stack->size-1; i>=0; i--) {
-    oop item = stack->stack[i];
-    if (is_retptr(item)) {
-      printf(" %03d ", frame_index);
-      println_value(item);
-      frame_index++;
-    }
-  }
-}
-
 
 // Continuations
 oop make_continuation(interpreter_state_t* state) {
@@ -558,8 +503,13 @@ oop interpret(oop frame, oop procedure) {
   }
 }
 
+void no_stack_traces_right_now() {
+  printf("No stack trace support right now.\n");
+}
+
 void init_interpreter() {
-  print_stack_trace = print_application_stack;
+  // TODO: Reenable the ability to print stack traces!
+  print_stack_trace = no_stack_traces_right_now;
   stack = malloc(sizeof(stack_t));
   int i;
   for (i=0; i<MAX_STACK_SIZE; i++) {

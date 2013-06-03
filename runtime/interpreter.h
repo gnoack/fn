@@ -14,23 +14,14 @@ extern oop stack_peek();
 extern oop stack_peek_at(fn_uint n);
 extern void stack_shrink(int n);
 
-// Markers on the stack for non-byte-code functions.
-extern void marker_push(oop function, oop frame);
-extern void marker_pop();
-
-extern boolean is_retptr(oop retptr);
-extern void print_retptr(oop retptr);
-
 // Frame
 extern oop make_frame(oop procedure, oop caller);
-boolean is_frame(oop obj);
-void print_frame(oop obj);
-
+extern boolean is_frame(oop obj);
+extern void print_frame(oop obj);
 extern void set_var(oop frame, unsigned int index, oop value);
-
 extern oop get_var(oop frame, unsigned int index);
 
-boolean is_continuation(oop continuation);
+extern boolean is_continuation(oop continuation);
 
 
 typedef struct {

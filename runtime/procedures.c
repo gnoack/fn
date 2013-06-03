@@ -230,21 +230,17 @@ oop make_dframe_for_application(oop lfn, oop args) {
 
 oop apply_lisp_procedure(oop fn, oop args) {
   oop env = make_dframe_for_application(fn, args);
-  marker_push(fn, env);
   gc_protect_counter++;
   oop result = eval(make_cons(symbols._progn, fn_code(fn)), env);
   gc_protect_counter--;
-  marker_pop();
   return result;
 }
 
 oop apply_native_fn(oop fn, oop args) {
   function c_function = native_fn_function(fn);
-  marker_push(fn, args);
   gc_protect_counter++;
   oop result = c_function(args);
   gc_protect_counter--;
-  marker_pop();
   return result;
 }
 

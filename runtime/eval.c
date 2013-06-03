@@ -85,7 +85,6 @@ void init_eval() {
   register_globally("@dframe", symbols._dframe);
   register_globally("@dict", symbols._dict);
   register_globally("@frame", symbols._frame);
-  register_globally("@retptr", symbols._retptr);
   register_globally("@string", symbols._string);
   register_globally("@symbol", symbols._symbol);
   register_globally("@procedure", symbols._procedure);

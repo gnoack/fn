@@ -107,8 +107,6 @@ void print_value(oop v) {
       print_value(array_get(v, i));
     }
     putchar(']');
-  } else if (is_retptr(v)) {
-    print_retptr(v);
   } else if (is_dict(v)) {
     oop kv_pairs = dict_key_value_pairs(v);
     printf("#{");
@@ -138,8 +136,6 @@ void print_value(oop v) {
       printf("@dict");
     } else if (value_eq(symbols._frame, v)) {
       printf("@frame");
-    } else if (value_eq(symbols._retptr, v)) {
-      printf("@retptr");
     } else if (value_eq(symbols._string, v)) {
       printf("@string");
     } else if (value_eq(symbols._symbol, v)) {
