@@ -151,13 +151,6 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
   state->oop_lookups = caddr(code);
 }
 
-void compare_istate(interpreter_state_t* a, interpreter_state_t* b) {
-  CHECK(value_eq(a->reg_frm, b->reg_frm), "Different frames!");
-  CHECK(a->ip == b->ip, "Different instruction pointers!");
-  CHECK(value_eq(a->bytecode, b->bytecode), "Different bytecodes!");
-  CHECK(value_eq(a->oop_lookups, b->oop_lookups), "Different lookup tables!");
-}
-
 // Because interpreter_state_t is only a cache for the frame.
 void writeback_to_frame(interpreter_state_t* state) {
   MEM_SET(state->reg_frm, FRAME_IP, make_smallint(state->ip));
@@ -217,8 +210,6 @@ void print_frame(oop obj) {
 }
 
 
-oop serialize_retptr(interpreter_state_t* state);
-
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
@@ -242,8 +233,9 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     }
 
     if (tailcall == NO) {
+      // Only need to writeback when frame is not discarded.
       writeback_to_frame(state);
-      stack_push(serialize_retptr(state));
+      stack_push(NIL);  // XXX: Get rid of this
     }
 
     IPRINT("call %lu         .oO ", arg_count);
@@ -315,26 +307,6 @@ void print_retptr(oop retptr) {
   printf("}}");
 }
 
-oop serialize_retptr(interpreter_state_t* state) {
-  oop result = mem_alloc(5);
-  MEM_SET(result, 0, symbols._retptr);
-  MEM_SET(result, 1, state->reg_frm);
-  MEM_SET(result, 2, make_smallint(state->ip));
-  MEM_SET(result, 3, state->bytecode);
-  MEM_SET(result, 4, state->oop_lookups);
-  return result;
-}
-
-void deserialize_retptr(oop retptr, interpreter_state_t* state) {
-  // Comment this out for performance.
-  DEBUG_CHECKV(is_retptr(retptr), retptr,
-               "Needs to be a retptr to deserialize it.");
-  state->reg_frm     = MEM_GET(retptr, 1);
-  state->ip          = get_smallint(MEM_GET(retptr, 2));
-  state->bytecode    = MEM_GET(retptr, 3);
-  state->oop_lookups = MEM_GET(retptr, 4);
-}
-
 
 void marker_push(oop function, oop frame) {
   oop result = mem_alloc(6);
@@ -374,7 +346,6 @@ oop make_continuation(interpreter_state_t* state) {
   writeback_to_frame(state);
   oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._continuation);
-  // MEM_SET(result, 1, serialize_retptr(state));
   MEM_SET(result, 1, state->reg_frm);
   MEM_SET(result, 2, make_smallint(stack->size));
   return result;
@@ -398,7 +369,6 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
   CHECKV(is_continuation_valid(continuation), continuation,
          "Not a valid continuation.");
   restore_from_frame(MEM_GET(continuation, 1), state);
-  //  deserialize_retptr(MEM_GET(continuation, 1), state);
   stack->size = get_smallint(MEM_GET(continuation, 2));
 }
 
@@ -522,21 +492,13 @@ oop interpret(oop frame, oop procedure) {
       IPRINT("return\n");
       oop retvalue = stack_pop();
       oop retptr = stack_pop();
-      if (!(is_nil(retptr) ||
-            value_eq(MEM_GET(retptr, 1), frame_caller(state.reg_frm)))) {
-        printf("Wrong caller!\nExpected:\n");
-        printf("#%08llx\n", (unsigned long long) retptr.smallint);
-        println_value(retptr);
-        oop got = frame_caller(state.reg_frm);
-        printf("Got:\n");
-        printf("#%08llx\n", (unsigned long long) got.smallint);
-        println_value(got);
-        exit(1);
-      }
-      if (is_nil(retptr)) {
+      oop caller = frame_caller(state.reg_frm);
+      if (is_nil(caller)) {
         #ifdef INTERPRETER_DEBUG
         if (stack_size_before != stack->size) {
           printf("The stack is a mutant!");
+          printf("Old stack size: %d\n", stack_size_before);
+          printf("New stack size: %d\n", stack->size);
           print_stack();
           exit(1);
         }
@@ -547,14 +509,7 @@ oop interpret(oop frame, oop procedure) {
         return retvalue;
       } else {
         stack_push(retvalue);
-        #ifdef INTERPRETER_DEBUG
-        interpreter_state_t debug_state;
-        restore_from_frame(frame_caller(state.reg_frm), &debug_state);
-        #endif  // INTERPRETER_DEBUG
-        deserialize_retptr(retptr, &state);
-        #ifdef INTERPRETER_DEBUG
-        compare_istate(&state, &debug_state);
-        #endif  // INTERPRETER_DEBUG
+        restore_from_frame(frame_caller(state.reg_frm), &state);
 	if (protected_interpreter_state == &state) {
 	  gc_run();
 	}
