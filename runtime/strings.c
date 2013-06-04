@@ -33,9 +33,9 @@ oop make_string(const char* str) {
 
 char* c_string(oop str) {
   CHECKV(is_string(str), str, "Must be string");
-  fn_uint len = get_smallint(mem_get(str, 1));
-  fn_uint offset = get_smallint(mem_get(str, 2));
-  oop raw_string = mem_get(str, 3);
+  fn_uint len = get_smallint(MEM_GET(str, 1));
+  fn_uint offset = get_smallint(MEM_GET(str, 2));
+  oop raw_string = MEM_GET(str, 3);
   char* original_raw = (char*) raw_string.mem;
   char* result = malloc(len + 1);
   CHECK(result != NULL, "Can't allocate memory.");
@@ -48,5 +48,5 @@ boolean is_string(oop str) {
   if (!is_mem(str)) {
     return NO;
   }
-  return value_eq(symbols._string, mem_get(str, 0));
+  return value_eq(symbols._string, MEM_GET(str, 0));
 }

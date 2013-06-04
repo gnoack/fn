@@ -45,7 +45,7 @@ boolean is_array(oop array) {
   if (!is_mem(array)) {
     return NO;
   }
-  return value_eq(symbols._array, mem_get(array, 0));
+  return value_eq(symbols._array, MEM_GET(array, 0));
 }
 
 
@@ -204,7 +204,7 @@ boolean is_dict(oop dict) {
   if (!is_mem(dict)) {
     return NO;
   }
-  return value_eq(symbols._dict, mem_get(dict, 0));
+  return value_eq(symbols._dict, MEM_GET(dict, 0));
 }
 
 

@@ -84,17 +84,17 @@ function native_fn_function(oop fn) {
 
 boolean is_lisp_procedure(oop fn) {
   return TO_BOOL(is_mem(fn) &&
-                 value_eq(symbols._procedure, mem_get(fn, 0)));
+                 value_eq(symbols._procedure, MEM_GET(fn, 0)));
 }
 
 boolean is_compiled_lisp_procedure(oop cfn) {
   return TO_BOOL(is_mem(cfn) &&
-                 value_eq(symbols._compiled_procedure, mem_get(cfn, 0)));
+                 value_eq(symbols._compiled_procedure, MEM_GET(cfn, 0)));
 }
 
 boolean is_native_procedure(oop fn) {
   return TO_BOOL(is_mem(fn) &&
-                 value_eq(mem_get(fn, 0), symbols._native_procedure));
+                 value_eq(symbols._native_procedure, MEM_GET(fn, 0)));
 }
 
 boolean is_procedure(oop fn) {

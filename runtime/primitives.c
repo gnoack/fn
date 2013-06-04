@@ -32,7 +32,7 @@ oop primitive_mem_make(oop args) {
   oop result = mem_alloc(size);
   fn_uint i;
   for (i = 0; i < size; i++) {
-    mem_set(result, i, first(args));
+    MEM_SET(result, i, first(args));
     args = rest(args);
   }
   return result;
