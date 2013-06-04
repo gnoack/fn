@@ -233,12 +233,20 @@ oop apply_lisp_procedure(oop fn, oop args, oop caller) {
   return result;
 }
 
-oop apply_native_fn(oop fn, oop args) {
+oop current_native_procedure_caller;
+
+oop apply_native_fn(oop fn, oop args, oop caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
+  current_native_procedure_caller = caller;
   oop result = c_function(args);
+  current_native_procedure_caller = NIL;
   gc_protect_counter--;
   return result;
+}
+
+oop native_procedure_caller() {
+  return current_native_procedure_caller;
 }
 
 
@@ -273,7 +281,7 @@ oop apply_with_caller(oop values, oop caller) {
     result = apply_compiled_lisp_procedure(fn, cdr(values), caller);
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
-    result = apply_native_fn(fn, cdr(values));
+    result = apply_native_fn(fn, cdr(values), caller);
   }
   return result;
 }

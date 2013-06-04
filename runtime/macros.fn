@@ -194,6 +194,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; More general purpose macros                                    ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO: `typecase' macro.
 (defmacro case (expr &rest clauses)
   (with-gensyms (value)
     `(let ((,value ,expr))
@@ -207,7 +208,6 @@
                        (true
                         (error "`case' clause has bad form: " (first clause)))))
                clauses)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Procedure call tracing for debugging                           ;;;

@@ -45,4 +45,7 @@ extern oop fn_env(oop fn);
 extern fn_uint fn_argnum(oop fn);
 extern boolean fn_nested_args(oop fn);
 
+// The caller of the currently executing native procedure.
+extern oop native_procedure_caller();
+
 #endif  // _PROCEDURES_H_

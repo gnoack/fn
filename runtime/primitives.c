@@ -285,6 +285,10 @@ oop primitive_fwrite_buf(oop args) {
   return make_smallint(result);
 }
 
+oop primitive_get_frame(oop args) {
+  CHECK(is_nil(args), "Assumed no arguments.");
+  return native_procedure_caller();
+}
 
 void init_primitives() {
   register_globally_fn("first", primitive_first);
@@ -328,4 +332,5 @@ void init_primitives() {
   register_globally_fn("fclose", primitive_fclose);
   register_globally_fn("fread", primitive_fread_buf);
   register_globally_fn("fwrite", primitive_fwrite_buf);
+  register_globally_fn("$get-frame", primitive_get_frame);
 }

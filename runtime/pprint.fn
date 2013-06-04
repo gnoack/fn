@@ -67,3 +67,23 @@
   (map display args)
   (writeout "\n")
   nil)
+
+;; TODO: Rather implement stack traces in C, for robustness!
+;; TODO: Break dependency on this.
+(defn frame-caller (f) ($mem-get f 2))
+(defn frame-procedure (f) ($mem-get f 3))
+(defn dframe-caller (f) ($mem-get f 3))
+(defn dframe-procedure (f) ($mem-get f 4))
+
+;; TODO: `typecase' macro.
+(defn print-stack-trace (frame)
+  (cond
+    ((eq? (type-of frame) @frame)
+     (progn
+       (println " - " (frame-procedure frame))
+       (print-stack-trace (frame-caller frame))))
+    ((eq? (type-of frame) @dframe)
+     (progn
+       (println " - " (dframe-procedure frame))
+       (print-stack-trace (dframe-caller frame))))
+    (true nil)))

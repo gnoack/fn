@@ -14,7 +14,7 @@
 
 #define MAX_STACK_SIZE 0x4000
 
-#define INTERPRETER_DEBUG 1
+// #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
 
 #ifdef INTERPRETER_DEBUG
@@ -257,7 +257,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     oop values = stack_pop_list(arg_count);
     IPRINT("call %lu         .oO ", arg_count);
     IVALUE(values);
-    stack_push(apply(values));
+    stack_push(apply_with_caller(values, state->reg_frm));
   }
 }
 
