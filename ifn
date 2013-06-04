@@ -1,2 +1,1 @@
-make fn fn.img repl/readline.so
-exec ./fn -S repl/repl.fn
+make fn fn.img repl/readline.so && exec ./fn -S repl/repl.fn
