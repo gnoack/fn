@@ -50,9 +50,9 @@ oop construct_symbol(const char* str) {
   target[len] = '\0';
 
   oop result = mem_alloc(3);
-  mem_set(result, 0, symbols._symbol);
-  mem_set(result, 1, raw_mem);
-  mem_set(result, 2, make_smallint(hash));
+  MEM_SET(result, 0, symbols._symbol);
+  MEM_SET(result, 1, raw_mem);
+  MEM_SET(result, 2, make_smallint(hash));
   return result;
 }
 

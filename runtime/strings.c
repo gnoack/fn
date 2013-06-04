@@ -17,10 +17,10 @@
  */
 oop make_string_from_mem_block(oop raw_string, fn_uint size) {
   oop result = mem_alloc(4);
-  mem_set(result, 0, symbols._string);
-  mem_set(result, 1, make_smallint(size));
-  mem_set(result, 2, make_smallint(0));
-  mem_set(result, 3, raw_string);
+  MEM_SET(result, 0, symbols._string);
+  MEM_SET(result, 1, make_smallint(size));
+  MEM_SET(result, 2, make_smallint(0));
+  MEM_SET(result, 3, raw_string);
   return result;
 }
 

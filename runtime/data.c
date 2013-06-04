@@ -272,11 +272,11 @@ oop primitive_make_dict(oop args) {
 // Construct a fixed-size dynamic frame.
 oop make_dframe(oop next_frame, fn_uint size, oop caller, oop procedure) {
   oop result = mem_alloc(DFRAME_HEADER_SIZE + size * 2);
-  mem_set(result, 0, symbols._dframe);
-  mem_set(result, 1, make_smallint(size));
-  mem_set(result, 2, next_frame);
-  mem_set(result, 3, caller);
-  mem_set(result, 4, procedure);
+  MEM_SET(result, 0, symbols._dframe);
+  MEM_SET(result, 1, make_smallint(size));
+  MEM_SET(result, 2, next_frame);
+  MEM_SET(result, 3, caller);
+  MEM_SET(result, 4, procedure);
   return result;
 }
 
