@@ -23,12 +23,12 @@ fn_uint num_vars_in_ll(oop ll);
 // Interpreted Lisp procedure.
 oop make_procedure(oop lambda_list, oop body, oop env) {
   oop result = mem_alloc(6);
-  mem_set(result, 0, symbols._procedure);
-  mem_set(result, 1, NIL);  // Name.
-  mem_set(result, 2, lambda_list);
-  mem_set(result, 3, body);
-  mem_set(result, 4, env);
-  mem_set(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
+  MEM_SET(result, 0, symbols._procedure);
+  MEM_SET(result, 1, NIL);  // Name.
+  MEM_SET(result, 2, lambda_list);
+  MEM_SET(result, 3, body);
+  MEM_SET(result, 4, env);
+  MEM_SET(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
   return result;
 }
 
@@ -38,14 +38,14 @@ oop make_compiled_procedure(oop lambda_list, oop env,
   CHECKNUMBER(ip);
   CHECKV(is_raw_mem(bytecode), bytecode, "Needs to have bytecode.");
   oop result = mem_alloc(8);
-  mem_set(result, 0, symbols._compiled_procedure);
-  mem_set(result, 1, NIL);  // Name.
-  mem_set(result, 2, lambda_list);
-  mem_set(result, 3, bytecode);
-  mem_set(result, 4, env);
-  mem_set(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
-  mem_set(result, 6, ip);
-  mem_set(result, 7, oop_lookup_table);
+  MEM_SET(result, 0, symbols._compiled_procedure);
+  MEM_SET(result, 1, NIL);  // Name.
+  MEM_SET(result, 2, lambda_list);
+  MEM_SET(result, 3, bytecode);
+  MEM_SET(result, 4, env);
+  MEM_SET(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
+  MEM_SET(result, 6, ip);
+  MEM_SET(result, 7, oop_lookup_table);
   return result;
 }
 
@@ -57,9 +57,9 @@ oop make_native_procedure(function c_function) {
   next_native_procedure++;
 
   oop result = mem_alloc(3);
-  mem_set(result, 0, symbols._native_procedure);
-  mem_set(result, 1, NIL);  // Name.
-  mem_set(result, 2, make_smallint(index));
+  MEM_SET(result, 0, symbols._native_procedure);
+  MEM_SET(result, 1, NIL);  // Name.
+  MEM_SET(result, 2, make_smallint(index));
   return result;
 }
 

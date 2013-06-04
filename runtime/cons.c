@@ -11,9 +11,9 @@
 extern
 oop make_cons(oop car, oop cdr) {
   oop cons = mem_alloc(3);
-  mem_set(cons, 0, symbols._cons);
-  mem_set(cons, 1, car);
-  mem_set(cons, 2, cdr);
+  MEM_SET(cons, 0, symbols._cons);
+  MEM_SET(cons, 1, car);
+  MEM_SET(cons, 2, cdr);
   return cons;
 }
 
@@ -28,25 +28,25 @@ boolean is_cons(oop v) {
 extern
 oop first(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for caring");
-  return mem_get(cons, 1);
+  return MEM_GET(cons, 1);
 }
 
 extern
 oop rest(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for cdring");
-  return mem_get(cons, 2);
+  return MEM_GET(cons, 2);
 }
 
 extern
 void set_rest(oop cons, oop value) {
   CHECKV(is_cons(cons), cons, "must be a cons for setting the cdr");
-  mem_set(cons, 2, value);
+  MEM_SET(cons, 2, value);
 }
 
 extern
 void set_first(oop cons, oop value) {
   CHECKV(is_cons(cons), cons, "must be a cons for setting the car");
-  mem_set(cons, 1, value);
+  MEM_SET(cons, 1, value);
 }
 
 extern

@@ -20,13 +20,9 @@
 #ifdef INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b) CHECK(a,b)
 #define DEBUG_CHECKV(a,v,b) CHECKV(a,v,b)
-#define MEM_GET(obj,idx) mem_get((obj),(idx))
-#define MEM_SET(obj,idx,val) mem_set((obj),(idx),(val))
 #else  // INTERPRETER_DEBUG
 #define DEBUG_CHECK(a,b)
 #define DEBUG_CHECKV(a,v,b)
-#define MEM_GET(obj,idx) (obj).mem[(idx)]
-#define MEM_SET(obj,idx,val) ((obj).mem[(idx)] = (val))
 #endif  // INTERPRETER_DEBUG
 
 #ifdef INTERPRETER_LOGGING

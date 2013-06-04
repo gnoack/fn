@@ -19,10 +19,10 @@ fn_uint symbol_to_hash(oop symbol) {
 oop make_array(fn_uint array_size) {
   fn_uint header_size = 1;
   oop result = mem_alloc(header_size + array_size);
-  mem_set(result, 0, symbols._array);
+  MEM_SET(result, 0, symbols._array);
   fn_uint i;
   for (i = 0; i < array_size; i++) {
-    mem_set(result, header_size + i, NIL);
+    MEM_SET(result, header_size + i, NIL);
   }
   return result;
 }
@@ -62,16 +62,18 @@ boolean is_array(oop array) {
 
 oop make_dict(fn_uint table_size) {
   oop result = mem_alloc(3);
-  mem_set(result, 0, symbols._dict);
-  mem_set(result, 1, make_smallint(0L));
-  mem_set(result, 2, make_array(table_size * 2));
+  MEM_SET(result, 0, symbols._dict);
+  MEM_SET(result, 1, make_smallint(0L));
+  MEM_SET(result, 2, make_array(table_size * 2));
   return result;
 }
 
+static inline
 fn_uint dict_size(oop dict) {
   return get_smallint(mem_get(dict, 1));
 }
 
+static inline
 oop dict_table(oop dict) {
   return mem_get(dict, 2);
 }
