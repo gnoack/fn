@@ -49,3 +49,10 @@ NB -- when disabling the checks in mem_get, mem_set, you go directly to (149, 14
    -- these checks are there for safety, it will be tricky to get rid of them.
 
 To be continued...
+
+Performance measured by:
+(load-file "examples/grammar-utils.fn")
+(with-timer (load-grammar! "examples/lisp.g"))
+
+With retptrs on stack: 2612-2689ms
+With interpreter_state_t as cache of frame: 2712-2830ms

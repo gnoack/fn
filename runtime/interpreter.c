@@ -131,13 +131,14 @@ void print_stack() {
 #define FRAME_HEADER_SIZE 5
 
 // Frame
+// TODO: Does IP always need to be set?
 oop make_frame(oop procedure, oop caller) {
   oop result = mem_alloc(FRAME_HEADER_SIZE + fn_argnum(procedure));
   MEM_SET(result, 0, symbols._frame);
   MEM_SET(result, 1, fn_env(procedure));  // next lexical environment. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
   MEM_SET(result, 3, procedure);
-  MEM_SET(result, 4, car(fn_code(procedure)));  // Needed in all cases?
+  MEM_SET(result, 4, car(fn_code(procedure)));  // IP.
   return result;
 }
 
@@ -297,7 +298,7 @@ oop make_continuation(interpreter_state_t* state) {
 }
 
 boolean is_continuation_valid(oop continuation) {
-  return TO_BOOL(!value_eq(MEM_GET(continuation, 1), NIL));
+  return TO_BOOL(!is_nil(MEM_GET(continuation, 1)));
 }
 
 void invalidate_continuation(oop continuation) {
@@ -422,7 +423,7 @@ oop interpret(oop frame, oop procedure) {
       fn_uint arg_count = read_index(&state);
       apply_into_interpreter(arg_count, &state, NO);
       if (protected_interpreter_state == &state) {
-	gc_run();
+        gc_run();
       }
       break;
     }
@@ -436,13 +437,14 @@ oop interpret(oop frame, oop procedure) {
       oop retvalue = stack_pop();
       oop caller = frame_caller(state.reg_frm);
       // TODO: Set caller to NIL?
-      if (is_frame(caller)) {
+      if (likely(is_frame(caller))) {
         stack_push(retvalue);
         restore_from_frame(frame_caller(state.reg_frm), &state);
-	if (protected_interpreter_state == &state) {
-	  gc_run();
-	}
+        if (protected_interpreter_state == &state) {
+          gc_run();
+        }
       } else {
+        // Leaving the interpreter loop.
         DEBUG_CHECKV(is_nil(caller) || is_dframe(caller), caller,
                      "Assumed nil or dframe.");
         #ifdef INTERPRETER_DEBUG
@@ -454,9 +456,9 @@ oop interpret(oop frame, oop procedure) {
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
-	if (protected_interpreter_state == &state) {
-	  protected_interpreter_state = NULL;
-	}
+        if (protected_interpreter_state == &state) {
+          protected_interpreter_state = NULL;
+        }
         return retvalue;
       }
       break;
