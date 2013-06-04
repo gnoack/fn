@@ -26,9 +26,9 @@ oop make_procedure(oop lambda_list, oop body, oop env) {
   MEM_SET(result, 0, symbols._procedure);
   MEM_SET(result, 1, NIL);  // Name.
   MEM_SET(result, 2, lambda_list);
-  MEM_SET(result, 3, body);
+  MEM_SET(result, 3, make_smallint(num_vars_in_ll(lambda_list)));
   MEM_SET(result, 4, env);
-  MEM_SET(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
+  MEM_SET(result, 5, body);
   return result;
 }
 
@@ -41,9 +41,9 @@ oop make_compiled_procedure(oop lambda_list, oop env,
   MEM_SET(result, 0, symbols._compiled_procedure);
   MEM_SET(result, 1, NIL);  // Name.
   MEM_SET(result, 2, lambda_list);
-  MEM_SET(result, 3, bytecode);
+  MEM_SET(result, 3, make_smallint(num_vars_in_ll(lambda_list)));
   MEM_SET(result, 4, env);
-  MEM_SET(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
+  MEM_SET(result, 5, bytecode);
   MEM_SET(result, 6, ip);
   MEM_SET(result, 7, oop_lookup_table);
   return result;
@@ -67,10 +67,10 @@ oop make_native_procedure(function c_function) {
 // These work for both interpreted and compiled Lisp procedures.
 oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
-oop fn_code(oop fn) { return mem_get(fn, 3); }
+oop fn_code(oop fn) { return mem_get(fn, 5); }
 oop fn_env(oop fn) { return mem_get(fn, 4); }
-fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 5)) >> 1; }
-boolean fn_nested_args(oop fn) { return TO_BOOL(get_smallint(mem_get(fn, 5)) & 1); }
+fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 3)) >> 1; }
+boolean fn_nested_args(oop fn) { return TO_BOOL(get_smallint(mem_get(fn, 3)) & 1); }
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {

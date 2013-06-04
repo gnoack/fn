@@ -3,7 +3,7 @@
 
 #include "value.h"
 
-// #define MEM_SET_DEBUG
+// #define MEMORY_DEBUG
 
 #ifdef MEMORY_DEBUG
 #define MEM_GET(obj,idx) mem_get((obj),(idx))

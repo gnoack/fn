@@ -221,8 +221,8 @@
 
 (defn fn-name (fn) ($mem-get fn 1))
 (defn fn-lambda-list (fn) ($mem-get fn 2))
-(defn fn-body (fn) ($mem-get fn 3))
 (defn fn-env (fn) ($mem-get fn 4))
+(defn fn-body (fn) ($mem-get fn 5))
 
 (defn compilable? (fn)
   ;; Note: This is the *static* global env...

@@ -46,7 +46,7 @@ extern oop fn_env(oop fn);
 extern fn_uint fn_argnum(oop fn);
 extern boolean fn_nested_args(oop fn);
 
-#define CFN_CODE         3
+#define CFN_CODE         5
 #define CFN_IP           6
 #define CFN_LOOKUP_TABLE 7
 

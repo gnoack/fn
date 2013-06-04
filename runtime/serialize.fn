@@ -46,7 +46,7 @@
           (error "Can only serialize procedures in global environment."))
         (serialize! ($mem-get item 1) write-byte!)  ; name
         (serialize! ($mem-get item 2) write-byte!)  ; lambda-list
-        (serialize! ($mem-get item 3) write-byte!)  ; bytecode
+        (serialize! ($mem-get item 5) write-byte!)  ; bytecode
         (serialize! ($mem-get item 6) write-byte!)  ; ip
         (serialize! ($mem-get item 7) write-byte!)  ; lookup-table
         ))
