@@ -210,8 +210,8 @@
         (apply translate! cmd))
       (dolist (todo postponed-actions)
         (todo))
-      (list 0                           ; Position where to start.
-            (byte-buffer->rawmem byte-stream)
+      (list (byte-buffer->rawmem byte-stream)
+            0  ;; Position where to start.
             (list->array known-oops)))))
 
 
@@ -232,16 +232,20 @@
   (and (eq? @procedure (type-of fn))
        (global-env? (fn-env fn))))
 
+;; Wrapper around `make-compiled-procedure' that accepts a code-triple.
+(defn make-compiled-procedure* (name lambda-list frame (bytecode ip oop-table))
+  (make-compiled-procedure name lambda-list frame bytecode ip oop-table))
+
 (defn compile-fn (fn)
   (with-gensym-scope
    (if (compilable? fn)
        (let ((env-in-body (send global-env 'linked-with-vars
                                 (vars-from-ll (fn-lambda-list fn)))))
-         (make-compiled-procedure
+         (make-compiled-procedure*
           (fn-name fn)
           (fn-lambda-list fn)
-          (assemble (compile-lambda-body (fn-body fn) env-in-body))
-          nil))
+          nil
+          (assemble (compile-lambda-body (fn-body fn) env-in-body))))
      ;; If not compilable, we simply return the thing itself.  Chances
      ;; are, the procedure is already compiled.  This is a hack to
      ;; make compiling by hand convenient.
@@ -251,19 +255,19 @@
 ;; Should only be defined once compilation works.
 ;; Returns a procedure that works on the top-level when executed.
 (defn compile-top-level-expr (expr)
-  (let ((code (with-gensym-scope
-               (assemble (compile-lambda-body (list (macroexpand expr))
-                                              global-env)))))
-      (make-compiled-procedure nil '() code nil)))
+  (let ((code-triple (with-gensym-scope
+                      (assemble (compile-lambda-body (list (macroexpand expr))
+                                                     global-env)))))
+    (make-compiled-procedure* nil '() nil code-triple)))
 
 ;; TODO: Extract `lambda-compiled'?
 (defmacro defn-compiled (name lambda-list &rest bytecode)
   `(def ,name
-     (make-compiled-procedure
+     (make-compiled-procedure*
       (quote ,name)
       (quote ,lambda-list)
-      (assemble (quote ,bytecode))
-      nil)))
+      nil
+      (assemble (quote ,bytecode)))))
 
 ;; Replaces the C implementation of `apply'.
 (defn-compiled apply (proc args)

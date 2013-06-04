@@ -138,7 +138,7 @@ oop make_frame(oop procedure, oop caller) {
   MEM_SET(result, 1, fn_env(procedure));  // next lexical environment. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
   MEM_SET(result, 3, procedure);
-  MEM_SET(result, 4, car(fn_code(procedure)));  // IP.
+  MEM_SET(result, 4, MEM_GET(procedure, CFN_IP));  // Initial IP.
   return result;
 }
 
@@ -146,11 +146,10 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
   DEBUG_CHECKV(is_frame(frame), frame,
                "Needs to be a frame for deserializing it.");
   oop proc = MEM_GET(frame, FRAME_PROCEDURE);
-  oop code = fn_code(proc);
   state->reg_frm     = frame;
   state->ip          = get_smallint(MEM_GET(frame, FRAME_IP));
-  state->bytecode    = cadr(code);
-  state->oop_lookups = caddr(code);
+  state->bytecode    = MEM_GET(proc, CFN_CODE);
+  state->oop_lookups = MEM_GET(proc, CFN_LOOKUP_TABLE);
 }
 
 // Because interpreter_state_t is only a cache for the frame.
@@ -247,12 +246,9 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     state->reg_frm = env;
 
     // Position.
-    oop code = fn_code(cfn);
-    state->ip = get_smallint(car(code));
-    code = cdr(code);
-    state->bytecode = car(code);
-    code = cdr(code);
-    state->oop_lookups = car(code);
+    state->ip = get_smallint(MEM_GET(cfn, CFN_IP));
+    state->bytecode = MEM_GET(cfn, CFN_CODE);
+    state->oop_lookups = MEM_GET(cfn, CFN_LOOKUP_TABLE);
   } else {
     // Call recursively on the C stack.
     oop values = stack_pop_list(arg_count);
@@ -323,12 +319,11 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
 oop interpret(oop frame, oop procedure) {
   DEBUG_CHECK(is_compiled_lisp_procedure(procedure),
               "Expected compiled procedure.");
-  oop code = fn_code(procedure);
   interpreter_state_t state;
   state.reg_frm = frame;
-  state.ip = get_smallint(car(code));
-  state.bytecode = cadr(code);
-  state.oop_lookups = caddr(code);
+  state.ip = get_smallint(MEM_GET(procedure, CFN_IP));
+  state.bytecode = MEM_GET(procedure, CFN_CODE);
+  state.oop_lookups = MEM_GET(procedure, CFN_LOOKUP_TABLE);
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -415,8 +410,10 @@ oop interpret(oop frame, oop procedure) {
       oop lambda_list = read_oop(&state);
       IPRINT("make-lambda %lu ", start_ip);
       IVALUE(lambda_list);
-      oop code = LIST(make_smallint(start_ip), state.bytecode, state.oop_lookups);
-      stack_push(make_compiled_procedure(lambda_list, code, state.reg_frm));
+      stack_push(make_compiled_procedure(lambda_list, state.reg_frm,
+                                         state.bytecode,
+                                         make_smallint(start_ip),
+                                         state.oop_lookups));
       break;
     }
     case BC_CALL: {

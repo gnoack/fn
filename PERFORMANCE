@@ -56,3 +56,4 @@ Performance measured by:
 
 With retptrs on stack: 2612-2689ms
 With interpreter_state_t as cache of frame: 2712-2830ms
+After flattening out code tuples in procedures: 2168-2197ms

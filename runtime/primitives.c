@@ -210,8 +210,9 @@ oop primitive_run_gc(oop args) {
 }
 
 oop primitive_make_compiled_procedure(oop args) {
-  PARSE_FOUR_ARGS(name, lambda_list, code, in_frame);
-  oop result = make_compiled_procedure(lambda_list, code, in_frame);
+  PARSE_SIX_ARGS(name, lambda_list, in_frame, bytecode, ip, lookup_table);
+  oop result = make_compiled_procedure(lambda_list, in_frame,
+                                       bytecode, ip, lookup_table);
   procedure_set_name(result, name);
   return result;
 }

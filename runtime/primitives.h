@@ -33,6 +33,15 @@
   oop fifth_arg = first(args); args = rest(args);                       \
   CHECKV(is_nil(args), args, "More than 5 argument provided.");         \
 
+#define PARSE_SIX_ARGS(first_arg, second_arg, third_arg, fourth_arg, fifth_arg, sixth_arg) \
+  oop first_arg = first(args); args = rest(args);                       \
+  oop second_arg = first(args); args = rest(args);                      \
+  oop third_arg = first(args); args = rest(args);                       \
+  oop fourth_arg = first(args); args = rest(args);                      \
+  oop fifth_arg = first(args); args = rest(args);                       \
+  oop sixth_arg = first(args); args = rest(args);                       \
+  CHECKV(is_nil(args), args, "More than 6 argument provided.");         \
+
 #define UNARY_PREDICATE(name, c_tester) \
 oop name(oop args) {                    \
   PARSE_ONE_ARG(value);                 \

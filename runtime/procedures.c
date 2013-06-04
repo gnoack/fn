@@ -33,18 +33,19 @@ oop make_procedure(oop lambda_list, oop body, oop env) {
 }
 
 // Compiled Lisp procedure.
-oop make_compiled_procedure(oop lambda_list, oop code, oop env) {
-  CHECKV(is_cons(code), code,
-         "Code has to be a three tuple.");
-  CHECKNUMBER(first(code));
-  CHECKV(is_raw_mem(cadr(code)), cadr(code), "Needs to have bytecode.");
-  oop result = mem_alloc(6);
+oop make_compiled_procedure(oop lambda_list, oop env,
+                            oop bytecode, oop ip, oop oop_lookup_table) {
+  CHECKNUMBER(ip);
+  CHECKV(is_raw_mem(bytecode), bytecode, "Needs to have bytecode.");
+  oop result = mem_alloc(8);
   mem_set(result, 0, symbols._compiled_procedure);
   mem_set(result, 1, NIL);  // Name.
   mem_set(result, 2, lambda_list);
-  mem_set(result, 3, code);
+  mem_set(result, 3, bytecode);
   mem_set(result, 4, env);
   mem_set(result, 5, make_smallint(num_vars_in_ll(lambda_list)));
+  mem_set(result, 6, ip);
+  mem_set(result, 7, oop_lookup_table);
   return result;
 }
 

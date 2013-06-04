@@ -34,6 +34,7 @@
   (read-bytes! 0))
 
 (defn serialize! (item write-byte!)
+  ;; TODO: Use `typecase'.
   (let ((type (type-of item)))
     (cond
      ((eq? type @nil)
@@ -43,9 +44,12 @@
         (write-byte! *serialize-prefix-compiled-procedure*)
         (unless (nil? ($mem-get item 4))
           (error "Can only serialize procedures in global environment."))
-        (serialize! ($mem-get item 1) write-byte!)
-        (serialize! ($mem-get item 2) write-byte!)
-        (serialize! ($mem-get item 3) write-byte!)))
+        (serialize! ($mem-get item 1) write-byte!)  ; name
+        (serialize! ($mem-get item 2) write-byte!)  ; lambda-list
+        (serialize! ($mem-get item 3) write-byte!)  ; bytecode
+        (serialize! ($mem-get item 6) write-byte!)  ; ip
+        (serialize! ($mem-get item 7) write-byte!)  ; lookup-table
+        ))
      ((eq? type @mem-block)
       (progn
         (write-byte! *serialize-prefix-mem-block*)
@@ -125,10 +129,13 @@
      ((eq? type-prefix *serialize-prefix-smallint*)
       (deserialize-integer! read-byte!))
      ((eq? type-prefix *serialize-prefix-compiled-procedure*)
-      (make-compiled-procedure (deserialize! read-byte!)
-                               (deserialize! read-byte!)
-                               (deserialize! read-byte!)
-                               nil))
+      (make-compiled-procedure (deserialize! read-byte!)  ; name
+                               (deserialize! read-byte!)  ; lambda-list
+                               nil                        ; frame
+                               (deserialize! read-byte!)  ; bytecode
+                               (deserialize! read-byte!)  ; ip
+                               (deserialize! read-byte!)  ; lookup-table
+                               ))
      (true
       (error "Unsupported type for deserialization: "
              (num->char type-prefix))))))

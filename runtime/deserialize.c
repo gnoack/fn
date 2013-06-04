@@ -64,10 +64,13 @@ oop deserialize(FILE* input) {
     return make_char(read_byte(input));
   case S_COMPILED_PROCEDURE:
     {
-      oop name = deserialize(input);
-      oop result =  make_compiled_procedure(NIL,
-                                            deserialize(input),
-                                            deserialize(input));
+      oop name = deserialize(input);  // name
+      oop lambda_list = deserialize(input);
+      oop bytecode = deserialize(input);
+      oop ip = deserialize(input);
+      oop lookup_table = deserialize(input);
+      oop result = make_compiled_procedure(lambda_list, NIL, // env
+                                           bytecode, ip, lookup_table);
       procedure_set_name(result, name);
       return result;
     }
