@@ -54,9 +54,10 @@ Performance measured by:
 (load-file "examples/grammar-utils.fn")
 (with-timer (load-grammar! "examples/lisp.g"))
 
+2013-06-05
 With retptrs on stack: 2612-2689ms
 With interpreter_state_t as cache of frame: 2712-2830ms
 After flattening out code tuples in procedures: 2168-2197ms
 After using MEM_GET and MEM_SET macros in some places: 1738-1806ms
 After using MEM_GET and MEM_SET macros in even more places: 1742-1773ms
-After rearranging fields of compiled-procedure: 1735-1792ms (no gain, I guess)
+After rearranging fields of compiled-procedure: 1735-1792ms (no improvement...)

@@ -16,6 +16,15 @@
   ((foo) false)
   (else  true))
 
+(typecase "Hello"
+  ((@string) true)
+  ((@array)  false)
+  (else      false))
+
+(typecase 10
+  ((@string) false)
+  (else      true))
+
 ;; Does the hand-written defmacro
 ;; macro work?
 (eql?
