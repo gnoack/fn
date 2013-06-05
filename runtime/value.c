@@ -53,7 +53,7 @@ boolean is_smallint(oop v) {
 
 boolean is_symbol(oop v) {
   if (is_mem(v)) {
-    return TO_BOOL(value_eq(v.mem[0], symbols._symbol));
+    return value_eq(MEM_GET(v, 0), symbols._symbol);
   }
   return NO;
 }

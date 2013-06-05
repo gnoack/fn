@@ -6,7 +6,7 @@
 #include "value.h"
 
 oop mem_alloc(fn_uint amount) {
-  CHECK(amount > 0, "Allocated memory regions need to be larger than 0.");
+  CHECK(amount > 0, "Allocated memory size need to be larger than 0.");
   return gc_object_alloc(amount);
 }
 
