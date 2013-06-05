@@ -22,7 +22,7 @@ boolean is_cons(oop v) {
   if (!is_mem(v)) {
     return NO;
   }
-  return value_eq(symbols._cons, mem_get(v, 0));
+  return value_eq(symbols._cons, MEM_GET(v, 0));
 }
 
 extern
