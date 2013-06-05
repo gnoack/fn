@@ -42,19 +42,24 @@ void fn_runtime_init() {
 void fn_runtime_init_lisp_decls() {
   load_decls(lang_decls());
   load_decls(macros_decls());
+
   load_decls(utils_decls());
-  load_decls(modules_decls());
-  load_decls(dispatcher_decls());
   load_decls(objects_decls());
   load_decls(arrays_decls());
+
+  load_decls(byte_buffer_decls());
+  load_decls(dispatcher_decls());
+  load_decls(compiler_decls());
+
+  load_decls(serialize_decls());
+
+  load_decls(pprint_decls());
+  load_decls(modules_decls());
+  load_decls(continuations_decls());
+
   load_decls(pegs_decls());
   load_decls(parser_decls());
   load_decls(pegs_parser_decls());
-  load_decls(pprint_decls());
-  load_decls(byte_buffer_decls());
-  load_decls(compiler_decls());
-  load_decls(serialize_decls());
-  load_decls(continuations_decls());
 }
 
 void fn_load_file(const char* filename) {
