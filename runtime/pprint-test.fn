@@ -6,6 +6,8 @@
 (string=? "#\\Space" (pprint #\Space))
 (string=? "#\\Tab" (pprint #\Tab))
 (string=? "(1 2 3)" (pprint '(1 2 3)))
+;; TODO: Implement printing for cons cells!
+;; (string=? "(1 . 2)" (pprint (cons 1 2)))
 (string=? "foo" (pprint 'foo))
 (string=? "()" (pprint nil))
 (string=? "<NATIVE-PROCEDURE +>" (pprint +))
