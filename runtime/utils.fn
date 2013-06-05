@@ -40,26 +40,6 @@
         (filter predicate? (rest l)))
     '()))
 
-;; TODO: For speed, write in C using memcmp().
-(defn $mem-block=? (a a-offset b b-offset size)
-  (or (= 0 size)
-      (and (eq? ($mem-block-byte-get a a-offset)
-                ($mem-block-byte-get b b-offset))
-           ($mem-block=? a (+ 1 a-offset)
-                         b (+ 1 b-offset)
-                         (- size 1)))))
-
-;; TODO: For speed, write in C using memcpy().
-(defn $memcpy (trg trg-offset src src-offset size)
-  (if (= 0 size)
-      trg
-      (progn
-        ($mem-block-byte-set! trg trg-offset
-                              ($mem-block-byte-get src src-offset))
-        ($memcpy trg (+ 1 trg-offset)
-                 src (+ 1 src-offset)
-                 (- size 1)))))
-
 (defn $mem-populate-from-byte-list (trg trg-offset src-list)
   (if (cons? src-list)
       (progn

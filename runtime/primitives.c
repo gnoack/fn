@@ -203,6 +203,21 @@ oop primitive_raw_mem_size(oop args) {
   return make_smallint(mem_raw_mem_size(target));
 }
 
+oop primitive_raw_memcpy(oop args) {
+  PARSE_FIVE_ARGS(trg, trg_offset, src, src_offset, size);
+  memcpy(mem_raw_get_ptr(trg) + get_smallint(trg_offset),
+         mem_raw_get_ptr(src) + get_smallint(src_offset), get_smallint(size));
+  return trg;
+}
+
+oop primitive_raw_mem_eq(oop args) {
+  PARSE_FIVE_ARGS(a, a_offset, b, b_offset, size);
+  int result = memcmp(mem_raw_get_ptr(a) + get_smallint(a_offset),
+                      mem_raw_get_ptr(b) + get_smallint(b_offset),
+                      get_smallint(size));
+  return lisp_bool(result == 0);
+}
+
 oop primitive_run_gc(oop args) {
   CHECKV(is_nil(args), args, "No arguments allowed for run-gc.");
   run_gc_soon();
@@ -322,6 +337,8 @@ void init_primitives() {
   register_globally_fn("mem-block?", primitive_raw_mem_p);
   register_globally_fn("$mem-block-byte-get", primitive_raw_mem_get);
   register_globally_fn("$mem-block-byte-set!", primitive_raw_mem_set);
+  register_globally_fn("$mem-block=?", primitive_raw_mem_eq);
+  register_globally_fn("$memcpy", primitive_raw_memcpy);
   register_globally_fn("mem-block-size", primitive_raw_mem_size);
   register_globally_fn("run-gc", primitive_run_gc);
   register_globally_fn("make-compiled-procedure",

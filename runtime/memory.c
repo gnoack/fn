@@ -55,6 +55,7 @@ void mem_raw_mem_set(oop target, fn_uint index, fn_uint value) {
 }
 
 void* mem_raw_get_ptr(oop target) {
+  CHECKV(is_raw_mem(target), target, "Expected raw memory block.");
   return (void*) target.mem;
 }
 
