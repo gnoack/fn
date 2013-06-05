@@ -1,8 +1,14 @@
 (def *assertions-executed* 0)
 
-;; TODO: Cache compiled test file contents.
+;; TODO: Cache compiled tests, not just expressions.
+(defn read-cached (filename)
+  (deserialize-from-cache-file!
+   (string-append filename ".exprc")
+   (file-timestamp filename)
+   (lambda () (read-all (file->string filename)))))
+
 (defn run-test-file (filename)
-  (dolist (item (read-all (file->string filename)))
+  (dolist (item (read-cached filename))
     (eval `(assert ,item))
     (inc! *assertions-executed*)
     (writeout "."))

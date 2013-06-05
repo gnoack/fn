@@ -1,5 +1,3 @@
-
-
 (defn pprint (item)
   ;; TODO: Array printing.
   ;; TODO: Memory consumption.

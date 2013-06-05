@@ -1,6 +1,8 @@
 *.fasl
 *.o
 *~
+*.fnc
+*.exprc
 arrays-test.c
 arrays.c
 byte-buffer-test.c

@@ -300,6 +300,8 @@
                   (deserialize! read-byte!)))))
     (lose)))
 
+;; If the cache file's timestamp is min-timestamp or later, deserialize it.
+;; Otherwise, call `calculate' and return that.
 (defn deserialize-from-cache-file! (cache-filename min-timestamp calculate)
   (defn calculate-and-save! ()
     (let ((result (calculate)))
