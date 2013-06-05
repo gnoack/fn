@@ -296,6 +296,7 @@ void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value) {
 }
 
 oop dframe_caller(oop dframe) {
+  CHECKV(is_dframe(dframe), dframe, "Needs to be dframe.");
   return mem_get(dframe, DFRAME_CALLER);
 }
 
@@ -337,6 +338,19 @@ oop dframe_get(oop dframe, oop key) {
     // Not found, try next dframe.
     dframe = mem_get(dframe, DFRAME_NEXT);
   }
+}
+
+void print_dframe(oop dframe) {
+  CHECKV(is_dframe(dframe), dframe, "Must be dframe.");
+  printf("(");
+  print_value(fn_name(MEM_GET(dframe, DFRAME_PROCEDURE)));
+  fn_uint size = dframe_size(dframe);
+  int i;
+  for (i=0; i<size; i++) {
+    printf(" ");
+    print_value(MEM_GET(dframe, DFRAME_HEADER_SIZE + size + i));
+  }
+  printf(")");
 }
 
 

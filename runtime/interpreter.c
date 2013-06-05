@@ -196,14 +196,14 @@ boolean is_frame(oop obj) {
 
 void print_frame(oop obj) {
   CHECKV(is_frame(obj), obj, "Must be frame.");
-  printf("<[");
-  print_value(MEM_GET(obj, FRAME_PROCEDURE));
+  printf("(");
+  print_value(fn_name(MEM_GET(obj, FRAME_PROCEDURE)));
   int i;
   for (i=0; i<frame_size(obj); i++) {
     printf(" ");
     print_value(get_var(obj, i));
   }
-  printf("]>");
+  printf(")");
 }
 
 
@@ -502,13 +502,29 @@ oop interpret(oop frame, oop procedure) {
   }
 }
 
-void no_stack_traces_right_now() {
-  printf("No stack trace support right now.\n");
+void my_print_stack_trace() {
+  oop frame = native_procedure_caller();
+  if (is_nil(frame)) {
+    printf("Outside of C function -- current frame is unknown!\n");
+    return;
+  }
+
+  while (!is_nil(frame)) {
+    printf(" - ");
+    if (is_frame(frame)) {
+      print_frame(frame);
+      frame = frame_caller(frame);
+    } else {
+      CHECKV(is_dframe(frame), frame, "Expected frame or dframe");
+      print_dframe(frame);
+      frame = dframe_caller(frame);
+    }
+    printf("\n");
+  }
 }
 
 void init_interpreter() {
-  // TODO: Reenable the ability to print stack traces!
-  print_stack_trace = no_stack_traces_right_now;
+  print_stack_trace = my_print_stack_trace;
   stack = malloc(sizeof(stack_t));
   int i;
   for (i=0; i<MAX_STACK_SIZE; i++) {

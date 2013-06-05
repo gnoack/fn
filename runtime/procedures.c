@@ -234,11 +234,13 @@ oop apply_lisp_procedure(oop fn, oop args, oop caller) {
   return result;
 }
 
-oop current_native_procedure_caller;
+oop current_native_procedure_caller = NIL;
 
 oop apply_native_fn(oop fn, oop args, oop caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
+  // TODO: Find a way to track C-level stack frames.  (This is slow!)
+  // current_native_procedure_caller = make_dframe(NIL, 0, caller, fn);
   current_native_procedure_caller = caller;
   oop result = c_function(args);
   current_native_procedure_caller = NIL;

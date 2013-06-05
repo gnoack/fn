@@ -157,4 +157,3 @@ void println_value(oop v) {
   print_value(v);
   printf("\n");
 }
-

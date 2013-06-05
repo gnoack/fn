@@ -24,6 +24,8 @@ extern boolean is_dframe(oop obj);
 extern void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value);
 extern void dframe_set(oop dframe, oop key, oop value);
 extern oop dframe_get(oop dframe, oop key);
+extern oop dframe_caller(oop dframe);
+extern void print_dframe(oop dframe);
 
 extern void init_data();
 
