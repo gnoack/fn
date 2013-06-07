@@ -37,7 +37,6 @@
 (defmacro deftype (name)
   `(def ,name ($make @type (make-dict) ,(symbol->string name))))
 
-(deftype @mem)
 (deftype @smallint)
 (deftype @character)
 (deftype @nil)

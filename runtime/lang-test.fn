@@ -81,18 +81,6 @@
 (eq? 'just-for-testing just-for-testing)
 
 
-; _and
-(eq? true (_and true true))
-(eq? false (_and true false))
-(eq? false (_and false true))
-(eq? false (_and false false))
-
-; _or
-(eq? true (_or true true))
-(eq? true (_or true false))
-(eq? true (_or false true))
-(eq? false (_or false false))
-
 ; Map
 (eql? (cons 2 (cons 3 nil))
       (cons 2 (cons 3 nil)))

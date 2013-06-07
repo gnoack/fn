@@ -1,12 +1,6 @@
 (def not (lambda (a)
 	   (if a false true)))
 
-(def _and (lambda (a b)
-	   (if a b false)))
-
-(def _or (lambda (a b)
-	  (if a true b)))
-
 ;; Nil?
 (def nil? (lambda (x)
 	    (eq? nil x)))
@@ -97,6 +91,7 @@
     (lambda (car cdr)	
       ($make @cons car cdr)))
 
+;; TODO: Use `type-of' instead?  (Defined in objects.fn)
 (def %has-mem-type?
   (lambda (value type)
     (if (mem? value)
@@ -117,9 +112,10 @@
 
 (def procedure?
   (lambda (proc)
-    (_or (native-procedure? proc)
-         (_or (lisp-procedure? proc)
-              (compiled-procedure? proc)))))
+    (if (native-procedure? proc) true
+    (if (lisp-procedure? proc) true
+    (if (compiled-procedure? proc) true
+      false)))))
 
 ;; See procedures.c for what fields mean what.
 (def procedure-name (lambda (proc) ($mem-get proc 1)))
