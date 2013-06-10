@@ -1,0 +1,23 @@
+
+;; Compiles into a sequence of executable functions.
+(defn compile-module (filename)
+  (map compile-top-level-expr (read-all (file->string filename))))
+
+;; Bootstrap works with the loaded system:
+(defn serialize-modules! (outfile module-filenames)
+  (with-file-writer
+   outfile
+   (lambda (write-byte!)
+     (dolist (module-filename module-filenames)
+       (println "Serializing: " module-filename)
+       (dolist (item (compile-module module-filename))
+         (serialize! item write-byte!))))))
+
+(serialize-modules!
+ "bootstrap.out"
+ (map (lambda (name) (string-append "runtime/" (symbol->string name) ".fn"))
+      '(lang macros
+        utils objects arrays
+        byte-buffer dispatcher compiler
+        pprint modules continuations
+        pegs parser pegs-parser)))
