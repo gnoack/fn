@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <string.h>  // memcpy, memcmp
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>

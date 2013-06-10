@@ -9,6 +9,12 @@
 #include "strings.h"
 #include "value.h"
 
+// file utilities.
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #define S_ARRAY              '['
 #define S_CHARACTER          'c'
 #define S_COMPILED_PROCEDURE 'B'
@@ -104,6 +110,18 @@ oop deserialize(FILE* input) {
     }
   }
   CHECK(NO, "Shouldn't reach end of deserialization function.");
+}
+
+void deserialize_from_bootstrap_file(const char* filename) {
+  FILE* in = fopen(filename, "r");
+  struct stat file_stats;
+  int result = fstat(fileno(in), &file_stats);
+  CHECK(result == 0, "Can't stat file.");
+
+  while (ftell(in) < file_stats.st_size) {
+    apply(make_cons(deserialize(in), NIL));
+  }
+  fclose(in);
 }
 
 oop primitive_deserialize(oop args) {

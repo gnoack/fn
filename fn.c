@@ -1,16 +1,18 @@
-#include "runtime/value.h"  // boolean.
+#include "runtime/cons.h"  // make_cons.
+#include "runtime/deserialize.h"  // deserialize_from_bootstrap_file.
+#include "runtime/eval.h"  // register_globally.
 #include "runtime/gc.h"  // gc serialization functions.
 #include "runtime/runtime.h"
-#include "runtime/cons.h"  // make_cons.
-#include "runtime/eval.h"  // register_globally.
 #include "runtime/strings.h"  // make_string.
+#include "runtime/value.h"  // boolean.
 
 #include <string.h>  // strcmp.
 
-boolean deserialize_arg = NO;
+boolean deserialize_from_bootstrap_file_arg = NO;
+boolean deserialize_from_image_arg = NO;
 boolean exit_arg = NO;
 boolean load_twice_arg = NO;
-boolean serialize_arg = NO;
+boolean serialize_to_image_arg = NO;
 const char* file_to_load = NULL;
 
 // Returns the first index of the remaining arguments,
@@ -22,10 +24,13 @@ int parse_args(int argc, char* argv[]) {
       load_twice_arg = YES; continue;
     }
     if (strcmp(argv[i], "-s") == 0) {
-      serialize_arg = YES; continue;
+      serialize_to_image_arg = YES; continue;
     }
     if (strcmp(argv[i], "-S") == 0) {
-      deserialize_arg = YES; continue;
+      deserialize_from_image_arg = YES; continue;
+    }
+    if (strcmp(argv[i], "-B") == 0) {
+      deserialize_from_bootstrap_file_arg = YES; continue;
     }
     if (strcmp(argv[i], "-x") == 0) {
       exit_arg = YES; continue;
@@ -38,11 +43,13 @@ int parse_args(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
   int remainder_idx = parse_args(argc, argv);
-  
+
   fn_runtime_init();
-  
-  if (deserialize_arg) {
+
+  if (deserialize_from_image_arg) {
     gc_deserialize_from_file("fn.img");
+  } else if (deserialize_from_bootstrap_file_arg) {
+    deserialize_from_bootstrap_file("bootstrap.out");
   } else {
     fn_runtime_init_lisp_decls();
     if (load_twice_arg) {
@@ -55,7 +62,7 @@ int main(int argc, char* argv[]) {
       fn_runtime_init_lisp_decls();
     }
   }
-  if (serialize_arg) {
+  if (serialize_to_image_arg) {
     gc_serialize_to_file("fn.img");
   }
   if (exit_arg) {
@@ -79,6 +86,7 @@ int main(int argc, char* argv[]) {
          "-2 load all main modules twice (compiling on the second go)\n"
          "-s save memory image after loading modules\n"
          "-S load memory image instead of loading modules\n"
+         "-B load bootstrap file instead of loading modules\n"
          "-x quit without executing tests\n");
     exit(0);
   }

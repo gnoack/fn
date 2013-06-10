@@ -8,10 +8,14 @@
        (or (char<= #\a c #\z)
            (char<= #\A c #\Z))))
 
+(def formfeed (num->char 12))
+
+;; TODO: Allow #\Formfeed syntax?
 (defn whitespace? (c)
-  (or (eq? c #\Tab)
+  (or (eq? c #\Space)
       (eq? c #\Newline)
-      (eq? c #\Space)))
+      (eq? c #\Tab)
+      (eq? c formfeed)))
 
 (defn peg= (item)
   (peg-terminal (lambda (x) (eq? x item)) item))
