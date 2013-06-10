@@ -16,9 +16,10 @@ typedef oop (*function)(oop args);
 // body is a list of expressions, env is a @dframe.
 extern oop make_procedure(oop lambda_list, oop body, oop env);
 
-// code is a code structure (see compiler.fn), env is a @frame.
+// code is bytecode (see compiler.fn), env is a @frame.
 extern oop make_compiled_procedure(oop lambda_list, oop env,
-                                   oop ip, oop bytecode, oop oop_lookup_table);
+                                   oop bytecode, oop ip, oop oop_lookup_table,
+                                   fn_uint max_stack_size);
 
 // Construct a low-level, C-implemented procedure.
 extern oop make_native_procedure(function c_function);
@@ -45,6 +46,7 @@ extern oop fn_code(oop cfn);
 extern oop fn_env(oop fn);
 extern fn_uint fn_argnum(oop fn);
 extern boolean fn_nested_args(oop fn);
+extern fn_uint fn_max_stack_depth(oop fn);
 
 #define CFN_CODE         5
 #define CFN_IP           6

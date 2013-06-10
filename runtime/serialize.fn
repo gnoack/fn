@@ -47,6 +47,7 @@
        (serialize! ($mem-get item 5) write-byte!)  ; bytecode
        (serialize! ($mem-get item 6) write-byte!)  ; ip
        (serialize! ($mem-get item 7) write-byte!)  ; lookup-table
+       (serialize! (fn-max-stack-depth item) write-byte!)
        ))
     ((@mem-block)
      (progn
@@ -133,7 +134,7 @@
                                (deserialize! read-byte!)  ; bytecode
                                (deserialize! read-byte!)  ; ip
                                (deserialize! read-byte!)  ; lookup-table
-                               ))
+                               (deserialize! read-byte!)))  ; max-stack-depth
      (true
       (error "Unsupported type for deserialization: "
              (num->char type-prefix))))))

@@ -13,12 +13,15 @@
        (dolist (item (compile-module module-filename))
          (serialize! item write-byte!))))))
 
-(serialize-modules!
- "bootstrap.out"
- (map (lambda (name) (string-append "runtime/" (symbol->string name) ".fn"))
-      '(lang macros
-        utils objects arrays
-        byte-buffer dispatcher compiler
-        pprint modules continuations
-        serialize
-        pegs parser pegs-parser)))
+(defn bootstrap ()
+  (serialize-modules!
+   "bootstrap.out"
+   (map (lambda (name) (string-append "runtime/" (symbol->string name) ".fn"))
+        '(lang macros
+               utils objects arrays
+               byte-buffer dispatcher compiler
+               pprint modules continuations
+               serialize
+               pegs parser pegs-parser))))
+
+(bootstrap)

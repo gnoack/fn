@@ -403,13 +403,14 @@ oop interpret(oop frame, oop procedure) {
     }
     case BC_MAKE_LAMBDA: {
       fn_uint start_ip = read_label_address(&state);
+      fn_uint max_stack_depth = read_index(&state);
       oop lambda_list = read_oop(&state);
-      IPRINT("make-lambda %lu ", start_ip);
       IVALUE(lambda_list);
       stack_push(make_compiled_procedure(lambda_list, state.reg_frm,
                                          state.bytecode,
                                          make_smallint(start_ip),
-                                         state.oop_lookups));
+                                         state.oop_lookups,
+                                         max_stack_depth));
       break;
     }
     case BC_CALL: {

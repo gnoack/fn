@@ -34,14 +34,17 @@ oop make_procedure(oop lambda_list, oop body, oop env) {
 
 // Compiled Lisp procedure.
 oop make_compiled_procedure(oop lambda_list, oop env,
-                            oop bytecode, oop ip, oop oop_lookup_table) {
+                            oop bytecode, oop ip, oop oop_lookup_table,
+                            fn_uint max_stack_depth) {
   CHECKNUMBER(ip);
   CHECKV(is_raw_mem(bytecode), bytecode, "Needs to have bytecode.");
+  // TODO: Check that num_vars_in_ll < 2**16, so it won't overlap.
+  fn_uint numbers = (max_stack_depth << 16) | num_vars_in_ll(lambda_list);
   oop result = mem_alloc(8);
   MEM_SET(result, 0, symbols._compiled_procedure);
   MEM_SET(result, 1, NIL);  // Name.
   MEM_SET(result, 2, lambda_list);
-  MEM_SET(result, 3, make_smallint(num_vars_in_ll(lambda_list)));
+  MEM_SET(result, 3, make_smallint(numbers));
   MEM_SET(result, 4, env);
   MEM_SET(result, 5, bytecode);
   MEM_SET(result, 6, ip);
@@ -69,8 +72,15 @@ oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
 oop fn_code(oop fn) { return mem_get(fn, 5); }
 oop fn_env(oop fn) { return mem_get(fn, 4); }
-fn_uint fn_argnum(oop fn) { return get_smallint(mem_get(fn, 3)) >> 1; }
-boolean fn_nested_args(oop fn) { return TO_BOOL(get_smallint(mem_get(fn, 3)) & 1); }
+fn_uint fn_argnum(oop fn) {
+  return (get_smallint(mem_get(fn, 3)) & 0xffff) >> 1;
+}
+boolean fn_nested_args(oop fn) {
+  return TO_BOOL(get_smallint(mem_get(fn, 3)) & 1);
+}
+fn_uint fn_max_stack_depth(oop fn) {
+  return get_smallint(mem_get(fn, 3)) >> 16;
+}
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {

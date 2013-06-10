@@ -161,7 +161,8 @@
     ('read-global-var (oop)       (byte 5) (oop-ref oop))
     ('write-global-var (oop)      (byte 6) (oop-ref oop))
     ('discard ()                  (byte 7))
-    ('make-lambda (label ll)      (byte 8) (address-of label) (oop-ref ll))
+    ('make-lambda (label ll)      (byte 8) (address-of label) (byte 50)
+                                           (oop-ref ll))
     ('call (argnum)               (byte 9) (byte argnum))
     ('tail-call (argnum)          (byte 10) (byte argnum))
     ('return ()                   (byte 11))
@@ -234,7 +235,8 @@
 
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.
 (defn make-compiled-procedure* (name lambda-list frame (bytecode ip oop-table))
-  (make-compiled-procedure name lambda-list frame bytecode ip oop-table))
+  (make-compiled-procedure name lambda-list frame
+                           bytecode ip oop-table 50))  ;; XXX
 
 (defn compile-fn (fn)
   (with-gensym-scope
