@@ -24,8 +24,8 @@
  ;; Predictable version of compile
  ;; where the generated gensyms are always the same.
  (defn pcompile (expr env)
-   (set! global-label-counter 1000)
-   (compile expr env 'call)))
+   (with-gensym-scope
+    (compile expr env 'call))))
 
 (eql? '((load-value 123))
       (pcompile 123 global-env))
@@ -43,20 +43,20 @@
       (pcompile '(x 42 99) %xyz-env))
 
 (eql? '((read-var 0 0)
-        (jump-if-true true-branch-1001)
+        (jump-if-true true-branch-1)
         ;; False branch
         (load-value 0)
-        (jump after-if-1002)
+        (jump after-if-2)
         ;; True branch
-        (label true-branch-1001)
+        (label true-branch-1)
         (load-value 10)
-        (label after-if-1002))
+        (label after-if-2))
       (pcompile '(if x 10 0) %xyz-env))
 
-(eql? '((make-lambda lambda-entry-1001 (x))
-        (jump after-lambda-1002)
+(eql? '((make-lambda lambda-entry-1 (x))
+        (jump after-lambda-2)
         ;; -- this is where the lambda starts
-        (label lambda-entry-1001)
+        (label lambda-entry-1)
         (read-global-var +)
         (read-var 0 0)  ; x
         (read-global-var +)
@@ -66,7 +66,7 @@
         (tail-call 3)   ; 2 arguments and one procedure.
         (return)
         ;; -- this is where the lambda ends
-        (label after-lambda-1002))
+        (label after-lambda-2))
       (pcompile '(lambda (x) (+ x (+ b b))) %abz-env))
 
 (eql? '((load-value 5)
