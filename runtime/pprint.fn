@@ -14,6 +14,13 @@
           (true (list->string (list ch)))))
   (defn pprint-kv-pair (kv)
     (string-append (pprint (first kv)) ": " (pprint (rest kv))))
+  (defn pprint-inner-list (l)
+    (cond ((nil? l) "")
+          ((cons? l) (if (nil? (rest l))
+                         (pprint (first l))
+                       (string-append (pprint (first l)) " "
+                                      (pprint-inner-list (rest l)))))
+          (true (string-append ". " (pprint l)))))
   (cond ((string? item) (string-append "\""
                                        (apply string-append
                                               (map string-char-escape
@@ -34,7 +41,7 @@
          (if (and (eq? 'quote (first item))
                   (= 2 (length item)))
              (string-append "'" (pprint (second item)))
-           (string-append "(" (string-join (map pprint item) " ") ")")))
+           (string-append "(" (pprint-inner-list item) ")")))
         ((native-procedure? item)
          (string-append "<NATIVE-PROCEDURE "
                         (pprint (procedure-name item)) ">"))

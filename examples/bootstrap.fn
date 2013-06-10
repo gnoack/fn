@@ -20,4 +20,5 @@
         utils objects arrays
         byte-buffer dispatcher compiler
         pprint modules continuations
+        serialize
         pegs parser pegs-parser)))
