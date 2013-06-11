@@ -485,6 +485,7 @@ oop interpret(oop frame, oop procedure) {
       break;
     }
     case BC_TAIL_CALL_APPLY: {
+      // TODO: Reimplement this without going over the stack.
       IPRINT("apply\n");
       fn_uint arg_count = 1;
       oop arglist = stack_pop();
