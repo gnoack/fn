@@ -214,6 +214,24 @@
 (defmacro typecase (expr &rest clauses)
   (generic-case identity `(type-of ,expr) clauses))
 
+(defmacro match (expr &rest forms)
+  (with-gensyms (expr-var expr-sym)
+    (defn deform (form)
+      (cond ((not (cons? form)) (error "Form must be a list."))
+            ((eq? (first form) 'else)
+             `(true ,(second form)))
+            ((and (cons? (first form))
+                  (symbol? (first (first form))))
+             (let ((symbol     (first (first form)))
+                   (vars       (rest (first form)))
+                   (consequent (second form)))
+               `((eq? ,expr-sym (quote ,symbol))
+                 ((lambda ((,@vars)) ,consequent) (rest ,expr-var)))))))
+    `(let ((,expr-var ,expr)
+           (,expr-sym nil))
+       (set! ,expr-sym (first ,expr-var))
+       (cond ,@(map deform forms)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Procedure call tracing for debugging                           ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -49,6 +49,41 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Figuring out required stack depth.                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn max-stack-depth-for-application (exprs current-depth)
+  (if (nil? exprs)
+      0
+    (max (+ current-depth (max-stack-depth (first exprs)))
+         (max-stack-depth-for-application
+          (rest exprs) (+ 1 current-depth)))))
+
+(defn max-stack-depth (expr)
+  (cond
+   ((number? expr) 1)
+   ((char? expr)   1)
+   ((symbol? expr) 1)
+   ((string? expr) 1)
+   (true
+    (match expr
+      ((quote x) 1)
+      ((if condition consequent alternative)
+       (max (max-stack-depth condition)
+            (max-stack-depth consequent)
+            (max-stack-depth alternative)))
+      ((lambda lambda-list &rest body) 1)
+      ((let vars &rest body)
+       (max-stack-depth (transform-let->lambda expr)))
+      ((def var expr)
+       (max-stack-depth expr))
+      ((set! var expr)
+       (max-stack-depth expr))
+      ((progn &rest exprs)
+       (apply max (map max-stack-depth exprs)))
+      (else (max-stack-depth-for-application expr 0))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Compiler                                                      ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -87,7 +122,8 @@
 
 (defn compile-lambda ((lambda_ lambda-list &rest body-exprs) environment)
   (with-gensyms (lambda-entry after-lambda)
-    `((make-lambda ,lambda-entry ,lambda-list)
+    `((make-lambda ,lambda-entry ,(max-stack-depth `(progn ,@body-exprs))
+                   ,lambda-list)
       (jump ,after-lambda)
       (label ,lambda-entry)
       ,@(compile-lambda-body body-exprs
@@ -161,7 +197,7 @@
     ('read-global-var (oop)       (byte 5) (oop-ref oop))
     ('write-global-var (oop)      (byte 6) (oop-ref oop))
     ('discard ()                  (byte 7))
-    ('make-lambda (label ll)      (byte 8) (address-of label) (byte 50)
+    ('make-lambda (label s-sz ll) (byte 8) (address-of label) (byte s-sz)
                                            (oop-ref ll))
     ('call (argnum)               (byte 9) (byte argnum))
     ('tail-call (argnum)          (byte 10) (byte argnum))
@@ -234,9 +270,12 @@
        (global-env? (fn-env fn))))
 
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.
-(defn make-compiled-procedure* (name lambda-list frame (bytecode ip oop-table))
+(defn make-compiled-procedure* (name lambda-list frame
+                                (bytecode ip oop-table)
+                                max-stack-depth)
   (make-compiled-procedure name lambda-list frame
-                           bytecode ip oop-table 50))  ;; XXX
+                           bytecode ip oop-table
+                           max-stack-depth))
 
 (defn compile-fn (fn)
   (with-gensym-scope
@@ -247,7 +286,8 @@
           (fn-name fn)
           (fn-lambda-list fn)
           nil
-          (assemble (compile-lambda-body (fn-body fn) env-in-body))))
+          (assemble (compile-lambda-body (fn-body fn) env-in-body))
+          (max-stack-depth `(progn ,@(fn-body fn)))))
      ;; If not compilable, we simply return the thing itself.  Chances
      ;; are, the procedure is already compiled.  This is a hack to
      ;; make compiling by hand convenient.
@@ -257,22 +297,26 @@
 ;; Should only be defined once compilation works.
 ;; Returns a procedure that works on the top-level when executed.
 (defn compile-top-level-expr (expr)
-  (let ((code-triple (with-gensym-scope
-                      (assemble (compile-lambda-body (list (macroexpand expr))
-                                                     global-env)))))
-    (make-compiled-procedure* nil '() nil code-triple)))
+  (let ((expanded-expr (macroexpand expr)))
+    (make-compiled-procedure*
+     nil '() nil
+     (with-gensym-scope
+      (assemble
+       (compile-lambda-body (list expanded-expr) global-env)))
+     (max-stack-depth expanded-expr))))
 
 ;; TODO: Extract `lambda-compiled'?
-(defmacro defn-compiled (name lambda-list &rest bytecode)
+(defmacro defn-compiled (name lambda-list max-stack-depth &rest bytecode)
   `(def ,name
      (make-compiled-procedure*
       (quote ,name)
       (quote ,lambda-list)
       nil
-      (assemble (quote ,bytecode)))))
+      (assemble (quote ,bytecode))
+      ,max-stack-depth)))
 
 ;; Replaces the C implementation of `apply'.
-(defn-compiled apply (proc args)
+(defn-compiled apply (proc args) 2
   (read-var 0 0)  ; proc
   (read-var 0 1)  ; args
   (tail-call-apply)

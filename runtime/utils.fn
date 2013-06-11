@@ -191,6 +191,9 @@
 	      (sequence-ordered?
 	       in-order? (rest seq))))))
 
+(defn max (x &rest xs)
+  (reduce (lambda (a b) (if (< a b) b a)) xs x))
+
 ; Right-reducing. (a (b (c end)))
 (defn reduce-right (combine seq end)
   (if (nil? seq)

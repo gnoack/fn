@@ -1,10 +1,10 @@
 (defn call/cc (proc)
-  (defn-compiled _call/cc (proc)
+  (defn-compiled _call/cc (proc) 3
     (read-var 0 0)  ; proc
     (call/cc)
     (invalidate-continuation)
     (return))
-  (defn-compiled _invoke (continuation value)
+  (defn-compiled _invoke (continuation value) 2
     (read-var 0 0)  ; continuation
     (read-var 0 1)  ; value
     (restore-continuation))

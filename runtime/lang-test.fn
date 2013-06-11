@@ -154,3 +154,9 @@
 (procedure? (lambda () 123))
 ;(procedure? (compile-fn (lambda () 123)))
 (procedure? +)
+
+(let ((((symbol &rest var-bindings) consequent)
+       '((hello 1 2 3) more)))
+  (and (eq? 'hello symbol)
+       (eql? '(1 2 3) var-bindings)
+       (eq? 'more consequent)))

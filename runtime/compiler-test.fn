@@ -53,7 +53,7 @@
         (label after-if-2))
       (pcompile '(if x 10 0) %xyz-env))
 
-(eql? '((make-lambda lambda-entry-1 (x))
+(eql? '((make-lambda lambda-entry-1 5 (x))
         (jump after-lambda-2)
         ;; -- this is where the lambda starts
         (label lambda-entry-1)
@@ -108,3 +108,24 @@
 (progn
   ((compile-fn (lambda (x) "xx" (def __just_a_test x))) 99)
   (= 99 __just_a_test))
+
+;; Maximum stack depth.
+(eq? 1 (max-stack-depth 99))
+(eq? 1 (max-stack-depth #\a))
+(eq? 1 (max-stack-depth 'foo))
+(eq? 1 (max-stack-depth "foo"))
+(eq? 1 (max-stack-depth '(if 1 2 3)))
+(eq? 4 (max-stack-depth '(+ 1 2 3)))
+(eq? 5 (max-stack-depth '(+ (+ 1 2 3)
+                            (+ 1 2)
+                            (+ 1)
+                            1)))
+(eq? 3 (max-stack-depth '(if true (+ 1 2) 0)))
+(eq? 3 (max-stack-depth '(if true 0 (+ 1 2))))
+(eq? 1 (max-stack-depth '(lambda (x) (+ 1 2 3 4 5 x))))
+(eq? (max-stack-depth '(let ((a 1) (b 2)) 'foo))
+     (max-stack-depth '((lambda (a b) 'foo) 1 2)))
+(eq? 3 (max-stack-depth '(def x (+ 1 2))))
+(eq? 3 (max-stack-depth '(set! x (+ 1 2))))
+(eq? 3 (max-stack-depth '(progn 1 2 (+ 3 4) 5)))
+(eq? 1 (max-stack-depth '(progn 1 2 3 4 5)))

@@ -25,6 +25,19 @@
   ((@string) false)
   (else      true))
 
+(eq? 11 (match '(foo 1)
+          ((foo a) (+ a 10))
+          ((bar b c) (+ b c 20))
+          (else 'fail)))
+
+(eq? 6 (match '(plus 1 2 3)
+         ((plus &rest args) (apply + args))
+         (else 'fail)))
+
+(match '(unexpected)
+  ((expected a) false)
+  (else true))
+
 ;; Does the hand-written defmacro
 ;; macro work?
 (eql?
