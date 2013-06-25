@@ -148,6 +148,16 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
   state->oop_lookups = MEM_GET(proc, CFN_LOOKUP_TABLE);
 }
 
+inline static
+void initialize_state_from_fn(oop frame, oop fn, interpreter_state_t* state) {
+  DEBUG_CHECKV(is_compiled_lisp_procedure(fn), fn, "Need Lisp procedure.");
+  DEBUG_CHECKV(is_frame(frame), frame, "Need frame");
+  state->reg_frm = frame;
+  state->ip = get_smallint(MEM_GET(fn, CFN_IP));
+  state->bytecode = MEM_GET(fn, CFN_CODE);
+  state->oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
+}
+
 // Because interpreter_state_t is only a cache for the frame.
 void writeback_to_frame(interpreter_state_t* state) {
   MEM_SET(state->reg_frm, FRAME_IP, make_smallint(state->ip));
@@ -237,14 +247,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     IPRINT("call %lu         .oO ", arg_count);
 
     // Modify the interpreter state.
-
-    // Data.
-    state->reg_frm = env;
-
-    // Position.
-    state->ip = get_smallint(MEM_GET(cfn, CFN_IP));
-    state->bytecode = MEM_GET(cfn, CFN_CODE);
-    state->oop_lookups = MEM_GET(cfn, CFN_LOOKUP_TABLE);
+    initialize_state_from_fn(env, cfn, state);
   } else {
     // Call recursively on the C stack.
     oop values = stack_pop_list(arg_count);
@@ -316,10 +319,7 @@ oop interpret(oop frame, oop procedure) {
   DEBUG_CHECK(is_compiled_lisp_procedure(procedure),
               "Expected compiled procedure.");
   interpreter_state_t state;
-  state.reg_frm = frame;
-  state.ip = get_smallint(MEM_GET(procedure, CFN_IP));
-  state.bytecode = MEM_GET(procedure, CFN_CODE);
-  state.oop_lookups = MEM_GET(procedure, CFN_LOOKUP_TABLE);
+  initialize_state_from_fn(frame, procedure, &state);
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -492,10 +492,7 @@ oop interpret(oop frame, oop procedure) {
       if (is_compiled_lisp_procedure(fn)) {
         oop caller = frame_caller(state.reg_frm);
         oop env = make_frame_for_application(fn, arglist, caller);
-        state.reg_frm = env;
-        state.ip = get_smallint(MEM_GET(fn, CFN_IP));
-        state.bytecode = MEM_GET(fn, CFN_CODE);
-        state.oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
+        initialize_state_from_fn(env, fn, &state);
       } else {
         // Call recursively on the C stack.
         stack_push(apply_with_caller(make_cons(fn, arglist), state.reg_frm));
