@@ -487,14 +487,19 @@ oop interpret(oop frame, oop procedure) {
     case BC_TAIL_CALL_APPLY: {
       // TODO: Reimplement this without going over the stack.
       IPRINT("apply\n");
-      fn_uint arg_count = 1;
       oop arglist = stack_pop();
-      while (!is_nil(arglist)) {
-        stack_push(first(arglist));
-        arglist = rest(arglist);
-        arg_count++;
+      oop fn = stack_pop();
+      if (is_compiled_lisp_procedure(fn)) {
+        oop caller = frame_caller(state.reg_frm);
+        oop env = make_frame_for_application(fn, arglist, caller);
+        state.reg_frm = env;
+        state.ip = get_smallint(MEM_GET(fn, CFN_IP));
+        state.bytecode = MEM_GET(fn, CFN_CODE);
+        state.oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
+      } else {
+        // Call recursively on the C stack.
+        stack_push(apply_with_caller(make_cons(fn, arglist), state.reg_frm));
       }
-      apply_into_interpreter(arg_count, &state, YES);
       break;
     }
     default:
