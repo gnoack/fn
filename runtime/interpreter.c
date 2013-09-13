@@ -164,7 +164,7 @@ void writeback_to_frame(interpreter_state_t* state) {
   MEM_SET(state->reg_frm, FRAME_IP, make_smallint(state->ip));
 }
 
-oop make_frame_from_stack(oop cfn, oop caller) {
+oop make_frame_from_stack(stack_t* stack, oop cfn, oop caller) {
   fn_uint function_argnum = fn_argnum(cfn);
   oop result = make_frame(cfn, caller);
   memcpy(&(result.mem[FRAME_HEADER_SIZE]),
@@ -220,7 +220,8 @@ void print_frame(oop obj) {
 
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
-void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
+void apply_into_interpreter(stack_t* stack,
+                            fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
@@ -235,7 +236,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
       env = make_frame_for_application(cfn, args, caller);
     } else {
       // TODO: Do quick calls with vararg procedures, too.
-      env = make_frame_from_stack(cfn, caller);
+      env = make_frame_from_stack(stack, cfn, caller);
       CHECK(arg_count == fn_argnum(cfn) + 1, "Bad argument number.");
       stack_shrink(stack, arg_count);
     }
@@ -284,7 +285,7 @@ oop read_oop(interpreter_state_t* state) {
 
 
 // Continuations
-oop make_continuation(interpreter_state_t* state) {
+oop make_continuation(stack_t* stack, interpreter_state_t* state) {
   writeback_to_frame(state);
   oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._continuation);
@@ -416,7 +417,7 @@ oop interpret(oop frame, oop procedure) {
     }
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, NO);
+      apply_into_interpreter(stack, arg_count, &state, NO);
       if (protected_interpreter_state == &state) {
         gc_run();
       }
@@ -424,7 +425,7 @@ oop interpret(oop frame, oop procedure) {
     }
     case BC_TAIL_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, YES);
+      apply_into_interpreter(stack, arg_count, &state, YES);
       break;
     }
     case BC_RETURN:
@@ -461,11 +462,11 @@ oop interpret(oop frame, oop procedure) {
       IPRINT("call/cc\n");
       // TODO: Optimize proc pop/push.
       oop proc = stack_pop(stack);
-      oop continuation = make_continuation(&state);
+      oop continuation = make_continuation(stack, &state);
       stack_push(stack, continuation);
       stack_push(stack, proc);
       stack_push(stack, continuation);
-      apply_into_interpreter(2, &state, NO);
+      apply_into_interpreter(stack, 2, &state, NO);
       break;
     }
     case BC_INVALIDATE_CONTINUATION: {
