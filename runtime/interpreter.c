@@ -46,6 +46,7 @@ void enumerate_interpreter_roots(void (*accept)(oop* place)) {
     accept(&(protected_interpreter_state->reg_frm));
     accept(&(protected_interpreter_state->bytecode));
     accept(&(protected_interpreter_state->oop_lookups));
+    accept((oop*) &(protected_interpreter_state->stack.stack));
   }
 }
 
@@ -112,12 +113,13 @@ void print_stack(stack_t* stack) {
 }
 #endif  // INTERPRETER_DEBUG
 
-#define STACK_SIZE_
+#define STACK_SIZE_IDX 1
+#define STACK_HEADER_SIZE 2
 
 oop make_stack(unsigned int max_size) {
   oop result = mem_alloc(2 + max_size);
   MEM_SET(result, 0, NIL);  // TODO: Proper type.
-  MEM_SET(result, 1, make_smallint(max_size));
+  MEM_SET(result, 1, make_smallint(0));
   return result;
 }
 
@@ -137,8 +139,8 @@ oop make_frame(oop procedure, oop caller) {
   MEM_SET(result, 1, fn_env(procedure));  // next lexical environment. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
   MEM_SET(result, 3, procedure);
-  MEM_SET(result, 4, make_stack(fn_max_stack_depth(procedure)));
-  MEM_SET(result, 5, MEM_GET(procedure, CFN_IP));  // Initial IP.
+  MEM_SET(result, 4, MEM_GET(procedure, CFN_IP));  // Initial IP.
+  MEM_SET(result, 5, make_stack(fn_max_stack_depth(procedure)));
   return result;
 }
 
@@ -150,6 +152,11 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
   state->ip          = get_smallint(MEM_GET(frame, FRAME_IP));
   state->bytecode    = MEM_GET(proc, CFN_CODE);
   state->oop_lookups = MEM_GET(proc, CFN_LOOKUP_TABLE);
+  
+  oop stack = MEM_GET(frame, FRAME_STACK);
+  state->stack.stack    = stack.mem;
+  state->stack.size     = get_smallint(MEM_GET(stack, STACK_SIZE_IDX));
+  state->stack.max_size = mem_size(stack) - STACK_HEADER_SIZE;
 }
 
 inline static
@@ -160,11 +167,18 @@ void initialize_state_from_fn(oop frame, oop fn, interpreter_state_t* state) {
   state->ip = get_smallint(MEM_GET(fn, CFN_IP));
   state->bytecode = MEM_GET(fn, CFN_CODE);
   state->oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
+  // Stack
+  // TODO: Use macro for consistency?
+  state->stack.max_size = fn_max_stack_depth(fn);
+  state->stack.size = 0;
+  state->stack.stack = MEM_GET(frame, FRAME_STACK).mem;
 }
 
 // Because interpreter_state_t is only a cache for the frame.
 void writeback_to_frame(interpreter_state_t* state) {
   MEM_SET(state->reg_frm, FRAME_IP, make_smallint(state->ip));
+  MEM_SET(MEM_GET(state->reg_frm, FRAME_STACK),
+          STACK_SIZE_IDX, make_smallint(state->stack.size));
 }
 
 oop make_frame_from_stack(stack_t* stack, oop cfn, oop caller) {

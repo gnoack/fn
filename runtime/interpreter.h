@@ -34,6 +34,7 @@ extern boolean is_continuation(oop continuation);
 typedef struct {
   // Current frame.
   oop reg_frm;
+  stack_t stack;
 
   // Execution point.
   fn_uint ip;
