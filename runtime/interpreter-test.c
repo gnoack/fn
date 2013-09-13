@@ -11,7 +11,7 @@
 
 TEST(stack_simple) {
   stack_t s;
-  stack_init(&s);
+  stack_init(&s, 5);
   ASSERT_TRUE(stack_size(&s) == 0);
   stack_push(&s, I(3));
   stack_push(&s, I(5));
@@ -22,7 +22,7 @@ TEST(stack_simple) {
 
 TEST(stack_size_and_shrink) {
   stack_t s;
-  stack_init(&s);
+  stack_init(&s, 5);
   ASSERT_TRUE(stack_size(&s) == 0);
   stack_push(&s, I(1));
   ASSERT_TRUE(stack_size(&s) == 1);
@@ -34,7 +34,7 @@ TEST(stack_size_and_shrink) {
 
 TEST(stack_peek_at_top) {
   stack_t s;
-  stack_init(&s);
+  stack_init(&s, 5);
   ASSERT_TRUE(stack_size(&s) == 0);
   stack_push(&s, I(42));
   stack_push(&s, I(43));
@@ -46,7 +46,7 @@ TEST(stack_peek_at_top) {
 
 TEST(stack_peek_at_depth) {
   stack_t s;
-  stack_init(&s);
+  stack_init(&s, 5);
   ASSERT_TRUE(stack_size(&s) == 0);
   stack_push(&s, I(42));
   stack_push(&s, I(43));

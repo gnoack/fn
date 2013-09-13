@@ -50,22 +50,14 @@ void enumerate_interpreter_roots(void (*accept)(oop* place)) {
 }
 
 // Stack
-void stack_init(stack_t* stack) {
-  unsigned int i;
-  for (i=0; i<MAX_STACK_SIZE; i++) {
-    stack->stack[i] = NIL;
-  }
+void stack_init(stack_t* stack, unsigned int max_size) {
+  stack->stack = calloc(max_size, sizeof(oop));  // already zero'd.
   stack->size = 0;
+  stack->max_size = max_size;
 }
 
 void stack_push(stack_t* stack, oop value) {
-  if (stack->size >= MAX_STACK_SIZE) {
-    int i;
-    for (i=0; i<MAX_STACK_SIZE; i++) {
-      println_value(stack->stack[i]);
-    }
-  }
-  CHECK(stack->size < MAX_STACK_SIZE, "Stack too large, can't push.");
+  CHECK(stack->size < stack->max_size, "Stack too large, can't push.");
   stack->stack[stack->size] = value;
   stack->size++;
 }
@@ -541,9 +533,11 @@ void my_print_stack_trace() {
   }
 }
 
+#define MAX_STACK_SIZE 0x4000
+
 void init_interpreter() {
   print_stack_trace = my_print_stack_trace;
   stack = malloc(sizeof(stack_t));
-  stack_init(stack);
+  stack_init(stack, MAX_STACK_SIZE);
   gc_register_persistent_refs(enumerate_interpreter_roots);
 }
