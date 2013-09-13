@@ -120,12 +120,22 @@ void print_stack(stack_t* stack) {
 }
 #endif  // INTERPRETER_DEBUG
 
+#define STACK_SIZE_
 
+oop make_stack(unsigned int max_size) {
+  oop result = mem_alloc(2 + max_size);
+  MEM_SET(result, 0, NIL);  // TODO: Proper type.
+  MEM_SET(result, 1, make_smallint(max_size));
+  return result;
+}
+
+
 #define FRAME_NEXT 1
 #define FRAME_CALLER 2
 #define FRAME_PROCEDURE 3
 #define FRAME_IP 4
-#define FRAME_HEADER_SIZE 5
+#define FRAME_STACK 5
+#define FRAME_HEADER_SIZE 6
 
 // Frame
 // TODO: Does IP always need to be set?
@@ -135,7 +145,8 @@ oop make_frame(oop procedure, oop caller) {
   MEM_SET(result, 1, fn_env(procedure));  // next lexical environment. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
   MEM_SET(result, 3, procedure);
-  MEM_SET(result, 4, MEM_GET(procedure, CFN_IP));  // Initial IP.
+  MEM_SET(result, 4, make_stack(fn_max_stack_depth(procedure)));
+  MEM_SET(result, 5, MEM_GET(procedure, CFN_IP));  // Initial IP.
   return result;
 }
 
