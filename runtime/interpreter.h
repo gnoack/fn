@@ -7,12 +7,20 @@ extern void init_interpreter();
 extern oop interpret(oop frame, oop procedure);
 
 // Stack
-extern void stack_push(oop value);
-extern oop stack_pop();
-extern unsigned int stack_size();
-extern oop stack_peek();
-extern oop stack_peek_at(fn_uint n);
-extern void stack_shrink(int n);
+#define MAX_STACK_SIZE 0x4000
+
+typedef struct {
+  oop stack[MAX_STACK_SIZE];
+  unsigned int size;
+} stack_t;
+
+extern void stack_init(stack_t* stack);
+extern void stack_push(stack_t* stack, oop value);
+extern oop stack_pop(stack_t* stack);
+extern unsigned int stack_size(stack_t* stack);
+extern oop stack_peek(stack_t* stack);
+extern oop stack_peek_at(stack_t* stack, fn_uint n);
+extern void stack_shrink(stack_t* stack, int n);
 
 // Frame
 extern oop make_frame(oop procedure, oop caller);

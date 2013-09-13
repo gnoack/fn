@@ -10,43 +10,51 @@
 #define S make_symbol
 
 TEST(stack_simple) {
-  ASSERT_TRUE(stack_size() == 0);
-  stack_push(I(3));
-  stack_push(I(5));
-  ASSERT_EQ(I(5), stack_pop());
-  ASSERT_EQ(I(3), stack_pop());
-  ASSERT_TRUE(stack_size() == 0);
+  stack_t s;
+  stack_init(&s);
+  ASSERT_TRUE(stack_size(&s) == 0);
+  stack_push(&s, I(3));
+  stack_push(&s, I(5));
+  ASSERT_EQ(I(5), stack_pop(&s));
+  ASSERT_EQ(I(3), stack_pop(&s));
+  ASSERT_TRUE(stack_size(&s) == 0);
 }
 
 TEST(stack_size_and_shrink) {
-  ASSERT_TRUE(stack_size() == 0);
-  stack_push(I(1));
-  ASSERT_TRUE(stack_size() == 1);
-  stack_push(I(2));
-  ASSERT_TRUE(stack_size() == 2);
-  stack_shrink(2);
-  ASSERT_TRUE(stack_size() == 0);
+  stack_t s;
+  stack_init(&s);
+  ASSERT_TRUE(stack_size(&s) == 0);
+  stack_push(&s, I(1));
+  ASSERT_TRUE(stack_size(&s) == 1);
+  stack_push(&s, I(2));
+  ASSERT_TRUE(stack_size(&s) == 2);
+  stack_shrink(&s, 2);
+  ASSERT_TRUE(stack_size(&s) == 0);
 }
 
 TEST(stack_peek_at_top) {
-  ASSERT_TRUE(stack_size() == 0);
-  stack_push(I(42));
-  stack_push(I(43));
-  stack_push(I(44));
-  ASSERT_EQ(I(44), stack_peek());
-  stack_shrink(3);
-  ASSERT_TRUE(stack_size() == 0);
+  stack_t s;
+  stack_init(&s);
+  ASSERT_TRUE(stack_size(&s) == 0);
+  stack_push(&s, I(42));
+  stack_push(&s, I(43));
+  stack_push(&s, I(44));
+  ASSERT_EQ(I(44), stack_peek(&s));
+  stack_shrink(&s, 3);
+  ASSERT_TRUE(stack_size(&s) == 0);
 }
 
 TEST(stack_peek_at_depth) {
-  ASSERT_TRUE(stack_size() == 0);
-  stack_push(I(42));
-  stack_push(I(43));
-  stack_push(I(44));
-  ASSERT_EQ(I(44), stack_peek_at(1));
-  ASSERT_EQ(I(42), stack_peek_at(3));
-  stack_shrink(3);
-  ASSERT_TRUE(stack_size() == 0);
+  stack_t s;
+  stack_init(&s);
+  ASSERT_TRUE(stack_size(&s) == 0);
+  stack_push(&s, I(42));
+  stack_push(&s, I(43));
+  stack_push(&s, I(44));
+  ASSERT_EQ(I(44), stack_peek_at(&s, 1));
+  ASSERT_EQ(I(42), stack_peek_at(&s, 3));
+  stack_shrink(&s, 3);
+  ASSERT_TRUE(stack_size(&s) == 0);
 }
 
 extern void interpreter_tests() {
