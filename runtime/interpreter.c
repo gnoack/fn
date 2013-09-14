@@ -36,7 +36,7 @@
 #define STACK_HEADER_SIZE 2
 
 oop make_stack(unsigned int max_size) {
-  oop result = mem_alloc(2 + max_size);
+  oop result = mem_alloc(STACK_HEADER_SIZE + max_size);
   MEM_SET(result, 0, symbols._stack);
   MEM_SET(result, 1, make_smallint(0));
   return result;
@@ -62,15 +62,8 @@ void enumerate_interpreter_roots(void (*accept)(oop* place)) {
   }
 }
 
-// Stack
-void stack_init(stack_t* stack, unsigned int max_size) {
-  stack->stack = calloc(max_size, sizeof(oop));  // already zero'd.
-  stack->size = 0;
-  stack->max_size = max_size;
-}
-
 void stack_push(stack_t* stack, oop value) {
-  CHECK(stack->size < stack->max_size, "Stack too large, can't push.");
+  DEBUG_CHECK(stack->size < stack->max_size, "Stack too large, can't push.");
   stack->stack[stack->size] = value;
   stack->size++;
 }

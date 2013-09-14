@@ -13,7 +13,6 @@ typedef struct {
   unsigned int max_size;
 } stack_t;
 
-extern void stack_init(stack_t* stack, unsigned int max_size);
 extern void stack_push(stack_t* stack, oop value);
 extern oop stack_pop(stack_t* stack);
 extern unsigned int stack_size(stack_t* stack);

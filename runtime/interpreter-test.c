@@ -9,6 +9,13 @@
 #define I make_smallint
 #define S make_symbol
 
+
+void stack_init(stack_t* stack, unsigned int max_size) {
+  stack->stack = calloc(max_size, sizeof(oop));  // already zero'd.
+  stack->size = 0;
+  stack->max_size = max_size;
+}
+
 TEST(stack_simple) {
   stack_t s;
   stack_init(&s, 5);
