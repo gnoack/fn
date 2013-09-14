@@ -64,3 +64,6 @@ After rearranging fields of compiled-procedure: 1735-1792ms (no improvement...)
 After using even more MEM_GETs and MEM_SETs: 1640-1718
 After using MEM_GET instead of MEM_GET in is_cons(): 1440-1471
 After using native memcpy, memcmp: 1250-1273
+
+2013-09-14
+After switching to per-frame stacks: 1543-1545

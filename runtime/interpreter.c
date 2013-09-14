@@ -342,10 +342,6 @@ oop interpret(oop frame, oop procedure) {
     protected_interpreter_state = &state;
   }
 
-  #ifdef INTERPRETER_DEBUG
-  unsigned int stack_size_before = state.stack.size;
-  #endif  // INTERPRETER_DEBUG
-
   for (;;) {
     IPRINT("[i] %5lu: ", state.ip);
     unsigned char operation = read_byte(&state);
@@ -461,10 +457,8 @@ oop interpret(oop frame, oop procedure) {
         DEBUG_CHECKV(is_nil(caller) || is_dframe(caller), caller,
                      "Assumed nil or dframe.");
         #ifdef INTERPRETER_DEBUG
-        if (stack_size_before != state.stack.size) {
-          printf("The stack is a mutant!");
-          printf("Old stack size: %d\n", stack_size_before);
-          printf("New stack size: %d\n", state.stack.size);
+        if (state.stack.size != 0) {
+          printf("The stack had items before returning!");
           print_stack(&state.stack);
           exit(1);
         }
@@ -504,7 +498,6 @@ oop interpret(oop frame, oop procedure) {
       break;
     }
     case BC_TAIL_CALL_APPLY: {
-      // TODO: Reimplement this without going over the stack.
       IPRINT("apply\n");
       oop arglist = stack_pop(&state.stack);
       oop fn = stack_pop(&state.stack);
