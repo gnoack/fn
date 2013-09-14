@@ -12,7 +12,7 @@
 #include "symbols.h"
 #include "value.h"
 
-#define INTERPRETER_DEBUG 1
+// #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
 
 #ifdef INTERPRETER_DEBUG
@@ -31,22 +31,34 @@
 #define IVALUE(x)
 #endif  // INTERPRETER_LOGGING
 
-stack_t* stack;
+
+#define STACK_SIZE_IDX 1
+#define STACK_HEADER_SIZE 2
 
+oop make_stack(unsigned int max_size) {
+  oop result = mem_alloc(2 + max_size);
+  MEM_SET(result, 0, symbols._stack);
+  MEM_SET(result, 1, make_smallint(0));
+  return result;
+}
+
+
 // Pointer to an interpreter state that's protected.
 // This will be the first interpreter state on the stack.
 interpreter_state_t* protected_interpreter_state = NULL;
 
 void enumerate_interpreter_roots(void (*accept)(oop* place)) {
-  int i;
-  for (i=0; i<stack->size; i++) {
-    accept(&stack->stack[i]);
-  }
   if (protected_interpreter_state != NULL) {
     accept(&(protected_interpreter_state->reg_frm));
     accept(&(protected_interpreter_state->bytecode));
     accept(&(protected_interpreter_state->oop_lookups));
+
+    // Hack: Because state->stack.stack points two oops into the
+    // stack object, we need to correct that before telling the GC
+    // to save it.
+    protected_interpreter_state->stack.stack -= STACK_HEADER_SIZE;
     accept((oop*) &(protected_interpreter_state->stack.stack));
+    protected_interpreter_state->stack.stack += STACK_HEADER_SIZE;
   }
 }
 
@@ -112,16 +124,7 @@ void print_stack(stack_t* stack) {
   }
 }
 #endif  // INTERPRETER_DEBUG
-
-#define STACK_SIZE_IDX 1
-#define STACK_HEADER_SIZE 2
 
-oop make_stack(unsigned int max_size) {
-  oop result = mem_alloc(2 + max_size);
-  MEM_SET(result, 0, NIL);  // TODO: Proper type.
-  MEM_SET(result, 1, make_smallint(0));
-  return result;
-}
 
 
 #define FRAME_NEXT 1
@@ -154,7 +157,7 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
   state->oop_lookups = MEM_GET(proc, CFN_LOOKUP_TABLE);
   
   oop stack = MEM_GET(frame, FRAME_STACK);
-  state->stack.stack    = stack.mem;
+  state->stack.stack    = &stack.mem[STACK_HEADER_SIZE];
   state->stack.size     = get_smallint(MEM_GET(stack, STACK_SIZE_IDX));
   state->stack.max_size = mem_size(stack) - STACK_HEADER_SIZE;
 }
@@ -167,11 +170,13 @@ void initialize_state_from_fn(oop frame, oop fn, interpreter_state_t* state) {
   state->ip = get_smallint(MEM_GET(fn, CFN_IP));
   state->bytecode = MEM_GET(fn, CFN_CODE);
   state->oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
-  // Stack
-  // TODO: Use macro for consistency?
-  state->stack.max_size = fn_max_stack_depth(fn);
+
+  // state->stack.stack does not point to the stack object, but instead it
+  // points two oops into the stack object.  That way we can skip the header
+  // and addressing becomes more simple.
+  state->stack.max_size = fn_max_stack_depth(fn);  // TODO: Use macro?
+  state->stack.stack = &(MEM_GET(frame, FRAME_STACK).mem[STACK_HEADER_SIZE]);
   state->stack.size = 0;
-  state->stack.stack = MEM_GET(frame, FRAME_STACK).mem;
 }
 
 // Because interpreter_state_t is only a cache for the frame.
@@ -237,9 +242,9 @@ void print_frame(oop obj) {
 
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
-void apply_into_interpreter(stack_t* stack,
-                            fn_uint arg_count, interpreter_state_t* state,
+void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
+  stack_t* stack = &state->stack;
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
     oop caller = state->reg_frm;
@@ -302,12 +307,12 @@ oop read_oop(interpreter_state_t* state) {
 
 
 // Continuations
-oop make_continuation(stack_t* stack, interpreter_state_t* state) {
+oop make_continuation(interpreter_state_t* state) {
   writeback_to_frame(state);
   oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._continuation);
   MEM_SET(result, 1, state->reg_frm);
-  MEM_SET(result, 2, make_smallint(stack->size));
+  MEM_SET(result, 2, make_smallint(state->stack.size));
   return result;
 }
 
@@ -329,7 +334,7 @@ void restore_continuation(oop continuation, interpreter_state_t* state) {
   CHECKV(is_continuation_valid(continuation), continuation,
          "Not a valid continuation.");
   restore_from_frame(MEM_GET(continuation, 1), state);
-  stack->size = get_smallint(MEM_GET(continuation, 2));
+  state->stack.size = get_smallint(MEM_GET(continuation, 2));
 }
 
 
@@ -345,7 +350,7 @@ oop interpret(oop frame, oop procedure) {
   }
 
   #ifdef INTERPRETER_DEBUG
-  unsigned int stack_size_before = stack->size;
+  unsigned int stack_size_before = state.stack.size;
   #endif  // INTERPRETER_DEBUG
 
   for (;;) {
@@ -358,7 +363,7 @@ oop interpret(oop frame, oop procedure) {
       break;
     case BC_JUMP_IF_TRUE: {
       fn_uint address = read_label_address(&state);
-      oop condition = stack_pop(stack);
+      oop condition = stack_pop(&state.stack);
       if (value_eq(condition, symbols._true)) {
         IPRINT("jump-if-true %lu (taken)\n", address);
         state.ip = address;
@@ -373,7 +378,7 @@ oop interpret(oop frame, oop procedure) {
       oop value = read_oop(&state);
       IPRINT("load-value ");
       IVALUE(value);
-      stack_push(stack, value);
+      stack_push(&state.stack, value);
       break;
     }
     case BC_READ_VAR: {
@@ -383,14 +388,14 @@ oop interpret(oop frame, oop procedure) {
       oop value = get_var(frame, index);
       IPRINT("read-var %lu %lu   .oO ", depth, index);
       IVALUE(value);
-      stack_push(stack, value);
+      stack_push(&state.stack, value);
       break;
     }
     case BC_WRITE_VAR: {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
-      oop value = stack_peek(stack);
+      oop value = stack_peek(&state.stack);
       set_var(frame, index, value);
       IPRINT("write-var %lu %lu  // ", depth, index);
       IVALUE(value);
@@ -401,13 +406,13 @@ oop interpret(oop frame, oop procedure) {
       oop value = lookup_globally(key);
       IPRINT("load-global-var ");
       IVALUE(key);
-      stack_push(stack, value);
+      stack_push(&state.stack, value);
       break;
     }
     case BC_WRITE_GLOBAL_VAR: {
       oop key = read_oop(&state);
       // TODO: Make bytecode-level distinction between defining and setting?
-      oop value = stack_peek(stack);
+      oop value = stack_peek(&state.stack);
       set_globally_oop(key, value);
       IPRINT("write-global-var ");
       IVALUE(key);
@@ -416,8 +421,8 @@ oop interpret(oop frame, oop procedure) {
       break;
     }
     case BC_DISCARD: {
-      stack_pop(stack);
-      IPRINT("discard        .oO stack-size=%d\n", stack->size);
+      stack_pop(&state.stack);
+      IPRINT("discard        .oO stack-size=%d\n", state.stack.size);
       break;
     }
     case BC_MAKE_LAMBDA: {
@@ -425,16 +430,17 @@ oop interpret(oop frame, oop procedure) {
       fn_uint max_stack_depth = read_index(&state);
       oop lambda_list = read_oop(&state);
       IVALUE(lambda_list);
-      stack_push(stack, make_compiled_procedure(lambda_list, state.reg_frm,
-                                                state.bytecode,
-                                                make_smallint(start_ip),
-                                                state.oop_lookups,
-                                                max_stack_depth));
+      stack_push(&state.stack,
+                 make_compiled_procedure(lambda_list, state.reg_frm,
+                                         state.bytecode,
+                                         make_smallint(start_ip),
+                                         state.oop_lookups,
+                                         max_stack_depth));
       break;
     }
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(stack, arg_count, &state, NO);
+      apply_into_interpreter(arg_count, &state, NO);
       if (protected_interpreter_state == &state) {
         gc_run();
       }
@@ -442,17 +448,18 @@ oop interpret(oop frame, oop procedure) {
     }
     case BC_TAIL_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(stack, arg_count, &state, YES);
+      apply_into_interpreter(arg_count, &state, YES);
       break;
     }
     case BC_RETURN:
       IPRINT("return\n");
-      oop retvalue = stack_pop(stack);
+      oop retvalue = stack_pop(&state.stack);
+      DEBUG_CHECK(stack_size(&state.stack) == 0, "Assumed empty stack");
       oop caller = frame_caller(state.reg_frm);
       // TODO: Set caller to NIL?
       if (likely(is_frame(caller))) {
-        stack_push(stack, retvalue);
         restore_from_frame(frame_caller(state.reg_frm), &state);
+        stack_push(&state.stack, retvalue);
         if (protected_interpreter_state == &state) {
           gc_run();
         }
@@ -461,11 +468,11 @@ oop interpret(oop frame, oop procedure) {
         DEBUG_CHECKV(is_nil(caller) || is_dframe(caller), caller,
                      "Assumed nil or dframe.");
         #ifdef INTERPRETER_DEBUG
-        if (stack_size_before != stack->size) {
+        if (stack_size_before != state.stack.size) {
           printf("The stack is a mutant!");
           printf("Old stack size: %d\n", stack_size_before);
-          printf("New stack size: %d\n", stack->size);
-          print_stack(stack);
+          printf("New stack size: %d\n", state.stack.size);
+          print_stack(&state.stack);
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
@@ -478,43 +485,43 @@ oop interpret(oop frame, oop procedure) {
     case BC_CALL_CC: {
       IPRINT("call/cc\n");
       // TODO: Optimize proc pop/push.
-      oop proc = stack_pop(stack);
-      oop continuation = make_continuation(stack, &state);
-      stack_push(stack, continuation);
-      stack_push(stack, proc);
-      stack_push(stack, continuation);
-      apply_into_interpreter(stack, 2, &state, NO);
+      oop proc = stack_pop(&state.stack);
+      oop continuation = make_continuation(&state);
+      stack_push(&state.stack, continuation);
+      stack_push(&state.stack, proc);
+      stack_push(&state.stack, continuation);
+      apply_into_interpreter(2, &state, NO);
       break;
     }
     case BC_INVALIDATE_CONTINUATION: {
       IPRINT("invalidate-continuation\n");
-      oop return_value = stack_pop(stack);
-      oop continuation = stack_pop(stack);
-      stack_push(stack, return_value);
+      oop return_value = stack_pop(&state.stack);
+      oop continuation = stack_pop(&state.stack);
+      stack_push(&state.stack, return_value);
       invalidate_continuation(continuation);
       break;
     }
     case BC_RESTORE_CONTINUATION: {
       IPRINT("restore-continuation\n");
-      oop return_value = stack_pop(stack);
-      oop continuation = stack_pop(stack);
+      oop return_value = stack_pop(&state.stack);
+      oop continuation = stack_pop(&state.stack);
       restore_continuation(continuation, &state);
-      stack_push(stack, continuation);
-      stack_push(stack, return_value);
+      stack_push(&state.stack, continuation);
+      stack_push(&state.stack, return_value);
       break;
     }
     case BC_TAIL_CALL_APPLY: {
       // TODO: Reimplement this without going over the stack.
       IPRINT("apply\n");
-      oop arglist = stack_pop(stack);
-      oop fn = stack_pop(stack);
+      oop arglist = stack_pop(&state.stack);
+      oop fn = stack_pop(&state.stack);
       if (is_compiled_lisp_procedure(fn)) {
         oop caller = frame_caller(state.reg_frm);
         oop env = make_frame_for_application(fn, arglist, caller);
         initialize_state_from_fn(env, fn, &state);
       } else {
         // Call recursively on the C stack.
-        stack_push(stack,
+        stack_push(&state.stack,
                    apply_with_caller(make_cons(fn, arglist), state.reg_frm));
       }
       break;
@@ -551,7 +558,5 @@ void my_print_stack_trace() {
 
 void init_interpreter() {
   print_stack_trace = my_print_stack_trace;
-  stack = malloc(sizeof(stack_t));
-  stack_init(stack, MAX_STACK_SIZE);
   gc_register_persistent_refs(enumerate_interpreter_roots);
 }

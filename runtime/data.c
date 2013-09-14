@@ -343,7 +343,12 @@ oop dframe_get(oop dframe, oop key) {
 void print_dframe(oop dframe) {
   CHECKV(is_dframe(dframe), dframe, "Must be dframe.");
   printf("(");
-  print_value(fn_name(MEM_GET(dframe, DFRAME_PROCEDURE)));
+  oop procedure = MEM_GET(dframe, DFRAME_PROCEDURE);
+  if (is_nil(procedure)) {
+    printf("???");
+  } else {
+    print_value(fn_name(procedure));
+  }
   fn_uint size = dframe_size(dframe);
   int i;
   for (i=0; i<size; i++) {

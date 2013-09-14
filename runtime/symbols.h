@@ -21,6 +21,7 @@ typedef struct {
   oop _dframe;
   oop _dict;
   oop _frame;
+  oop _stack;
   oop _string;
   oop _symbol;
 
