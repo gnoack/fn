@@ -1,6 +1,6 @@
 (defn pprint (item)
-  ;; TODO: Array printing.
-  ;; TODO: Memory consumption.
+  ;; TODO: Stack printing.
+  ;; TODO: Optimize memory consumption for string concatenation?
   (defn string-char-escape (ch)
     ;; TODO: Some cases are missing.
     (cond ((eq? ch #\") "\\\"")
@@ -21,6 +21,7 @@
                        (string-append (pprint (first l)) " "
                                       (pprint-inner-list (rest l)))))
           (true (string-append ". " (pprint l)))))
+  ;; TODO: Rewrite with typecase
   (cond ((string? item) (string-append "\""
                                        (apply string-append
                                               (map string-char-escape
