@@ -301,6 +301,7 @@ oop read_oop(interpreter_state_t* state) {
 
 // Continuations
 oop make_continuation(interpreter_state_t* state) {
+  // TODO: Can't we just drop the stack size?
   writeback_to_frame(state);
   oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._continuation);
@@ -446,6 +447,7 @@ oop interpret(oop frame, oop procedure) {
       DEBUG_CHECK(stack_size(&state.stack) == 0, "Assumed empty stack");
       oop caller = frame_caller(state.reg_frm);
       // TODO: Set caller to NIL?
+      // TODO: Discard local stack before returning?  (Higher order procedures)
       if (likely(is_frame(caller))) {
         restore_from_frame(frame_caller(state.reg_frm), &state);
         stack_push(&state.stack, retvalue);
