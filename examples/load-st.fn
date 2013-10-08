@@ -1,0 +1,82 @@
+
+(load-file "examples/grammar-utils.fn")
+(def stg (load-grammar! "examples/smalltalk.g"))
+(set! stg (stg base-grammar))
+
+(defmacro st-body (varnames &rest body)
+  `(let ,(map (lambda (varname) `(,varname nil))
+              varnames)
+     ,@body))
+
+; TODO: Solve non-local returns!
+(defmacro st-return (e) e)
+
+; Alias to FN message sends for now.
+(def msg-send send)
+
+(defmacro st-defm (type sel vars body)
+  `(defm ,type (quote ,sel) ,vars
+     ,body))
+
+(defm @smallint '+ (other)
+  (+ self other))
+
+(defm @smallint '< (other)
+  (< self other))
+
+(defm @smallint '= (other)
+  (= self other))
+
+(defm @cons 'each: (proc)
+  (map proc self))
+
+(defm @nil 'each: (proc)
+  '())
+
+(defm @dict 'keys ()
+  (map first (dict-key-value-pairs self)))
+
+(defm @dict 'values ()
+  (map rest (dict-key-value-pairs self)))
+
+(defm @string 'println ()
+  (println self))
+
+(defm @string '++ (other)
+  (string-append self other))
+
+(defm @symbol 'asString ()
+  (symbol->string self))
+
+(def ex
+ ((read-and-check-empty-remainder (@@ stg method-def))
+  "
+   dict>>println [
+     'This dictionary contains:' println.
+     self keys each: [ :name |
+       (' * ' ++ name asString) println
+     ].
+     'ok'
+   ]
+  "
+  ;; "
+  ;;  dict>>println [
+  ;;    | a b c |
+  ;;    a := 1.
+  ;;    b := 2.
+  ;;    c := a + b.
+  ;;    ^ c
+  ;;  ]
+  ;; "
+))
+
+(println "Executing:")
+(println (macroexpand ex))
+(println "...")
+(def res (eval ex))
+(println "Result: " res)
+
+(println "DICT")
+(println ($mem-get @cons 1))
+
+(println (send *macros* 'println))
