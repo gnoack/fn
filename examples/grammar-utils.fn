@@ -3,8 +3,8 @@
   ((@@ pegs-grammar grammar)
    (string->list (file->string filename))
    (lambda (result rest)
-     (println "Loaded grammar " filename)
-     (println result)
+     ;; (println "Loaded grammar " filename)
+     ;; (println result)
      (eval result))
    print-parse-error-and-raise))
 

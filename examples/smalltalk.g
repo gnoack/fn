@@ -18,22 +18,24 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
 
   literal-expr        ::= tk(literal-number) |
                           tk(literal-character) |
-                          tk(string);
+                          tk(string) |
+                          tk(literal-symbol);
 
   var-name            ::= WORD;
   literal-number      ::= DIGIT+:ds                      => (string->int (list->string ds));
+  literal-symbol      ::= "#" (ALPHA | bin-op | ":")+:cs => `(quote ,(string->symbol (list->string cs)));
   literal-character   ::= "$" ALPHA:a                    => a;  // TODO: Escape codes!
 
   unary-message-send  ::= expr4:e WORD:sel               => `(msg-send ,e (quote ,sel)); // TODO: Support "a b c" (chained unary sends)
-  binary-message-send ::= expr3:e1 BIN:sel expr3:e2      => `(msg-send ,e1 (quote ,sel) ,e2);
+  binary-message-send ::= expr3:e1 bin-op:sel expr3:e2   => `(msg-send ,e1 (quote ,sel) ,e2);
   nary-message-send   ::= expr2:e kwordlist(expr2):l     => `(msg-send ,e (quote ,(first l)) ,@(second l));
+  bin-op              ::= BINCHAR+:cs  => (string->symbol (list->string cs));
 
   // Tokens.
   WORD                ::= tk(ALPHA+:as ~":" => as):as    => (string->symbol (list->string as));
   WORDK               ::= tk(ALPHA+:as ":" => as):as     => (list->string (append as (list #\:)));  // String!
   ARG                 ::= tk(":" ALPHA+:as => as):as     => (string->symbol (list->string as));
-  BIN                 ::= ( "+" | "*" | "-" | "/"
-                          | "%" | "~" | "=" | "^" )+:cs  => (string->symbol (list->string cs));
+  BINCHAR             ::= ( "+" | "*" | "-" | "/" | "%" | "~" | "=" | "^" );
 
   // Strings and comments.
   escapedchar ::= "\\n"                             => #\Newline
@@ -59,7 +61,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
   // --------- Method definitions
   type-name   ::= WORD:t                            => (string->symbol (string-append "@" (symbol->string t)));
   method-sig  ::= WORD:sel                          => `(,sel ())
-                | BIN:sel var-name:v                => `(,sel (,v))
+                | bin-op:sel var-name:v             => `(,sel (,v))
                 | kwordlist(var-name):sig           => sig;
   method-body ::= tk("[") body:b tk("]")            => b;
   method-def  ::= type-name:v tk(">>") method-sig:s method-body:b  => `(st-defm ,v ,@s ,b);
@@ -67,4 +69,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
   // ---- Blocks
   block-expr    ::= tk("[") block-arglist:as statements:ss tk("]")  => `(lambda ,as ,@ss);
   block-arglist ::= ARG*:args tk("|")               => args;
+
+  // ---- File
+  file        ::= method-def*;
 }

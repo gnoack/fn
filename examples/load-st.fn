@@ -1,7 +1,7 @@
 
 (load-file "examples/grammar-utils.fn")
-(def stg (load-grammar! "examples/smalltalk.g"))
-(set! stg (stg base-grammar))
+(def smalltalk-grammar (load-grammar! "examples/smalltalk.g"))
+(set! smalltalk-grammar (smalltalk-grammar base-grammar))
 
 (defmacro st-body (varnames &rest body)
   `(let ,(map (lambda (varname) `(,varname nil))
@@ -11,8 +11,18 @@
 ; TODO: Solve non-local returns!
 (defmacro st-return (e) e)
 
-; Alias to FN message sends for now.
-(def msg-send send)
+(defn msg-send (receiver message &rest arguments)
+  ;(println "Send " message " to " receiver)
+
+  (defn %method-for-type (type selector)
+    (dict-get ($mem-get type 1) selector))
+  (apply (%method-for-type (type-of receiver) message)
+         (cons receiver arguments)))
+
+(defm @compiled-procedure 'value () (self))
+(defm @compiled-procedure 'value: (a) (self a))
+(defm @compiled-procedure 'value:value: (a b) (self a b))
+(defm @compiled-procedure 'value:value:value: (a b c) (self a b c))
 
 (defmacro st-defm (type sel vars body)
   `(defm ,type (quote ,sel) ,vars
@@ -27,38 +37,34 @@
 (defm @smallint '= (other)
   (= self other))
 
-(defm @cons 'each: (proc)
-  (map proc self))
-
-(defm @nil 'each: (proc)
-  '())
-
-(defm @dict 'keys ()
-  (map first (dict-key-value-pairs self)))
-
-(defm @dict 'values ()
-  (map rest (dict-key-value-pairs self)))
+(defm @dict 'keyValuePairs ()
+  (dict-key-value-pairs self))
 
 (defm @string 'println ()
   (println self))
 
 (defm @string '++ (other)
   (string-append self other))
-
+  
 (defm @symbol 'asString ()
   (symbol->string self))
 
-(def ex
- ((read-and-check-empty-remainder (@@ stg method-def))
-  "
-   dict>>println [
-     'This dictionary contains:' println.
-     self keys each: [ :name |
-       (' * ' ++ name asString) println
-     ].
-     'ok'
-   ]
-  "
+(defm @cons 'println ()
+  (println self))
+
+(def expressions
+ ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
+  (file->string "examples/st.st")
+  ;; "
+  ;;  dict>>println [
+  ;;    'This dictionary contains:' println.
+  ;;    self keys each: [ :name |
+  ;;      (' * ' ++ name asString) println
+  ;;    ].
+  ;;    'ok'
+  ;;  ]
+  ;; "
+
   ;; "
   ;;  dict>>println [
   ;;    | a b c |
@@ -70,13 +76,31 @@
   ;; "
 ))
 
-(println "Executing:")
-(println (macroexpand ex))
-(println "...")
-(def res (eval ex))
-(println "Result: " res)
+;; (println "Executing:")
+;; (println (macroexpand ex))
 
-(println "DICT")
-(println ($mem-get @cons 1))
+(deftype @Smalltalk)
+(def Smalltalk ($make @Smalltalk))
+(defm @Smalltalk 'object:at: (obj pos)
+  ($mem-get obj pos))
+(defm @Smalltalk 'send:to: (sel recv)
+  (msg-send recv sel))
+(defm @Smalltalk 'typeOf: (obj)
+  (type-of obj))
 
-(println (send *macros* 'println))
+;; Should be a constructor on @cons.
+(defm @Smalltalk 'cons:and: (car cdr)
+  (cons car cdr))
+
+
+(deftype @Main)
+(def *main* ($make @Main *args*))
+
+(map (lambda (ex)
+       ;(println ex)
+       (eval ex))
+     expressions)
+
+;(println "Result: " res)
+
+(send *main* 'main)
