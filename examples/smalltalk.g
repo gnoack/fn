@@ -1,6 +1,6 @@
 
 // TODO: Symbols.
-grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
+grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON)) {
   kwordlist R         ::= (WORDK R)+:xs  =>
                                `(,(string->symbol (apply string-append (map first xs)))
                                  ,(map second xs));
@@ -35,7 +35,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
   WORD                ::= tk(ALPHA+:as ~":" => as):as    => (string->symbol (list->string as));
   WORDK               ::= tk(ALPHA+:as ":" => as):as     => (list->string (append as (list #\:)));  // String!
   ARG                 ::= tk(":" ALPHA+:as => as):as     => (string->symbol (list->string as));
-  BINCHAR             ::= ( "+" | "*" | "-" | "/" | "%" | "~" | "=" | "^" );
+  BINCHAR             ::= ( "+" | "*" | "-" | "/" | "%" | "~" | "=" | "^" | "<" | ">" | "@" );
 
   // Strings and comments.
   escapedchar ::= "\\n"                             => #\Newline
@@ -68,7 +68,8 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE)) {
 
   // ---- Blocks
   block-expr    ::= tk("[") block-arglist:as statements:ss tk("]")  => `(lambda ,as ,@ss);
-  block-arglist ::= ARG*:args tk("|")               => args;
+  block-arglist ::= ARG*:args tk("|")               => args
+                  | EPSILON                         => '();
 
   // ---- File
   file        ::= method-def*;

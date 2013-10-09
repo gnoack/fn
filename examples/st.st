@@ -1,49 +1,83 @@
 
-cons>>car [ Smalltalk object: self at: 1 ]
-cons>>cdr [ Smalltalk object: self at: 2 ]
+Cons>>car [ Smalltalk object: self at: 1 ]
+Cons>>cdr [ Smalltalk object: self at: 2 ]
 
-cons>>each: aBlock [
+Cons>>each: aBlock [
   aBlock value: self car.
   self cdr each: aBlock
 ]
-nil>>each: aBlock [ ^ self ]
+Nil>>each: aBlock [ ^ self ]
 
-cons>>map: aBlock [
+Cons>>map: aBlock [
   Smalltalk cons: (aBlock value: self car)
              and: (self cdr map: aBlock)
 ]
-nil>>map: aBlock [ ^ nil ]
+Nil>>map: aBlock [ ^ nil ]
 
-type>>methodTable [ Smalltalk object: self at: 1 ]
+Type>>methodTable [ Smalltalk object: self at: 1 ]
 
-symbol>>value: receiver [ Smalltalk send: self to: receiver ]
-symbol>>println [ (self asString) println ]
+Symbol>>value: receiver [ Smalltalk send: self to: receiver ]
+Symbol>>println [ (self asString) println ]
 
 Main>>args [ Smalltalk object: self at: 1 ]
 
-dict>>keys [ self keyValuePairs map: #car ]
-dict>>values [ self keyValuePairs map: #cdr ]
-dict>>each: aBlock [
+Dict>>keys [ self keyValuePairs map: #car ]
+Dict>>values [ self keyValuePairs map: #cdr ]
+Dict>>each: aBlock [
   self keyValuePairs each: [ :kv |
     aBlock value: (kv car) value: (kv cdr)
   ].
   ^ self
 ]
-dict>>eachKey: aBlock [ self keys each: aBlock ]
+Dict>>eachKey: aBlock [ self keys each: aBlock ]
 
-dict>>println [
+Dict>>println [
   self keys each: [ :name |
     (' * ' ++ name asString) println
   ].
   ^ self
 ]
 
+True>>value [ self ]
+False>>value [ self ]
+
+True>>ifFalse: aBlock [ ^ self ]
+False>>ifFalse: aBlock [ aBlock value ]
+
+CompiledProcedure>>repeatUntil: aBlock [
+  self value.
+  aBlock value ifFalse: [ self repeatUntil: aBlock ]
+]
+
+String>>isEmpty [ self length = 0 ]
+
+Main>>repl [
+  | line result |
+  [
+    [
+      line := Smalltalk readline: 'ST> '.
+      result := Smalltalk eval: line.
+      Smalltalk println: result
+    ] onError: [ :reason |
+      Smalltalk println: '**** An error happened!'.
+      Smalltalk println: reason.
+      Smalltalk println: 'Please try again.'.
+      line := 'try again'
+    ]
+  ] repeatUntil: [ line isEmpty ]
+]
+
 Main>>main [
+  | name |
+
   'Arguments:' println.
   self args each: [ :arg |
     (' arg: ' ++ arg) println
   ].
   'Methods available on cons cells:' println.
   (Smalltalk typeOf: (Smalltalk cons: 1 and: 2)) methodTable eachKey: #println.
+
+  'Entering repl...' println.
+  self repl.
   ^ 0
 ]
