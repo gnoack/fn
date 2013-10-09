@@ -12,7 +12,7 @@
 #include "strings.h"
 
 /* +---------+------+--------+--------+
- * | @string | size | offset | memptr |----> raw ASCII string
+ * | @String | size | offset | memptr |----> raw ASCII string
  * +---------+------+--------+--------+
  */
 oop make_string_from_mem_block(oop raw_string, fn_uint size) {

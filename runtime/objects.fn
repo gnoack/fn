@@ -2,59 +2,61 @@
 ;;; Types                                                          ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; The type type links to itself: @type = ($make @type (make-dict))
-(def @type ($make 1 2 3))
-($mem-set! @type 0 @type)
-($mem-set! @type 1 (make-dict))
-($mem-set! @type 2 "@type")
+;; The type @Type links to itself: @Type = ($make @Type (make-dict) "@Type")
+(def @Type ($make 1 2 3))
+($mem-set! @Type 0 @Type)
+($mem-set! @Type 1 (make-dict))
+($mem-set! @Type 2 "@Type")
 (defn type? (x)
-  (eq? (type-of x) @type))
+  (eq? (type-of x) @Type))
 
-; @cons and others must be created early for object creation from C,
+; @Cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:
-;  (def @cons ($make @type (make-dict)))
+;  (def @Cons ($make @Type (make-dict)))
 (defn $patch-type! (type name)
-  ($mem-set! type 0 @type)
+  ($mem-set! type 0 @Type)
   ($mem-set! type 1 (make-dict))
   ($mem-set! type 2 name))
 
 ;; TODO: Refactor duplication in strings and symbols.
-($patch-type! @array "@array")
-($patch-type! @cons "@cons")
-($patch-type! @continuation "@continuation")
-($patch-type! @dframe "@dframe")
-($patch-type! @dict "@dict")
-($patch-type! @frame "@frame")
-($patch-type! @stack "@stack")
-($patch-type! @string "@string")
-($patch-type! @symbol "@symbol")
+($patch-type! @Array "@Array")
+($patch-type! @Cons "@Cons")
+($patch-type! @Continuation "@Continuation")
+($patch-type! @Dframe "@Dframe")
+($patch-type! @Dict "@Dict")
+($patch-type! @Frame "@Frame")
+($patch-type! @Stack "@Stack")
+($patch-type! @String "@String")
+($patch-type! @Symbol "@Symbol")
+($patch-type! @True "@True")
+($patch-type! @False "@False")
 
-; Same procedure for @procedure.
-($patch-type! @procedure "@procedure")
-($patch-type! @native-procedure "@native-procedure")
-($patch-type! @compiled-procedure "@compiled-procedure")
+; Same procedure for @Procedure.
+($patch-type! @Procedure "@Procedure")
+($patch-type! @NativeProcedure "@NativeProcedure")
+($patch-type! @CompiledProcedure "@CompiledProcedure")
 
 ;; TODO: Supertypes?
 (defmacro deftype (name)
-  `(def ,name ($make @type (make-dict) ,(symbol->string name))))
+  `(def ,name ($make @Type (make-dict) ,(symbol->string name))))
 
-(deftype @smallint)
-(deftype @character)
-(deftype @nil)
-(deftype @mem-block)
+(deftype @Smallint)
+(deftype @Character)
+(deftype @Nil)
+(deftype @MemBlock)
 
 (defn dict? (obj)
-  (eq? (type-of obj) @dict))
+  (eq? (type-of obj) @Dict))
 
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
 ;; memory-allocated values, the value at position 0
 ;; is used as type.
 (defn type-of (x)
-  (cond ((number? x) @smallint)
-	((char? x) @character)
-	((nil? x) @nil)
-        ((mem-block? x) @mem-block)
+  (cond ((number? x) @Smallint)
+	((char? x) @Character)
+	((nil? x) @Nil)
+        ((mem-block? x) @MemBlock)
 	((mem? x) ($mem-get x 0))))
 
 (defn type-name (type)

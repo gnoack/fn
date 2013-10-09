@@ -17,12 +17,12 @@
   (else  true))
 
 (typecase "Hello"
-  ((@string) true)
-  ((@array)  false)
+  ((@String) true)
+  ((@Array)  false)
   (else      false))
 
 (typecase 10
-  ((@string) false)
+  ((@String) false)
   (else      true))
 
 (eq? 11 (match '(foo 1)

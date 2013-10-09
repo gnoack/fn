@@ -78,7 +78,7 @@
 ; (string=? "foo" (writeout "foo"))
 
 ;; UNSAFE functions for memory region allocation.
-(cons? ($make @cons 1 2))
+(cons? ($make @Cons 1 2))
 (not (cons? ($make 'blubb 1 2)))
 
 (eq? 'b ($mem-get ($make 'a 'b 'c) 1))

@@ -6,8 +6,8 @@ typedef struct {
   oop _def;
   oop _lambda;
   oop _let;
-  oop _true;
-  oop _false;
+  oop _true;  // not a symbol
+  oop _false;  // not a symbol
   oop _progn;
   oop _quote;
   oop _rest;
@@ -24,6 +24,10 @@ typedef struct {
   oop _stack;
   oop _string;
   oop _symbol;
+
+  // Boolean types
+  oop _True;
+  oop _False;
 
   // Procedure types.
   oop _procedure;

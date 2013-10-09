@@ -83,10 +83,10 @@
 
 (defn print-stack-trace (frame)
   (typecase frame
-    ((@frame)  (progn
+    ((@Frame)  (progn
                  (println " - " (frame-procedure frame))
                  (print-stack-trace (frame-caller frame))))
-    ((@dframe) (progn
+    ((@Dframe) (progn
                  (println " - " (dframe-procedure frame))
                  (print-stack-trace (dframe-caller frame))))
     (else nil)))

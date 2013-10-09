@@ -60,6 +60,10 @@ void print_value(oop v) {
     case ' ': printf("#\\Space"); break;
     default: printf("#\\%c", get_char(v)); break;
     }
+  } else if (value_eq(symbols._true, v)) {
+    printf("true");
+  } else if (value_eq(symbols._false, v)) {
+    printf("false");
   } else if (is_symbol(v)) {
     printf("%s", get_symbol(v));
   } else if (is_nil(v)) {
@@ -125,27 +129,29 @@ void print_value(oop v) {
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {
-      printf("@array");
+      printf("@Array");
     } else if (value_eq(symbols._cons, v)) {
-      printf("@cons");
+      printf("@Cons");
     } else if (value_eq(symbols._continuation, v)) {
-      printf("@continuation");
+      printf("@Continuation");
     } else if (value_eq(symbols._dframe, v)) {
-      printf("@dframe");
+      printf("@Dframe");
     } else if (value_eq(symbols._dict, v)) {
-      printf("@dict");
+      printf("@Dict");
     } else if (value_eq(symbols._frame, v)) {
-      printf("@frame");
+      printf("@Frame");
+    } else if (value_eq(symbols._stack, v)) {
+      printf("@Stack");
     } else if (value_eq(symbols._string, v)) {
-      printf("@string");
+      printf("@String");
     } else if (value_eq(symbols._symbol, v)) {
-      printf("@symbol");
+      printf("@Symbol");
     } else if (value_eq(symbols._procedure, v)) {
-      printf("@procedure");
+      printf("@Procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {
-      printf("@compiled-procedure");
+      printf("@CompiledProcedure");
     } else if (value_eq(symbols._native_procedure, v)) {
-      printf("@native-procedure");
+      printf("@NativeProcedure");
     } else {
       printf("#<OBJECT>");
     }

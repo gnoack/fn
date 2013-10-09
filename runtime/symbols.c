@@ -131,6 +131,8 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept(&symbols._procedure);
   accept(&symbols._native_procedure);
   accept(&symbols._compiled_procedure);
+  accept(&symbols._True);
+  accept(&symbols._False);
   // C Types.
   accept(&symbols._c_int);
   accept(&symbols._c_str);
@@ -162,18 +164,23 @@ void init_symbols() {
   symbols._procedure = mem_alloc(3);
   symbols._native_procedure = mem_alloc(3);
   symbols._compiled_procedure = mem_alloc(3);
+  symbols._True = mem_alloc(3);
+  symbols._False = mem_alloc(3);
 
   symbols._if = make_symbol("if");
   symbols._def = make_symbol("def");
   symbols._lambda = make_symbol("lambda");
   symbols._let = make_symbol("let");
-  symbols._true = make_symbol("true");
-  symbols._false = make_symbol("false");
   symbols._progn = make_symbol("progn");
   symbols._quote = make_symbol("quote");
   symbols._rest = make_symbol("&rest");
   symbols._macroexpand = make_symbol("macroexpand");
   symbols._set = make_symbol("set!");
+
+  symbols._true = mem_alloc(1);
+  mem_set(symbols._true, 0, symbols._True);
+  symbols._false = mem_alloc(1);
+  mem_set(symbols._false, 0, symbols._False);
 
   symbols._c_int = make_symbol("int");
   symbols._c_str = make_symbol("str");

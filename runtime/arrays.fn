@@ -1,13 +1,13 @@
 ;; TODO: Arrays are not used from within Lisp right now.
 
-;; Type @array is defined in C.
+;; Type @Array is defined in C.
 (defn list-of-size (capacity)
   (if (eq? 0 capacity)
       '()
       (cons nil (list-of-size (- capacity 1)))))
 
 (defn list->array (l)
-  (apply $make (cons @array l)))
+  (apply $make (cons @Array l)))
 
 ;; An array is a fixed-size, tagged, modifiable data object.
 (defn make-array (capacity)
@@ -18,7 +18,7 @@
   (- ($mem-size arr) 1))
 
 (defn array? (arr)
-  (eq? @array (type-of arr)))
+  (eq? @Array (type-of arr)))
 
 (defn array->list (a)
   (defn _convert (n acc)

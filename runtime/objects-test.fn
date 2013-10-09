@@ -1,31 +1,31 @@
 ;; Types
-;; Anything has a type, even types have a type, namely @type.
-(eq? @type (type-of @type))
-(eq? @cons (type-of (cons 'a 'b)))
-(eq? @type (type-of (type-of (cons 'a 'b))))
-(eq? @smallint (type-of 12))
-(eq? @character (type-of #\b))
-(eq? @nil (type-of nil))
-(eq? @symbol (type-of 'foobar))
-(eq? @mem-block (type-of ($make-mem-block 4)))
+;; Anything has a type, even types have a type, namely @Type.
+(eq? @Type (type-of @Type))
+(eq? @Cons (type-of (cons 'a 'b)))
+(eq? @Type (type-of (type-of (cons 'a 'b))))
+(eq? @Smallint (type-of 12))
+(eq? @Character (type-of #\b))
+(eq? @Nil (type-of nil))
+(eq? @Symbol (type-of 'foobar))
+(eq? @MemBlock (type-of ($make-mem-block 4)))
 
-(string=? "@type" (type-name @type))
-(string=? "@cons" (type-name @cons))
-(string=? "@mem-block" (type-name @mem-block))
+(string=? "@Type" (type-name @Type))
+(string=? "@Cons" (type-name @Cons))
+(string=? "@MemBlock" (type-name @MemBlock))
 
-(eql? '(install-method! @foo 'bar
+(eql? '(install-method! @Foo 'bar
                         (lambda (self x y) (+ self x y)))
-      (macroexpand '(defm @foo 'bar (x y)
+      (macroexpand '(defm @Foo 'bar (x y)
                           (+ self x y))))
 
 ;; Before defining 'is-nil?
 (not (has-method? nil 'is-nil?))
 
-(->true (defm @nil 'is-nil? () true))
+(->true (defm @Nil 'is-nil? () true))
 (send nil 'is-nil?)
 
 ;; After defining 'is-nil?
 (has-method? nil 'is-nil?)
 
-(->true (defm @smallint 'plus (x) (+ self x)))
+(->true (defm @Smallint 'plus (x) (+ self x)))
 (eq? 7 (send 4 'plus 3))
