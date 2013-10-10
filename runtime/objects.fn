@@ -48,8 +48,11 @@
 ($patch-type! @CompiledProcedure "@CompiledProcedure")
 
 ;; TODO: Supertypes?
+(defn make-type (name supertype)
+  ($make @Type (make-dict) name @Object))
+
 (defmacro deftype (name)
-  `(def ,name ($make @Type (make-dict) ,(symbol->string name) @Object)))
+  `(def ,name (make-type ,(symbol->string name) @Object)))
 
 (deftype @Smallint)
 (deftype @Character)

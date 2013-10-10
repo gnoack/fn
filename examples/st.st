@@ -18,8 +18,14 @@ Nil>>isNil [ ^ true ]
 Object>>isNil [ ^ false ]
 
 Type>>methodTable [ Smalltalk object: self at: 1 ]
+Type>>superType [ Smalltalk object: self at: 3 ]
+Type>>superType: type [ Smalltalk object: self put: type at: 3 ]
+Type>>type: type [ "TODO: Remove this.". Smalltalk object: self put: type at: 0 ]
+Type>>installMethod: method at: selector [
+  self methodTable put: method at: selector
+]
 
-Symbol>>value: receiver [ Smalltalk send: self to: receiver ]
+Symbol>>value: receiver [ receiver send: self ]
 
 Main>>args [ Smalltalk object: self at: 1 ]
 
@@ -36,7 +42,9 @@ Dict>>eachKey: aBlock [ self keys each: aBlock ]
 True>>value [ self ]
 False>>value [ self ]
 
-True>>ifFalse: aBlock [ ^ self ]
+True>>ifTrue: aBlock [ aBlock value ]
+False>>ifTrue: aBlock [ ^ false ]
+True>>ifFalse: aBlock [ ^ false ]
 False>>ifFalse: aBlock [ aBlock value ]
 
 True>>or: other [ ^ true ]
@@ -45,8 +53,12 @@ True>>and: other [ ^ other value ]
 False>>and: other [ ^ false ]
 
 Object>>unknownMessage: message arguments: arguments [
-  (('Message ' ++ message asString) ++ ' not understood.') println.
-  Smalltalk raise: #fail
+  ('Message ' ++ message asString ++ ' not understood.') println.
+  Smalltalk raise: #MessageNotUnderstood
+]
+
+Object>>methods [
+  ^ self type methodTable keys
 ]
 
 CompiledProcedure>>repeatUntil: aBlock [
@@ -64,6 +76,7 @@ Object>>asString [
 
 Smallint>>asString [ ^ Smalltalk prettyprint: self ]
 String>>asString [ ^ Smalltalk prettyprint: self ]
+Dict>>asString [ ^ Smalltalk prettyprint: self ]
 Nil>>asString [ ^ 'nil' ]
 True>>asString [ ^ 'true' ]
 False>>asString [ ^ 'false' ]
@@ -76,7 +89,7 @@ Main>>repl [
     [
       line := Smalltalk readline: 'ST> '.
       line isNil ifFalse: [
-        ((Smalltalk eval: line) asString) println
+        (Smalltalk eval: line) asString println
       ]
     ] onError: [ :reason |
       '**** An error happened!' println.
@@ -96,7 +109,7 @@ Main>>main [
     (' arg: ' ++ arg) println
   ].
   'Methods available on cons cells:' println.
-  (((Smalltalk cons: 1 and: 2) type) methodTable) eachKey: #println.
+  (Smalltalk cons: 1 and: 2) type methodTable eachKey: #println.
 
   'Entering repl...' println.
   self repl.

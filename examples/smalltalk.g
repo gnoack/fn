@@ -1,5 +1,4 @@
 
-// TODO: Symbols.
 grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON)) {
   kwordlist R         ::= (WORDK R)+:xs  =>
                                `(,(string->symbol (apply string-append (map first xs)))
@@ -26,8 +25,11 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   literal-symbol      ::= "#" (ALPHA | bin-op | ":")+:cs => `(quote ,(string->symbol (list->string cs)));
   literal-character   ::= "$" ALPHA:a                    => a;  // TODO: Escape codes!
 
-  unary-message-send  ::= expr4:e WORD:sel               => `(msg-send ,e (quote ,sel)); // TODO: Support "a b c" (chained unary sends)
-  binary-message-send ::= expr3:e1 bin-op:sel expr3:e2   => `(msg-send ,e1 (quote ,sel) ,e2);
+  unary-message-send  ::= expr4:e WORD+:sels             => (reduce (lambda (e sel) `(msg-send ,e (quote ,sel))) sels e);
+  binary-message-send ::= expr3:e (bin-op:sel expr3:arg => (list sel arg))+:sends
+                              => (reduce (lambda (e send)
+                                           `(msg-send ,e (quote ,(first send)) ,(second send)))
+                                         sends e);
   nary-message-send   ::= expr2:e kwordlist(expr2):l     => `(msg-send ,e (quote ,(first l)) ,@(second l));
   bin-op              ::= BINCHAR+:cs  => (string->symbol (list->string cs));
 
@@ -46,12 +48,13 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   string      ::= "\'" stringchar*:cs "\'"          => (list->string cs);
 
   commentchar ::= ~"\"" escapedchar:c               => c;
-  comment     ::= "\"" stringchar*:cs "\""          => `(st-comment ,(list->string cs));
+  comment     ::= "\"" commentchar*:cs "\""         => `(st-comment ,(list->string cs));
 
   // --------- Bodies
   listof item sep  ::= item:a (sep item:it => it)*:as => (cons a as);
   statements  ::= listof(statement, tk("."));
   statement   ::= tk("^") expr:e                    => `(st-return ,e)
+                | comment:e                         => e
                 | var-name:v tk(":=") expr:e        => `(set! ,v ,e)
                 | expr:e                            => e;
   body        ::= var-decl:vs statements:ss         => `(st-body ,vs ,@ss)

@@ -37,20 +37,22 @@
   `(defm ,type (quote ,sel) ,vars
      ,body))
 
-(defm @Smallint '+ (other)
-  (+ self other))
-
-(defm @Smallint '< (other)
-  (< self other))
-
-(defm @Smallint '> (other)
-  (< other self))
-
-(defm @Smallint '= (other)
-  (= self other))
+(defm @Smallint '+ (other) (+ self other))
+(defm @Smallint '* (other) (* self other))
+(defm @Smallint '/ (other) (/ self other))
+(defm @Smallint '- (other) (- self other))
+(defm @Smallint '< (other) (< self other))
+(defm @Smallint '> (other) (< other self))
+(defm @Smallint '= (other) (= self other))
 
 (defm @Dict 'keyValuePairs ()
   (dict-key-value-pairs self))
+
+(defm @Dict 'put:at: (value key)
+  (dict-put! self key value))
+
+(defm @Dict 'at: (key)
+  (dict-get self key))
 
 (defm @Object 'println ()
   (println self))
@@ -73,24 +75,21 @@
 (defm @Symbol 'asString ()
   (string-append "#" (symbol->string self)))
 
-(defm @Dict 'asString ()
-  (pprint self))
-
 (def expressions
  ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
   (file->string "examples/st.st")))
 
 (deftype @Smalltalk)
 (def Smalltalk ($make @Smalltalk))
-(defm @Smalltalk 'object:at: (obj pos)
-  ($mem-get obj pos))
-(defm @Smalltalk 'send:to: (sel recv)
-  (msg-send recv sel))
-(defm @Smalltalk 'prettyprint: (obj)
-  (pprint obj))
-(defm @Smalltalk 'raise: (exception)
-  (raise exception))
+(defm @Smalltalk 'object:at: (obj pos)          ($mem-get obj pos))
+(defm @Smalltalk 'object:put:at: (obj val pos)  ($mem-set! obj pos val))
+(defm @Smalltalk 'prettyprint: (obj)            (pprint obj))
+(defm @Smalltalk 'raise: (exception)            (raise exception))
 
+(defm @Type 'newWithName:supertype: (name supertype)
+  (make-type name supertype))
+(def Type @Type)
+(def Object @Object)
 ;; Should be a constructor on @cons.
 (defm @Smalltalk 'cons:and: (car cdr)
   (cons car cdr))
