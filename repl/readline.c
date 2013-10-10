@@ -77,4 +77,3 @@ void init_readline() {
   register_globally_fn("write-history", primitive_write_history);
   register_globally_fn("get-home-directory", primitive_get_home_directory);
 }
-

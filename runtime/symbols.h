@@ -25,7 +25,7 @@ typedef struct {
   oop _string;
   oop _symbol;
 
-  // Boolean types
+  // Boolean types.
   oop _True;
   oop _False;
 

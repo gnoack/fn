@@ -46,7 +46,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   string      ::= "\'" stringchar*:cs "\'"          => (list->string cs);
 
   commentchar ::= ~"\"" escapedchar:c               => c;
-  comment     ::= "\"" stringchar*:cs "\""          => `(comment ,(list->string cs));
+  comment     ::= "\"" stringchar*:cs "\""          => `(st-comment ,(list->string cs));
 
   // --------- Bodies
   listof item sep  ::= item:a (sep item:it => it)*:as => (cons a as);

@@ -59,6 +59,8 @@
         ((type? item)   (string-append "#<TYPE "
                                        (type-name item)
                                        ">"))
+        ((eq? true item) "true")
+        ((eq? false item) "false")
         ((has-method?
           item 'pprint) (send item 'pprint))
         ((mem? item)    "#<OBJECT>")

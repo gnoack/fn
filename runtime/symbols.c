@@ -128,12 +128,14 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept(&symbols._stack);
   accept(&symbols._string);
   accept(&symbols._symbol);
+  // Boolean types.
+  accept(&symbols._True);
+  accept(&symbols._False);
+  // Procedure types.
   accept(&symbols._procedure);
   accept(&symbols._native_procedure);
   accept(&symbols._compiled_procedure);
-  accept(&symbols._True);
-  accept(&symbols._False);
-  // C Types.
+  // C types.
   accept(&symbols._c_int);
   accept(&symbols._c_str);
   accept(&symbols._c_void);
@@ -152,20 +154,20 @@ void init_symbols() {
 
   // TODO: These are not actually symbols, but types.
   // The types are finished when types are initialized.
-  symbols._array = mem_alloc(3);
-  symbols._cons = mem_alloc(3);
-  symbols._continuation = mem_alloc(3);
-  symbols._dframe = mem_alloc(3);
-  symbols._dict = mem_alloc(3);
-  symbols._frame = mem_alloc(3);
-  symbols._stack = mem_alloc(3);
-  symbols._string = mem_alloc(3);
-  symbols._symbol = mem_alloc(3);  // Must be known before creating symbols.
-  symbols._procedure = mem_alloc(3);
-  symbols._native_procedure = mem_alloc(3);
-  symbols._compiled_procedure = mem_alloc(3);
-  symbols._True = mem_alloc(3);
-  symbols._False = mem_alloc(3);
+  symbols._array = mem_alloc(4);
+  symbols._cons = mem_alloc(4);
+  symbols._continuation = mem_alloc(4);
+  symbols._dframe = mem_alloc(4);
+  symbols._dict = mem_alloc(4);
+  symbols._frame = mem_alloc(4);
+  symbols._stack = mem_alloc(4);
+  symbols._string = mem_alloc(4);
+  symbols._symbol = mem_alloc(4);  // Must be known before creating symbols.
+  symbols._procedure = mem_alloc(4);
+  symbols._native_procedure = mem_alloc(4);
+  symbols._compiled_procedure = mem_alloc(4);
+  symbols._True = mem_alloc(4);
+  symbols._False = mem_alloc(4);
 
   symbols._if = make_symbol("if");
   symbols._def = make_symbol("def");

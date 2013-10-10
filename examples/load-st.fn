@@ -10,15 +10,21 @@
 
 ; TODO: Solve non-local returns!
 (defmacro st-return (e) e)
+(defmacro st-comment (ignored) 'true)
+
+(defn %msg-send (receiver message type arguments)
+  (cond ((nil? type)
+         (progn
+           (%msg-send receiver 'unknownMessage:arguments: (type-of receiver)
+                      (list message arguments))))
+        ((dict-has-key? ($mem-get type 1) message)
+         (apply (dict-get ($mem-get type 1) message)
+                (cons receiver arguments)))
+        (true
+         (%msg-send receiver message ($mem-get type 3) arguments))))
 
 (defn msg-send (receiver message &rest arguments)
-  ;(println "Send " message " to " receiver)
-  (defn %method-for-type (type selector)
-    (if (dict-has-key ($mem-get type 1) selector)
-        (dict-get ($mem-get type 1) selector)
-      (dict-get ($mem-get @Object 1) selector)))
-  (apply (%method-for-type (type-of receiver) message)
-         (cons receiver arguments)))
+  (%msg-send receiver message (type-of receiver) arguments))
 
 (defm @CompiledProcedure 'value () (self))
 (defm @CompiledProcedure 'value: (a) (self a))
@@ -46,20 +52,29 @@
 (defm @Dict 'keyValuePairs ()
   (dict-key-value-pairs self))
 
-(defm @String 'println ()
+(defm @Object 'println ()
   (println self))
+
+(defm @Object 'type ()
+  (type-of self))
+
+(defm @Object 'send: (message)
+  (msg-send self message))
+
+(defm @Object 'send:withArguments: (message args)
+  (%msg-send self message (type-of self) args))
 
 (defm @String 'length ()
   (string-size self))
 
 (defm @String '++ (other)
   (string-append self other))
-  
-(defm @Symbol 'asString ()
-  (symbol->string self))
 
-(defm @Cons 'println ()
-  (println self))
+(defm @Symbol 'asString ()
+  (string-append "#" (symbol->string self)))
+
+(defm @Dict 'asString ()
+  (pprint self))
 
 (def expressions
  ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
@@ -71,10 +86,10 @@
   ($mem-get obj pos))
 (defm @Smalltalk 'send:to: (sel recv)
   (msg-send recv sel))
-(defm @Smalltalk 'typeOf: (obj)
-  (type-of obj))
-(defm @Smalltalk 'println: (obj)
-  (println obj))
+(defm @Smalltalk 'prettyprint: (obj)
+  (pprint obj))
+(defm @Smalltalk 'raise: (exception)
+  (raise exception))
 
 ;; Should be a constructor on @cons.
 (defm @Smalltalk 'cons:and: (car cdr)
