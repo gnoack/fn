@@ -8,26 +8,41 @@
 ($mem-set! @Object 2 "@Object")
 ($mem-set! @Object 3 nil) ; supertype
 
+;; TODO: @Type is really "Object class".
 ;; The type @Type links to itself: @Type = ($make @Type (make-dict) "@Type")
 (def @Type ($make 1 2 3 4))
 ($mem-set! @Type 0 @Type)
 ($mem-set! @Type 1 (make-dict))
 ($mem-set! @Type 2 "@Type")
 ($mem-set! @Type 3 @Object)
+
+(defn type-name (type) ($mem-get type 2))
+(defn type-superclass (type) ($mem-get type 3))
 (defn type? (x)
-  (eq? (type-of x) @Type))
+  (or
+   (eq? (type-of x) @Type)
+   (type? (type-of x))))
 
 ; Close the loop.
 ($mem-set! @Object 0 @Type)
+
+
+(defn $bolt-on-metaclass! (type)
+  (let ((metaclass
+         ($make @Type (make-dict)
+                (string-append (type-name type) " class")
+                ($mem-get (type-superclass type) 0))))
+    ($mem-set! type 0 metaclass)))
 
 ; @Cons and others must be created early for object creation from C,
 ; so we need some retroactive patching.  Idea is still this:
 ;  (def @Cons ($make @Type (make-dict)))
 (defn $patch-type! (type name)
-  ($mem-set! type 0 @Type)
+  ($mem-set! type 0 @Type)  ; not needed?
   ($mem-set! type 1 (make-dict))
   ($mem-set! type 2 name)
-  ($mem-set! type 3 @Object))
+  ($mem-set! type 3 @Object)
+  ($bolt-on-metaclass! type))
 
 ;; TODO: Refactor duplication in strings and symbols.
 ($patch-type! @Array "@Array")
@@ -47,9 +62,10 @@
 ($patch-type! @NativeProcedure "@NativeProcedure")
 ($patch-type! @CompiledProcedure "@CompiledProcedure")
 
-;; TODO: Supertypes?
 (defn make-type (name supertype)
-  ($make @Type (make-dict) name @Object))
+  (let ((result ($make @Type (make-dict) name supertype)))
+    ($bolt-on-metaclass! result)
+    result))
 
 (defmacro deftype (name)
   `(def ,name (make-type ,(symbol->string name) @Object)))
@@ -72,10 +88,6 @@
 	((nil? x) @Nil)
         ((mem-block? x) @MemBlock)
 	((mem? x) ($mem-get x 0))))
-
-(defn type-name (type)
-  (assert (type? type))
-  ($mem-get type 2))
 
 ;;; Method definition
 

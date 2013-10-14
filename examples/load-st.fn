@@ -87,10 +87,16 @@
 (defm @Smalltalk 'raise: (exception)            (raise exception))
 
 (defm @Type 'newWithName:supertype: (name supertype)
-  (make-type name supertype))
+  (let ((class (make-type name supertype))
+        (metaclass (make-type (string-append name " class") (type-of supertype))))
+    ($obj-set! class 0 metaclass)
+    class))
+
 (def Type @Type)
 (def Object @Object)
-;; Should be a constructor on @cons.
+(def Cons @Cons)
+
+;; Should be a constructor on @Cons.
 (defm @Smalltalk 'cons:and: (car cdr)
   (cons car cdr))
 

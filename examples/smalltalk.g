@@ -63,11 +63,13 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
 
   // --------- Method definitions
   type-name   ::= WORD:t                            => (string->symbol (string-append "@" (symbol->string t)));
+  type-ref    ::= type-name:n tk("class")           => `(type-of ,n)
+                | type-name:n                       => n;
   method-sig  ::= WORD:sel                          => `(,sel ())
                 | bin-op:sel var-name:v             => `(,sel (,v))
                 | kwordlist(var-name):sig           => sig;
   method-body ::= tk("[") body:b tk("]")            => b;
-  method-def  ::= type-name:v tk(">>") method-sig:s method-body:b  => `(st-defm ,v ,@s ,b);
+  method-def  ::= type-ref:v tk(">>") method-sig:s method-body:b  => `(st-defm ,v ,@s ,b);
 
   // ---- Blocks
   block-expr    ::= tk("[") block-arglist:as statements:ss tk("]")  => `(lambda ,as ,@ss);

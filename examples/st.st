@@ -1,4 +1,5 @@
 
+Cons class>>car: car cdr: cdr [ Smalltalk cons: car and: cdr ]
 Cons>>car [ Smalltalk object: self at: 1 ]
 Cons>>cdr [ Smalltalk object: self at: 2 ]
 
@@ -46,6 +47,8 @@ True>>ifTrue: aBlock [ aBlock value ]
 False>>ifTrue: aBlock [ ^ false ]
 True>>ifFalse: aBlock [ ^ false ]
 False>>ifFalse: aBlock [ aBlock value ]
+True>>ifTrue: aBlock ifFalse: anotherBlock [ aBlock value ]
+False>>ifTrue: aBlock ifFalse: anotherBlock [ anotherBlock value ]
 
 True>>or: other [ ^ true ]
 False>>or: other [ ^ other value ]
@@ -80,6 +83,20 @@ Dict>>asString [ ^ Smalltalk prettyprint: self ]
 Nil>>asString [ ^ 'nil' ]
 True>>asString [ ^ 'true' ]
 False>>asString [ ^ 'false' ]
+Object>>isCons [ ^ false ]
+Cons>>isCons [ ^ true ]
+Cons>>asStringInner [
+  self cdr isNil ifTrue: [
+    self car asString
+  ] ifFalse: [
+    self cdr isCons ifTrue: [
+      self car asString ++ ' ' ++ self cdr asStringInner
+    ] ifFalse: [
+      self car asString ++ ' . ' ++ self cdr asString
+    ]
+  ]
+]
+Cons>>asString [ '(' ++ self asStringInner ++ ')' ]
 
 String>>isEmpty [ self length = 0 ]
 
