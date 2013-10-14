@@ -1,4 +1,3 @@
-
 (load-file "examples/grammar-utils.fn")
 (def smalltalk-grammar (load-grammar! "examples/smalltalk.g"))
 (set! smalltalk-grammar (smalltalk-grammar base-grammar))
@@ -57,7 +56,7 @@
 (defm @Object 'println ()
   (println self))
 
-(defm @Object 'type ()
+(defm @Object 'class ()
   (type-of self))
 
 (defm @Object 'send: (message)
@@ -86,18 +85,15 @@
 (defm @Smalltalk 'prettyprint: (obj)            (pprint obj))
 (defm @Smalltalk 'raise: (exception)            (raise exception))
 
-(defm @Type 'newWithName:supertype: (name supertype)
-  (let ((class (make-type name supertype))
-        (metaclass (make-type (string-append name " class") (type-of supertype))))
-    ($obj-set! class 0 metaclass)
-    class))
+(defm @Type 'subclass: (name)
+  (make-type name self))
 
+; TODO: Remove the '@' from type names generally.
 (def Type @Type)
 (def Object @Object)
 (def Cons @Cons)
 
-;; Should be a constructor on @Cons.
-(defm @Smalltalk 'cons:and: (car cdr)
+(defm (type-of @Cons) 'car:cdr: (car cdr)
   (cons car cdr))
 
 (defm @Smalltalk 'eval: (str)
@@ -119,4 +115,4 @@
 
 ;(println "Result: " res)
 
-(send *main* 'main)
+(msg-send *main* 'main)

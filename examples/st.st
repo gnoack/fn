@@ -1,5 +1,4 @@
 
-Cons class>>car: car cdr: cdr [ Smalltalk cons: car and: cdr ]
 Cons>>car [ Smalltalk object: self at: 1 ]
 Cons>>cdr [ Smalltalk object: self at: 2 ]
 
@@ -10,8 +9,8 @@ Cons>>each: aBlock [
 Nil>>each: aBlock [ ^ self ]
 
 Cons>>map: aBlock [
-  Smalltalk cons: (aBlock value: self car)
-             and: (self cdr map: aBlock)
+  Cons car: (aBlock value: self car)
+       cdr: (self cdr map: aBlock)
 ]
 Nil>>map: aBlock [ ^ nil ]
 
@@ -19,12 +18,11 @@ Nil>>isNil [ ^ true ]
 Object>>isNil [ ^ false ]
 
 Type>>methodTable [ Smalltalk object: self at: 1 ]
-Type>>superType [ Smalltalk object: self at: 3 ]
-Type>>superType: type [ Smalltalk object: self put: type at: 3 ]
-Type>>type: type [ "TODO: Remove this.". Smalltalk object: self put: type at: 0 ]
+Type>>superclass [ Smalltalk object: self at: 3 ]
 Type>>installMethod: method at: selector [
   self methodTable put: method at: selector
 ]
+
 
 Symbol>>value: receiver [ receiver send: self ]
 
@@ -61,7 +59,7 @@ Object>>unknownMessage: message arguments: arguments [
 ]
 
 Object>>methods [
-  ^ self type methodTable keys
+  ^ self class methodTable keys
 ]
 
 CompiledProcedure>>repeatUntil: aBlock [
@@ -74,7 +72,7 @@ Type>>asString [
 ]
 
 Object>>asString [
-  ^ 'a ' ++ (self type) asString
+  ^ 'a ' ++ (self class) asString
 ]
 
 Smallint>>asString [ ^ Smalltalk prettyprint: self ]
@@ -118,6 +116,10 @@ Main>>repl [
   'Goodbye!' println
 ]
 
+do: [
+  Foo := Object subclass: 'Foo'
+]
+
 Main>>main [
   | name |
 
@@ -126,7 +128,7 @@ Main>>main [
     (' arg: ' ++ arg) println
   ].
   'Methods available on cons cells:' println.
-  (Smalltalk cons: 1 and: 2) type methodTable eachKey: #println.
+  (Cons car: 1 cdr: 2) class methodTable eachKey: #println.
 
   'Entering repl...' println.
   self repl.

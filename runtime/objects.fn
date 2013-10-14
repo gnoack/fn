@@ -54,6 +54,7 @@
 ($patch-type! @Stack "@Stack")
 ($patch-type! @String "@String")
 ($patch-type! @Symbol "@Symbol")
+;; TODO: Bool and false should share a common supertype.
 ($patch-type! @True "@True")
 ($patch-type! @False "@False")
 

@@ -22,7 +22,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
 
   var-name            ::= WORD;
   literal-number      ::= DIGIT+:ds                      => (string->int (list->string ds));
-  literal-symbol      ::= "#" (ALPHA | bin-op | ":")+:cs => `(quote ,(string->symbol (list->string cs)));
+  literal-symbol      ::= "#" (ALPHA | BINCHAR | ":")+:cs => `(quote ,(string->symbol (list->string cs)));
   literal-character   ::= "$" ALPHA:a                    => a;  // TODO: Escape codes!
 
   unary-message-send  ::= expr4:e WORD+:sels             => (reduce (lambda (e sel) `(msg-send ,e (quote ,sel))) sels e);
@@ -71,11 +71,15 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   method-body ::= tk("[") body:b tk("]")            => b;
   method-def  ::= type-ref:v tk(">>") method-sig:s method-body:b  => `(st-defm ,v ,@s ,b);
 
+  // --------- Top level expressions
+  do-block    ::= tk("do:") tk("[") body:b tk("]")  => b;
+  top-level-expr ::= method-def | do-block;
+
   // ---- Blocks
   block-expr    ::= tk("[") block-arglist:as statements:ss tk("]")  => `(lambda ,as ,@ss);
   block-arglist ::= ARG*:args tk("|")               => args
-                  | EPSILON                         => '();
+                  | EPSILON                         => (list);
 
   // ---- File
-  file        ::= method-def*;
+  file        ::= top-level-expr*;
 }
