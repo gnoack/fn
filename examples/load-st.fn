@@ -44,35 +44,21 @@
 (defm Smallint '> (other) (< other self))
 (defm Smallint '= (other) (= self other))
 
-(defm Dict 'keyValuePairs ()
-  (dict-key-value-pairs self))
+(defm Dict 'keyValuePairs ()      (dict-key-value-pairs self))
+(defm Dict 'put:at: (value key)   (dict-put! self key value))
+(defm Dict 'at: (key)             (dict-get self key))
 
-(defm Dict 'put:at: (value key)
-  (dict-put! self key value))
-
-(defm Dict 'at: (key)
-  (dict-get self key))
-
-(defm Object 'println ()
-  (println self))
-
-(defm Object 'class ()
-  (type-of self))
-
-(defm Object 'send: (message)
-  (msg-send self message))
+(defm Object 'println ()          (println self))
+(defm Object 'class ()            (type-of self))
+(defm Object 'send: (message)     (msg-send self message))
 
 (defm Object 'send:withArguments: (message args)
   (%msg-send self message (type-of self) args))
 
-(defm String 'length ()
-  (string-size self))
+(defm String 'length ()           (string-size self))
+(defm String '++ (other)          (string-append self other))
 
-(defm String '++ (other)
-  (string-append self other))
-
-(defm Symbol 'asString ()
-  (string-append "#" (symbol->string self)))
+(defm Symbol 'asString ()         (string-append "#" (symbol->string self)))
 
 (def expressions
  ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
