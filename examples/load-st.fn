@@ -85,6 +85,14 @@
 (defm (type-of Cons) 'car:cdr: (car cdr)
   (cons car cdr))
 
+;; -- arrays
+(defm (type-of Array) 'newWithCapacity: (capacity) (make-array capacity))
+(defm Array 'size ()                               (array-size self))
+(defm Array 'asList ()                             (array->list self))
+(defm Array 'at: (pos)                             (array-ref self pos))
+(defm Array 'set:at: (value pos)                   (array-set! self pos value))
+
+
 (load-file "repl/c-loader.fn")
 (load-c-module "repl/readline.so" "init_readline")
 
