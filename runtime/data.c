@@ -52,9 +52,9 @@ boolean is_array(oop array) {
 /*
  * Dictionary
  *
- * +-------+------+-------+
- * | @Dict | size | table |------> (array)
- * +-------+------+-------+
+ * +------+------+-------+
+ * | Dict | size | table |------> (array)
+ * +------+------+-------+
  *
  * `size' is the number of elements in the dictionary.
  * The table size is saved in the table itself.
@@ -247,9 +247,9 @@ oop primitive_make_dict(oop args) {
 /*
  * Fixed-size dynamic frames.
  *
- * +---------+------+------+--------+-----------+
- * | @Dframe | size | next | caller | procedure |
- * +---------+------+------+--------+-----------+
+ * +--------+------+------+--------+-----------+
+ * | Dframe | size | next | caller | procedure |
+ * +--------+------+------+--------+-----------+
  *
  * +----+----+-----+----+----+----+-----+----+
  * | k1 | k2 | ... | kn | v1 | v2 | ... | vn |

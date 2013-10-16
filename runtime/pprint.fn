@@ -1,3 +1,4 @@
+
 (defn pprint (item)
   ;; TODO: Stack printing.
   ;; TODO: Optimize memory consumption for string concatenation?
@@ -85,10 +86,10 @@
 
 (defn print-stack-trace (frame)
   (typecase frame
-    ((@Frame)  (progn
-                 (println " - " (frame-procedure frame))
-                 (print-stack-trace (frame-caller frame))))
-    ((@Dframe) (progn
-                 (println " - " (dframe-procedure frame))
-                 (print-stack-trace (dframe-caller frame))))
+    ((Frame)  (progn
+                (println " - " (frame-procedure frame))
+                (print-stack-trace (frame-caller frame))))
+    ((Dframe) (progn
+                (println " - " (dframe-procedure frame))
+                (print-stack-trace (dframe-caller frame))))
     (else nil)))

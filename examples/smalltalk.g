@@ -62,7 +62,7 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   var-decl    ::= tk("|") var-name+:vs tk("|")      => vs;
 
   // --------- Method definitions
-  type-name   ::= WORD:t                            => (string->symbol (string-append "@" (symbol->string t)));
+  type-name   ::= WORD:t                            => t;
   type-ref    ::= type-name:n tk("class")           => `(type-of ,n)
                 | type-name:n                       => n;
   method-sig  ::= WORD:sel                          => `(,sel ())

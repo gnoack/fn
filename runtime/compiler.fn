@@ -265,8 +265,8 @@
   ;; Note: This is the *static* global env...
   ;; If we compile a function captured in a deeper environment, we
   ;; don't know what other functions have been captured in the same.
-  ;; We can't convert the environment itself to a @Frame.
-  (and (eq? @Procedure (type-of fn))
+  ;; We can't convert the environment itself to a Frame.
+  (and (eq? Procedure (type-of fn))
        (global-env? (fn-env fn))))
 
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.

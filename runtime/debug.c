@@ -129,29 +129,29 @@ void print_value(oop v) {
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {
-      printf("@Array");
+      printf("Array");
     } else if (value_eq(symbols._cons, v)) {
-      printf("@Cons");
+      printf("Cons");
     } else if (value_eq(symbols._continuation, v)) {
-      printf("@Continuation");
+      printf("Continuation");
     } else if (value_eq(symbols._dframe, v)) {
-      printf("@Dframe");
+      printf("Dframe");
     } else if (value_eq(symbols._dict, v)) {
-      printf("@Dict");
+      printf("Dict");
     } else if (value_eq(symbols._frame, v)) {
-      printf("@Frame");
+      printf("Frame");
     } else if (value_eq(symbols._stack, v)) {
-      printf("@Stack");
+      printf("Stack");
     } else if (value_eq(symbols._string, v)) {
-      printf("@String");
+      printf("String");
     } else if (value_eq(symbols._symbol, v)) {
-      printf("@Symbol");
+      printf("Symbol");
     } else if (value_eq(symbols._procedure, v)) {
-      printf("@Procedure");
+      printf("Procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {
-      printf("@CompiledProcedure");
+      printf("CompiledProcedure");
     } else if (value_eq(symbols._native_procedure, v)) {
-      printf("@NativeProcedure");
+      printf("NativeProcedure");
     } else {
       printf("#<OBJECT>");
     }

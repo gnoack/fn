@@ -60,13 +60,13 @@
   (let ((len (length src-list)))
     (let ((result-raw ($make-mem-block len)))
       ($mem-populate-from-byte-list result-raw 0 (map char->num src-list))
-      ($make @String len 0 result-raw))))
+      ($make String len 0 result-raw))))
 
 (defn string-append (&rest as)
   (let ((total-string-size (reduce + (map string-size as) 0)))
     (let ((result-raw ($make-mem-block total-string-size)))
       ($mem-populate-from-string-list result-raw 0 as)
-      ($make @String total-string-size 0 result-raw))))
+      ($make String total-string-size 0 result-raw))))
 
 (defn $mem-populate-from-string-list (trg trg-offset strings)
   (if (nil? strings)
@@ -79,7 +79,7 @@
          trg (+ trg-offset (string-size src-string))
          (rest strings)))))
 
-(defn string? (str)        (eq? @String (type-of str)))
+(defn string? (str)        (eq? String (type-of str)))
 (defn string-size (str)    ($mem-get str 1))
 (defn %string-offset (str) ($mem-get str 2))
 (defn %string-raw (str)    ($mem-get str 3))
@@ -132,7 +132,7 @@
                  (string-size str)
                (first args))))
     (assert (<= begin end (string-size str)))
-    ($make @String
+    ($make String
            (- end begin)
            (+ (%string-offset str) begin)
            (%string-raw str))))
@@ -273,7 +273,7 @@
 
 (defn file->string (filename)
   (let ((size (file-size filename)))
-    ($make @String size 0
+    ($make String size 0
            (with-file-reader
             filename
             (lambda (read-byte!)

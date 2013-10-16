@@ -13,10 +13,10 @@ typedef oop (*function)(oop args);
  * lexical environment.
  */
 
-// body is a list of expressions, env is a @Dframe.
+// body is a list of expressions, env is a Dframe.
 extern oop make_procedure(oop lambda_list, oop body, oop env);
 
-// code is bytecode (see compiler.fn), env is a @Frame.
+// code is bytecode (see compiler.fn), env is a Frame.
 extern oop make_compiled_procedure(oop lambda_list, oop env,
                                    oop bytecode, oop ip, oop oop_lookup_table,
                                    fn_uint max_stack_size);

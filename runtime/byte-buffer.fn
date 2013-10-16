@@ -1,9 +1,9 @@
 ;; Byte streams
 
-(deftype @byte-buffer)
+(deftype ByteBuffer)
 
 (defn make-byte-buffer ()
-  ($make @byte-buffer
+  ($make ByteBuffer
          ($make-mem-block 256)  ; buffer
          0  ; index
          256  ; buffer-size

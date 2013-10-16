@@ -17,13 +17,13 @@
   (else  true))
 
 (typecase "Hello"
-  ((@String) true)
-  ((@Array)  false)
-  (else      false))
+  ((String) true)
+  ((Array)  false)
+  (else     false))
 
 (typecase 10
-  ((@String) false)
-  (else      true))
+  ((String) false)
+  (else     true))
 
 (eq? 11 (match '(foo 1)
           ((foo a) (+ a 10))

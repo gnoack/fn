@@ -78,20 +78,20 @@ void init_eval() {
   register_globally("nil", NIL);
   register_globally("true", symbols._true);
   register_globally("false", symbols._false);
-  register_globally("@Array", symbols._array);
-  register_globally("@Cons", symbols._cons);
-  register_globally("@Continuation", symbols._continuation);
-  register_globally("@Dframe", symbols._dframe);
-  register_globally("@Dict", symbols._dict);
-  register_globally("@Frame", symbols._frame);
-  register_globally("@Stack", symbols._stack);
-  register_globally("@String", symbols._string);
-  register_globally("@Symbol", symbols._symbol);
-  register_globally("@Procedure", symbols._procedure);
-  register_globally("@NativeProcedure", symbols._native_procedure);
-  register_globally("@CompiledProcedure", symbols._compiled_procedure);
-  register_globally("@True", symbols._True);
-  register_globally("@False", symbols._False);
+  register_globally("Array", symbols._array);
+  register_globally("Cons", symbols._cons);
+  register_globally("Continuation", symbols._continuation);
+  register_globally("Dframe", symbols._dframe);
+  register_globally("Dict", symbols._dict);
+  register_globally("Frame", symbols._frame);
+  register_globally("Stack", symbols._stack);
+  register_globally("String", symbols._string);
+  register_globally("Symbol", symbols._symbol);
+  register_globally("Procedure", symbols._procedure);
+  register_globally("NativeProcedure", symbols._native_procedure);
+  register_globally("CompiledProcedure", symbols._compiled_procedure);
+  register_globally("True", symbols._True);
+  register_globally("False", symbols._False);
   gc_register_persistent_refs(enumerate_gc_roots);
 }
 

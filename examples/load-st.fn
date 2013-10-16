@@ -25,88 +25,86 @@
 (defn msg-send (receiver message &rest arguments)
   (%msg-send receiver message (type-of receiver) arguments))
 
-(defm @CompiledProcedure 'value () (self))
-(defm @CompiledProcedure 'value: (a) (self a))
-(defm @CompiledProcedure 'value:value: (a b) (self a b))
-(defm @CompiledProcedure 'value:value:value: (a b c) (self a b c))
-(defm @CompiledProcedure 'onError: (aHandler)
+(defm CompiledProcedure 'value () (self))
+(defm CompiledProcedure 'value: (a) (self a))
+(defm CompiledProcedure 'value:value: (a b) (self a b))
+(defm CompiledProcedure 'value:value:value: (a b c) (self a b c))
+(defm CompiledProcedure 'onError: (aHandler)
   (catch self aHandler))
 
 (defmacro st-defm (type sel vars body)
   `(defm ,type (quote ,sel) ,vars
      ,body))
 
-(defm @Smallint '+ (other) (+ self other))
-(defm @Smallint '* (other) (* self other))
-(defm @Smallint '/ (other) (/ self other))
-(defm @Smallint '- (other) (- self other))
-(defm @Smallint '< (other) (< self other))
-(defm @Smallint '> (other) (< other self))
-(defm @Smallint '= (other) (= self other))
+(defm Smallint '+ (other) (+ self other))
+(defm Smallint '* (other) (* self other))
+(defm Smallint '/ (other) (/ self other))
+(defm Smallint '- (other) (- self other))
+(defm Smallint '< (other) (< self other))
+(defm Smallint '> (other) (< other self))
+(defm Smallint '= (other) (= self other))
 
-(defm @Dict 'keyValuePairs ()
+(defm Dict 'keyValuePairs ()
   (dict-key-value-pairs self))
 
-(defm @Dict 'put:at: (value key)
+(defm Dict 'put:at: (value key)
   (dict-put! self key value))
 
-(defm @Dict 'at: (key)
+(defm Dict 'at: (key)
   (dict-get self key))
 
-(defm @Object 'println ()
+(defm Object 'println ()
   (println self))
 
-(defm @Object 'class ()
+(defm Object 'class ()
   (type-of self))
 
-(defm @Object 'send: (message)
+(defm Object 'send: (message)
   (msg-send self message))
 
-(defm @Object 'send:withArguments: (message args)
+(defm Object 'send:withArguments: (message args)
   (%msg-send self message (type-of self) args))
 
-(defm @String 'length ()
+(defm String 'length ()
   (string-size self))
 
-(defm @String '++ (other)
+(defm String '++ (other)
   (string-append self other))
 
-(defm @Symbol 'asString ()
+(defm Symbol 'asString ()
   (string-append "#" (symbol->string self)))
 
 (def expressions
  ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
   (file->string "examples/st.st")))
 
-(deftype @Smalltalk)
-(def Smalltalk ($make @Smalltalk))
-(defm @Smalltalk 'object:at: (obj pos)          ($mem-get obj pos))
-(defm @Smalltalk 'object:put:at: (obj val pos)  ($mem-set! obj pos val))
-(defm @Smalltalk 'prettyprint: (obj)            (pprint obj))
-(defm @Smalltalk 'raise: (exception)            (raise exception))
+(def Smalltalk
+  (deftype Smalltalk)
 
-(defm @Type 'subclass: (name)
+  (defm Smalltalk 'object:at: (obj pos)          ($mem-get obj pos))
+  (defm Smalltalk 'object:put:at: (obj val pos)  ($mem-set! obj pos val))
+  (defm Smalltalk 'prettyprint: (obj)            (pprint obj))
+  (defm Smalltalk 'raise: (exception)            (raise exception))
+
+  ($make Smalltalk))
+
+(defm Type 'subclass: (name)
   (make-type name self))
 
-; TODO: Remove the '@' from type names generally.
-(def Type @Type)
-(def Object @Object)
-(def Cons @Cons)
-
-(defm (type-of @Cons) 'car:cdr: (car cdr)
+(defm (type-of Cons) 'car:cdr: (car cdr)
   (cons car cdr))
 
-(defm @Smalltalk 'eval: (str)
+(defm Smalltalk 'eval: (str)
   (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
 
 (load-file "repl/c-loader.fn")
 (load-c-module "repl/readline.so" "init_readline")
 
-(defm @Smalltalk 'readline: (prompt)
+(defm Smalltalk 'readline: (prompt)
   (readline prompt))
 
-(deftype @Main)
-(def *main* ($make @Main *args*))
+(deftype Main)
+(def *main* ($make Main *args*))
 
 (map (lambda (ex)
        ;(println ex)

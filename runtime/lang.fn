@@ -89,7 +89,7 @@
 ;; cons, cons?
 (def cons
     (lambda (car cdr)	
-      ($make @Cons car cdr)))
+      ($make Cons car cdr)))
 
 ;; TODO: Use `type-of' instead?  (Defined in objects.fn)
 (def %has-mem-type?
@@ -99,16 +99,16 @@
       false)))
 
 (def cons?
-  (lambda (value) (%has-mem-type? value @Cons)))
+  (lambda (value) (%has-mem-type? value Cons)))
 
 (def native-procedure?
-  (lambda (proc) (%has-mem-type? proc @NativeProcedure)))
+  (lambda (proc) (%has-mem-type? proc NativeProcedure)))
 
 (def lisp-procedure?
-  (lambda (proc) (%has-mem-type? proc @Procedure)))
+  (lambda (proc) (%has-mem-type? proc Procedure)))
 
 (def compiled-procedure?
-  (lambda (proc) (%has-mem-type? proc @CompiledProcedure)))
+  (lambda (proc) (%has-mem-type? proc CompiledProcedure)))
 
 (def procedure?
   (lambda (proc)
