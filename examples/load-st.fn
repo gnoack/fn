@@ -79,14 +79,19 @@
   (file->string "examples/st.st")))
 
 (def Smalltalk
-  (deftype Smalltalk)
+  (progn
+    (deftype Smalltalk)
 
-  (defm Smalltalk 'object:at: (obj pos)          ($mem-get obj pos))
-  (defm Smalltalk 'object:put:at: (obj val pos)  ($mem-set! obj pos val))
-  (defm Smalltalk 'prettyprint: (obj)            (pprint obj))
-  (defm Smalltalk 'raise: (exception)            (raise exception))
+    (defm Smalltalk 'object:at: (obj pos)          ($mem-get obj pos))
+    (defm Smalltalk 'object:put:at: (obj val pos)  ($mem-set! obj pos val))
+    (defm Smalltalk 'prettyprint: (obj)            (pprint obj))
+    (defm Smalltalk 'raise: (exception)            (raise exception))
+    (defm Smalltalk 'eval: (str)
+          (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
+    (defm Smalltalk 'readline: (prompt)
+          (readline prompt))
 
-  ($make Smalltalk))
+    ($make Smalltalk)))
 
 (defm Type 'subclass: (name)
   (make-type name self))
@@ -94,14 +99,8 @@
 (defm (type-of Cons) 'car:cdr: (car cdr)
   (cons car cdr))
 
-(defm Smalltalk 'eval: (str)
-  (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
-
 (load-file "repl/c-loader.fn")
 (load-c-module "repl/readline.so" "init_readline")
-
-(defm Smalltalk 'readline: (prompt)
-  (readline prompt))
 
 (deftype Main)
 (def *main* ($make Main *args*))

@@ -8,12 +8,11 @@
 ($mem-set! Object 2 "Object")
 ($mem-set! Object 3 nil) ; supertype
 
-;; TODO: Type is really "Object class".
 ;; The type Type links to itself: Type = ($make Type (make-dict) "Type")
 (def Type ($make 1 2 3 4))
 ($mem-set! Type 0 Type)
 ($mem-set! Type 1 (make-dict))
-($mem-set! Type 2 "Type")
+($mem-set! Type 2 "Object class")
 ($mem-set! Type 3 Object)
 
 (defn type-name (type) ($mem-get type 2))
