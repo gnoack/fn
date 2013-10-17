@@ -14,6 +14,16 @@ Cons>>map: aBlock [
 ]
 Nil>>map: aBlock [ ^ nil ]
 
+Cons>>filter: aPredicate [
+  (aPredicate value: self car) ifTrue: [
+    ^ Cons car: self car
+           cdr: (self cdr filter: aPredicate)
+  ] ifFalse: [
+    ^ self cdr filter: aPredicate
+  ]
+]
+Nil>>filter: aPredicate [ ^ nil ]
+
 Nil>>isNil [ ^ true ]
 Object>>isNil [ ^ false ]
 
@@ -98,13 +108,13 @@ Cons>>asString [ '(' ++ self asStringInner ++ ')' ]
 
 String>>isEmpty [ self length = 0 ]
 
-
 Main>>repl [
   | line result |
   [
     [
-      line := Smalltalk readline: 'ST> '.
+      line := RL readline: 'ST> '.
       line isNil ifFalse: [
+        RL addToHistory: line.
         (Smalltalk eval: line) asString println
       ]
     ] onError: [ :reason |
@@ -117,8 +127,27 @@ Main>>repl [
   'Goodbye!' println
 ]
 
-do: [
-  Foo := Object subclass: 'Foo'
+Readline>>memory: memory [
+  Smalltalk object: self put: memory at: 1
+]
+
+Readline>>memory [ Smalltalk object: self at: 1 ]
+
+Readline>>complete: text state: state globalEnv: env [
+  | memory prefix |
+  0 = state ifTrue: [
+    prefix := '#' ++ text.
+    self memory: ((env keys map: #asString) filter: [ :a |
+      a startsWith: text
+    ])
+  ].
+  memory := self memory.
+  memory isCons ifTrue: [
+    self memory: memory cdr.
+    ^ memory car
+  ] ifFalse: [
+    ^ nil
+  ]
 ]
 
 Main>>main [

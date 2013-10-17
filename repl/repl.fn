@@ -6,7 +6,7 @@
 ;;; Readline completion.                                           ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Called into from C.  (See REPL implementation.)
+;; Called into from C.  (See readline.c)
 (defn readline-completion-entry (text state global-env)
   (when (= 0 state)
     (set! *current-completions*

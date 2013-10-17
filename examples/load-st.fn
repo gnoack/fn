@@ -56,9 +56,11 @@
   (%msg-send self message (type-of self) args))
 
 (defm String 'length ()           (string-size self))
+(defm String '= (other)           (string=? self other))
 (defm String '++ (other)          (string-append self other))
+(defm String 'startsWith: (other) (string-prefix? other self))
 
-(defm Symbol 'asString ()         (string-append "#" (symbol->string self)))
+(defm Symbol 'asString ()         (symbol->string self))
 
 (def expressions
  ((read-and-check-empty-remainder (@@ smalltalk-grammar file))
@@ -74,8 +76,8 @@
     (defm Smalltalk 'raise: (exception)            (raise exception))
     (defm Smalltalk 'eval: (str)
           (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
-    (defm Smalltalk 'readline: (prompt)
-          (readline prompt))
+    (defm Smalltalk 'makeObject:slot: (class slot1)
+      ($make class slot1))
 
     ($make Smalltalk)))
 
@@ -95,6 +97,17 @@
 
 (load-file "repl/c-loader.fn")
 (load-c-module "repl/readline.so" "init_readline")
+
+(deftype Readline)
+(defm Readline 'addToHistory: (str)
+  (add-history str))  ; from readline module
+(defm Readline 'readline: (prompt)
+  (readline prompt))
+
+(def RL ($make Readline nil))
+
+(defn readline-completion-entry (text state global-env)
+  (msg-send RL 'complete:state:globalEnv: text state global-env))
 
 (deftype Main)
 (def *main* ($make Main *args*))
