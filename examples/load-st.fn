@@ -43,6 +43,7 @@
 (defm Smallint '< (other) (< self other))
 (defm Smallint '> (other) (< other self))
 (defm Smallint '= (other) (= self other))
+(defm Smallint '% (other) (mod self other))
 
 (defm Dict 'keyValuePairs ()      (dict-key-value-pairs self))
 (defm Dict 'put:at: (value key)   (dict-put! self key value))

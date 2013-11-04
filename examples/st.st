@@ -106,6 +106,16 @@ Cons>>asStringInner [
 ]
 Cons>>asString [ '(' ++ self asStringInner ++ ')' ]
 
+Smallint>>upto: other [
+  self < other ifTrue: [
+    ^ Cons car: self cdr: (self + 1 upto: other)
+  ] ifFalse: [
+    ^ nil
+  ]
+]
+Smallint>>isEven [ ^ (self % 2) = 0 ]
+Smallint>>isOdd [ ^ (self % 2) = 1 ]
+
 String>>isEmpty [ self length = 0 ]
 
 Main>>repl [
