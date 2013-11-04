@@ -10,7 +10,7 @@
 (eq? Symbol (type-of 'foobar))
 (eq? MemBlock (type-of ($make-mem-block 4)))
 
-(string=? "Type" (type-name Type))
+(string=? "Object class" (type-name Type))
 (string=? "Cons" (type-name Cons))
 (string=? "MemBlock" (type-name MemBlock))
 
