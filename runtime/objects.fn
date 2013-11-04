@@ -17,10 +17,13 @@
 
 (defn type-name (type) ($mem-get type 2))
 (defn type-superclass (type) ($mem-get type 3))
+(defn subtype? (subtype supertype)
+  (or (eq? subtype supertype)
+      (and (not (eq? subtype Object))
+           (subtype? (type-superclass subtype) supertype))))
+
 (defn type? (x)
-  (or
-   (eq? (type-of x) Type)
-   (type? (type-of x))))
+  (subtype? (type-of x) Type))
 
 ; Close the loop.
 ($mem-set! Object 0 Type)
