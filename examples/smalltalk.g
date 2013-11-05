@@ -25,12 +25,12 @@ grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON
   literal-symbol      ::= "#" (ALPHA | BINCHAR | ":")+:cs => `(quote ,(string->symbol (list->string cs)));
   literal-character   ::= "$" ALPHA:a                    => a;  // TODO: Escape codes!
 
-  unary-message-send  ::= expr4:e WORD+:sels             => (reduce (lambda (e sel) `(msg-send ,e (quote ,sel))) sels e);
+  unary-message-send  ::= expr4:e WORD+:sels             => (reduce (lambda (e sel) `(send ,e (quote ,sel))) sels e);
   binary-message-send ::= expr3:e (bin-op:sel expr3:arg => (list sel arg))+:sends
                               => (reduce (lambda (e send)
-                                           `(msg-send ,e (quote ,(first send)) ,(second send)))
+                                           `(send ,e (quote ,(first send)) ,(second send)))
                                          sends e);
-  nary-message-send   ::= expr2:e kwordlist(expr2):l     => `(msg-send ,e (quote ,(first l)) ,@(second l));
+  nary-message-send   ::= expr2:e kwordlist(expr2):l     => `(send ,e (quote ,(first l)) ,@(second l));
   bin-op              ::= BINCHAR+:cs  => (string->symbol (list->string cs));
 
   // Tokens.

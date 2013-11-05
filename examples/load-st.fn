@@ -11,20 +11,6 @@
 (defmacro st-return (e) e)
 (defmacro st-comment (ignored) 'true)
 
-(defn %msg-send (receiver message type arguments)
-  (cond ((nil? type)
-         (progn
-           (%msg-send receiver 'unknownMessage:arguments: (type-of receiver)
-                      (list message arguments))))
-        ((dict-has-key? ($mem-get type 1) message)
-         (apply (dict-get ($mem-get type 1) message)
-                (cons receiver arguments)))
-        (true
-         (%msg-send receiver message ($mem-get type 3) arguments))))
-
-(defn msg-send (receiver message &rest arguments)
-  (%msg-send receiver message (type-of receiver) arguments))
-
 (defm CompiledProcedure 'value () (self))
 (defm CompiledProcedure 'value: (a) (self a))
 (defm CompiledProcedure 'value:value: (a b) (self a b))
@@ -51,10 +37,10 @@
 
 (defm Object 'println ()          (println self))
 (defm Object 'class ()            (type-of self))
-(defm Object 'send: (message)     (msg-send self message))
+(defm Object 'send: (message)     (send self message))
 
 (defm Object 'send:withArguments: (message args)
-  (%msg-send self message (type-of self) args))
+  (%send self message (type-of self) args))
 
 (defm String 'length ()           (string-size self))
 (defm String '= (other)           (string=? self other))
@@ -108,7 +94,7 @@
 (def RL ($make Readline nil))
 
 (defn readline-completion-entry (text state global-env)
-  (msg-send RL 'complete:state:globalEnv: text state global-env))
+  (send RL 'complete:state:globalEnv: text state global-env))
 
 (deftype Main)
 (def *main* ($make Main *args*))
@@ -120,4 +106,4 @@
 
 ;(println "Result: " res)
 
-(msg-send *main* 'main)
+(send *main* 'main)
