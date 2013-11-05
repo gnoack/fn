@@ -1,15 +1,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Simple OO using symbol-based dispatching.                      ;;;
+;;; "Lexically scoped OO" using proxy objects.                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn dispatch-clause->cond-clause (clause)
-  `((eq? ,(first clause) selector)
-    (lambda ,(second clause) ,@(rest (rest clause)))))
+;; This is wrapped in a progn to avoid a state during compilation
+;; where the Dispatcher type is defined, but its 'unknownMessage:arguments:
+;; isn't.
+(progn
+  (deftype Dispatcher)
 
-;; Constructs an object with identity and able to receive messages.
-;; TODO: Would be nice to do this without extra lambdas.
+  (defm Dispatcher 'unknownMessage:arguments: (selector args)
+        (assert (not (eq? 'unknownMessage:arguments: selector)))
+        ;; (writeout "unknown message: ")
+        ;; (writeout (symbol->string selector))
+        ;; (writeout "\n")
+        (apply (dict-get ($mem-get self 1) selector)
+               (cons self args))))
+
 (defmacro dispatcher (name &rest defs)
-  `(labels ((,name (lambda (selector &rest args)
-                     (apply (cond ,@(map dispatch-clause->cond-clause defs))
-                            args))))
-     ,name))
+  `(let ((%%dict (make-dict)))
+     ,@(map (lambda (clause)
+              `(dict-put! %%dict ,(first clause)
+                          (lambda ,(cons name (second clause))
+                            ,@(rest (rest clause)))))
+            defs)
+     ($make Dispatcher %%dict)))
+
+(defm Dispatcher 'pprint ()
+      (string-append "Dispatcher:" (pprint ($mem-get self 1))))

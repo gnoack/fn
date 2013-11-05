@@ -244,7 +244,7 @@
     (let ((translate!
            (make-assembler put-byte! put-label! put-oop! save-label!)))
       (dolist (cmd program)
-        (apply translate! cmd))
+        (send-apply translate! (first cmd) (rest cmd)))
       (dolist (todo postponed-actions)
         (todo))
       (list (byte-buffer->rawmem byte-stream)

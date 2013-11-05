@@ -521,25 +521,32 @@ oop interpret(oop frame, oop procedure) {
   }
 }
 
-void my_print_stack_trace() {
-  oop frame = native_procedure_caller();
-  if (is_nil(frame)) {
-    printf("Outside of C function -- current frame is unknown!\n");
-    return;
-  }
-
+void actual_print_stack_trace(oop frame) {
   while (!is_nil(frame)) {
     printf(" - ");
     if (is_frame(frame)) {
       print_frame(frame);
       frame = frame_caller(frame);
     } else {
-      CHECKV(is_dframe(frame), frame, "Expected frame or dframe");
+      if (!is_dframe(frame)) {
+        print_value(frame);
+        printf(": Expected frame or dframe\n");
+        exit(1);
+      }
       print_dframe(frame);
       frame = dframe_caller(frame);
     }
     printf("\n");
   }
+}
+
+void my_print_stack_trace() {
+  oop frame = native_procedure_caller();
+  if (is_nil(frame)) {
+    printf("Outside of C function -- current frame is unknown!\n");
+    return;
+  }
+  actual_print_stack_trace(frame);
 }
 
 #define MAX_STACK_SIZE 0x4000

@@ -64,7 +64,7 @@
         ((eq? false item) "false")
         ((has-method?
           item 'pprint) (send item 'pprint))
-        ((mem? item)    "#<OBJECT>")
+        ((mem? item)    (string-append "#<" (type-name (type-of item)) ">"))
         (true           "?UNPRINTABLE?")))
 
 (defn display (item)

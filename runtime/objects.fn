@@ -86,11 +86,11 @@
 ;; memory-allocated values, the value at position 0
 ;; is used as type.
 (defn type-of (x)
-  (cond ((number? x) Smallint)
+  (cond ((mem? x) ($mem-get x 0))
+        ((number? x) Smallint)
 	((char? x) Character)
 	((nil? x) Nil)
-        ((mem-block? x) MemBlock)
-	((mem? x) ($mem-get x 0))))
+        ((mem-block? x) MemBlock)))
 
 ;;; Method definition
 
@@ -105,23 +105,38 @@
 
 ;;; Message sending
 
+(defm Object 'unknownMessage:arguments: (selector args)
+  (println self)
+  (println "With " ($mem-get self 1)) ;; DO NOT SUBMIT
+  (println "Does not understand:")
+  (println "  - " selector)
+  (println "    " args)
+  (println "DICT-GET:" (dict-get ($mem-get self 1) 'generate-read))
+  (println "..." ($mem-get (type-of self) 1))
+  (assert "broken"))
+
+(defn %send (receiver message type arguments)
+  (cond ((nil? type)
+         (%send receiver 'unknownMessage:arguments: (type-of receiver)
+                (list message arguments)))
+        ((dict-has-key? ($mem-get type 1) message)
+         (apply (dict-get ($mem-get type 1) message)
+                (cons receiver arguments)))
+        (true
+         (%send receiver message ($mem-get type 3) arguments))))
+
 (defn send (receiver message &rest arguments)
-  (defn %method-for-type (type selector)
-    (dict-get ($mem-get type 1) selector))
-  (if (procedure? receiver)
-      (apply receiver (cons message arguments))
-      (apply (%method-for-type (type-of receiver) message)
-             (cons receiver arguments))))
+  (%send receiver message (type-of receiver) arguments))
+
 
 (defn has-method? (receiver selector)
-  ;; Limitation: Only works for proper objects, not for functions.
-  (and (not (procedure? receiver))
-       (dict-has-key? ($mem-get (type-of receiver) 1)
-                      selector)))
+  ;; Limitation: Only works for proper objects, not for Dispatchers.
+  (dict-has-key? ($mem-get (type-of receiver) 1)
+                 selector))
 
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)
-  (apply send (cons receiver (cons message arguments))))
+  (%send receiver message (type-of receiver) arguments))
 
 (defn sender (message)
   (lambda (receiver &rest args)
