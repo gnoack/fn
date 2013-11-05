@@ -47,3 +47,12 @@
 (not (type? true))
 (not (type? false))
 (not (type? "foo"))
+
+;; Deftype
+(progn
+  (deftype ExampleType)
+  (type? ExampleType))
+(progn
+  (defm ExampleType 'foo () 123)
+  (def %example-object ($make ExampleType))
+  (eq? 123 (send %example-object 'foo)))
