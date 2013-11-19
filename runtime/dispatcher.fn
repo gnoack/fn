@@ -10,9 +10,6 @@
 
   (defm Dispatcher 'unknownMessage:arguments: (selector args)
         (assert (not (eq? 'unknownMessage:arguments: selector)))
-        ;; (writeout "unknown message: ")
-        ;; (writeout (symbol->string selector))
-        ;; (writeout "\n")
         (apply (dict-get ($mem-get self 1) selector)
                (cons self args))))
 
@@ -26,4 +23,4 @@
      ($make Dispatcher %%dict)))
 
 (defm Dispatcher 'pprint ()
-      (string-append "Dispatcher:" (pprint ($mem-get self 1))))
+  (string-append "Dispatcher:" (pprint ($mem-get self 1))))
