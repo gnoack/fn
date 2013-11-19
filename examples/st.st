@@ -117,6 +117,17 @@ Smallint>>isEven [ ^ (self % 2) = 0 ]
 Smallint>>isOdd [ ^ (self % 2) = 1 ]
 
 String>>isEmpty [ self length = 0 ]
+String>>join: parts [
+  | result |
+  result := ''.
+  parts each: [ :part |
+    result isEmpty ifFalse: [
+      result := result ++ self
+    ].
+    result := result ++ part
+  ].
+  ^ result
+]
 
 Main>>repl [
   | line result |
