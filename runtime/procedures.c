@@ -258,23 +258,28 @@ void extract_args(oop args, oop** out_argv, size_t* out_argc) {
   }
 }
 
-oop apply_native_fn(oop fn, oop args, oop caller) {
+oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, oop caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
-
-  size_t argc;
-  oop* argv;
-  extract_args(args, &argv, &argc);
 
   // TODO: Find a way to track C-level stack frames.  (This is slow!)
   // current_native_procedure_caller = make_dframe(NIL, 0, caller, fn);
   current_native_procedure_caller = caller;
   oop result = c_function(argv, argc);
 
-  free(argv);
-
   current_native_procedure_caller = NIL;
   gc_protect_counter--;
+  return result;
+}
+
+oop apply_native_fn(oop fn, oop args, oop caller) {
+  size_t argc;
+  oop* argv;
+
+  extract_args(args, &argv, &argc);
+  oop result = apply_native_fn_directly(fn, argv, argc, caller);
+  free(argv);
+
   return result;
 }
 

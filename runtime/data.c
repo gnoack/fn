@@ -374,7 +374,7 @@ FUNC(primitive_make_dframe) {
   for (i = 1; i < argc; i++) {
     oop key = argv[i];
     CHECKV(is_symbol(key), key, "Needs to be a symbol.");
-    dframe_register_key(result, i, key, NIL);
+    dframe_register_key(result, i - 1, key, NIL);
   }
   return result;
 }
