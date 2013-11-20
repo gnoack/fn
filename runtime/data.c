@@ -212,34 +212,34 @@ boolean is_dict(oop dict) {
  * Lisp interface.
  */
 
-oop primitive_symbol_to_hash(oop args) {
+FUNC(primitive_symbol_to_hash) {
   PARSE_ONE_ARG(sym);
   return make_smallint(symbol_to_hash(sym));
 }
 
-oop primitive_dict_get(oop args) {
+FUNC(primitive_dict_get) {
   PARSE_TWO_ARGS(dict, key);
   return dict_get(dict, key);
 }
 
-oop primitive_dict_has_key(oop args) {
+FUNC(primitive_dict_has_key) {
   PARSE_TWO_ARGS(dict, key);
   return lisp_bool(dict_has_key(dict, key));
 }
 
-oop primitive_dict_put(oop args) {
+FUNC(primitive_dict_put) {
   PARSE_THREE_ARGS(dict, key, value);
   dict_put(dict, key, value);
   return value;
 }
 
-oop primitive_dict_key_value_pairs(oop args) {
+FUNC(primitive_dict_key_value_pairs) {
   PARSE_ONE_ARG(dict);
   return dict_key_value_pairs(dict);
 }
 
-oop primitive_make_dict(oop args) {
-  CHECK(is_nil(args), "make-dict takes no arguments.");
+FUNC(primitive_make_dict) {
+  CHECK(argc == 0, "make-dict takes no arguments.");
   return make_dict(5);
 }
 
@@ -361,33 +361,31 @@ void print_dframe(oop dframe) {
 
 // Lisp interface for dframes.
 
-oop primitive_make_dframe(oop args) {
-  oop next_frame = first(args);
-  args = rest(args);
+FUNC(primitive_make_dframe) {
+  CHECK(argc > 0, "make_dframe: Need at least the next frame as argument.");
+  oop next_frame = argv[0];
 
   if (is_nil(next_frame)) {
     next_frame = global_env;
   }
 
-  fn_uint size = length_int(args);
-  oop result = make_dframe(next_frame, size, NIL, NIL);
+  oop result = make_dframe(next_frame, argc - 1, NIL, NIL);
   fn_uint i;
-  for (i=0; i<size; i++) {
-    oop key = first(args);
+  for (i = 1; i < argc; i++) {
+    oop key = argv[i];
     CHECKV(is_symbol(key), key, "Needs to be a symbol.");
     dframe_register_key(result, i, key, NIL);
-    args = rest(args);
   }
   return result;
 }
 
-oop primitive_dframe_set(oop args) {
+FUNC(primitive_dframe_set) {
   PARSE_THREE_ARGS(dframe, key, value);
   dframe_set(dframe, key, value);
   return value;
 }
 
-oop primitive_dframe_get(oop args) {
+FUNC(primitive_dframe_get) {
   PARSE_TWO_ARGS(dframe, key);
   return dframe_get(dframe, key);
 }

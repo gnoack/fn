@@ -126,7 +126,7 @@ void deserialize_from_bootstrap_file(const char* filename) {
   fclose(in);
 }
 
-oop primitive_deserialize(oop args) {
+FUNC(primitive_deserialize) {
   PARSE_ONE_ARG(file_handle);
   return deserialize((FILE*) get_smallint(file_handle));
 }

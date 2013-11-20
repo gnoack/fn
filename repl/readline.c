@@ -21,7 +21,7 @@ char* symbol_completion_entry(const char* text, int state) {
 }
 
 static
-oop primitive_add_history(oop args) {
+FUNC(primitive_add_history) {
   PARSE_ONE_ARG(item);
   char* c_item = c_string(item);
   add_history(c_item);
@@ -30,7 +30,7 @@ oop primitive_add_history(oop args) {
 }
 
 static
-oop primitive_read_history(oop args) {
+FUNC(primitive_read_history) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   read_history(c_filename);
@@ -39,7 +39,7 @@ oop primitive_read_history(oop args) {
 }
 
 static
-oop primitive_write_history(oop args) {
+FUNC(primitive_write_history) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   write_history(c_filename);
@@ -48,7 +48,7 @@ oop primitive_write_history(oop args) {
 }
 
 static
-oop primitive_readline(oop args) {
+FUNC(primitive_readline) {
   PARSE_ONE_ARG(prompt);
   char* c_prompt = c_string(prompt);
   char* c_result = readline(c_prompt);
@@ -62,8 +62,8 @@ oop primitive_readline(oop args) {
 }
 
 static
-oop primitive_get_home_directory(oop args) {
-  CHECKV(is_nil(args), args, "Expected 0, but got args.");
+FUNC(primitive_get_home_directory) {
+  CHECK(argc == 0, "Expected 0, but got args.");
   return make_string(getenv("HOME"));
 }
 

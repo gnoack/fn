@@ -17,30 +17,28 @@
 #include "symbols.h"
 
 /* Utility. */
-oop primitive_first(oop args) {
+FUNC(primitive_first) {
   PARSE_ONE_ARG(cons_cell);
   return first(cons_cell);
 }
 
-oop primitive_rest(oop args) {
+FUNC(primitive_rest) {
   PARSE_ONE_ARG(cons_cell);
   return rest(cons_cell);
 }
 
 /* UNSAFE */
-oop primitive_mem_make(oop args) {
-  fn_uint size = length_int(args);
-  oop result = mem_alloc(size);
+FUNC(primitive_mem_make) {
+  oop result = mem_alloc(argc);
   fn_uint i;
-  for (i = 0; i < size; i++) {
-    MEM_SET(result, i, first(args));
-    args = rest(args);
+  for (i = 0; i < argc; i++) {
+    MEM_SET(result, i, argv[i]);
   }
   return result;
 }
 
 /* UNSAFE, except for index == 0. */
-oop primitive_mem_get(oop args) {
+FUNC(primitive_mem_get) {
   PARSE_TWO_ARGS(obj, index);
   return mem_get(obj, get_smallint(index));
 }
@@ -48,29 +46,29 @@ oop primitive_mem_get(oop args) {
 /* UNSAFE, except for index == 0.
  * This is an imperative function.  Avoid.
  */
-oop primitive_mem_set(oop args) {
+FUNC(primitive_mem_set) {
   PARSE_THREE_ARGS(obj, index, value);
   return mem_set(obj, get_smallint(index), value);
 }
 
-oop primitive_mem_size(oop args) {
+FUNC(primitive_mem_size) {
   PARSE_ONE_ARG(obj);
   return make_smallint(mem_size(obj));
 }
 
-oop primitive_char_to_num(oop args) {
+FUNC(primitive_char_to_num) {
   PARSE_ONE_ARG(c);
   CHECKV(is_char(c), c, "Must be a char");
   return make_smallint(get_char(c));
 }
 
-oop primitive_num_to_char(oop args) {
+FUNC(primitive_num_to_char) {
   PARSE_ONE_ARG(i);
   CHECKNUMBER(i);
   return make_char(get_smallint(i));
 }
 
-oop primitive_string_to_symbol(oop args) {
+FUNC(primitive_string_to_symbol) {
   PARSE_ONE_ARG(str);
   CHECKV(is_string(str), str, "Must be a string");
   char* c_str = c_string(str);
@@ -79,26 +77,25 @@ oop primitive_string_to_symbol(oop args) {
   return result;
 }
 
-oop primitive_symbol_to_string(oop args) {
+FUNC(primitive_symbol_to_string) {
   PARSE_ONE_ARG(sym);
   CHECKV(is_symbol(sym), sym, "Must be a symbol");
   return make_string(get_symbol(sym));
 }
 
 // Integer addition.
-oop primitive_add(oop args) {
+oop primitive_add(oop* argv, size_t argc) {
   // TODO: Pretty inaccurate. This works on smallints only.
-  fn_uint i = 0;
-  for (; !is_nil(args); args = cdr(args)) {
-    oop arg = car(args);
-    CHECKV(is_smallint(arg), arg, "Only smallints can be added for now.");
-    i += get_smallint(arg);
+  fn_uint sum = 0;
+  size_t i;
+  for (i = 0; i < argc; i++) {
+    sum += get_smallint(argv[i]);
   }
-  return make_smallint(i);
+  return make_smallint(sum);
 }
 
 // TODO: This may crash, because we don't support negative numbers.
-oop primitive_sub(oop args) {
+FUNC(primitive_sub) {
   // TODO: Allow more arguments.
   PARSE_TWO_ARGS(a, b);
   CHECKNUMBER(a);
@@ -106,7 +103,7 @@ oop primitive_sub(oop args) {
   return make_smallint(get_smallint(a) - get_smallint(b));
 }
 
-oop primitive_mul(oop args) {
+FUNC(primitive_mul) {
   // TODO: Allow more arguments.
   PARSE_TWO_ARGS(a, b);
   CHECKNUMBER(a);
@@ -114,14 +111,14 @@ oop primitive_mul(oop args) {
   return make_smallint(get_smallint(a) * get_smallint(b));
 }
 
-oop primitive_div(oop args) {
+FUNC(primitive_div) {
   PARSE_TWO_ARGS(a, b);
   CHECKNUMBER(a);
   CHECKNUMBER(b);
   return make_smallint(get_smallint(a) / get_smallint(b));
 }
 
-oop primitive_mod(oop args) {
+FUNC(primitive_mod) {
   PARSE_TWO_ARGS(a, b);
   CHECKNUMBER(a);
   CHECKNUMBER(b);
@@ -133,14 +130,14 @@ oop lisp_bool(boolean b) {
   return b ? symbols._true : symbols._false;
 }
 
-oop primitive_le(oop args) {
+FUNC(primitive_le) {
   PARSE_TWO_ARGS(a, b);
   CHECKNUMBER(a);
   CHECKNUMBER(b);
   return lisp_bool(get_smallint(a) <= get_smallint(b));
 }
 
-oop primitive_eq(oop args) {
+FUNC(primitive_eq) {
   PARSE_TWO_ARGS(a, b);
   return lisp_bool(value_eq(a, b));
 }
@@ -152,18 +149,23 @@ UNARY_PREDICATE(primitive_symbol_p, is_symbol);
 UNARY_PREDICATE(primitive_raw_mem_p, is_raw_mem);
 UNARY_PREDICATE(primitive_global_env_p, is_global_env);
 
-oop primitive_list(oop args) {
+oop primitive_list(oop* argv, size_t argc) {
   // Any argument number accepted, of course. :)
-  return args;
+  oop result = NIL;
+  while (argc) {
+    result = make_cons(argv[argc-1], result);
+    argc--;
+  }
+  return result;
 }
 
-oop primitive_apply(oop args) {
+FUNC(primitive_apply) {
   PARSE_TWO_ARGS(procedure, arguments);
   return apply(make_cons(procedure, arguments));
 }
 
 /* Attention: has side effect of printing, returns argument. */
-oop primitive_write_out(oop args) {
+FUNC(primitive_write_out) {
   PARSE_ONE_ARG(str);
   CHECKV(is_string(str), str, "Must be a string.");
   char* c_str = c_string(str);
@@ -172,26 +174,26 @@ oop primitive_write_out(oop args) {
   return str;
 }
 
-oop primitive_kill_lisp(oop args) {
+FUNC(primitive_kill_lisp) {
   PARSE_ONE_ARG(exit_status);
   CHECKNUMBER(exit_status);
   CHECK(1==0, "Gaa, Lisp was killed!");
   exit(get_smallint(exit_status));
 }
 
-oop primitive_raw_mem_alloc(oop args) {
+FUNC(primitive_raw_mem_alloc) {
   PARSE_ONE_ARG(size);
   CHECKNUMBER(size);
   return mem_raw_mem_alloc(get_smallint(size));
 }
 
-oop primitive_raw_mem_get(oop args) {
+FUNC(primitive_raw_mem_get) {
   PARSE_TWO_ARGS(target, index);
   CHECKNUMBER(index);
   return mem_raw_mem_get(target, get_smallint(index));
 }
 
-oop primitive_raw_mem_set(oop args) {
+FUNC(primitive_raw_mem_set) {
   PARSE_THREE_ARGS(target, index, value);
   CHECKNUMBER(index);
   CHECKNUMBER(value);
@@ -199,19 +201,19 @@ oop primitive_raw_mem_set(oop args) {
   return value;
 }
 
-oop primitive_raw_mem_size(oop args) {
+FUNC(primitive_raw_mem_size) {
   PARSE_ONE_ARG(target);
   return make_smallint(mem_raw_mem_size(target));
 }
 
-oop primitive_raw_memcpy(oop args) {
+FUNC(primitive_raw_memcpy) {
   PARSE_FIVE_ARGS(trg, trg_offset, src, src_offset, size);
   memcpy(mem_raw_get_ptr(trg) + get_smallint(trg_offset),
          mem_raw_get_ptr(src) + get_smallint(src_offset), get_smallint(size));
   return trg;
 }
 
-oop primitive_raw_mem_eq(oop args) {
+FUNC(primitive_raw_mem_eq) {
   PARSE_FIVE_ARGS(a, a_offset, b, b_offset, size);
   int result = memcmp(mem_raw_get_ptr(a) + get_smallint(a_offset),
                       mem_raw_get_ptr(b) + get_smallint(b_offset),
@@ -219,13 +221,13 @@ oop primitive_raw_mem_eq(oop args) {
   return lisp_bool(result == 0);
 }
 
-oop primitive_run_gc(oop args) {
-  CHECKV(is_nil(args), args, "No arguments allowed for run-gc.");
+FUNC(primitive_run_gc) {
+  CHECK(0 == argv, "No arguments allowed for run-gc.");
   run_gc_soon();
   return NIL;
 }
 
-oop primitive_make_compiled_procedure(oop args) {
+FUNC(primitive_make_compiled_procedure) {
   PARSE_SEVEN_ARGS(name, lambda_list, in_frame, bytecode, ip, lookup_table,
                    max_stack_depth);
   oop result = make_compiled_procedure(lambda_list, in_frame,
@@ -235,20 +237,20 @@ oop primitive_make_compiled_procedure(oop args) {
   return result;
 }
 
-oop primitive_fn_max_stack_depth(oop args) {
+FUNC(primitive_fn_max_stack_depth) {
   PARSE_ONE_ARG(fn);
   CHECKV(is_compiled_lisp_procedure(fn), fn, "Needs bytecode procedure.");
   return make_smallint(fn_max_stack_depth(fn));
 }
 
-oop primitive_get_process_time(oop args) {
-  CHECKV(is_nil(args), args, "No arguments allowed for get-time.");
+FUNC(primitive_get_process_time) {
+  CHECK(argc == 0, "No arguments allowed for get-time.");
   struct timespec time;
   clock_gettime(CLOCK_THREAD_CPUTIME_ID, &time);
   return make_smallint(time.tv_sec * 1000 + time.tv_nsec / 1000000);
 }
 
-oop primitive_file_timestamp(oop args) {
+FUNC(primitive_file_timestamp) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   struct stat c_stat;
@@ -259,7 +261,7 @@ oop primitive_file_timestamp(oop args) {
   return make_smallint(c_stat.st_mtime);
 }
 
-oop primitive_file_size(oop args) {
+FUNC(primitive_file_size) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   struct stat c_stat;
@@ -270,7 +272,7 @@ oop primitive_file_size(oop args) {
   return make_smallint(c_stat.st_size);
 }
 
-oop primitive_fopen(oop args) {
+FUNC(primitive_fopen) {
   PARSE_TWO_ARGS(filename, mode);
   const char* c_filename = c_string(filename);
   const char* c_mode = c_string(mode);
@@ -282,13 +284,13 @@ oop primitive_fopen(oop args) {
   return make_smallint((fn_uint) file);
 }
 
-oop primitive_fclose(oop args) {
+FUNC(primitive_fclose) {
   PARSE_ONE_ARG(file_handle);
   fclose((FILE*) get_smallint(file_handle));
   return NIL;
 }
 
-oop primitive_fread_buf(oop args) {
+FUNC(primitive_fread_buf) {
   PARSE_THREE_ARGS(file_handle, buf, size);
   FILE* c_file_handle = (FILE*) get_smallint(file_handle);
   size_t c_size = (size_t) get_smallint(size);
@@ -299,7 +301,7 @@ oop primitive_fread_buf(oop args) {
   return make_smallint(result);
 }
 
-oop primitive_fwrite_buf(oop args) {
+FUNC(primitive_fwrite_buf) {
   PARSE_THREE_ARGS(file_handle, buf, size);
   FILE* c_file_handle = (FILE*) get_smallint(file_handle);
   size_t c_size = (size_t) get_smallint(size);
@@ -310,8 +312,8 @@ oop primitive_fwrite_buf(oop args) {
   return make_smallint(result);
 }
 
-oop primitive_get_frame(oop args) {
-  CHECK(is_nil(args), "Assumed no arguments.");
+FUNC(primitive_get_frame) {
+  CHECK(argc == 0, "Assumed no arguments.");
   return native_procedure_caller();
 }
 

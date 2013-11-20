@@ -14,7 +14,7 @@
 #include "carcdr.h"
 
 
-oop primitive_dlopen(oop args) {
+FUNC(primitive_dlopen) {
   PARSE_ONE_ARG(name);
   char* c_name = c_string(name);
   void* handle = dlopen(c_name, RTLD_LOCAL | RTLD_NOW);
@@ -25,7 +25,7 @@ oop primitive_dlopen(oop args) {
   return make_smallint((fn_uint) handle);
 }
 
-oop primitive_dlsym(oop args) {
+FUNC(primitive_dlsym) {
   PARSE_TWO_ARGS(handle, symbolname);
   char* c_symbolname = c_string(symbolname);
   void* c_handle = (void*) get_smallint(handle);
@@ -115,7 +115,7 @@ c_value oop_to_c(oop input, oop type, ptrs_to_free_t* ptrs_to_free) {
  * Args: dlsym resulttype argnum argtype-list arg-list
  * e.g. (_call_dlsym strcat 'str 2 '(str str) (list "Hello" "World")).
  */
-oop primitive_call_dlsym(oop args) {
+FUNC(primitive_call_dlsym) {
   PARSE_FIVE_ARGS(sym_oop, resulttype_oop, argnum_oop, argtypes, args_oop);
   fn_uint argnum = get_smallint(argnum_oop);
 

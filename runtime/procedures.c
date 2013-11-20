@@ -246,13 +246,33 @@ oop apply_lisp_procedure(oop fn, oop args, oop caller) {
 
 oop current_native_procedure_caller = NIL;
 
+// Convert an consed argument list into argv, argc form.
+void extract_args(oop args, oop** out_argv, size_t* out_argc) {
+  size_t length = length_int(args);
+  size_t idx;
+  *out_argc = length;
+  *out_argv = (oop*)calloc(sizeof(oop), length);
+  for (idx = 0; idx < length; idx++) {
+    (*out_argv)[idx] = first(args);
+    args = rest(args);
+  }
+}
+
 oop apply_native_fn(oop fn, oop args, oop caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
+
+  size_t argc;
+  oop* argv;
+  extract_args(args, &argv, &argc);
+
   // TODO: Find a way to track C-level stack frames.  (This is slow!)
   // current_native_procedure_caller = make_dframe(NIL, 0, caller, fn);
   current_native_procedure_caller = caller;
-  oop result = c_function(args);
+  oop result = c_function(argv, argc);
+
+  free(argv);
+
   current_native_procedure_caller = NIL;
   gc_protect_counter--;
   return result;

@@ -4,8 +4,8 @@
 #include "value.h"
 #include "interpreter.h"
 
-// Defines the type "function" to be oop --> oop.
-typedef oop (*function)(oop args);
+// Defines the type "function".
+typedef oop (*function)(oop* argv, size_t argc);
 
 
 /*
