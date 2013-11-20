@@ -70,3 +70,4 @@ After switching to per-frame stacks: 1543-1545
 
 2013-11-20
 Before switching to “char* argv, int argc”-style native functions: 1319-1325
+After switching to “char* argv, int argc”-style native functions: 1088-1099

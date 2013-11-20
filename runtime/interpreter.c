@@ -265,6 +265,13 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
 
     // Modify the interpreter state.
     initialize_state_from_fn(env, cfn, state);
+  } else if (is_native_procedure(cfn)) {
+    // Pass a reference to the local stack frame to the native function.
+    size_t argc = arg_count - 1;
+    oop* argv = &(stack->stack[stack->size - argc]);
+    oop result = apply_native_fn_directly(cfn, argv, argc, state->reg_frm);
+    stack_shrink(stack, arg_count);
+    stack_push(stack, result);
   } else {
     // Call recursively on the C stack.
     oop values = stack_pop_list(stack, arg_count);
