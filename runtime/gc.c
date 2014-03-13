@@ -86,11 +86,27 @@ typedef struct {
   fn_uint size;
 } half_space;
 
+#ifdef GC_DEBUG
+void print_half_space(const char* name, half_space* a) {
+  printf("Half space %s\n", name);
+  printf("... start: %016lx\n", a->start);
+  printf("... free : %016lx\n", a->free);
+  printf("... end  : %016lx\n", a->end);
+  printf("... size : %016lx\n", a->size);
+}
+#define PRINT_HALF_SPACE(name, space) (print_half_space(name, space))
+#else  // GC_DEBUG
+#define PRINT_HALF_SPACE(name, space)
+#endif  // GC_DEBUG
+
 void half_space_init(half_space* space, fn_uint size) {
   space->start = (oop*) calloc(sizeof(oop), size);
   space->end = space->start + size;
   space->free = space->start;
   space->size = size;
+  #ifdef GC_DEBUG
+  print_half_space("new half space", space);
+  #endif
 }
 
 void half_space_clear(half_space* space) {
@@ -105,19 +121,6 @@ void half_space_swap(half_space* a, half_space* b) {
   memcpy(a, b, sizeof(half_space));
   memcpy(b, &tmp, sizeof(half_space));
 }
-
-#ifdef GC_DEBUG
-void print_half_space(const char* name, half_space* a) {
-  printf("Half space %s\n", name);
-  printf("... start: %016lx\n", a->start);
-  printf("... free : %016lx\n", a->free);
-  printf("... end  : %016lx\n", a->end);
-  printf("... size : %016lx\n", a->size);
-}
-#define PRINT_HALF_SPACE(name, space) (print_half_space(name, space))
-#else  // GC_DEBUG
-#define PRINT_HALF_SPACE(name, space)
-#endif  // GC_DEBUG
 
 // Write half space into file.
 void half_space_serialize_to_file(half_space* space, FILE* out) {
@@ -146,7 +149,7 @@ void half_space_deserialize_from_file(
   fread(current->start,
         sizeof(oop), in_old_process->free - in_old_process->start, in);
   current->free += (in_old_process->free - in_old_process->start);
-  PRINT_HALF_SPACE("des old", current);
+  PRINT_HALF_SPACE("des old", old);
   PRINT_HALF_SPACE("des current", current);
 }
 
@@ -182,7 +185,8 @@ oop half_space_alloc(half_space* space, fn_uint size) {
 }
 
 boolean half_space_contains(half_space* space, oop obj) {
-  return TO_BOOL(space->start <= obj.mem && obj.mem < space->end);
+  return TO_BOOL(!is_smallint(obj) &&
+                 space->start <= obj.mem && obj.mem < space->end);
 }
 
 #ifdef GC_LOGGING
@@ -283,7 +287,11 @@ void relocate_ref(oop* ptr, half_space* old_space, half_space* new_space) {
   if (half_space_contains(old_space, *ptr)) {
     ptr->mem = ptr->mem - old_space->start + new_space->start;
 #ifdef GC_DEBUG
-    CHECK(!half_space_contains(old_space, *ptr), "Bad relocation.");
+    // Note: ptr *may* be in the old space at the same time now.  This
+    // is the case when we deserialize from a file and the serialized
+    // memory regions in the original process have overlapping address
+    // range to ours.  (Happened on ARM.)
+    CHECK(half_space_contains(new_space, *ptr), "Bad relocation.");
 #endif  // GC_DEBUG
   }
 }
@@ -486,7 +494,7 @@ void run_gc_soon() {
 
 void init_gc() {
   _run_gc_soon = NO;
-  object_region_init(1 << 26);  // TODO: Enough?
+  object_region_init(1 << 27);  // TODO: Enough?
   raw_memory_region_init(1 << 15);  // TODO: Enough?
   immediate_region_init();
   gc_protect_counter = 0;
@@ -570,8 +578,11 @@ void gc_serialize_to_file(char* filename) {
   run_gc_soon();
   gc_run();
   FILE* out = fopen(filename, "w");
-  fwrite(&global_env, sizeof(oop), 1, out);
-  fwrite(&symbols, sizeof(symbols), 1, out);
+  size_t items_written = fwrite(&global_env, sizeof(oop), 1, out);
+  CHECK(items_written == 1, "Write error.");
+  items_written = fwrite(&symbols, sizeof(symbols), 1, out);
+  CHECK(items_written == 1, "Write error.");
+
   half_space_serialize_to_file(&object_memory.current, out);
   half_space_serialize_to_file(&raw_memory.current, out);
   fclose(out);
@@ -667,6 +678,8 @@ void pointered_half_space_sanity_check(half_space* space) {
   printf("Start: %lx\n", (fn_uint) space->start);
   printf(" Free: %lx\n", (fn_uint) space->free);
   printf("  End: %lx\n", (fn_uint) space->end);
+  boolean is_raw = (space == &raw_memory.current ||
+                    space == &raw_memory.old);
   oop* current = space->start + 1;
   while (current < space->free) {
     oop size = current[-1];
@@ -677,10 +690,14 @@ void pointered_half_space_sanity_check(half_space* space) {
       print_zone(ptr);
       exit(1);
     }
-    sane(*current);
+    if (!is_raw) {
+      // Checking values in raw space is a bad idea, they could contain
+      // valid-looking adresses that aren't valid.  (Yes, it happened.)
+      // In object space, this makes sure the types at index 0 exist.
+      sane(*current);
+    }
     // Raw memory space is allocated in bytes, not in oops.
-    if (space == &raw_memory.current ||
-        space == &raw_memory.old) {
+    if (is_raw) {
       current += raw_memory_oop_size(get_smallint(size)) + 1;
     } else {
       current += get_smallint(size) + 1;

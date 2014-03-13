@@ -14,6 +14,7 @@ fn_uint number_of_symbols = 0;
 char* interned_symbols_keys[HASH_MAP_SIZE];
 oop interned_symbols_values[HASH_MAP_SIZE];
 
+// TODO: Strip most significant bit directly?
 fn_uint string_to_hash(const char* str) {
   fn_uint value = 1;
   while (*str) {
