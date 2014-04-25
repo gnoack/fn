@@ -89,10 +89,10 @@ typedef struct {
 #ifdef GC_DEBUG
 void print_half_space(const char* name, half_space* a) {
   printf("Half space %s\n", name);
-  printf("... start: %016lx\n", a->start);
-  printf("... free : %016lx\n", a->free);
-  printf("... end  : %016lx\n", a->end);
-  printf("... size : %016lx\n", a->size);
+  printf("... start: %p\n", a->start);
+  printf("... free : %p\n", a->free);
+  printf("... end  : %p\n", a->end);
+  printf("... size : %lux\n", a->size);
 }
 #define PRINT_HALF_SPACE(name, space) (print_half_space(name, space))
 #else  // GC_DEBUG
@@ -178,7 +178,7 @@ oop half_space_alloc(half_space* space, fn_uint size) {
   result.mem = space->free;
   space->free += size;
   if (space->free >= space->end) {
-    printf("Too little space in new half-space (%lu needed).\n", size);
+    printf("Too little space in new half-space (%u needed).\n", size);
     exit(1);
   }
   return result;
@@ -659,8 +659,8 @@ oop sane(oop obj) {
       return obj;  // Broken heart.
     }
     if (!is_smallint(obj.mem[-1])) {
-      printf("%s object at address %lx is missing a size.\n",
-             allocation_type, (fn_uint) obj.mem);
+      printf("%s object at address %p is missing a size.\n",
+             allocation_type, obj.mem);
       print_zone(obj);
       exit(1);
     }
@@ -675,16 +675,16 @@ oop sane(oop obj) {
 
 // Check consistency of pointered half space between GC runs.
 void pointered_half_space_sanity_check(half_space* space) {
-  printf("Start: %lx\n", (fn_uint) space->start);
-  printf(" Free: %lx\n", (fn_uint) space->free);
-  printf("  End: %lx\n", (fn_uint) space->end);
+  printf("Start: %p\n", space->start);
+  printf(" Free: %p\n", space->free);
+  printf("  End: %p\n", space->end);
   boolean is_raw = (space == &raw_memory.current ||
                     space == &raw_memory.old);
   oop* current = space->start + 1;
   while (current < space->free) {
     oop size = current[-1];
     if (!is_smallint(size)) {
-      printf("BROKEN HEART AT 0x%lx\n", (fn_uint) current);
+      printf("BROKEN HEART AT 0x%p\n", current);
       oop ptr;
       ptr.mem = current;
       print_zone(ptr);

@@ -21,14 +21,14 @@ unsigned char extract_byte(fn_uint value, char shift) {
 }
 
 void print_zone(oop obj) {
-  printf("\nZone around 0x%016lx\n", (fn_uint) obj.mem);
+  printf("\nZone around 0x%p\n", obj.mem);
   int i;
   for (i=-10; i<10; i++) {
     fn_uint value = obj.mem[i].smallint;
-    printf("%s%016lx:  %016lx %c%c%c%c%c%c%c%c",
+    printf("%s%p:  %p %c%c%c%c%c%c%c%c",
            (i == 0 ? "--> " : "    "),
-           (fn_uint) (obj.mem + i),
-           value,
+           obj.mem + i,
+           obj.mem[i].mem,
            extract_byte(value, 0),
            extract_byte(value, 1),
            extract_byte(value, 2),
@@ -38,7 +38,7 @@ void print_zone(oop obj) {
            extract_byte(value, 6),
            extract_byte(value, 7));
     if (value & 1) {
-      printf("  %lu\n", value >> 1);
+      printf("  %u\n", value >> 1);
     } else {
       putchar('\n');
     }
@@ -51,7 +51,7 @@ void print_value(oop v) {
   if (is_global_env(v)) {
     printf("#<GLOBAL ENVIRONMENT>");
   } else if (is_smallint(v)) {
-    printf("%lu", (fn_uint) get_smallint(v));
+    printf("%u", (fn_uint) get_smallint(v));
   } else if (is_char(v)) {
     char c = get_char(v);
     switch (c) {
@@ -87,7 +87,7 @@ void print_value(oop v) {
     }
     printf(")");
   } else if (is_raw_mem(v)) {
-    printf("<RAW-MEMORY #%08llx ", (unsigned long long) v.smallint);
+    printf("<RAW-MEMORY #%p ", v.mem);
     fn_uint size = mem_raw_mem_size(v);
     fn_uint i;
     for (i=0; i<size; i++) {
