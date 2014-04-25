@@ -222,7 +222,7 @@ FUNC(primitive_raw_mem_eq) {
 }
 
 FUNC(primitive_run_gc) {
-  CHECK(0 == argv, "No arguments allowed for run-gc.");
+  CHECK(0 == argc, "No arguments allowed for run-gc.");
   run_gc_soon();
   return NIL;
 }
