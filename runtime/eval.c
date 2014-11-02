@@ -39,9 +39,14 @@ void set_globally_oop(oop key, oop value) {
   dict_put(global_env, key, value);
 }
 
+static inline
+boolean is_defined_globally(oop key) {
+  return dict_has_key(global_env, key);
+}
+
 // Like the above, but also check for redefinitions.
 void register_globally_oop(oop key, oop value) {
-  CHECKV(!dict_has_key(global_env, key), key, "Symbol already defined.");
+  CHECKV(!is_defined_globally(key), key, "Symbol already defined.");
   set_globally_oop(key, value);
 }
 
@@ -180,13 +185,13 @@ oop eval_progn(oop program, oop env) {
 // compilation code from here.
 extern
 oop eval_global(oop program) {
-  if (dict_has_key(global_env, symbols._macroexpand)) {
-    oop macroexpand_fn = dict_get(global_env, symbols._macroexpand);
+  if (is_defined_globally(symbols._macroexpand)) {
+    oop macroexpand_fn = lookup_globally(symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
   }
   oop _compile_top_level_expr =
     make_symbol("compile-top-level-expr");
-  if (dict_has_key(global_env, _compile_top_level_expr)) {
+  if (is_defined_globally(_compile_top_level_expr)) {
     oop proc = apply(LIST(lookup_globally(_compile_top_level_expr), program));
     oop result = apply(make_cons(proc, NIL));
     return result;
