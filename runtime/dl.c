@@ -14,6 +14,15 @@
 #include "carcdr.h"
 
 
+oop pack_aligned_cptr(void* i) {
+  CHECK((((fn_uint) i) & 1) == 0, "Needs to be an aligned pointer.");
+  return make_smallint(((fn_uint) i) >> 1);
+}
+
+void* unpack_aligned_cptr(oop ptr) {
+  return (void*) (get_smallint(ptr) << 1);
+}
+
 FUNC(primitive_dlopen) {
   PARSE_ONE_ARG(name);
   char* c_name = c_string(name);
@@ -22,19 +31,19 @@ FUNC(primitive_dlopen) {
 
   char* error = dlerror();
   CHECK(error == NULL, error);
-  return make_smallint((fn_uint) handle);
+  return pack_aligned_cptr(handle);
 }
 
 FUNC(primitive_dlsym) {
   PARSE_TWO_ARGS(handle, symbolname);
   char* c_symbolname = c_string(symbolname);
-  void* c_handle = (void*) get_smallint(handle);
+  void* c_handle = unpack_aligned_cptr(handle);
   void* (*c_sym)(void* arg, ...) = dlsym(c_handle, c_symbolname);
   free(c_symbolname);
 
   char* error = dlerror();
   CHECK(error == NULL, error);
-  return make_smallint((fn_uint) c_sym);
+  return pack_aligned_cptr(c_sym);
 }
 
 typedef struct {
@@ -108,8 +117,8 @@ c_value oop_to_c(oop input, oop type, ptrs_to_free_t* ptrs_to_free) {
 
 #define GET_ARG(name) \
   c_value name = oop_to_c(first(args_oop), first(argtypes), &ptrs_to_free); \
-  args_oop = rest(args_oop);                                            \
-  argtypes = rest(argtypes);                                            \
+  args_oop = rest(args_oop);                                                \
+  argtypes = rest(argtypes);                                                \
 
 /*
  * Args: dlsym resulttype argnum argtype-list arg-list
@@ -120,7 +129,7 @@ FUNC(primitive_call_dlsym) {
   fn_uint argnum = get_smallint(argnum_oop);
 
   // TODO: Is this the proper type for a generic C function?!?
-  void* fn_addr = (void*) get_smallint(sym_oop);
+  void* fn_addr = unpack_aligned_cptr(sym_oop);
   c_value (*c_function)(c_value arg, ...) = (c_value (*)(c_value, ...)) fn_addr;
 
   // Keep track of pointers to free after execution,
