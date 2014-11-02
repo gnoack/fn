@@ -1,0 +1,4 @@
+;; Run with ./fn -S examples/performance.fn
+
+(load-file "examples/grammar-utils.fn")
+(with-timer (load-grammar! "examples/lisp.g"))
