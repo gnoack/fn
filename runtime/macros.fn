@@ -214,8 +214,17 @@
 (defmacro typecase (expr &rest clauses)
   (generic-case identity `(type-of ,expr) clauses))
 
-;; TODO: This is a little messy.
+;; Usage:
+;;   (match MATCH-CLAUSE*)
+;; where MATCH-CLAUSE is one of
+;;   - ((HEADSYM var1 var2 var3...) CONSEQUENT)
+;;     matching lists with the given head symbol.
+;;     var1... can be used in the CONSEQUENT.
+;;   - (else CONSEQUENT)
+;;     matching everything else.
+;;
 ;; See tests for usage examples.
+;; TODO: This is a little messy.
 (defmacro match (expr &rest clauses)
   (with-gensyms (expr-var expr-sym)
     (defn transform-clause (clause)
