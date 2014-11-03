@@ -56,6 +56,8 @@
 ($patch-type! Stack "Stack")
 ($patch-type! String "String")
 ($patch-type! Symbol "Symbol")
+($patch-type! DefinedVar "DefinedVar")
+($patch-type! UndefinedVar "UndefinedVar")
 ;; TODO: Bool and false should share a common supertype.
 ($patch-type! True "True")
 ($patch-type! False "False")

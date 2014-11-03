@@ -129,6 +129,8 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept(&symbols._stack);
   accept(&symbols._string);
   accept(&symbols._symbol);
+  accept(&symbols._defined_var);
+  accept(&symbols._undefined_var);
   // Boolean types.
   accept(&symbols._True);
   accept(&symbols._False);
@@ -164,6 +166,8 @@ void init_symbols() {
   symbols._stack = mem_alloc(4);
   symbols._string = mem_alloc(4);
   symbols._symbol = mem_alloc(4);  // Must be known before creating symbols.
+  symbols._defined_var = mem_alloc(4);
+  symbols._undefined_var = mem_alloc(4);
   symbols._procedure = mem_alloc(4);
   symbols._native_procedure = mem_alloc(4);
   symbols._compiled_procedure = mem_alloc(4);

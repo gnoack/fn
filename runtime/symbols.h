@@ -24,6 +24,8 @@ typedef struct {
   oop _stack;
   oop _string;
   oop _symbol;
+  oop _defined_var;
+  oop _undefined_var;
 
   // Boolean types.
   oop _True;

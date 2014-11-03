@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "strings.h"
 #include "symbols.h"
+#include "vars.h"
 
 /* Debugging helpers. */
 
@@ -126,6 +127,8 @@ void print_value(oop v) {
     putchar('}');
   } else if (is_frame(v)) {
     print_frame(v);
+  } else if (is_var(v)) {
+    print_var(v);
   } else {
     CHECK(is_mem(v), "Must be an allocated object.");
     if (value_eq(symbols._array, v)) {
@@ -146,6 +149,10 @@ void print_value(oop v) {
       printf("String");
     } else if (value_eq(symbols._symbol, v)) {
       printf("Symbol");
+    } else if (value_eq(symbols._defined_var, v)) {
+      printf("DefinedVar");
+    } else if (value_eq(symbols._undefined_var, v)) {
+      printf("UndefinedVar");
     } else if (value_eq(symbols._procedure, v)) {
       printf("Procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {

@@ -32,6 +32,7 @@ RTOBJECTS = \
 	symbols.o \
 	utils.o \
 	value.o \
+	vars.o \
 
 TESTOBJECTS = \
 	cons-test.o \

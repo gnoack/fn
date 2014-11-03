@@ -10,6 +10,7 @@
 #include "strings.h"
 #include "symbols.h"
 #include "value.h"
+#include "vars.h"
 
 oop global_env;
 oop remaining_declarations;
@@ -36,12 +37,13 @@ void set_globally_oop(oop key, oop value) {
   if (is_procedure(value)) {
     procedure_set_name(value, key);
   }
-  dict_put(global_env, key, value);
+  dict_put(global_env, key, make_var(key, value));
 }
 
 static inline
 boolean is_defined_globally(oop key) {
-  return dict_has_key(global_env, key);
+  return dict_has_key(global_env, key)
+    && is_set_var(dict_get(global_env, key));
 }
 
 // Like the above, but also check for redefinitions.
@@ -56,7 +58,8 @@ boolean is_global_env(oop v) {
 
 // Registers a lisp value under a global variable name.
 void register_globally(const char* name, oop value) {
-  register_globally_oop(make_symbol(name), value);
+  oop symbol = make_symbol(name);
+  register_globally_oop(symbol, value);
 }
 
 // TODO: Move this to a different module.
@@ -66,7 +69,7 @@ void register_globally_fn(const char* name, function fn) {
 }
 
 oop lookup_globally(oop key) {
-  return dict_get(global_env, key);
+  return var_get(dict_get(global_env, key));
 }
 
 void enumerate_gc_roots(void (*accept)(oop* place)) {
@@ -92,6 +95,8 @@ void init_eval() {
   register_globally("Stack", symbols._stack);
   register_globally("String", symbols._string);
   register_globally("Symbol", symbols._symbol);
+  register_globally("DefinedVar", symbols._defined_var);
+  register_globally("UndefinedVar", symbols._undefined_var);
   register_globally("Procedure", symbols._procedure);
   register_globally("NativeProcedure", symbols._native_procedure);
   register_globally("CompiledProcedure", symbols._compiled_procedure);
