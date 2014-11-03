@@ -23,49 +23,59 @@
                                       (pprint-inner-list (rest l)))))
           (true (string-append ". " (pprint l)))))
   ;; TODO: Rewrite with typecase
-  (cond ((string? item) (string-append "\""
-                                       (apply string-append
-                                              (map string-char-escape
-                                                   (string->list item)))
-                                       "\""))
-        ((dict? item)
-         (string-append "#{"
-                        (string-join (map pprint-kv-pair
-                                          (dict-key-value-pairs item))
-                                     ", ")
-                        "}"))
-        ((array? item)
-         (string-append "#["
-                        (string-join (map pprint (array->list item)) ", ")
-                        "]"))
-        ((mem-block? item) "#<MEM-BLOCK>")
-        ((cons? item)
-         (if (and (eq? 'quote (first item))
-                  (= 2 (length item)))
-             (string-append "'" (pprint (second item)))
-           (string-append "(" (pprint-inner-list item) ")")))
-        ((native-procedure? item)
-         (string-append "<NATIVE-PROCEDURE "
-                        (pprint (procedure-name item)) ">"))
-        ((lisp-procedure? item)
-         (string-append "<PROCEDURE " (pprint (procedure-name item))
-                        " " (pprint (lisp-procedure-lambda-list item)) ">"))
-        ((compiled-procedure? item)
-         (string-append "<COMPILED-PROCEDURE " (pprint (procedure-name item))
-                        " " (pprint (lisp-procedure-lambda-list item)) ">"))
-        ((char? item)   (string-append "#\\" (literal-char-escape item)))
-        ((number? item) (int->string item 10))
-        ((nil? item)    "()")
-        ((symbol? item) (symbol->string item))
-        ((type? item)   (string-append "#<TYPE "
-                                       (type-name item)
-                                       ">"))
-        ((eq? true item) "true")
-        ((eq? false item) "false")
-        ((has-method?
-          item 'pprint) (send item 'pprint))
-        ((mem? item)    (string-append "#<" (type-name (type-of item)) ">"))
-        (true           "?UNPRINTABLE?")))
+  (typecase item
+    ((String) (string-append "\""
+			     (apply string-append
+				    (map string-char-escape
+					 (string->list item)))
+			     "\""))
+    ((Dict)
+     (string-append "#{"
+		    (string-join (map pprint-kv-pair
+				      (dict-key-value-pairs item))
+				 ", ")
+		    "}"))
+    ((Array)
+     (string-append "#["
+		    (string-join (map pprint (array->list item)) ", ")
+		    "]"))
+    ((MemBlock) "#<MEM-BLOCK>")
+    ((Cons)
+     (if (and (eq? 'quote (first item))
+	      (= 2 (length item)))
+	 (string-append "'" (pprint (second item)))
+       (string-append "(" (pprint-inner-list item) ")")))
+    ((NativeProcedure)
+     (string-append "<NATIVE-PROCEDURE "
+		    (pprint (procedure-name item)) ">"))
+    ((Procedure)
+     (string-append "<PROCEDURE " (pprint (procedure-name item))
+		    " " (pprint (lisp-procedure-lambda-list item)) ">"))
+    ((CompiledProcedure)
+     (string-append "<COMPILED-PROCEDURE " (pprint (procedure-name item))
+		    " " (pprint (lisp-procedure-lambda-list item)) ">"))
+    ((Character)    (string-append "#\\" (literal-char-escape item)))
+    ((Smallint)     (int->string item 10))
+    ((Nil)          "()")
+    ((Symbol)       (symbol->string item))
+    ((Type)         (string-append "#<TYPE "
+				   (type-name item)
+				   ">"))
+    ((DefinedVar)   (string-append "#<DefinedVar "
+				   (symbol->string ($mem-get item 1))
+				   "="
+				   (pprint ($mem-get item 2))
+				   ">"))
+    ((UndefinedVar) (string-append "#<UndefinedVar "
+				   (symbol->string ($mem-get item 1))
+				   ">"))
+    ((True)         "true")
+    ((False)        "false")
+    (else
+     (cond
+      ((has-method? item 'pprint) (send item 'pprint))
+      ((mem? item)    (string-append "#<" (type-name (type-of item)) ">"))
+      (true           "?UNPRINTABLE?")))))
 
 (defn display (item)
   (if (string? item)

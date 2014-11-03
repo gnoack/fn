@@ -317,6 +317,11 @@ FUNC(primitive_get_frame) {
   return native_procedure_caller();
 }
 
+FUNC(primitive_lookup_var_object) {
+  PARSE_ONE_ARG(symbol);
+  return lookup_var_object_globally(symbol);
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -363,4 +368,5 @@ void init_primitives() {
   register_globally_fn("fread", primitive_fread_buf);
   register_globally_fn("fwrite", primitive_fwrite_buf);
   register_globally_fn("$get-frame", primitive_get_frame);
+  register_globally_fn("$lookup-var-object", primitive_lookup_var_object);
 }

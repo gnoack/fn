@@ -7,6 +7,7 @@
 (def *serialize-prefix-symbol* (char->num #\S))
 (def *serialize-prefix-mem-block* (char->num #\#))
 (def *serialize-prefix-compiled-procedure* (char->num #\B))
+(def *serialize-prefix-var* (char->num #\v))
 
 (defn $mem-for-each-byte! (mem start-idx end-idx action!)
   (when (< start-idx end-idx)
@@ -72,6 +73,14 @@
                             (%string-offset item)
                             (+ (%string-offset item) (string-size item))
                             write-byte!)))
+    ((DefinedVar)
+     (progn
+       (write-byte! *serialize-prefix-var*)
+       (serialize! ($mem-get item 1) write-byte!)))
+    ((UndefinedVar)
+     (progn
+       (write-byte! *serialize-prefix-var*)
+       (serialize! ($mem-get item 1) write-byte!)))
     ((Cons)
      (progn
        (write-byte! *serialize-prefix-cons*)
@@ -127,6 +136,8 @@
                                      0 size read-byte!)))
      ((eq? type-prefix *serialize-prefix-smallint*)
       (deserialize-integer! read-byte!))
+     ((eq? type-prefix *serialize-prefix-var*)
+      ($lookup-var-object (deserialize! read-byte!)))
      ((eq? type-prefix *serialize-prefix-compiled-procedure*)
       (make-compiled-procedure (deserialize! read-byte!)  ; name
                                (deserialize! read-byte!)  ; lambda-list

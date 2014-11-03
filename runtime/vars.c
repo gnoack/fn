@@ -21,6 +21,14 @@ oop make_var(oop symbol, oop value) {
   return to_oop(var);
 }
 
+oop make_undefined_var(oop symbol) {
+  var_t* var = to_var(mem_alloc(sizeof(var_t) / sizeof(oop)));
+  var->type = symbols._undefined_var;
+  var->symbol = symbol;
+  var->value = NIL;
+  return to_oop(var);
+}
+
 boolean is_var(oop var) {
   return value_eq(to_var(var)->type, symbols._defined_var)
     || value_eq(to_var(var)->type, symbols._undefined_var);

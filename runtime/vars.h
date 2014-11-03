@@ -13,6 +13,7 @@
 // in the var object.
 
 extern oop make_var(oop symbol, oop value);
+extern oop make_undefined_var(oop symbol);
 extern boolean is_var(oop var);
 extern boolean is_set_var(oop var);
 extern void var_set(oop var, oop value);

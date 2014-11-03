@@ -49,6 +49,12 @@
 
 (roundtrip-serializes? eq? 'some-symbol)
 
+;; This is special: We serialize only the *name* of the var.
+;; To deserialize, we lookup the name in the global env,
+;; so we can assume it's the same object.
+(roundtrip-serializes? eq? ($lookup-var-object 'this-does-not-exist-at-all))
+(roundtrip-serializes? eq? ($lookup-var-object 'roundtrip-serializes?))
+
 (roundtrip-serializes? eq? #\a)
 (roundtrip-serializes? eq? #\#)
 (roundtrip-serializes? eq? #\,)

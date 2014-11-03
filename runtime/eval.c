@@ -37,7 +37,8 @@ void set_globally_oop(oop key, oop value) {
   if (is_procedure(value)) {
     procedure_set_name(value, key);
   }
-  dict_put(global_env, key, make_var(key, value));
+  oop var = lookup_var_object_globally(key);
+  var_set(var, value);
 }
 
 static inline
@@ -69,7 +70,16 @@ void register_globally_fn(const char* name, function fn) {
 }
 
 oop lookup_globally(oop key) {
+  // Doesn't use lookup_var_object_globally for performance reasons.
   return var_get(dict_get(global_env, key));
+}
+
+// This returns a set/unset var object as in vars.h, not the defined value!
+oop lookup_var_object_globally(oop key) {
+  if (!dict_has_key(global_env, key)) {
+    dict_put(global_env, key, make_undefined_var(key));
+  }
+  return dict_get(global_env, key);
 }
 
 void enumerate_gc_roots(void (*accept)(oop* place)) {

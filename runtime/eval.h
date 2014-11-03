@@ -19,6 +19,9 @@ extern void set_globally_oop(oop key, oop value);
 
 extern oop lookup_globally(oop key);
 
+// Avoid.  Use lookup_globally() to lookup values.
+extern oop lookup_var_object_globally(oop key);
+
 extern boolean is_global_env(oop v);
 
 extern void init_eval();
