@@ -24,6 +24,7 @@
 #define S_SMALLINT           'i'
 #define S_STRING             '\"'
 #define S_SYMBOL             'S'
+#define S_VAR                'v'
 
 static inline unsigned char read_byte(FILE* input) {
   int result = fgetc(input);
@@ -110,6 +111,8 @@ oop deserialize(FILE* input) {
       free(c_str);
       return result;
     }
+  case S_VAR:
+    return lookup_var_object_globally(deserialize(input));
   }
   CHECK(NO, "Shouldn't reach end of deserialization function.");
 }

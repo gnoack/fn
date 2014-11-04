@@ -33,12 +33,7 @@ static inline
 oop eval_trampoline(oop program, oop env);
 
 void set_globally_oop(oop key, oop value) {
-  // If it's a procedure, set its name.
-  if (is_procedure(value)) {
-    procedure_set_name(value, key);
-  }
-  oop var = lookup_var_object_globally(key);
-  var_set(var, value);
+  var_set(lookup_var_object_globally(key), value);
 }
 
 static inline

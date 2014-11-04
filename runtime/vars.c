@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "symbols.h"
+#include "procedures.h"
 
 typedef struct {
   oop type;
@@ -14,11 +15,9 @@ var_t* to_var(oop o) { return (var_t*) o.mem; }
 oop to_oop(var_t* v) { return *((oop*) &v); }
 
 oop make_var(oop symbol, oop value) {
-  var_t* var = to_var(mem_alloc(sizeof(var_t) / sizeof(oop)));
-  var->type = symbols._defined_var;
-  var->symbol = symbol;
-  var->value = value;
-  return to_oop(var);
+  oop var = make_undefined_var(symbol);
+  var_set(var, value);
+  return var;
 }
 
 oop make_undefined_var(oop symbol) {
@@ -42,6 +41,11 @@ void var_set(oop var, oop value) {
   var_t* v = to_var(var);
   v->type = symbols._defined_var;
   v->value = value;
+
+  // If it's a procedure, set its name.
+  if (is_procedure(value)) {
+    procedure_set_name(value, v->symbol);
+  }
 }
 
 void var_unset(oop var) {
@@ -53,6 +57,10 @@ void var_unset(oop var) {
 oop var_get(oop var) {
   CHECKV(is_set_var(var), var, "Undefined variable.");
   return to_var(var)->value;
+}
+
+oop var_name(oop var) {
+  return to_var(var)->symbol;
 }
 
 void print_var(oop var) {

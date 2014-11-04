@@ -19,6 +19,7 @@ extern boolean is_set_var(oop var);
 extern void var_set(oop var, oop value);
 extern void var_unset(oop var);
 extern oop var_get(oop var);
+extern oop var_name(oop var);
 extern void print_var(oop var);
 
 #endif  // _VARS_H_

@@ -11,6 +11,7 @@
 #include "procedures.h"
 #include "symbols.h"
 #include "value.h"
+#include "vars.h"
 
 // #define INTERPRETER_DEBUG 1
 // #define INTERPRETER_LOGGING 1
@@ -399,20 +400,20 @@ oop interpret(oop frame, oop procedure) {
       break;
     }
     case BC_READ_GLOBAL_VAR: {
-      oop key = read_oop(&state);
-      oop value = lookup_globally(key);
+      oop var = read_oop(&state);
+      oop value = var_get(var);
       IPRINT("load-global-var ");
-      IVALUE(key);
+      IVALUE(var_name(var));
       stack_push(&state.stack, value);
       break;
     }
     case BC_WRITE_GLOBAL_VAR: {
-      oop key = read_oop(&state);
+      oop var = read_oop(&state);
       // TODO: Make bytecode-level distinction between defining and setting?
       oop value = stack_peek(&state.stack);
-      set_globally_oop(key, value);
+      var_set(var, value);
       IPRINT("write-global-var ");
-      IVALUE(key);
+      IVALUE(var_name(var));
       IPRINT("                 ");
       IVALUE(value);
       break;

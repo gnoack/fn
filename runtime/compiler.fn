@@ -187,15 +187,15 @@
 ;;; Assembler                                                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn make-assembler (byte address-of oop-ref save-label!)
+(defn make-assembler (byte address-of oop-ref global-var-ref save-label!)
   (dispatcher self
     ('jump (label)                (byte 0) (address-of label))
     ('jump-if-true (label)        (byte 1) (address-of label))
     ('load-value (oop)            (byte 2) (oop-ref oop))
     ('read-var (f-depth v-index)  (byte 3) (byte f-depth) (byte v-index))
     ('write-var (f-depth v-index) (byte 4) (byte f-depth) (byte v-index))
-    ('read-global-var (oop)       (byte 5) (oop-ref oop))
-    ('write-global-var (oop)      (byte 6) (oop-ref oop))
+    ('read-global-var (oop)       (byte 5) (global-var-ref oop))
+    ('write-global-var (oop)      (byte 6) (global-var-ref oop))
     ('discard ()                  (byte 7))
     ('make-lambda (label s-sz ll) (byte 8) (address-of label) (byte s-sz)
                                            (oop-ref ll))
@@ -238,11 +238,14 @@
                       (lambda ()
                         (byte-buffer-set! byte-stream pos
                                           (list-index-of known-oops o))))))
+    (defn put-global-var! (o)
+      (put-oop! ($lookup-var-object o)))
     (defn save-label! (l)
       (dict-put! label-addrs l (byte-buffer-size byte-stream)))
 
     (let ((translate!
-           (make-assembler put-byte! put-label! put-oop! save-label!)))
+           (make-assembler put-byte! put-label! put-oop! put-global-var!
+			   save-label!)))
       (dolist (cmd program)
         (send-apply translate! (first cmd) (rest cmd)))
       (dolist (todo postponed-actions)

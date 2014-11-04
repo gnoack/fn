@@ -71,3 +71,11 @@ After switching to per-frame stacks: 1543-1545
 2013-11-20
 Before switching to “char* argv, int argc”-style native functions: 1319-1325
 After switching to “char* argv, int argc”-style native functions: 1088-1099
+
+2014-11-02 - 2014-11-04  (measurement on ARM, so quite a bit slower :))
+  Measured by loading Lisp grammar: ./fn -S examples/performance.fn
+  Before switching to <DefinedVar/UndefinedVar>: 2978-3047  (2014-11-02)
+  After switching to <DefinedVar/UndefinedVar>: 2092-2150   (2014-11-04)
+  Neat. :)  This is cutting roughly a third of the time again. :)
+
+  PS: With -O3, this becomes 1182-1331
