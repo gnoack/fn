@@ -4,7 +4,6 @@
 #include "cons.h"
 #include "data.h"
 #include "debug.h"
-#include "eval.h"  // TODO: Break dependency to lookup_globally().
 #include "gc.h"
 #include "interpreter.h"
 #include "memory.h"
