@@ -39,16 +39,18 @@ write-var [n] [m]          Write (in position as above),
 read-global-var [sym]      Like read-var, write-var.
 write-global-var [sym]
 
-pop                        Remove one item from the stack.
+discard                    Remove one item from the stack.
                            This is only used to discard the top of the stack now,
                            the result is not saved anywhere.  (TODO: Rename?)
                            Note: push is not needed any more.
 
-make-lambda [sym] [ll]     Create a closure capturing the current environment,
+make-lambda [sym] [s-sz] [ll]
+                           Create a closure capturing the current environment,
                            whose code starts at the given label, and
                            which has the given lambda list.
                            `ll': looked up in oop-lookup-table
-                           `sym': resolved at compile time to a bytecode position.
+			   `s-sz': stack size to allocate for this function
+                           `sym': resolved at compile time to a bytecode position
 
 call [n]                   Take topmost n things from stack and use them to call
                            a function.  The procedure needs to be deepest in the
@@ -61,23 +63,5 @@ return                     Pop result value from stack.
                            Restore interpreter state before last call instruction.
                            Push result value to stack.
 
-call/cc                    Call with current continuation,
-invalidate-continuation    invalidate the continuation, as continuations are
-                           only short-lived in this Lisp.
-
-                           Note that call/cc and invalidate-continuation must
-                           always happen both directly after each other.
-
-                           call/cc:
-                             pops `proc' from stack,
-                             pushes the continuation,
-                             then the return value of call/cc.
-
-                           invalidate-continutation:
-                             pops the return value from stack
-                             pops the continuation from stack
-                             invalidates it
-                             pushes the return value back.
-
-restore-continuation       Pops a return value, then a continuation from the stack
-                           and invokes the continuation with the return value.
+tail-call-apply            TODO: Used so that apply can be implemented in bytecode
+                           and still have tail calls.

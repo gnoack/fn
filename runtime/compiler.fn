@@ -202,10 +202,7 @@
     ('call (argnum)               (byte 9) (byte argnum))
     ('tail-call (argnum)          (byte 10) (byte argnum))
     ('return ()                   (byte 11))
-    ('call/cc ()                  (byte 12))
-    ('invalidate-continuation ()  (byte 13))
-    ('restore-continuation ()     (byte 14))
-    ('tail-call-apply ()          (byte 15))
+    ('tail-call-apply ()          (byte 12))
     ('label (l)                   (save-label! l))))
 
 (defn lower-byte (n) (mod n 256))

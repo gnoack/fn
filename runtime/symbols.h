@@ -17,7 +17,6 @@ typedef struct {
   // Built-in types.
   oop _array;
   oop _cons;
-  oop _continuation;
   oop _dframe;
   oop _dict;
   oop _frame;

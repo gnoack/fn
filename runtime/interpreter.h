@@ -27,8 +27,6 @@ extern void print_frame(oop obj);
 extern void set_var(oop frame, unsigned int index, oop value);
 extern oop get_var(oop frame, unsigned int index);
 
-extern boolean is_continuation(oop continuation);
-
 
 typedef struct {
   // Current frame.
@@ -55,9 +53,6 @@ typedef struct {
 #define BC_CALL 9
 #define BC_TAIL_CALL 10
 #define BC_RETURN 11
-#define BC_CALL_CC 12
-#define BC_INVALIDATE_CONTINUATION 13
-#define BC_RESTORE_CONTINUATION 14
-#define BC_TAIL_CALL_APPLY 15
+#define BC_TAIL_CALL_APPLY 12
 
 #endif  // _INTERPRETER_H_

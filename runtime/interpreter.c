@@ -307,39 +307,6 @@ oop read_oop(interpreter_state_t* state) {
 }
 
 
-// Continuations
-oop make_continuation(interpreter_state_t* state) {
-  // TODO: Can't we just drop the stack size?
-  writeback_to_frame(state);
-  oop result = mem_alloc(3);
-  MEM_SET(result, 0, symbols._continuation);
-  MEM_SET(result, 1, state->reg_frm);
-  MEM_SET(result, 2, make_smallint(state->stack.size));
-  return result;
-}
-
-boolean is_continuation_valid(oop continuation) {
-  return TO_BOOL(!is_nil(MEM_GET(continuation, 1)));
-}
-
-void invalidate_continuation(oop continuation) {
-  CHECKV(is_continuation_valid(continuation), continuation,
-         "Not a valid continuation.");
-  MEM_SET(continuation, 1, NIL);
-}
-
-boolean is_continuation(oop continuation) {
-  return value_eq(MEM_GET(continuation, 0), symbols._continuation);
-}
-
-void restore_continuation(oop continuation, interpreter_state_t* state) {
-  CHECKV(is_continuation_valid(continuation), continuation,
-         "Not a valid continuation.");
-  restore_from_frame(MEM_GET(continuation, 1), state);
-  state->stack.size = get_smallint(MEM_GET(continuation, 2));
-}
-
-
 // Interpreter
 oop interpret(oop frame, oop procedure) {
   DEBUG_CHECK(is_compiled_lisp_procedure(procedure),
@@ -479,34 +446,6 @@ oop interpret(oop frame, oop procedure) {
         return retvalue;
       }
       break;
-    case BC_CALL_CC: {
-      IPRINT("call/cc\n");
-      // TODO: Optimize proc pop/push.
-      oop proc = stack_pop(&state.stack);
-      oop continuation = make_continuation(&state);
-      stack_push(&state.stack, continuation);
-      stack_push(&state.stack, proc);
-      stack_push(&state.stack, continuation);
-      apply_into_interpreter(2, &state, NO);
-      break;
-    }
-    case BC_INVALIDATE_CONTINUATION: {
-      IPRINT("invalidate-continuation\n");
-      oop return_value = stack_pop(&state.stack);
-      oop continuation = stack_pop(&state.stack);
-      stack_push(&state.stack, return_value);
-      invalidate_continuation(continuation);
-      break;
-    }
-    case BC_RESTORE_CONTINUATION: {
-      IPRINT("restore-continuation\n");
-      oop return_value = stack_pop(&state.stack);
-      oop continuation = stack_pop(&state.stack);
-      restore_continuation(continuation, &state);
-      stack_push(&state.stack, continuation);
-      stack_push(&state.stack, return_value);
-      break;
-    }
     case BC_TAIL_CALL_APPLY: {
       IPRINT("apply\n");
       oop arglist = stack_pop(&state.stack);

@@ -95,8 +95,6 @@ void print_value(oop v) {
       printf(" %02x", ((unsigned char*) v.mem)[i]);
     }
     printf(">");
-  } else if (is_continuation(v)) {
-    printf("#<CONTINUATION>");
   } else if (is_procedure(v)) {
     print_procedure(v);
   } else if (is_string(v)) {
@@ -135,8 +133,6 @@ void print_value(oop v) {
       printf("Array");
     } else if (value_eq(symbols._cons, v)) {
       printf("Cons");
-    } else if (value_eq(symbols._continuation, v)) {
-      printf("Continuation");
     } else if (value_eq(symbols._dframe, v)) {
       printf("Dframe");
     } else if (value_eq(symbols._dict, v)) {

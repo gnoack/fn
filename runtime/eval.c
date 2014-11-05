@@ -93,7 +93,6 @@ void init_eval() {
   register_globally("false", symbols._false);
   register_globally("Array", symbols._array);
   register_globally("Cons", symbols._cons);
-  register_globally("Continuation", symbols._continuation);
   register_globally("Dframe", symbols._dframe);
   register_globally("Dict", symbols._dict);
   register_globally("Frame", symbols._frame);

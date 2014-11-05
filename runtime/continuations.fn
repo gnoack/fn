@@ -1,16 +1,14 @@
+;; This changes to which caller a frame is returning after execution.
+;; The caller is itself a frame, probably a suspended one.
+(defn set-frame-caller! (frame caller)
+  ($mem-set! frame 2 caller))
+
 (defn call/cc (proc)
-  (defn-compiled _call/cc (proc) 3
-    (read-var 0 0)  ; proc
-    (call/cc)
-    (invalidate-continuation)
-    (return))
-  (defn-compiled _invoke (continuation value) 2
-    (read-var 0 0)  ; continuation
-    (read-var 0 1)  ; value
-    (restore-continuation))
-  (_call/cc (lambda (_continuation)
-              (proc (lambda (continuation-result)
-                      (_invoke _continuation continuation-result))))))
+  (let ((call-cc-frame (frame-caller ($get-frame))))
+    (defn continuation (result)
+      (set-frame-caller! ($get-frame) call-cc-frame)
+      result)
+    (proc continuation)))
 
 (def *unwind-handler* error)
 
@@ -38,7 +36,6 @@
        (let ((result (thunk)))
          (set! *unwind-handler* old-unwind-handler)
          result)))))
-
 
 (defn raise (reason)
   (*unwind-handler* reason))

@@ -49,7 +49,6 @@
 ;; TODO: Refactor duplication in strings and symbols.
 ($patch-type! Array "Array")
 ($patch-type! Cons "Cons")
-($patch-type! Continuation "Continuation")
 ($patch-type! Dframe "Dframe")
 ($patch-type! Dict "Dict")
 ($patch-type! Frame "Frame")
