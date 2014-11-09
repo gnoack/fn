@@ -322,6 +322,11 @@ FUNC(primitive_lookup_var_object) {
   return lookup_var_object_globally(symbol);
 }
 
+FUNC(primitive_id) {
+  PARSE_ONE_ARG(obj);
+  return make_smallint((fn_uint) obj.mem >> 2);
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -369,4 +374,5 @@ void init_primitives() {
   register_globally_fn("fwrite", primitive_fwrite_buf);
   register_globally_fn("$get-frame", primitive_get_frame);
   register_globally_fn("$lookup-var-object", primitive_lookup_var_object);
+  register_globally_fn("$id", primitive_id);
 }
