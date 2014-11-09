@@ -36,11 +36,10 @@ pprint.c
 primitives-test.c
 utils-test.c
 utils.c
-x86-test.c
-x86.c
 .emacs*
+bootstrap.out
 fn.img*
 fn
 fnrt.so
 readline.so
-
+run-c-tests
