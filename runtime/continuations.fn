@@ -6,6 +6,7 @@
 (defn call/cc (proc)
   (let ((call-cc-frame (frame-caller ($get-frame))))
     (defn continuation (result)
+      ;; Note: set-frame-caller! may not be tail-called here.
       (set-frame-caller! ($get-frame) call-cc-frame)
       result)
     (proc continuation)))

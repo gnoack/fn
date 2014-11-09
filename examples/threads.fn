@@ -1,0 +1,58 @@
+;; ---
+
+;; TODO: Queues are limited to the initial queue size, this is bad.
+(deftype Queue)
+
+(defn make-queue ()
+  ($make Queue (make-array 10) 0 0))
+
+(defn queue-array    (queue)  ($mem-get queue 1))
+(defn queue-begin    (queue)  ($mem-get queue 2))
+(defn queue-end      (queue)  ($mem-get queue 3))
+(defn queue-capacity (queue)  (array-size (queue-array queue)))
+(defn queue-size     (queue)
+  (mod (- (+ (queue-capacity queue) (queue-end queue))
+	  (queue-begin queue))
+       (queue-capacity queue)))
+
+(defn queue-set-begin! (queue begin)
+  ($mem-set! queue 2 (mod begin (array-size (queue-array queue)))))
+
+(defn queue-set-end!   (queue end)
+  ($mem-set! queue 3 (mod end (array-size (queue-array queue)))))
+
+(defn queue-push! (queue item)
+  (let ((end (queue-end queue)))
+    (array-set! (queue-array queue) end item)
+    (queue-set-end! queue (+ 1 end))))
+
+(defn queue-pop! (queue)
+  (assert (< 0 (queue-size queue)))
+  (let ((begin (queue-begin queue)))
+    (queue-set-begin! queue (+ 1 begin))
+    (array-ref (queue-array queue) begin)))
+
+;; ---
+
+(def *thread-queue* (make-queue))
+
+(defn next-thread! ()
+  (queue-push! *thread-queue* (frame-caller ($get-frame)))
+  ;; Note: set-frame-caller! may not be tail-called here.
+  (set-frame-caller! ($get-frame) (queue-pop! *thread-queue*))
+  nil)
+
+(defn thread-die! ()
+  ;; Note: set-frame-caller! may not be tail-called here.
+  (set-frame-caller! ($get-frame) (queue-pop! *thread-queue*))
+  nil)
+
+(defn thread-new! (thunk)
+  (queue-push! *thread-queue* (frame-caller ($get-frame)))
+  ;; Note: set-frame-caller! may not be tail-called here.
+  (set-frame-caller! ($get-frame) '*should-never-be-used*)
+  ;; thread-die! needs to happen under all circumstances.
+  (dynamic-wind ->true thunk thread-die!))
+
+(defn go (fn &rest args)
+  (thread-new! (lambda () (apply fn args))))

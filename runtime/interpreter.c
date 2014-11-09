@@ -423,7 +423,7 @@ oop interpret(oop frame, oop procedure) {
       // TODO: Set caller to NIL?
       // TODO: Discard local stack before returning?  (Higher order procedures)
       if (likely(is_frame(caller))) {
-        restore_from_frame(frame_caller(state.reg_frm), &state);
+        restore_from_frame(caller, &state);
         stack_push(&state.stack, retvalue);
         if (protected_interpreter_state == &state) {
           gc_run();
