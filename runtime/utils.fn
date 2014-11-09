@@ -79,6 +79,7 @@
          trg (+ trg-offset (string-size src-string))
          (rest strings)))))
 
+;; TODO: Using `is-a?' doesn't work during bootstrapping.
 (defn string? (str)        (eq? String (type-of str)))
 (defn string-size (str)    ($mem-get str 1))
 (defn %string-offset (str) ($mem-get str 2))
@@ -115,9 +116,6 @@
        ($mem-block=? (%string-raw needle) (%string-offset needle)
                      (%string-raw haystack) (%string-offset haystack)
                      (string-size needle))))
-
-(defn map-string (fn str)
-  (map fn (string->list str)))
 
 (defn string-join (strings delimiter)
   (if (cons? strings)

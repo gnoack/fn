@@ -1,7 +1,8 @@
 ;;; Pipe this output into `dot -Tpng > deps.png'.
 
+;; TODO: This way to get to the global environment doesn't work any more.
 (defn procedure-env (proc)
-  (assert (procedure? proc))
+  (assert (is-a? proc CompiledProcedure))
   ($mem-get proc 4))
 
 (def *global-env* (procedure-env identity))
@@ -10,7 +11,8 @@
 (dolist (pair (dict-key-value-pairs *global-env*))
   (let ((key (first pair))
         (value (rest pair)))
-    (when (compiled-procedure? value)
+    (when (is-a? value CompiledProcedure)
+      ;; TODO: The OOP table doesn't store symbols any more.
       (dolist (symbol (array->list (third ($mem-get value 3))))
         (when (symbol? symbol)
           (println "  \"" (symbol->string key) "\" -> \""

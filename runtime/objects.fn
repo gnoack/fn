@@ -25,6 +25,9 @@
 (defn type? (x)
   (subtype? (type-of x) Type))
 
+(defn is-a? (obj type)
+  (subtype? (type-of obj) type))
+
 ; Close the loop.
 ($mem-set! Object 0 Type)
 
@@ -79,9 +82,6 @@
 (deftype Nil)
 (deftype MemBlock)
 
-(defn dict? (obj)
-  (eq? (type-of obj) Dict))
-
 ;; Hardcoded for half-primitive values like integers,
 ;; characters, nil and so forth.  For higher-level,
 ;; memory-allocated values, the value at position 0
@@ -134,7 +134,3 @@
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)
   (%send receiver message (type-of receiver) arguments))
-
-(defn sender (message)
-  (lambda (receiver &rest args)
-    (send-apply receiver message args)))

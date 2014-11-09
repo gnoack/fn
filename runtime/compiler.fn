@@ -256,17 +256,18 @@
 ;;; Putting together compiled functions.                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fn-name (fn) ($mem-get fn 1))
-(defn fn-lambda-list (fn) ($mem-get fn 2))
-(defn fn-env (fn) ($mem-get fn 4))
-(defn fn-body (fn) ($mem-get fn 5))
+;; See procedures.c
+(defn fn-name (fn)         ($mem-get fn 1))
+(defn fn-lambda-list (fn)  ($mem-get fn 2))
+(defn fn-env (fn)          ($mem-get fn 4))
+(defn fn-body (fn)         ($mem-get fn 5))
 
 (defn compilable? (fn)
   ;; Note: This is the *static* global env...
   ;; If we compile a function captured in a deeper environment, we
   ;; don't know what other functions have been captured in the same.
   ;; We can't convert the environment itself to a Frame.
-  (and (eq? Procedure (type-of fn))
+  (and (eq? (type-of fn) Procedure)
        (global-env? (fn-env fn))))
 
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.

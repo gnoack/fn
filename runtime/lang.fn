@@ -101,22 +101,3 @@
 (def cons?
   (lambda (value) (%has-mem-type? value Cons)))
 
-(def native-procedure?
-  (lambda (proc) (%has-mem-type? proc NativeProcedure)))
-
-(def lisp-procedure?
-  (lambda (proc) (%has-mem-type? proc Procedure)))
-
-(def compiled-procedure?
-  (lambda (proc) (%has-mem-type? proc CompiledProcedure)))
-
-(def procedure?
-  (lambda (proc)
-    (if (native-procedure? proc) true
-    (if (lisp-procedure? proc) true
-    (if (compiled-procedure? proc) true
-      false)))))
-
-;; See procedures.c for what fields mean what.
-(def procedure-name (lambda (proc) ($mem-get proc 1)))
-(def lisp-procedure-lambda-list (lambda (proc) ($mem-get proc 2)))

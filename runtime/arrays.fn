@@ -1,4 +1,3 @@
-;; TODO: Arrays are not used from within Lisp right now.
 
 ;; Type Array is defined in C.
 (defn list-of-size (capacity)
@@ -18,7 +17,7 @@
   (- ($mem-size arr) 1))
 
 (defn array? (arr)
-  (eq? Array (type-of arr)))
+  (is-a? arr Array))
 
 (defn array->list (a)
   (defn _convert (n acc)

@@ -9,6 +9,12 @@
 (eq? Symbol (type-of 'foobar))
 (eq? MemBlock (type-of ($make-mem-block 4)))
 
+;; is-a?
+(is-a? "foo" String)
+(is-a? "foo" Object)
+(not (is-a? "foo" Character))
+
+;; Type names
 (string=? "Object class" (type-name Type))
 (string=? "Cons" (type-name Cons))
 (string=? "MemBlock" (type-name MemBlock))
@@ -18,6 +24,7 @@
       (macroexpand '(defm Foo 'bar (x y)
                           (+ self x y))))
 
+;; TODO: This test has a side-effect. :-/
 ;; Before defining 'is-nil?
 (not (has-method? nil 'is-nil?))
 
