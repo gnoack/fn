@@ -108,12 +108,9 @@
 
 (defm Object 'unknownMessage:arguments: (selector args)
   (println self)
-  (println "With " ($mem-get self 1)) ;; DO NOT SUBMIT
   (println "Does not understand:")
   (println "  - " selector)
   (println "    " args)
-  (println "DICT-GET:" (dict-get ($mem-get self 1) 'generate-read))
-  (println "..." ($mem-get (type-of self) 1))
   (assert "broken"))
 
 (defn %send (receiver message type arguments)
@@ -128,7 +125,6 @@
 
 (defn send (receiver message &rest arguments)
   (%send receiver message (type-of receiver) arguments))
-
 
 (defn has-method? (receiver selector)
   ;; Limitation: Only works for proper objects, not for Dispatchers.
