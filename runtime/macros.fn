@@ -215,9 +215,9 @@
   (generic-case identity `(type-of ,expr) clauses))
 
 ;; Usage:
-;;   (match MATCH-CLAUSE*)
+;;   (match expr MATCH-CLAUSE*)
 ;; where MATCH-CLAUSE is one of
-;;   - ((HEADSYM var1 var2 var3...) CONSEQUENT)
+;;   - ((HEADSYM var1 var2 var3...) CONSEQUENT...)
 ;;     matching lists with the given head symbol.
 ;;     var1... can be used in the CONSEQUENT.
 ;;   - (else CONSEQUENT)
@@ -236,9 +236,9 @@
              (symbol? (first (first clause))))
         (let ((symbol     (first (first clause)))
               (vars       (rest (first clause)))
-              (consequent (second clause)))
+              (consequent (rest clause)))
           `((eq? ,expr-sym (quote ,symbol))
-            ((lambda ((,@vars)) ,consequent) (rest ,expr-var)))))))
+            ((lambda ((,@vars)) ,@consequent) (rest ,expr-var)))))))
     `(let ((,expr-var ,expr)
            (,expr-sym nil))
        (set! ,expr-sym (first ,expr-var))
