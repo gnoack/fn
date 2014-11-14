@@ -1,0 +1,35 @@
+
+;; Python-like generator functions.
+;; Args:
+;;   yielder-proc: a proc accepting a yield argument.
+;; Returns:
+;;   a get-next-value function, which will return values,
+;;   and finally raise stop-iteration.
+(defn make-generator (yielder-proc)
+  (let ((suspended-caller nil)
+	(suspended-callee nil))
+    (defn generator ()
+      (yielder-proc yield)
+      (raise 'stop-iteration))
+    (defn yield (value)
+      (assert (nil? suspended-callee))
+      (set! suspended-callee (frame-caller ($get-frame)))
+      (set-frame-caller! ($get-frame) suspended-caller)  ; return from get-next-value
+      (set! suspended-caller nil)
+      value)
+    (defn get-next-value ()
+      (unless (nil? suspended-caller)
+	(raise 'stop-iteration))
+      (set! suspended-caller (frame-caller ($get-frame)))
+      (when (nil? suspended-callee)
+	;; yield -- this also short-circuits back to the suspended caller
+	(generator))
+      (set-frame-caller! ($get-frame) suspended-callee)  ; return from yield
+      (set! suspended-callee nil)
+      nil)
+    get-next-value))
+
+(defn f123 (yield)
+  (yield 1)
+  (yield 2)
+  (yield 3))
