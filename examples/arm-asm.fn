@@ -1,0 +1,87 @@
+
+;; TODO: Assign proper values
+(def _ACC      'acc)
+(def _OOPS     'oops)
+(def _FRM      'frm)
+(def _TMP      'tmp)
+(def _TRUE_OOP true)  ; especially: make sure it never moves!
+
+(def _frame-ptr-offset 123)
+(def _var-value-offset 8)
+
+
+(defn arm-variable-access (opcode f-depth v-index emit)
+  (let ((frame-register _FRM)
+	(v-offset-in-bytes (* 4 v-index)))
+    (dotimes f-depth
+      (emit `(ldr ,_TMP (,frame-register ,_frame-ptr-offset)))
+      (set! frame-register _TMP))
+    (emit `(,opcode ,_ACC (,frame-register ,v-offset-in-bytes)))))
+
+
+(defn make-bytecode-to-arm (obj-ref global-var-ref emit)
+  (lambda (instruction)
+    (match instruction
+      ((jump label)
+       ;; Jump to the place with the given label.
+       (emit `(b ,label)))
+
+      ((jump-if-true)
+       ;; Jump to the label, if top of stack is true.
+       (emit `(pop ,_ACC)
+	     `(cmp ,_ACC ,_TRUE_OOP)
+	     `(beq ,label)))
+
+      ((load-value oop)
+       ;; Assuming the OOPS register points to an array of Lisp values
+       ;; used by the code.  This is a lot easier to garbage collect.
+       ;; We are trading some runtime performance for easy GC-ability.
+       ;; TODO: Offset calculation
+       (let ((offset-in-bytes (* 4 (obj-ref oop))))
+	 (emit `(ldr ,_ACC (,_OOPS ,offset-in-bytes))
+	       `(push ,_ACC))))
+
+      ((read-var f-depth v-index)
+       ;; Load value from the f-depth-th frame's v-index-th variable.
+       ;; TODO: Offset calculation
+       (arm-variable-access 'ldr f-depth v-index emit)
+       (emit `(push ,_ACC)))
+
+      ((write-var f-depth v-index)
+       ;; Write value to the f-depth-th frame's v-index-th variable.
+       (emit `(pop ,_ACC))
+       (arm-variable-access 'str f-depth v-index emit))
+
+      ((read-global-var name)
+       (let ((offset-in-bytes (* 4 (global-var-ref name))))
+	 (emit `(ldr ,_ACC (,OOPS ,offset-in-bytes))
+	       `(ldr ,_ACC (,ACC ,_var-value-offset))
+	       `(push ,_ACC))))
+
+      ((write-global-var name)
+       (let ((offset-in-bytes (* 4 (global-var-ref name))))
+	 (emit `(ldr ,_TMP (,OOPS ,offset-in-bytes))
+	       `(pop ,_ACC)
+	       `(str ,_ACC (,_TMP ,_var-value-offset)))))
+
+      ((discard)
+       (emit `(pop ,_TMP)))
+
+      ((make-lambda label s-sz ll)
+       (error "Not implemented."))
+
+      ((call argnum)
+       (error "Not implemented."))
+
+      ((tail-call argnum)
+       (error "Not implemented."))
+
+      ((return)
+       (error "Not implemented."))
+
+      ((tail-call-apply)
+       (error "Not implemented."))
+
+      ((label l)
+       (error "Not implemented."))
+      )))

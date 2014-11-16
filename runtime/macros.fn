@@ -297,6 +297,14 @@
   `(unless ,condition
      (error "Assertion failed: " (quote ,condition))))
 
+(defn dotimes-fn (n thunk)
+  (when (< 0 n)
+    (thunk)
+    (dotimes-fn (- n 1) thunk)))
+
+(defmacro dotimes (n &rest body)
+  `(dotimes-fn ,n (lambda () ,@body)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Macros for performance measurements.                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
