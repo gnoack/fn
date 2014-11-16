@@ -147,7 +147,9 @@ fn_uint num_vars_in_ll(oop ll) {
       } else {
         count += 2;
       }
-    } else if (is_cons(ll_item)) {
+    } else {
+      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
+	     "Only symbols and nested lists supported in lambda lists.");
       count = (count + num_vars_in_ll(ll_item)) | 1;
     }
     ll = cdr(ll);
@@ -174,9 +176,10 @@ fn_uint destructure_lambda_list_into_dframe(oop ll, oop args, oop dframe,
         dframe_register_key(dframe, idx, key, value);
         idx++;
       }
-    } else if (is_cons(ll_item)) {
+    } else {
+      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
+	     "Only symbols and nested lists supported in lambda lists.");
       oop arg_item = car(args);
-      CHECKV(is_cons(arg_item), arg_item, "Not enough arguments.");
       idx = destructure_lambda_list_into_dframe(ll_item, arg_item, dframe,
                                                 idx);
     }
@@ -204,9 +207,11 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
         set_var(frame, idx, value);
         idx++;
       }
-    } else if (is_cons(ll_item)) {
+    } else {
+      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
+	     "Only symbols and nested lists supported in lambda lists.");
+
       oop arg_item = car(args);
-      CHECKV(is_cons(arg_item), arg_item, "Not enough arguments.");
       idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame,
                                                idx);
     }

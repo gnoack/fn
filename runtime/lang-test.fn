@@ -153,3 +153,7 @@
   (and (eq? 'hello symbol)
        (eql? '(1 2 3) var-bindings)
        (eq? 'more consequent)))
+
+; Destructuring a lambda list with empty sublist.
+(let ((kapow (lambda (()) 42)))
+  (eq? 42 (kapow '())))
