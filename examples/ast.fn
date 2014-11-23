@@ -1,0 +1,35 @@
+
+;; Transform variable reads and writes.
+;; transform-read: Symbol -> Symbol
+;; transform-write: Symbol, Expr -> `(set! ,sym ,expr)
+(defn ast-transform (expr transform-read transform-write)
+  (defn recur (x)
+    (ast-transform x transform-read transform-write))
+
+  (cond
+   ((number? expr) expr)
+   ((char? expr)   expr)
+   ((symbol? expr) (transform-read expr))
+   ((string? expr) expr)
+   (true
+    (match expr
+      ((quote x)
+       `(quote ,x))
+      ((if condition consequent alternative)
+       `(if ,(recur condition)
+            ,(recur consequent)
+          ,(recur alternative)))
+      ((lambda ll &rest body)
+       `(lambda ,ll ,@(map recur body)))
+      ((let vars &rest body)
+       `(let ,(map (lambda ((name value))
+                     `(,name ,(recur value))) vars)
+          ,@(map recur body)))
+      ((def var value)
+       `(def ,var ,(recur value)))
+      ((set! var value)
+       (transform-write var (recur value)))
+      ((progn &rest exprs)
+       `(progn ,@(map recur exprs)))
+      (else ; application
+       (map recur expr))))))

@@ -67,6 +67,8 @@
           (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
     (defm Smalltalk 'makeObject:slot: (class slot1)
       ($make class slot1))
+    (defm Smalltalk 'loadLisp: (filename)
+      (load-file filename))
 
     ($make Smalltalk)))
 

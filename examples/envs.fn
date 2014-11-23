@@ -1,3 +1,4 @@
+;(load-file "examples/objects.fn")
 
 (defstruct LinkedEnv (next-env my-vars)
   (methods
