@@ -1,3 +1,5 @@
+;; Use ./fn -S examples/load-st.fn
+
 (load-file "examples/grammar-utils.fn")
 (def smalltalk-grammar (load-grammar! "examples/smalltalk.g"))
 (set! smalltalk-grammar (smalltalk-grammar base-grammar))

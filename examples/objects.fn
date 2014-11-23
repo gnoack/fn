@@ -1,0 +1,46 @@
+
+(defn type-set-field-hints! (type fields)
+  (install-method! (type-of type) 'fields
+                   (lambda (self) fields)))
+
+(type-set-field-hints! Object '())
+(type-set-field-hints! Cons '(car cdr))
+
+(defm (type-of Object) 'field-index (field-name)
+  (let ((fields (send self 'fields)))
+    (if (list-contains? fields field-name)
+        (+ 1 (list-index-of fields field-name))
+      (raise `(unknown-field ,field-name)))))
+
+;; This breaks encapsulation, for testing...
+(defm Object 'field: (field)
+  ($mem-get self (send (type-of self) 'field-index field)))
+
+;; It would be great to have a term rewriter that will replace read
+;; accesses and write accesses to instance variables with $mem-get and
+;; $mem-set!.  We need to:
+;;
+;;   (1) Fully macroexpand the method bodies.
+;;   (2) Traverse the method bodies similar to max-stack-depth in compiler.fn
+;;   (3) Function hooks to rewrite reads and writes.
+;;       We can distinguish these at the AST level when we traverse it.
+;;
+(defmacro defstruct (name fields &rest body)
+  (defn extract-methods (body)
+    (apply append (map rest
+                       (filter (lambda (x) (smatch? 'methods x))
+                               body))))
+  (with-gensyms (type)
+    `(def ,name
+       (let ((,type (make-type ,(symbol->string name) Object)))
+         (defm (type-of ,type) 'new ,fields
+           ($make ,type ,@fields))
+         (defm (type-of ,type) 'fields ()
+           (quote ,fields))
+         ,@(map (lambda ((name ll &rest body))
+                  `(defm ,type (quote ,name) ,ll ,@body))
+                (extract-methods body))
+         ,type))))
+
+;; ;; Shortcut for sending messages that reads a bit better :)
+(def ! send)

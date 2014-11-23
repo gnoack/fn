@@ -1,0 +1,21 @@
+
+(defstruct LinkedEnv (next-env my-vars)
+  (methods
+   (prettyprint ()                (string-append (pprint my-vars) "::"
+                                                 (! next-env 'prettyprint)))
+   (linked-with-vars (vars)       (! LinkedEnv 'new self vars))
+   (generate-access (depth op x)  (if (list-contains? my-vars x)
+                                      `((,op ,depth ,(list-index-of my-vars x)))
+                                    (! next-env 'generate-access (+ 1 depth) op x)))
+   (generate-read (x)             (! self 'generate-access 0 'read-var x))
+   (generate-write (x)            (! self 'generate-access 0 'write-var x))))
+
+(defstruct GlobalEnv ()
+  (methods
+   (prettyprint ()                "GLOBAL")
+   (linked-with-vars (vars)       (! LinkedEnv 'new self vars))
+   (generate-access (depth op x)  `((,(case op))))
+   (generate-read (x)             (! self 'generate-access 0 'read-var x))
+   (generate-write (x)            (! self 'generate-access 0 'write-var x))))
+
+(def -global-env (! GlobalEnv 'new))
