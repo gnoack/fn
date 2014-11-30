@@ -1,0 +1,47 @@
+;; Simple disassembler for FN bytecode,
+;; similar to Python's `dis' module.
+;;
+;; Usage:
+;; (def x (dis cons))
+;; (x)
+;; (x)
+;; (x)
+;; Each invocation of 'x' yields the next instruction.
+
+(defn mem-block-reader (mem-block index)
+  (lambda ()
+    (when (< index (mem-block-size mem-block))
+      (set! index (+ 1 index))
+      ($mem-block-byte-get mem-block (- index 1)))))
+
+(defn dis-code (bytecode startpos oop-table)
+  (let ((read-byte! (mem-block-reader bytecode startpos))
+	(bytecode   nil))
+    (defn read-address! ()
+      (+ (* 256 (read-byte!)) (read-byte!)))
+    (defn read-oop! ()
+      (array-ref oop-table (read-byte!)))
+
+    (defn read-instruction! ()
+      (set! bytecode (read-byte!))
+      (case bytecode
+	((0) `(jump ,(read-address!)))
+	((1) `(jump-if-true ,(read-address!)))
+	((2) `(load-value ,(read-oop!)))
+	((3) `(read-var ,(read-byte!) ,(read-byte!)))
+	((4) `(write-var ,(read-byte!) ,(read-byte!)))
+	((5) `(read-global-var ,(read-oop!)))
+	((6) `(write-global-var ,(read-oop!)))
+	((7) '(discard))
+	((8) `(make-lambda ,(read-address!) ,(read-byte!) ,(read-oop!)))
+	((9) `(call ,(read-byte!)))
+	((10) `(tail-call ,(read-byte!)))
+	((11) '(return))
+	((12) '(tail-call-apply))
+	(else (raise "Unknown bytecode: " bytecode))))
+    read-instruction!))
+
+(defn dis (fn)
+  (dis-code ($mem-get fn 5)
+	    ($mem-get fn 6)
+	    ($mem-get fn 7)))
