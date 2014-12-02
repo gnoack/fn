@@ -495,7 +495,7 @@ void run_gc_soon() {
 void init_gc() {
   _run_gc_soon = NO;
   object_region_init(1 << 27);  // TODO: Enough?
-  raw_memory_region_init(1 << 15);  // TODO: Enough?
+  raw_memory_region_init(1 << 17);  // TODO: Enough?
   immediate_region_init();
   gc_protect_counter = 0;
 }
@@ -512,7 +512,7 @@ boolean should_skip_gc() {
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
   fn_uint pri_fill = raw_memory.current.free - raw_memory.current.start;
   return TO_BOOL((100*obj_fill / object_memory.current.size) < 50 &&
-                 (100*pri_fill / raw_memory.current.size) < 50);
+                 (100*pri_fill / raw_memory.current.size) < 80);
 }
 
 #ifdef GC_DEBUG

@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <string.h>  // memcpy
 
 #include "debug.h"
 #include "gc.h"
@@ -31,6 +32,12 @@ fn_uint mem_size(oop target) {
 
 oop mem_raw_mem_alloc(fn_uint amount) {
   return gc_raw_memory_alloc(amount);  // in gc.c
+}
+
+oop mem_raw_mem_make(void* buf, fn_uint size) {
+  oop result = mem_raw_mem_alloc(size);
+  memcpy(result.mem, buf, size);
+  return result;
 }
 
 oop mem_raw_mem_get(oop target, fn_uint index) {

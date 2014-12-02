@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "eval.h"
 #include "gc.h"
+#include "native-compiler.h"
 #include "procedures.h"
 #include "strings.h"
 #include "symbols.h"
@@ -192,12 +193,15 @@ oop eval_progn(oop program, oop env) {
 
 // TODO: Write REPL and file loading more in Lisp and remove the weird
 // compilation code from here.
-extern
 oop eval_global(oop program) {
   if (is_defined_globally(symbols._macroexpand)) {
     oop macroexpand_fn = lookup_globally(symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
   }
+  // Experimental bytecode compiler in C.
+  return apply_compiled_lisp_procedure(
+      compile_top_level_expression(program), NIL, NIL);
+  /*
   oop _compile_top_level_expr =
     make_symbol("compile-top-level-expr");
   if (is_defined_globally(_compile_top_level_expr)) {
@@ -209,6 +213,7 @@ oop eval_global(oop program) {
   oop result = eval(program, global_env);
   gc_protect_counter--;
   return result;
+  */
 }
 
 // C equivalent to calling (map eval list).
@@ -236,7 +241,6 @@ oop apply_with_trampoline(oop values, oop env) {
 
 static inline
 oop eval_trampoline(oop program, oop env) {
-  //println_value(program);
   if (is_smallint(program) || is_nil(program) ||
       is_char(program) || is_string(program)) {
     return program;
@@ -274,13 +278,12 @@ oop eval_trampoline(oop program, oop env) {
 // Evaluate and bounce on returned trampolines.
 extern
 oop eval(oop program, oop env) {
+  CHECK(NO, "Eval is disallowed.");
   oop result = NIL;
   for (;;) {
     global_trampoline.active = NO;
     result = eval_trampoline(program, env);
     if (global_trampoline.active) {
-      //printf("jumping into trampoline ");
-      //println_value(program);
       program = global_trampoline.expr;
       env = global_trampoline.env;
       continue;

@@ -12,6 +12,7 @@
 #include "eval.h"
 #include "gc.h"
 #include "memory.h"
+#include "native-compiler.h"
 #include "primitives.h"
 #include "strings.h"
 #include "symbols.h"
@@ -327,6 +328,11 @@ FUNC(primitive_id) {
   return make_smallint((fn_uint) obj.mem >> 2);
 }
 
+FUNC(primitive_native_compile) {
+  PARSE_ONE_ARG(expr);
+  return compile_top_level_expression(expr);
+}
+
 void init_primitives() {
   register_globally_fn("first", primitive_first);
   register_globally_fn("rest", primitive_rest);
@@ -375,4 +381,5 @@ void init_primitives() {
   register_globally_fn("$get-frame", primitive_get_frame);
   register_globally_fn("$lookup-var-object", primitive_lookup_var_object);
   register_globally_fn("$id", primitive_id);
+  register_globally_fn("native-compile", primitive_native_compile);
 }

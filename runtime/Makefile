@@ -19,6 +19,7 @@ RTOBJECTS = \
 	macros.o \
 	memory.o \
 	modules.o \
+	native-compiler.o \
 	objects.o \
 	parser.o \
 	pegs-parser.o \

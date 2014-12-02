@@ -113,6 +113,7 @@
 (defn compile-literal (expr)
   `((load-value ,expr)))
 
+;; A flattened-out lambda list, dropping &rest.
 (defn vars-from-ll (lambda-list)
   (cond ((nil? lambda-list) '())
         ((smatch? '&rest lambda-list)  (vars-from-ll (rest lambda-list)))
@@ -156,6 +157,7 @@
 (defn compile-let (expr environment call-style)
   (compile (transform-let->lambda expr) environment call-style))
 
+;; TODO: This is exactly the same as 'def' right now... :-/
 (defn compile-set! ((set!_ symbol value-expr) environment)
   `(,@(compile value-expr environment 'call)
     ,@(send environment 'generate-write symbol)))

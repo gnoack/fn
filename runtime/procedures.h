@@ -42,6 +42,7 @@ extern boolean is_lisp_procedure(oop fn);
 extern boolean is_native_procedure(oop fn);
 extern oop apply(oop values);
 extern oop apply_with_caller(oop values, oop caller);
+extern oop apply_compiled_lisp_procedure(oop cfn, oop args, oop caller);
 extern oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, oop caller);
 extern oop fn_name(oop fn);
 extern oop fn_code(oop cfn);
