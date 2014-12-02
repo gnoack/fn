@@ -133,8 +133,6 @@ void print_value(oop v) {
       printf("Array");
     } else if (value_eq(symbols._cons, v)) {
       printf("Cons");
-    } else if (value_eq(symbols._dframe, v)) {
-      printf("Dframe");
     } else if (value_eq(symbols._dict, v)) {
       printf("Dict");
     } else if (value_eq(symbols._frame, v)) {
@@ -149,8 +147,6 @@ void print_value(oop v) {
       printf("DefinedVar");
     } else if (value_eq(symbols._undefined_var, v)) {
       printf("UndefinedVar");
-    } else if (value_eq(symbols._procedure, v)) {
-      printf("Procedure");
     } else if (value_eq(symbols._compiled_procedure, v)) {
       printf("CompiledProcedure");
     } else if (value_eq(symbols._native_procedure, v)) {

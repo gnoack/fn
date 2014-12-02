@@ -320,6 +320,7 @@
        (deserialize-from-cache-file!
         (string-append filename "c")
         (file-timestamp filename)
+	;; TODO: This is not picking up the macros in the file on the fly.
         (lambda () (map compile-top-level-expr
                         (read-all (file->string filename)))))))
 

@@ -148,7 +148,6 @@ UNARY_PREDICATE(primitive_char_p, is_char);
 UNARY_PREDICATE(primitive_number_p, is_smallint);
 UNARY_PREDICATE(primitive_symbol_p, is_symbol);
 UNARY_PREDICATE(primitive_raw_mem_p, is_raw_mem);
-UNARY_PREDICATE(primitive_global_env_p, is_global_env);
 
 oop primitive_list(oop* argv, size_t argc) {
   // Any argument number accepted, of course. :)
@@ -355,7 +354,6 @@ void init_primitives() {
   register_globally_fn("char?", primitive_char_p);
   register_globally_fn("number?", primitive_number_p);
   register_globally_fn("symbol?", primitive_symbol_p);
-  register_globally_fn("global-env?", primitive_global_env_p);
   register_globally_fn("list", primitive_list);
   register_globally_fn("apply", primitive_apply);
   register_globally_fn("writeout", primitive_write_out);
@@ -381,5 +379,6 @@ void init_primitives() {
   register_globally_fn("$get-frame", primitive_get_frame);
   register_globally_fn("$lookup-var-object", primitive_lookup_var_object);
   register_globally_fn("$id", primitive_id);
-  register_globally_fn("native-compile", primitive_native_compile);
+  register_globally_fn("native-compile-top-level-expression",
+		       primitive_native_compile);
 }

@@ -90,25 +90,6 @@
 ;; Execute some real compiled functions!                    ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(eql? (cons 1 2)
-      ((compile-fn cons) 1 2))
-
-(eql? (list 1 2 3)
-      ((compile-fn map) identity (list 1 2 3)))
-
-(string=? "hello"
-          ((compile-fn (lambda () "hello"))))
-
-;; It works!
-(progn
-  (set! map (compile-fn map))
-  (eql? '(97 98 99)
-        (map char->num (list #\a #\b #\c))))
-
-(progn
-  ((compile-fn (lambda (x) "xx" (def __just_a_test x))) 99)
-  (= 99 __just_a_test))
-
 ;; Maximum stack depth.
 (eq? 1 (max-stack-depth 99))
 (eq? 1 (max-stack-depth #\a))

@@ -52,7 +52,6 @@
 ;; TODO: Refactor duplication in strings and symbols.
 ($patch-type! Array "Array")
 ($patch-type! Cons "Cons")
-($patch-type! Dframe "Dframe")
 ($patch-type! Dict "Dict")
 ($patch-type! Frame "Frame")
 ($patch-type! Stack "Stack")
@@ -65,7 +64,6 @@
 ($patch-type! False "False")
 
 ; Same procedure for Procedure.
-($patch-type! Procedure "Procedure")
 ($patch-type! NativeProcedure "NativeProcedure")
 ($patch-type! CompiledProcedure "CompiledProcedure")
 
@@ -94,7 +92,6 @@
         ((mem-block? x) MemBlock)))
 
 ;;; Method definition
-
 (defn install-method! (type selector method)
   (assert (type? type))
   (dict-put! ($mem-get type 1) selector method))

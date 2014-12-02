@@ -11,7 +11,6 @@
 boolean deserialize_from_bootstrap_file_arg = NO;
 boolean deserialize_from_image_arg = NO;
 boolean exit_arg = NO;
-boolean load_twice_arg = NO;
 boolean serialize_to_image_arg = NO;
 const char* file_to_load = NULL;
 
@@ -20,9 +19,6 @@ const char* file_to_load = NULL;
 int parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
-    if (strcmp(argv[i], "-2") == 0) {
-      load_twice_arg = YES; continue;
-    }
     if (strcmp(argv[i], "-s") == 0) {
       serialize_to_image_arg = YES; continue;
     }
@@ -52,15 +48,6 @@ int main(int argc, char* argv[]) {
     deserialize_from_bootstrap_file("bootstrap.out");
   } else {
     fn_runtime_init_lisp_decls();
-    if (load_twice_arg) {
-      /*
-       * Evaluate top level forms again.  The second time, they will
-       * all be compiled.  This compiles even the more dubious stuff
-       * like functions that haven't been originally defined at
-       * top-level.
-       */
-      fn_runtime_init_lisp_decls();
-    }
   }
   if (serialize_to_image_arg) {
     gc_serialize_to_file("fn.img");

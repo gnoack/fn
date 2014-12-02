@@ -37,7 +37,6 @@ RTOBJECTS = \
 
 TESTOBJECTS = \
 	cons-test.o \
-	eval-test.o \
 	interpreter-test.o \
 	memory-test.o \
 	strings-test.o \

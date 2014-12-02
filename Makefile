@@ -14,7 +14,7 @@ clean:
 	$(MAKE) -C runtime clean
 
 fn.img: fn
-	./fn -2 -s -x
+	./fn -s -x
 
 runtime/fnrt.so: force_look
 	$(MAKE) -C runtime -j8 fnrt.so

@@ -24,8 +24,7 @@ extern void stack_shrink(stack_t* stack, int n);
 extern oop make_frame(oop procedure, oop caller);
 extern boolean is_frame(oop obj);
 extern void print_frame(oop obj);
-extern void set_var(oop frame, unsigned int index, oop value);
-extern oop get_var(oop frame, unsigned int index);
+extern void frame_set_var(oop frame, unsigned int index, oop value);
 
 
 typedef struct {

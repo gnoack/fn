@@ -17,7 +17,6 @@ typedef struct {
   // Built-in types.
   oop _array;
   oop _cons;
-  oop _dframe;
   oop _dict;
   oop _frame;
   oop _stack;
@@ -31,7 +30,6 @@ typedef struct {
   oop _False;
 
   // Procedure types.
-  oop _procedure;
   oop _native_procedure;
   oop _compiled_procedure;
 

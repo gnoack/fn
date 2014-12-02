@@ -3,7 +3,6 @@
 #include "runtime/runtime.h"
 
 #include "runtime/cons-test.h"
-#include "runtime/eval-test.h"
 #include "runtime/interpreter-test.h"
 #include "runtime/memory-test.h"
 #include "runtime/strings-test.h"
@@ -78,7 +77,6 @@ void assert_eq(const char* filename,
 void run_all_c_tests() {
   interpreter_tests();
   cons_tests();
-  eval_tests();
   value_tests();
   strings_tests();
   memory_tests();

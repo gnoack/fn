@@ -9,13 +9,9 @@ extern oop global_env;
 
 extern oop eval_global(oop program);
 
-extern oop eval(oop program, oop env);
-
 extern void register_globally(const char* name, oop value);
 
 extern void register_globally_fn(const char* name, function fn);
-
-extern void set_globally_oop(oop key, oop value);
 
 extern oop lookup_globally(oop key);
 

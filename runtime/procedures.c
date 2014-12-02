@@ -20,18 +20,6 @@ fn_uint next_native_procedure = 0;
 // Count variables in a lambda list and do basic syntax checks (forward decl).
 fn_uint num_vars_in_ll(oop ll);
 
-// Interpreted Lisp procedure.
-oop make_procedure(oop lambda_list, oop body, oop env) {
-  oop result = mem_alloc(6);
-  MEM_SET(result, 0, symbols._procedure);
-  MEM_SET(result, 1, NIL);  // Name.
-  MEM_SET(result, 2, lambda_list);
-  MEM_SET(result, 3, make_smallint(num_vars_in_ll(lambda_list)));
-  MEM_SET(result, 4, env);
-  MEM_SET(result, 5, body);
-  return result;
-}
-
 // Compiled Lisp procedure.
 oop make_compiled_procedure(oop lambda_list, oop env,
                             oop bytecode, oop ip, oop oop_lookup_table,
@@ -66,12 +54,9 @@ oop make_native_procedure(function c_function) {
   return result;
 }
 
-
-// These work for both interpreted and compiled Lisp procedures.
+// TODO: Rename to cfn_*?
 oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
-oop fn_code(oop fn) { return mem_get(fn, 5); }
-oop fn_env(oop fn) { return mem_get(fn, 4); }
 fn_uint fn_argnum(oop fn) {
   return (get_smallint(mem_get(fn, 3)) & 0xffff) >> 1;
 }
@@ -92,11 +77,6 @@ function native_fn_function(oop fn) {
  * Identification.
  */
 
-boolean is_lisp_procedure(oop fn) {
-  return TO_BOOL(is_mem(fn) &&
-                 value_eq(symbols._procedure, MEM_GET(fn, 0)));
-}
-
 boolean is_compiled_lisp_procedure(oop cfn) {
   return TO_BOOL(is_mem(cfn) &&
                  value_eq(symbols._compiled_procedure, MEM_GET(cfn, 0)));
@@ -108,8 +88,7 @@ boolean is_native_procedure(oop fn) {
 }
 
 boolean is_procedure(oop fn) {
-  return TO_BOOL(is_lisp_procedure(fn) ||
-                 is_compiled_lisp_procedure(fn) ||
+  return TO_BOOL(is_compiled_lisp_procedure(fn) ||
                  is_native_procedure(fn));
 }
 
@@ -157,39 +136,6 @@ fn_uint num_vars_in_ll(oop ll) {
   return count;
 }
 
-fn_uint destructure_lambda_list_into_dframe(oop ll, oop args, oop dframe,
-                                            fn_uint idx) {
-  while (is_cons(ll)) {
-    oop ll_item = car(ll);
-    if (is_symbol(ll_item)) {
-      if (value_eq(ll_item, symbols._rest)) {
-        ll = cdr(ll);
-        oop key = car(ll);
-        oop value = args;
-        dframe_register_key(dframe, idx, key, value);
-        idx++;
-        return idx;
-      } else {
-        oop key = ll_item;
-        CHECKV(is_cons(args), args, "Not enough arguments.");
-        oop value = car(args);
-        dframe_register_key(dframe, idx, key, value);
-        idx++;
-      }
-    } else {
-      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
-	     "Only symbols and nested lists supported in lambda lists.");
-      oop arg_item = car(args);
-      idx = destructure_lambda_list_into_dframe(ll_item, arg_item, dframe,
-                                                idx);
-    }
-    ll = cdr(ll);
-    args = cdr(args);
-  }
-  CHECKV(is_nil(args), args, "Too many arguments.");
-  return idx;
-}
-
 fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
                                            fn_uint idx) {
   while (is_cons(ll)) {
@@ -198,13 +144,13 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
       if (value_eq(ll_item, symbols._rest)) {
         ll = cdr(ll);
         oop value = args;
-        set_var(frame, idx, value);
+        frame_set_var(frame, idx, value);
         idx++;
         return idx;
       } else {
         CHECKV(is_cons(args), args, "Not enough arguments.");
         oop value = car(args);
-        set_var(frame, idx, value);
+        frame_set_var(frame, idx, value);
         idx++;
       }
     } else {
@@ -235,20 +181,6 @@ oop apply_compiled_lisp_procedure(oop cfn, oop args, oop caller) {
   return interpret(make_frame_for_application(cfn, args, caller), cfn);
 }
 
-oop make_dframe_for_application(oop lfn, oop args, oop caller) {
-  oop env = make_dframe(fn_env(lfn), fn_argnum(lfn), caller, lfn);
-  destructure_lambda_list_into_dframe(fn_lambda_list(lfn), args, env, 0);
-  return env;
-}
-
-oop apply_lisp_procedure(oop fn, oop args, oop caller) {
-  oop env = make_dframe_for_application(fn, args, caller);
-  gc_protect_counter++;
-  oop result = eval(make_cons(symbols._progn, fn_code(fn)), env);
-  gc_protect_counter--;
-  return result;
-}
-
 oop current_native_procedure_caller = NIL;
 
 // Convert an consed argument list into argv, argc form.
@@ -268,7 +200,6 @@ oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, oop caller) {
   gc_protect_counter++;
 
   // TODO: Find a way to track C-level stack frames.  (This is slow!)
-  // current_native_procedure_caller = make_dframe(NIL, 0, caller, fn);
   current_native_procedure_caller = caller;
   oop result = c_function(argv, argc);
 
@@ -296,9 +227,7 @@ oop native_procedure_caller() {
 // Debug printing.
 
 void print_procedure(oop fn) {
-  if (is_lisp_procedure(fn)) {
-    printf("<PROCEDURE ");
-  } else if (is_compiled_lisp_procedure(fn)) {
+  if (is_compiled_lisp_procedure(fn)) {
     printf("<COMPILED-PROCEDURE ");
   } else if (is_native_procedure(fn)) {
     printf("<NATIVE-PROCEDURE ");
@@ -318,9 +247,7 @@ void print_procedure(oop fn) {
 oop apply_with_caller(oop values, oop caller) {
   oop fn = car(values);
   oop result;
-  if (is_lisp_procedure(fn)) {
-    result = apply_lisp_procedure(fn, cdr(values), caller);
-  } else if (is_compiled_lisp_procedure(fn)) {
+  if (is_compiled_lisp_procedure(fn)) {
     result = apply_compiled_lisp_procedure(fn, cdr(values), caller);
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");

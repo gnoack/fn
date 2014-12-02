@@ -132,7 +132,7 @@ void print_stack(stack_t* stack) {
 oop make_frame(oop procedure, oop caller) {
   oop result = mem_alloc(FRAME_HEADER_SIZE + fn_argnum(procedure));
   MEM_SET(result, 0, symbols._frame);
-  MEM_SET(result, 1, fn_env(procedure));  // next lexical environment. (Needed?)
+  MEM_SET(result, 1, MEM_GET(procedure, CFN_ENV));  // next lexical env. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
   MEM_SET(result, 3, procedure);
   MEM_SET(result, 4, MEM_GET(procedure, CFN_IP));  // Initial IP.
@@ -204,13 +204,14 @@ oop nth_frame(oop frame, unsigned int depth) {
   return frame;
 }
 
-void set_var(oop frame, unsigned int index, oop value) {
+void frame_set_var(oop frame, unsigned int index, oop value) {
   DEBUG_CHECK(0 <= index && index < frame_size(frame),
               "Index out of bounds.");
   MEM_SET(frame, FRAME_HEADER_SIZE + index, value);
 }
 
-oop get_var(oop frame, unsigned int index) {
+static inline
+oop frame_get_var(oop frame, unsigned int index) {
   DEBUG_CHECK(0 <= index && index < frame_size(frame),
               "Index out of bounds.");
   return MEM_GET(frame, FRAME_HEADER_SIZE + index);
@@ -227,7 +228,7 @@ void print_frame(oop obj) {
   int i;
   for (i=0; i<frame_size(obj); i++) {
     printf(" ");
-    print_value(get_var(obj, i));
+    print_value(frame_get_var(obj, i));
   }
   printf(")");
 }
@@ -349,7 +350,7 @@ oop interpret(oop frame, oop procedure) {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
-      oop value = get_var(frame, index);
+      oop value = frame_get_var(frame, index);
       IPRINT("read-var %lu %lu   .oO ", depth, index);
       IVALUE(value);
       stack_push(&state.stack, value);
@@ -360,7 +361,7 @@ oop interpret(oop frame, oop procedure) {
       fn_uint index = read_index(&state);
       oop frame = nth_frame(state.reg_frm, depth);
       oop value = stack_peek(&state.stack);
-      set_var(frame, index, value);
+      frame_set_var(frame, index, value);
       IPRINT("write-var %lu %lu  // ", depth, index);
       IVALUE(value);
       break;
@@ -430,8 +431,7 @@ oop interpret(oop frame, oop procedure) {
         }
       } else {
         // Leaving the interpreter loop.
-        DEBUG_CHECKV(is_nil(caller) || is_dframe(caller), caller,
-                     "Assumed nil or dframe.");
+        DEBUG_CHECKV(is_nil(caller), caller, "Assumed nil.");
         #ifdef INTERPRETER_DEBUG
         if (state.stack.size != 0) {
           printf("The stack had items before returning!");
@@ -470,18 +470,11 @@ oop interpret(oop frame, oop procedure) {
 void actual_print_stack_trace(oop frame) {
   while (!is_nil(frame)) {
     printf(" - ");
-    if (is_frame(frame)) {
-      print_frame(frame);
-      frame = frame_caller(frame);
-    } else {
-      if (!is_dframe(frame)) {
-        print_value(frame);
-        printf(": Expected frame or dframe\n");
-        exit(1);
-      }
-      print_dframe(frame);
-      frame = dframe_caller(frame);
-    }
+    CHECKV(is_frame(frame), frame, "Expected frame.");
+
+    print_frame(frame);
+    frame = frame_caller(frame);
+
     printf("\n");
   }
 }

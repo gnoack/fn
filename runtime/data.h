@@ -18,15 +18,7 @@ extern oop dict_put(oop dict, oop key, oop value);
 extern oop dict_key_value_pairs(oop dict);
 extern boolean is_dict(oop dict);
 
-// Dframes.
-extern oop make_dframe(oop next_frame, fn_uint size, oop caller, oop procedure);
-extern boolean is_dframe(oop obj);
-extern void dframe_register_key(oop dframe, fn_uint pos, oop key, oop value);
-extern void dframe_set(oop dframe, oop key, oop value);
-extern oop dframe_get(oop dframe, oop key);
-extern oop dframe_caller(oop dframe);
-extern void print_dframe(oop dframe);
-
+// Initialization.
 extern void init_data();
 
 #endif  // _DATA_H_

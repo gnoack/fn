@@ -259,20 +259,6 @@
 ;;; Putting together compiled functions.                             ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; See procedures.c
-(defn fn-name (fn)         ($mem-get fn 1))
-(defn fn-lambda-list (fn)  ($mem-get fn 2))
-(defn fn-env (fn)          ($mem-get fn 4))
-(defn fn-body (fn)         ($mem-get fn 5))
-
-(defn compilable? (fn)
-  ;; Note: This is the *static* global env...
-  ;; If we compile a function captured in a deeper environment, we
-  ;; don't know what other functions have been captured in the same.
-  ;; We can't convert the environment itself to a Frame.
-  (and (eq? (type-of fn) Procedure)
-       (global-env? (fn-env fn))))
-
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.
 (defn make-compiled-procedure* (name lambda-list frame
                                 (bytecode ip oop-table)
@@ -280,22 +266,6 @@
   (make-compiled-procedure name lambda-list frame
                            bytecode ip oop-table
                            max-stack-depth))
-
-(defn compile-fn (fn)
-  (with-gensym-scope
-   (if (compilable? fn)
-       (let ((env-in-body (send global-env 'linked-with-vars
-                                (vars-from-ll (fn-lambda-list fn)))))
-         (make-compiled-procedure*
-          (fn-name fn)
-          (fn-lambda-list fn)
-          nil
-          (assemble (compile-lambda-body (fn-body fn) env-in-body))
-          (max-stack-depth `(progn ,@(fn-body fn)))))
-     ;; If not compilable, we simply return the thing itself.  Chances
-     ;; are, the procedure is already compiled.  This is a hack to
-     ;; make compiling by hand convenient.
-     fn)))
 
 ;; Invoked from C and Lisp to compile top-level expressions.
 ;; Should only be defined once compilation works.

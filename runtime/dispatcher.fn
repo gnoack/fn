@@ -1,3 +1,6 @@
+;; TODO: Discard this, this captures plenty of frames.
+;; TODO: Also change 'send' in objects.fn.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; "Lexically scoped OO" using proxy objects.                     ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

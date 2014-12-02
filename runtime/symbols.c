@@ -122,7 +122,6 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   // Types.
   accept(&symbols._array);
   accept(&symbols._cons);
-  accept(&symbols._dframe);
   accept(&symbols._dict);
   accept(&symbols._frame);
   accept(&symbols._stack);
@@ -134,7 +133,6 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept(&symbols._True);
   accept(&symbols._False);
   // Procedure types.
-  accept(&symbols._procedure);
   accept(&symbols._native_procedure);
   accept(&symbols._compiled_procedure);
   // C types.
@@ -158,7 +156,6 @@ void init_symbols() {
   // The types are finished when types are initialized.
   symbols._array = mem_alloc(4);
   symbols._cons = mem_alloc(4);
-  symbols._dframe = mem_alloc(4);
   symbols._dict = mem_alloc(4);
   symbols._frame = mem_alloc(4);
   symbols._stack = mem_alloc(4);
@@ -166,7 +163,6 @@ void init_symbols() {
   symbols._symbol = mem_alloc(4);  // Must be known before creating symbols.
   symbols._defined_var = mem_alloc(4);
   symbols._undefined_var = mem_alloc(4);
-  symbols._procedure = mem_alloc(4);
   symbols._native_procedure = mem_alloc(4);
   symbols._compiled_procedure = mem_alloc(4);
   symbols._True = mem_alloc(4);

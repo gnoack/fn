@@ -1,4 +1,9 @@
 
+;; See procedures.c
+(defn fn-name (fn)         ($mem-get fn 1))
+(defn fn-lambda-list (fn)  ($mem-get fn 2))
+
+
 (defn pprint (item)
   ;; TODO: Stack printing.
   ;; TODO: Optimize memory consumption for string concatenation?
@@ -48,9 +53,6 @@
     ((NativeProcedure)
      (string-append "<NATIVE-PROCEDURE "
 		    (pprint (fn-name item)) ">"))
-    ((Procedure)
-     (string-append "<PROCEDURE " (pprint (fn-name item))
-		    " " (pprint (fn-lambda-list item)) ">"))
     ((CompiledProcedure)
      (string-append "<COMPILED-PROCEDURE " (pprint (fn-name item))
 		    " " (pprint (fn-lambda-list item)) ">"))
@@ -96,15 +98,7 @@
 ;; TODO: Break dependency on this.
 (defn frame-caller (f)     ($mem-get f 2))
 (defn frame-procedure (f)  ($mem-get f 3))
-(defn dframe-caller (f)    ($mem-get f 3))
-(defn dframe-procedure (f) ($mem-get f 4))
 
 (defn print-stack-trace (frame)
-  (typecase frame
-    ((Frame)  (progn
-                (println " - " (frame-procedure frame))
-                (print-stack-trace (frame-caller frame))))
-    ((Dframe) (progn
-                (println " - " (dframe-procedure frame))
-                (print-stack-trace (dframe-caller frame))))
-    (else nil)))
+  (println " - " (frame-procedure frame))
+  (print-stack-trace (frame-caller frame)))
