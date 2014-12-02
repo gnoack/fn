@@ -14,12 +14,6 @@ typedef struct {
 var_t* to_var(oop o) { return (var_t*) o.mem; }
 oop to_oop(var_t* v) { return *((oop*) &v); }
 
-oop make_var(oop symbol, oop value) {
-  oop var = make_undefined_var(symbol);
-  var_set(var, value);
-  return var;
-}
-
 oop make_undefined_var(oop symbol) {
   var_t* var = to_var(mem_alloc(sizeof(var_t) / sizeof(oop)));
   var->type = symbols._undefined_var;

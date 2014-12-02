@@ -25,7 +25,7 @@ extern
 void fail(const char* filename,
           unsigned int line,
           const char* msg) {
-  printf("\n%s:%d: FAIL -- %s\n", filename, line, msg);
+  printf("\n%s:%u: FAIL -- %s\n", filename, line, msg);
   failure_count++;
 }
 
@@ -81,7 +81,7 @@ void run_all_c_tests() {
   strings_tests();
   memory_tests();
   /* Summing up. */
-  printf("\n%d assertions executed, %d failures.\n",
+  printf("\n%u assertions executed, %u failures.\n",
          assertion_count, failure_count);
   if (failure_count == 0) {
     printf("Well done!\n");

@@ -202,7 +202,7 @@ void MAKE_LAMBDA(oop label, byte s_sz, oop ll) { emit_byte(8); emit_address(labe
 void CALL(byte argnum)                         { emit_byte(9); emit_byte(argnum); adjust_stack(1 - argnum); }
 void TAIL_CALL(byte argnum)                    { emit_byte(10); emit_byte(argnum); adjust_stack(1 - argnum); }
 void RETURN()                                  { emit_byte(11); adjust_stack(-1); }
-void TAIL_CALL_APPLY()                         { emit_byte(12); adjust_stack(1 - 2); }
+void TAIL_CALL_APPLY()                         { emit_byte(12); adjust_stack(1 - 2); }  // unused.
 void LABEL(oop label)                          { emit_label(label); }
 
 

@@ -205,15 +205,13 @@ oop nth_frame(oop frame, unsigned int depth) {
 }
 
 void frame_set_var(oop frame, unsigned int index, oop value) {
-  DEBUG_CHECK(0 <= index && index < frame_size(frame),
-              "Index out of bounds.");
+  DEBUG_CHECK(index < frame_size(frame), "Index out of bounds.");
   MEM_SET(frame, FRAME_HEADER_SIZE + index, value);
 }
 
 static inline
 oop frame_get_var(oop frame, unsigned int index) {
-  DEBUG_CHECK(0 <= index && index < frame_size(frame),
-              "Index out of bounds.");
+  DEBUG_CHECK(index < frame_size(frame), "Index out of bounds.");
   return MEM_GET(frame, FRAME_HEADER_SIZE + index);
 }
 
@@ -387,7 +385,7 @@ oop interpret(oop frame, oop procedure) {
     }
     case BC_DISCARD: {
       stack_pop(&state.stack);
-      IPRINT("discard        .oO stack-size=%d\n", state.stack.size);
+      IPRINT("discard        .oO stack-size=%u\n", state.stack.size);
       break;
     }
     case BC_MAKE_LAMBDA: {
