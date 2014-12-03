@@ -230,17 +230,17 @@ FUNC(primitive_run_gc) {
 FUNC(primitive_make_compiled_procedure) {
   PARSE_SEVEN_ARGS(name, lambda_list, in_frame, bytecode, ip, lookup_table,
                    max_stack_depth);
-  oop result = make_compiled_procedure(lambda_list, in_frame,
-                                       bytecode, ip, lookup_table,
-                                       get_smallint(max_stack_depth));
-  procedure_set_name(result, name);
-  return result;
+  proc_t* proc = make_compiled_procedure(lambda_list, in_frame,
+					 bytecode, ip, lookup_table,
+					 get_smallint(max_stack_depth));
+  proc->mutable_name = name;
+  return to_oop(proc);
 }
 
-FUNC(primitive_fn_max_stack_depth) {
+FUNC(primitive_proc_max_stack_depth) {
   PARSE_ONE_ARG(fn);
   CHECKV(is_compiled_lisp_procedure(fn), fn, "Needs bytecode procedure.");
-  return make_smallint(fn_max_stack_depth(fn));
+  return make_smallint(proc_max_stack_depth(to_proc(fn)));
 }
 
 FUNC(primitive_get_process_time) {
@@ -329,7 +329,7 @@ FUNC(primitive_id) {
 
 FUNC(primitive_native_compile) {
   PARSE_ONE_ARG(expr);
-  return compile_top_level_expression(expr);
+  return to_oop(compile_top_level_expression(expr));
 }
 
 void init_primitives() {
@@ -368,7 +368,7 @@ void init_primitives() {
   register_globally_fn("run-gc", primitive_run_gc);
   register_globally_fn("make-compiled-procedure",
                        primitive_make_compiled_procedure);
-  register_globally_fn("fn-max-stack-depth", primitive_fn_max_stack_depth);
+  register_globally_fn("fn-max-stack-depth", primitive_proc_max_stack_depth);
   register_globally_fn("get-time", primitive_get_process_time);
   register_globally_fn("file-timestamp", primitive_file_timestamp);
   register_globally_fn("file-size", primitive_file_size);

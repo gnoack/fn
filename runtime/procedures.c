@@ -21,22 +21,24 @@ fn_uint next_native_procedure = 0;
 fn_uint num_vars_in_ll(oop ll);
 
 // Compiled Lisp procedure.
-oop make_compiled_procedure(oop lambda_list, oop env,
-                            oop bytecode, oop ip, oop oop_lookup_table,
-                            fn_uint max_stack_depth) {
+proc_t* make_compiled_procedure(oop lambda_list, oop env,
+				oop bytecode, oop ip, oop oop_lookup_table,
+				fn_uint max_stack_depth) {
   CHECKNUMBER(ip);
   CHECKV(is_raw_mem(bytecode), bytecode, "Needs to have bytecode.");
   // TODO: Check that num_vars_in_ll < 2**16, so it won't overlap.
   fn_uint numbers = (max_stack_depth << 16) | num_vars_in_ll(lambda_list);
-  oop result = mem_alloc(8);
-  MEM_SET(result, 0, symbols._compiled_procedure);
-  MEM_SET(result, 1, NIL);  // Name.
-  MEM_SET(result, 2, lambda_list);
-  MEM_SET(result, 3, make_smallint(numbers));
-  MEM_SET(result, 4, env);
-  MEM_SET(result, 5, bytecode);
-  MEM_SET(result, 6, ip);
-  MEM_SET(result, 7, oop_lookup_table);
+  proc_t* result = MemAlloc(proc_t);
+  *result = (proc_t) {
+      .type         = symbols._compiled_procedure,
+      .mutable_name = NIL,
+      .lambda_list  = lambda_list,
+      .numbers      = make_smallint(numbers),
+      .env          = env,
+      .bytecode     = bytecode,
+      .ip           = ip,
+      .oop_table    = oop_lookup_table
+  };
   return result;
 }
 
@@ -57,15 +59,6 @@ oop make_native_procedure(function c_function) {
 // TODO: Rename to cfn_*?
 oop fn_name(oop fn) { return mem_get(fn, 1); }
 oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
-fn_uint fn_argnum(oop fn) {
-  return (get_smallint(mem_get(fn, 3)) & 0xffff) >> 1;
-}
-boolean fn_nested_args(oop fn) {
-  return TO_BOOL(get_smallint(mem_get(fn, 3)) & 1);
-}
-fn_uint fn_max_stack_depth(oop fn) {
-  return get_smallint(mem_get(fn, 3)) >> 16;
-}
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {
@@ -171,14 +164,14 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
 
 // Specialized apply methods.
 
-oop make_frame_for_application(oop cfn, oop args, oop caller) {
-  oop env = make_frame(cfn, caller);
-  destructure_lambda_list_into_frame(fn_lambda_list(cfn), args, env, 0);
+oop make_frame_for_application(proc_t* proc, oop args, oop caller) {
+  oop env = make_frame(proc, caller);
+  destructure_lambda_list_into_frame(proc->lambda_list, args, env, 0);
   return env;
 }
 
-oop apply_compiled_lisp_procedure(oop cfn, oop args, oop caller) {
-  return interpret(make_frame_for_application(cfn, args, caller), cfn);
+oop apply_compiled_lisp_procedure(proc_t* proc, oop args, oop caller) {
+  return interpret(make_frame_for_application(proc, args, caller), proc);
 }
 
 oop current_native_procedure_caller = NIL;
@@ -248,7 +241,7 @@ oop apply_with_caller(oop values, oop caller) {
   oop fn = car(values);
   oop result;
   if (is_compiled_lisp_procedure(fn)) {
-    result = apply_compiled_lisp_procedure(fn, cdr(values), caller);
+    result = apply_compiled_lisp_procedure(to_proc(fn), cdr(values), caller);
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
     result = apply_native_fn(fn, cdr(values), caller);

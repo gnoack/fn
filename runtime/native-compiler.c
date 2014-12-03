@@ -447,7 +447,7 @@ void compile(oop expr, oop env, boolean is_tail) {
   }
 }
 
-oop compile_top_level_expression(oop expr) {
+proc_t* compile_top_level_expression(oop expr) {
   init();
   compile_lambda_body(make_cons(expr, NIL), NIL);
   postprocess();
@@ -468,6 +468,6 @@ oop compile_top_level_expression(oop expr) {
   finish();
 
   return make_compiled_procedure(lambda_list, env,
-                                 bytecode, ip, oop_lookup_table,
-                                 max_stack_size);
+				 bytecode, ip, oop_lookup_table,
+				 max_stack_size);
 }

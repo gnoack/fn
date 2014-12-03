@@ -129,25 +129,25 @@ void print_stack(stack_t* stack) {
 
 // Frame
 // TODO: Does IP always need to be set?
-oop make_frame(oop procedure, oop caller) {
-  oop result = mem_alloc(FRAME_HEADER_SIZE + fn_argnum(procedure));
+oop make_frame(proc_t* proc, oop caller) {
+  oop result = mem_alloc(FRAME_HEADER_SIZE + proc_argnum(proc));
   MEM_SET(result, 0, symbols._frame);
-  MEM_SET(result, 1, MEM_GET(procedure, CFN_ENV));  // next lexical env. (Needed?)
+  MEM_SET(result, 1, proc->env);  // next lexical env. (Needed?)
   MEM_SET(result, 2, caller);  // caller frame
-  MEM_SET(result, 3, procedure);
-  MEM_SET(result, 4, MEM_GET(procedure, CFN_IP));  // Initial IP.
-  MEM_SET(result, 5, make_stack(fn_max_stack_depth(procedure)));
+  MEM_SET(result, 3, to_oop(proc));
+  MEM_SET(result, 4, proc->ip);  // Initial IP.
+  MEM_SET(result, 5, make_stack(proc_max_stack_depth(proc)));
   return result;
 }
 
 void restore_from_frame(oop frame, interpreter_state_t* state) {
   DEBUG_CHECKV(is_frame(frame), frame,
                "Needs to be a frame for deserializing it.");
-  oop proc = MEM_GET(frame, FRAME_PROCEDURE);
+  proc_t* proc = to_proc(MEM_GET(frame, FRAME_PROCEDURE));
   state->reg_frm     = frame;
   state->ip          = get_smallint(MEM_GET(frame, FRAME_IP));
-  state->bytecode    = MEM_GET(proc, CFN_CODE);
-  state->oop_lookups = MEM_GET(proc, CFN_LOOKUP_TABLE);
+  state->bytecode    = proc->bytecode;
+  state->oop_lookups = proc->oop_table;
   
   oop stack = MEM_GET(frame, FRAME_STACK);
   state->stack.stack    = &stack.mem[STACK_HEADER_SIZE];
@@ -156,18 +156,18 @@ void restore_from_frame(oop frame, interpreter_state_t* state) {
 }
 
 inline static
-void initialize_state_from_fn(oop frame, oop fn, interpreter_state_t* state) {
-  DEBUG_CHECKV(is_compiled_lisp_procedure(fn), fn, "Need Lisp procedure.");
+void initialize_state_from_fn(oop frame, proc_t* proc,
+			      interpreter_state_t* state) {
   DEBUG_CHECKV(is_frame(frame), frame, "Need frame");
   state->reg_frm = frame;
-  state->ip = get_smallint(MEM_GET(fn, CFN_IP));
-  state->bytecode = MEM_GET(fn, CFN_CODE);
-  state->oop_lookups = MEM_GET(fn, CFN_LOOKUP_TABLE);
+  state->ip = get_smallint(proc->ip);
+  state->bytecode = proc->bytecode;
+  state->oop_lookups = proc->oop_table;
 
   // state->stack.stack does not point to the stack object, but instead it
   // points two oops into the stack object.  That way we can skip the header
   // and addressing becomes more simple.
-  state->stack.max_size = fn_max_stack_depth(fn);  // TODO: Use macro?
+  state->stack.max_size = proc_max_stack_depth(proc);
   state->stack.stack = &(MEM_GET(frame, FRAME_STACK).mem[STACK_HEADER_SIZE]);
   state->stack.size = 0;
 }
@@ -179,9 +179,9 @@ void writeback_to_frame(interpreter_state_t* state) {
           STACK_SIZE_IDX, make_smallint(state->stack.size));
 }
 
-oop make_frame_from_stack(stack_t* stack, oop cfn, oop caller) {
-  fn_uint function_argnum = fn_argnum(cfn);
-  oop result = make_frame(cfn, caller);
+oop make_frame_from_stack(stack_t* stack, proc_t* proc, oop caller) {
+  fn_uint function_argnum = proc_argnum(proc);
+  oop result = make_frame(proc, caller);
   memcpy(&(result.mem[FRAME_HEADER_SIZE]),
          &(stack->stack[stack->size - function_argnum]),
          sizeof(oop) * function_argnum);
@@ -189,13 +189,14 @@ oop make_frame_from_stack(stack_t* stack, oop cfn, oop caller) {
 }
 
 fn_uint frame_size(oop frame) {
-  return fn_argnum(MEM_GET(frame, FRAME_PROCEDURE));
+  return proc_argnum(to_proc(MEM_GET(frame, FRAME_PROCEDURE)));
 }
 
 oop frame_caller(oop frame) {
   return MEM_GET(frame, FRAME_CALLER);
 }
 
+static inline
 oop nth_frame(oop frame, unsigned int depth) {
   while (depth > 0) {
     frame = MEM_GET(frame, FRAME_NEXT);
@@ -239,19 +240,20 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
   stack_t* stack = &state->stack;
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
+    proc_t* proc = to_proc(cfn);
     oop caller = state->reg_frm;
     if (tailcall == YES) {
       caller = frame_caller(state->reg_frm);
     }
     oop env;
-    if (fn_nested_args(cfn)) {
+    if (proc_nested_args(proc)) {
       oop args = stack_pop_list(stack, arg_count - 1);
       stack_shrink(stack, 1);
-      env = make_frame_for_application(cfn, args, caller);
+      env = make_frame_for_application(proc, args, caller);
     } else {
       // TODO: Do quick calls with vararg procedures, too.
-      env = make_frame_from_stack(stack, cfn, caller);
-      CHECKV(arg_count == fn_argnum(cfn) + 1, cfn, "Bad argument number.");
+      env = make_frame_from_stack(stack, proc, caller);
+      CHECKV(arg_count == proc_argnum(proc) + 1, cfn, "Bad argument number.");
       stack_shrink(stack, arg_count);
     }
 
@@ -263,7 +265,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     IPRINT("call %lu         .oO ", arg_count);
 
     // Modify the interpreter state.
-    initialize_state_from_fn(env, cfn, state);
+    initialize_state_from_fn(env, proc, state);
   } else if (is_native_procedure(cfn)) {
     // Pass a reference to the local stack frame to the native function.
     size_t argc = arg_count - 1;
@@ -306,11 +308,9 @@ oop read_oop(interpreter_state_t* state) {
 
 
 // Interpreter
-oop interpret(oop frame, oop procedure) {
-  DEBUG_CHECK(is_compiled_lisp_procedure(procedure),
-              "Expected compiled procedure.");
+oop interpret(oop frame, proc_t* proc) {
   interpreter_state_t state;
-  initialize_state_from_fn(frame, procedure, &state);
+  initialize_state_from_fn(frame, proc, &state);
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -393,12 +393,12 @@ oop interpret(oop frame, oop procedure) {
       fn_uint max_stack_depth = read_index(&state);
       oop lambda_list = read_oop(&state);
       IVALUE(lambda_list);
-      stack_push(&state.stack,
-                 make_compiled_procedure(lambda_list, state.reg_frm,
-                                         state.bytecode,
-                                         make_smallint(start_ip),
-                                         state.oop_lookups,
-                                         max_stack_depth));
+      stack_push(&state.stack, to_oop(
+	 make_compiled_procedure(lambda_list, state.reg_frm,
+				 state.bytecode,
+				 make_smallint(start_ip),
+				 state.oop_lookups,
+				 max_stack_depth)));
       break;
     }
     case BC_CALL: {
@@ -448,9 +448,10 @@ oop interpret(oop frame, oop procedure) {
       oop arglist = stack_pop(&state.stack);
       oop fn = stack_pop(&state.stack);
       if (is_compiled_lisp_procedure(fn)) {
+	proc_t* proc = to_proc(fn);
         oop caller = frame_caller(state.reg_frm);
-        oop env = make_frame_for_application(fn, arglist, caller);
-        initialize_state_from_fn(env, fn, &state);
+        oop env = make_frame_for_application(proc, arglist, caller);
+        initialize_state_from_fn(env, proc, &state);
       } else {
         // Call recursively on the C stack.
         stack_push(&state.stack,

@@ -6,6 +6,7 @@
 #include "eval.h"
 #include "memory.h"
 #include "primitives.h"
+#include "procedures.h"
 #include "strings.h"
 #include "value.h"
 
@@ -77,11 +78,11 @@ oop deserialize(FILE* input) {
       oop ip = deserialize(input);
       oop lookup_table = deserialize(input);
       oop max_stack_depth = deserialize(input);
-      oop result = make_compiled_procedure(lambda_list, NIL, // env
-                                           bytecode, ip, lookup_table,
-                                           get_smallint(max_stack_depth));
-      procedure_set_name(result, name);
-      return result;
+      proc_t* proc = make_compiled_procedure(lambda_list, NIL, // env
+					     bytecode, ip, lookup_table,
+					     get_smallint(max_stack_depth));
+      proc->mutable_name = name;
+      return to_oop(proc);
     }
   case S_CONS:
     {

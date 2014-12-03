@@ -63,6 +63,8 @@ typedef union value_u {
   union value_u* mem;
 } oop;
 
+static inline oop to_oop(void* obj) { return *((oop*) &obj); }
+
 extern oop make_smallint(fn_uint i);
 
 extern oop make_symbol(const char* str);

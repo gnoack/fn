@@ -13,6 +13,8 @@
 #define MEM_SET(obj,idx,val) ((obj).mem[(idx)] = (val))
 #endif  // MEMORY_DEBUG
 
+#define MemAlloc(type) ((type*) mem_alloc(sizeof(type) / sizeof(oop)).mem)
+
 extern oop mem_alloc(fn_uint amount);
 extern oop mem_set(oop target, fn_uint index, oop value);
 extern oop mem_get(oop target, fn_uint index);

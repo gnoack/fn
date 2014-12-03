@@ -11,14 +11,15 @@ typedef struct {
   oop value;
 } var_t;
 
-var_t* to_var(oop o) { return (var_t*) o.mem; }
-oop to_oop(var_t* v) { return *((oop*) &v); }
+static inline var_t* to_var(oop o) { return (var_t*) o.mem; }
 
 oop make_undefined_var(oop symbol) {
-  var_t* var = to_var(mem_alloc(sizeof(var_t) / sizeof(oop)));
-  var->type = symbols._undefined_var;
-  var->symbol = symbol;
-  var->value = NIL;
+  var_t* var = MemAlloc(var_t);
+  *var = (var_t) {
+    .type   = symbols._undefined_var,
+    .symbol = symbol,
+    .value  = NIL
+  };
   return to_oop(var);
 }
 

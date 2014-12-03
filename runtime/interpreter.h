@@ -3,8 +3,11 @@
 
 #include "value.h"
 
+typedef struct procedure proc_t;  // TODO: Forward decl from procedures.h
+
+
 extern void init_interpreter();
-extern oop interpret(oop frame, oop procedure);
+extern oop interpret(oop frame, proc_t* proc);
 
 // Stack
 typedef struct {
@@ -21,11 +24,10 @@ extern oop stack_peek_at(stack_t* stack, fn_uint n);
 extern void stack_shrink(stack_t* stack, int n);
 
 // Frame
-extern oop make_frame(oop procedure, oop caller);
+extern oop make_frame(proc_t* proc, oop caller);
 extern boolean is_frame(oop obj);
 extern void print_frame(oop obj);
 extern void frame_set_var(oop frame, unsigned int index, oop value);
-
 
 typedef struct {
   // Current frame.
@@ -40,18 +42,20 @@ typedef struct {
 
 
 // Bytecodes
-#define BC_JUMP 0
-#define BC_JUMP_IF_TRUE 1
-#define BC_LOAD_VALUE 2
-#define BC_READ_VAR 3
-#define BC_WRITE_VAR 4
-#define BC_READ_GLOBAL_VAR 5
-#define BC_WRITE_GLOBAL_VAR 6
-#define BC_DISCARD 7
-#define BC_MAKE_LAMBDA 8
-#define BC_CALL 9
-#define BC_TAIL_CALL 10
-#define BC_RETURN 11
-#define BC_TAIL_CALL_APPLY 12
+enum {
+  BC_JUMP             = 0,
+  BC_JUMP_IF_TRUE     = 1,
+  BC_LOAD_VALUE       = 2,
+  BC_READ_VAR         = 3,
+  BC_WRITE_VAR        = 4,
+  BC_READ_GLOBAL_VAR  = 5,
+  BC_WRITE_GLOBAL_VAR = 6,
+  BC_DISCARD          = 7,
+  BC_MAKE_LAMBDA      = 8,
+  BC_CALL             = 9,
+  BC_TAIL_CALL        = 10,
+  BC_RETURN           = 11,
+  BC_TAIL_CALL_APPLY  = 12,
+};
 
 #endif  // _INTERPRETER_H_
