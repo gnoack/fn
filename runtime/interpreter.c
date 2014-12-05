@@ -49,7 +49,7 @@ interpreter_state_t* protected_interpreter_state = NULL;
 
 void enumerate_interpreter_roots(void (*accept)(oop* place)) {
   if (protected_interpreter_state != NULL) {
-    accept(&(protected_interpreter_state->reg_frm));
+    accept((oop*) &(protected_interpreter_state->reg_frm));
     accept(&(protected_interpreter_state->bytecode));
     accept(&(protected_interpreter_state->oop_lookups));
 
@@ -120,45 +120,50 @@ void print_stack(stack_t* stack) {
 
 
 
-#define FRAME_NEXT 1
-#define FRAME_CALLER 2
-#define FRAME_PROCEDURE 3
-#define FRAME_IP 4
-#define FRAME_STACK 5
-#define FRAME_HEADER_SIZE 6
+typedef struct frame {
+  oop type;
+  frame_t* next;  // next lexical env
+  frame_t* caller;
+  proc_t* procedure;
+  oop ip;
+  oop stack;
+  // Not accounted for here: n items for arguments.
+} frame_t;
 
-// Frame
+static const ssize_t FRAME_HEADER_SIZE = sizeof(frame_t) / sizeof(oop);
+
+// Frame.  Leaves space for the arguments that still needs to be filled.
 // TODO: Does IP always need to be set?
-oop make_frame(proc_t* proc, oop caller) {
-  oop result = mem_alloc(FRAME_HEADER_SIZE + proc_argnum(proc));
-  MEM_SET(result, 0, symbols._frame);
-  MEM_SET(result, 1, proc->env);  // next lexical env. (Needed?)
-  MEM_SET(result, 2, caller);  // caller frame
-  MEM_SET(result, 3, to_oop(proc));
-  MEM_SET(result, 4, proc->ip);  // Initial IP.
-  MEM_SET(result, 5, make_stack(proc_max_stack_depth(proc)));
-  return result;
+frame_t* make_frame(proc_t* proc, frame_t* caller) {
+  frame_t* frm = to_frame(mem_alloc(FRAME_HEADER_SIZE + proc_argnum(proc)));
+  *frm = (frame_t) {
+    .type      = symbols._frame,
+    .next      = proc->env,  // Next lexical env.
+    .caller    = caller,  // Caller frame.
+    .procedure = proc,
+    .ip        = proc->ip,  // Initial IP.
+    .stack     = make_stack(proc_max_stack_depth(proc))
+  };
+  return frm;
 }
 
-void restore_from_frame(oop frame, interpreter_state_t* state) {
-  DEBUG_CHECKV(is_frame(frame), frame,
-               "Needs to be a frame for deserializing it.");
-  proc_t* proc = to_proc(MEM_GET(frame, FRAME_PROCEDURE));
+static inline
+void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
+  proc_t* proc = frame->procedure;
   state->reg_frm     = frame;
-  state->ip          = get_smallint(MEM_GET(frame, FRAME_IP));
+  state->ip          = get_smallint(frame->ip);
   state->bytecode    = proc->bytecode;
   state->oop_lookups = proc->oop_table;
   
-  oop stack = MEM_GET(frame, FRAME_STACK);
+  oop stack = frame->stack;
   state->stack.stack    = &stack.mem[STACK_HEADER_SIZE];
   state->stack.size     = get_smallint(MEM_GET(stack, STACK_SIZE_IDX));
   state->stack.max_size = mem_size(stack) - STACK_HEADER_SIZE;
 }
 
-inline static
-void initialize_state_from_fn(oop frame, proc_t* proc,
+static inline
+void initialize_state_from_fn(frame_t* frame, proc_t* proc,
 			      interpreter_state_t* state) {
-  DEBUG_CHECKV(is_frame(frame), frame, "Need frame");
   state->reg_frm = frame;
   state->ip = get_smallint(proc->ip);
   state->bytecode = proc->bytecode;
@@ -168,66 +173,62 @@ void initialize_state_from_fn(oop frame, proc_t* proc,
   // points two oops into the stack object.  That way we can skip the header
   // and addressing becomes more simple.
   state->stack.max_size = proc_max_stack_depth(proc);
-  state->stack.stack = &(MEM_GET(frame, FRAME_STACK).mem[STACK_HEADER_SIZE]);
+  state->stack.stack = &(frame->stack.mem[STACK_HEADER_SIZE]);
   state->stack.size = 0;
 }
 
 // Because interpreter_state_t is only a cache for the frame.
 void writeback_to_frame(interpreter_state_t* state) {
-  MEM_SET(state->reg_frm, FRAME_IP, make_smallint(state->ip));
-  MEM_SET(MEM_GET(state->reg_frm, FRAME_STACK),
-          STACK_SIZE_IDX, make_smallint(state->stack.size));
-}
-
-oop make_frame_from_stack(stack_t* stack, proc_t* proc, oop caller) {
-  fn_uint function_argnum = proc_argnum(proc);
-  oop result = make_frame(proc, caller);
-  memcpy(&(result.mem[FRAME_HEADER_SIZE]),
-         &(stack->stack[stack->size - function_argnum]),
-         sizeof(oop) * function_argnum);
-  return result;
-}
-
-fn_uint frame_size(oop frame) {
-  return proc_argnum(to_proc(MEM_GET(frame, FRAME_PROCEDURE)));
-}
-
-oop frame_caller(oop frame) {
-  return MEM_GET(frame, FRAME_CALLER);
+  state->reg_frm->ip = make_smallint(state->ip);
+  MEM_SET(state->reg_frm->stack, STACK_SIZE_IDX,
+	  make_smallint(state->stack.size));
 }
 
 static inline
-oop nth_frame(oop frame, unsigned int depth) {
+frame_t* make_frame_from_stack(stack_t* stack, proc_t* proc, frame_t* caller) {
+  fn_uint function_argnum = proc_argnum(proc);
+  frame_t* frm = make_frame(proc, caller);
+  memcpy(frm + 1, // jump header. //&(result.mem[FRAME_HEADER_SIZE]),
+         &(stack->stack[stack->size - function_argnum]),
+         sizeof(oop) * function_argnum);
+  return frm;
+}
+
+fn_uint frame_size(frame_t* frame) {
+  return proc_argnum(frame->procedure);
+}
+
+static inline
+frame_t* nth_frame(frame_t* frame, unsigned int depth) {
   while (depth > 0) {
-    frame = MEM_GET(frame, FRAME_NEXT);
+    frame = frame->next;
     depth--;
   }
   return frame;
 }
 
-void frame_set_var(oop frame, unsigned int index, oop value) {
+void frame_set_var(frame_t* frame, unsigned int index, oop value) {
   DEBUG_CHECK(index < frame_size(frame), "Index out of bounds.");
-  MEM_SET(frame, FRAME_HEADER_SIZE + index, value);
+  MEM_SET(frame_to_oop(frame), FRAME_HEADER_SIZE + index, value);
 }
 
 static inline
-oop frame_get_var(oop frame, unsigned int index) {
+oop frame_get_var(frame_t* frame, unsigned int index) {
   DEBUG_CHECK(index < frame_size(frame), "Index out of bounds.");
-  return MEM_GET(frame, FRAME_HEADER_SIZE + index);
+  return MEM_GET(frame_to_oop(frame), FRAME_HEADER_SIZE + index);
 }
 
 boolean is_frame(oop obj) {
   return TO_BOOL(is_mem(obj) && value_eq(obj.mem[0], symbols._frame));
 }
 
-void print_frame(oop obj) {
-  CHECKV(is_frame(obj), obj, "Must be frame.");
+void print_frame(frame_t* frame) {
   printf("(");
-  print_value(fn_name(MEM_GET(obj, FRAME_PROCEDURE)));
+  print_value(fn_name(proc_to_oop(frame->procedure)));
   int i;
-  for (i=0; i<frame_size(obj); i++) {
+  for (i=0; i<frame_size(frame); i++) {
     printf(" ");
-    print_value(frame_get_var(obj, i));
+    print_value(frame_get_var(frame, i));
   }
   printf(")");
 }
@@ -241,11 +242,11 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
     proc_t* proc = to_proc(cfn);
-    oop caller = state->reg_frm;
+    frame_t* caller = state->reg_frm;
     if (tailcall == YES) {
-      caller = frame_caller(state->reg_frm);
+      caller = state->reg_frm->caller;
     }
-    oop env;
+    frame_t* env;
     if (proc_nested_args(proc)) {
       oop args = stack_pop_list(stack, arg_count - 1);
       stack_shrink(stack, 1);
@@ -308,7 +309,7 @@ oop read_oop(interpreter_state_t* state) {
 
 
 // Interpreter
-oop interpret(oop frame, proc_t* proc) {
+oop interpret(frame_t* frame, proc_t* proc) {
   interpreter_state_t state;
   initialize_state_from_fn(frame, proc, &state);
 
@@ -347,7 +348,7 @@ oop interpret(oop frame, proc_t* proc) {
     case BC_READ_VAR: {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
-      oop frame = nth_frame(state.reg_frm, depth);
+      frame_t* frame = nth_frame(state.reg_frm, depth);
       oop value = frame_get_var(frame, index);
       IPRINT("read-var %lu %lu   .oO ", depth, index);
       IVALUE(value);
@@ -357,7 +358,7 @@ oop interpret(oop frame, proc_t* proc) {
     case BC_WRITE_VAR: {
       fn_uint depth = read_index(&state);
       fn_uint index = read_index(&state);
-      oop frame = nth_frame(state.reg_frm, depth);
+      frame_t* frame = nth_frame(state.reg_frm, depth);
       oop value = stack_peek(&state.stack);
       frame_set_var(frame, index, value);
       IPRINT("write-var %lu %lu  // ", depth, index);
@@ -418,10 +419,10 @@ oop interpret(oop frame, proc_t* proc) {
       IPRINT("return\n");
       oop retvalue = stack_pop(&state.stack);
       DEBUG_CHECK(stack_size(&state.stack) == 0, "Assumed empty stack");
-      oop caller = frame_caller(state.reg_frm);
+      frame_t* caller = state.reg_frm->caller;
       // TODO: Set caller to NIL?
       // TODO: Discard local stack before returning?  (Higher order procedures)
-      if (likely(is_frame(caller))) {
+      if (likely(caller != NULL)) {
         restore_from_frame(caller, &state);
         stack_push(&state.stack, retvalue);
         if (protected_interpreter_state == &state) {
@@ -429,7 +430,6 @@ oop interpret(oop frame, proc_t* proc) {
         }
       } else {
         // Leaving the interpreter loop.
-        DEBUG_CHECKV(is_nil(caller), caller, "Assumed nil.");
         #ifdef INTERPRETER_DEBUG
         if (state.stack.size != 0) {
           printf("The stack had items before returning!");
@@ -449,9 +449,9 @@ oop interpret(oop frame, proc_t* proc) {
       oop fn = stack_pop(&state.stack);
       if (is_compiled_lisp_procedure(fn)) {
 	proc_t* proc = to_proc(fn);
-        oop caller = frame_caller(state.reg_frm);
-        oop env = make_frame_for_application(proc, arglist, caller);
-        initialize_state_from_fn(env, proc, &state);
+        frame_t* caller = state.reg_frm->caller;
+        frame_t* env = make_frame_for_application(proc, arglist, caller);
+	initialize_state_from_fn(env, proc, &state);
       } else {
         // Call recursively on the C stack.
         stack_push(&state.stack,
@@ -466,21 +466,19 @@ oop interpret(oop frame, proc_t* proc) {
   }
 }
 
-void actual_print_stack_trace(oop frame) {
-  while (!is_nil(frame)) {
+void actual_print_stack_trace(frame_t* frame) {
+  while (frame != NULL) {
     printf(" - ");
-    CHECKV(is_frame(frame), frame, "Expected frame.");
-
     print_frame(frame);
-    frame = frame_caller(frame);
+    frame = frame->caller;
 
     printf("\n");
   }
 }
 
 void my_print_stack_trace() {
-  oop frame = native_procedure_caller();
-  if (is_nil(frame)) {
+  frame_t* frame = native_procedure_caller();
+  if (frame == NULL) {
     printf("Outside of C function -- current frame is unknown!\n");
     return;
   }

@@ -453,7 +453,6 @@ proc_t* compile_top_level_expression(oop expr) {
   postprocess();
 
   oop lambda_list = NIL;
-  oop env = NIL;
   oop bytecode = mem_raw_mem_make(result->bytes, result->bytes_size);
   oop ip = make_smallint(0);
 
@@ -467,7 +466,7 @@ proc_t* compile_top_level_expression(oop expr) {
 
   finish();
 
-  return make_compiled_procedure(lambda_list, env,
+  return make_compiled_procedure(lambda_list, NULL /* env */,
 				 bytecode, ip, oop_lookup_table,
 				 max_stack_size);
 }

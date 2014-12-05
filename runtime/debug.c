@@ -124,7 +124,7 @@ void print_value(oop v) {
     }
     putchar('}');
   } else if (is_frame(v)) {
-    print_frame(v);
+    print_frame(to_frame(v));
   } else if (is_var(v)) {
     print_var(v);
   } else {

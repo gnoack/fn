@@ -3,11 +3,8 @@
 
 #include "value.h"
 
-typedef struct procedure proc_t;  // TODO: Forward decl from procedures.h
-
-
 extern void init_interpreter();
-extern oop interpret(oop frame, proc_t* proc);
+extern oop interpret(frame_t* frame, proc_t* proc);
 
 // Stack
 typedef struct {
@@ -24,14 +21,14 @@ extern oop stack_peek_at(stack_t* stack, fn_uint n);
 extern void stack_shrink(stack_t* stack, int n);
 
 // Frame
-extern oop make_frame(proc_t* proc, oop caller);
-extern boolean is_frame(oop obj);
-extern void print_frame(oop obj);
-extern void frame_set_var(oop frame, unsigned int index, oop value);
+extern frame_t* make_frame(proc_t* proc, frame_t* caller);
+extern boolean is_frame(oop);
+extern void print_frame(frame_t*);
+extern void frame_set_var(frame_t* frame, unsigned int index, oop value);
 
 typedef struct {
   // Current frame.
-  oop reg_frm;
+  frame_t* reg_frm;
   stack_t stack;
 
   // Execution point.

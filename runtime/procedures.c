@@ -21,7 +21,7 @@ fn_uint next_native_procedure = 0;
 fn_uint num_vars_in_ll(oop ll);
 
 // Compiled Lisp procedure.
-proc_t* make_compiled_procedure(oop lambda_list, oop env,
+proc_t* make_compiled_procedure(oop lambda_list, frame_t* env,
 				oop bytecode, oop ip, oop oop_lookup_table,
 				fn_uint max_stack_depth) {
   CHECKNUMBER(ip);
@@ -129,7 +129,7 @@ fn_uint num_vars_in_ll(oop ll) {
   return count;
 }
 
-fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
+fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
                                            fn_uint idx) {
   while (is_cons(ll)) {
     oop ll_item = car(ll);
@@ -151,8 +151,7 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
 	     "Only symbols and nested lists supported in lambda lists.");
 
       oop arg_item = car(args);
-      idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame,
-                                               idx);
+      idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame, idx);
     }
     ll = cdr(ll);
     args = cdr(args);
@@ -164,17 +163,17 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, oop frame,
 
 // Specialized apply methods.
 
-oop make_frame_for_application(proc_t* proc, oop args, oop caller) {
-  oop env = make_frame(proc, caller);
-  destructure_lambda_list_into_frame(proc->lambda_list, args, env, 0);
-  return env;
+frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller) {
+  frame_t* frame = make_frame(proc, caller);
+  destructure_lambda_list_into_frame(proc->lambda_list, args, frame, 0);
+  return frame;
 }
 
-oop apply_compiled_lisp_procedure(proc_t* proc, oop args, oop caller) {
+oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller) {
   return interpret(make_frame_for_application(proc, args, caller), proc);
 }
 
-oop current_native_procedure_caller = NIL;
+frame_t* current_native_procedure_caller = NULL;
 
 // Convert an consed argument list into argv, argc form.
 void extract_args(oop args, oop** out_argv, size_t* out_argc) {
@@ -188,7 +187,7 @@ void extract_args(oop args, oop** out_argv, size_t* out_argc) {
   }
 }
 
-oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, oop caller) {
+oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
 
@@ -196,12 +195,13 @@ oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, oop caller) {
   current_native_procedure_caller = caller;
   oop result = c_function(argv, argc);
 
-  current_native_procedure_caller = NIL;
+  current_native_procedure_caller = NULL;
   gc_protect_counter--;
   return result;
 }
 
-oop apply_native_fn(oop fn, oop args, oop caller) {
+static inline
+oop apply_native_fn(oop fn, oop args, frame_t* caller) {
   size_t argc;
   oop* argv;
 
@@ -212,7 +212,7 @@ oop apply_native_fn(oop fn, oop args, oop caller) {
   return result;
 }
 
-oop native_procedure_caller() {
+frame_t* native_procedure_caller() {
   return current_native_procedure_caller;
 }
 
@@ -237,7 +237,7 @@ void print_procedure(oop fn) {
 // Function application.
 // First argument in values is function, rest are arguments.
 // Caller is the calling function frame.
-oop apply_with_caller(oop values, oop caller) {
+oop apply_with_caller(oop values, frame_t* caller) {
   oop fn = car(values);
   oop result;
   if (is_compiled_lisp_procedure(fn)) {
@@ -251,5 +251,5 @@ oop apply_with_caller(oop values, oop caller) {
 
 // For convenience and top-level invocations.
 oop apply(oop values) {
-  return apply_with_caller(values, NIL);
+  return apply_with_caller(values, NULL);
 }

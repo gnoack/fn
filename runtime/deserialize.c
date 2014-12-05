@@ -78,7 +78,7 @@ oop deserialize(FILE* input) {
       oop ip = deserialize(input);
       oop lookup_table = deserialize(input);
       oop max_stack_depth = deserialize(input);
-      proc_t* proc = make_compiled_procedure(lambda_list, NIL, // env
+      proc_t* proc = make_compiled_procedure(lambda_list, NULL /* env */,
 					     bytecode, ip, lookup_table,
 					     get_smallint(max_stack_depth));
       proc->mutable_name = name;

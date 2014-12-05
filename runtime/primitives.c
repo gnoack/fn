@@ -230,7 +230,7 @@ FUNC(primitive_run_gc) {
 FUNC(primitive_make_compiled_procedure) {
   PARSE_SEVEN_ARGS(name, lambda_list, in_frame, bytecode, ip, lookup_table,
                    max_stack_depth);
-  proc_t* proc = make_compiled_procedure(lambda_list, in_frame,
+  proc_t* proc = make_compiled_procedure(lambda_list, to_frame(in_frame),
 					 bytecode, ip, lookup_table,
 					 get_smallint(max_stack_depth));
   proc->mutable_name = name;
@@ -314,7 +314,7 @@ FUNC(primitive_fwrite_buf) {
 
 FUNC(primitive_get_frame) {
   CHECK(argc == 0, "Assumed no arguments.");
-  return native_procedure_caller();
+  return frame_to_oop(native_procedure_caller());
 }
 
 FUNC(primitive_lookup_var_object) {

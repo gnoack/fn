@@ -17,7 +17,7 @@ typedef int boolean;
 #define YES 1
 #define TO_BOOL(b) ((b) ? YES : NO)
 
-#define NIL ((oop) (fn_uint) 0L)
+#define NIL ((oop) (fn_uint) NULL)
 
 void (*print_stack_trace)();
 
@@ -91,5 +91,16 @@ extern unsigned char get_char(oop v);
 extern const char* get_symbol(oop v);
 
 extern boolean value_eq(oop a, oop b);
+
+// Forward type definitions.
+typedef struct procedure proc_t;
+typedef struct frame frame_t;
+
+#define CONVERTERS(type, convertername)					\
+  static inline type* to_ ## convertername(oop obj) { return (type*) obj.mem; } \
+  static inline oop convertername ## _to_oop(type* obj) { return to_oop(obj); } \
+
+CONVERTERS(frame_t, frame);
+CONVERTERS(proc_t, proc);
 
 #endif // _VALUE_H_

@@ -99,7 +99,7 @@ oop eval_global(oop program) {
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
   }
   return apply_compiled_lisp_procedure(
-      compile_top_level_expression(program), NIL, NIL);
+      compile_top_level_expression(program), NIL, NULL);
 }
 
 extern
