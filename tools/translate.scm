@@ -31,7 +31,7 @@
                        ((char=? input #\newline) "\\n")
                        (else input))))
         ((symbol? input)
-         (format #f "make_symbol(\"~s\")" input))))
+         (format #f "symbol_to_oop(make_symbol(\"~s\"))" input))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

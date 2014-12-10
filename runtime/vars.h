@@ -12,13 +12,13 @@
 // it up in the global environment any more, but can simply look it up
 // in the var object.
 
-extern oop make_undefined_var(oop symbol);
+extern oop make_undefined_var(symbol_t* symbol);
 extern boolean is_var(oop var);
 extern boolean is_set_var(oop var);
 extern void var_set(oop var, oop value);
 extern void var_unset(oop var);
 extern oop var_get(oop var);
-extern oop var_name(oop var);
+extern symbol_t* var_name(oop var);
 extern void print_var(oop var);
 
 #endif  // _VARS_H_

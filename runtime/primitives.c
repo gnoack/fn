@@ -73,7 +73,7 @@ FUNC(primitive_string_to_symbol) {
   PARSE_ONE_ARG(str);
   CHECKV(is_string(str), str, "Must be a string");
   char* c_str = c_string(str);
-  oop result = make_symbol(c_str);
+  oop result = symbol_to_oop(make_symbol(c_str));
   free(c_str);
   return result;
 }
@@ -81,7 +81,7 @@ FUNC(primitive_string_to_symbol) {
 FUNC(primitive_symbol_to_string) {
   PARSE_ONE_ARG(sym);
   CHECKV(is_symbol(sym), sym, "Must be a symbol");
-  return make_string(get_symbol(sym));
+  return make_string(get_symbol(to_symbol(sym)));
 }
 
 // Integer addition.
@@ -319,7 +319,8 @@ FUNC(primitive_get_frame) {
 
 FUNC(primitive_lookup_var_object) {
   PARSE_ONE_ARG(symbol);
-  return lookup_var_object_globally(symbol);
+  CHECKV(is_symbol(symbol), symbol, "Need symbol to look up.");
+  return lookup_var_object_globally(to_symbol(symbol));
 }
 
 FUNC(primitive_id) {

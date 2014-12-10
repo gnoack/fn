@@ -80,13 +80,13 @@ void free_all(ptrs_to_free_t* ptrs_to_free) {
   ptrs_to_free->size = 0;
 }
 
-oop c_to_oop(c_value value, oop type, ptrs_to_free_t* ptrs_to_free) {
-  if (value_eq(type, symbols._c_int)) {
+oop c_to_oop(c_value value, symbol_t* type, ptrs_to_free_t* ptrs_to_free) {
+  if (type == symbols._c_int) {
     return make_smallint(value.integer);
-  } else if (value_eq(type, symbols._c_void)) {
+  } else if (type == symbols._c_void) {
     return NIL;
   } else {
-    CHECKV(value_eq(type, symbols._c_str), type,
+    CHECKV(type == symbols._c_str, symbol_to_oop(type),
            "Unsupported type specifier, use 'int, 'str or 'void.");
     if (value.ptr != NULL) {
       // TODO: Allow to specify whether the result needs to be free'd.
@@ -103,11 +103,12 @@ oop c_to_oop(c_value value, oop type, ptrs_to_free_t* ptrs_to_free) {
 }
 
 c_value oop_to_c(oop input, oop type, ptrs_to_free_t* ptrs_to_free) {
+  CHECKV(is_symbol(type), type, "C type specifier must be a symbol.");
   c_value result;
-  if (value_eq(type, symbols._c_int)) {
+  if (to_symbol(type) == symbols._c_int) {
     result.integer = get_smallint(input);
   } else {
-    CHECKV(value_eq(type, symbols._c_str), type,
+    CHECKV(to_symbol(type) == symbols._c_str, type,
            "Unsupported type specifier, use 'int or 'str.");
     result.ptr = c_string(input);
     add_ptr(ptrs_to_free, result.ptr);
@@ -176,7 +177,9 @@ FUNC(primitive_call_dlsym) {
   }
 
   // Convert result and free everything malloc'd along the way.
-  oop result = c_to_oop(c_result, resulttype_oop, &ptrs_to_free);
+  CHECKV(is_symbol(resulttype_oop), resulttype_oop,
+	 "Resulttype must be a symbol.");
+  oop result = c_to_oop(c_result, to_symbol(resulttype_oop), &ptrs_to_free);
   free_all(&ptrs_to_free);
   return result;
 }

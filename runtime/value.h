@@ -65,9 +65,22 @@ typedef union value_u {
 
 static inline oop to_oop(void* obj) { return *((oop*) &obj); }
 
+// Forward type definitions.
+typedef struct procedure proc_t;
+typedef struct frame frame_t;
+typedef struct symbol symbol_t;
+
+#define CONVERTERS(type, convertername)					\
+  static inline type* to_ ## convertername(oop obj) { return (type*) obj.mem; } \
+  static inline oop convertername ## _to_oop(type* obj) { return to_oop(obj); } \
+
+CONVERTERS(frame_t, frame);
+CONVERTERS(proc_t, proc);
+CONVERTERS(symbol_t, symbol);
+
 extern oop make_smallint(fn_uint i);
 
-extern oop make_symbol(const char* str);
+extern symbol_t* make_symbol(const char* str);
 
 extern oop make_char(const unsigned char c);
 
@@ -88,19 +101,8 @@ extern fn_uint get_smallint(oop v);
 extern unsigned char get_char(oop v);
 
 // Returned object is immutable, forever, and owned by the symbol.
-extern const char* get_symbol(oop v);
+extern const char* get_symbol(symbol_t* v);
 
 extern boolean value_eq(oop a, oop b);
-
-// Forward type definitions.
-typedef struct procedure proc_t;
-typedef struct frame frame_t;
-
-#define CONVERTERS(type, convertername)					\
-  static inline type* to_ ## convertername(oop obj) { return (type*) obj.mem; } \
-  static inline oop convertername ## _to_oop(type* obj) { return to_oop(obj); } \
-
-CONVERTERS(frame_t, frame);
-CONVERTERS(proc_t, proc);
 
 #endif // _VALUE_H_

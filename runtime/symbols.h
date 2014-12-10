@@ -2,17 +2,17 @@
 #define _SYMBOLS_H_
 
 typedef struct {
-  oop _if;
-  oop _def;
-  oop _lambda;
-  oop _let;
+  symbol_t* _if;
+  symbol_t* _def;
+  symbol_t* _lambda;
+  symbol_t* _let;
   oop _true;  // not a symbol
   oop _false;  // not a symbol
-  oop _progn;
-  oop _quote;
-  oop _rest;
-  oop _macroexpand;
-  oop _set;
+  symbol_t* _progn;
+  symbol_t* _quote;
+  symbol_t* _rest;
+  symbol_t* _macroexpand;
+  symbol_t* _set;
 
   // Built-in types.
   oop _array;
@@ -34,18 +34,24 @@ typedef struct {
   oop _compiled_procedure;
 
   // C types.
-  oop _c_int;
-  oop _c_str;
-  oop _c_void;
+  symbol_t* _c_int;
+  symbol_t* _c_str;
+  symbol_t* _c_void;
 } symbols_t;
 
 extern symbols_t symbols;
+
+typedef struct symbol {
+  oop type;
+  oop raw_mem;
+  oop hash;
+} symbol_t;
 
 extern void symbol_hashmap_clear();
 extern void symbol_hashmap_register(oop symbol);
 
 extern void init_symbols();
 
-extern oop make_or_lookup_symbol(const char* str);
+extern symbol_t* make_or_lookup_symbol(const char* str);
 
 #endif // _SYMBOLS_H_

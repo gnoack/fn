@@ -19,7 +19,7 @@ static const int MAX_LABEL_TABLE_SIZE = 0x800;
 static const int MAX_ADDRESS_TABLE_SIZE = 0x800;
 
 struct label_index {
-  oop label;
+  symbol_t* label;
   unsigned int index;
 };
 
@@ -62,14 +62,14 @@ void init() {
 }
 
 // Return the position of where a jump label is in the code.
-unsigned int lookup_label_position(oop label) {
+unsigned int lookup_label_position(symbol_t* label) {
   unsigned int i;
   for (i = 0; i < result->label_positions_size; i++) {
-    if (value_eq(label, result->label_positions[i].label)) {
+    if (result->label_positions[i].label == label) {
       return result->label_positions[i].index;
     }
   }
-  CHECKV(NO, label, "Jump target not found.")
+  CHECKV(NO, symbol_to_oop(label), "Jump target not found.")
 }
 
 void postprocess() {
@@ -92,12 +92,12 @@ void finish() {
 
 // --------------------------------------------------------------
 
-oop invent_symbol(const char* name) {
+symbol_t* invent_symbol(const char* name) {
   static unsigned counter = 0;
   char* full_name;
   CHECK(asprintf(&full_name, "%s-%d", name, counter) != -1,
         "Could not create new symbol.");
-  oop result = make_or_lookup_symbol(full_name);
+  symbol_t* result = make_symbol(full_name);
   free(full_name);
   counter++;
   return result;
@@ -133,7 +133,7 @@ void emit_oop(oop object) {
   emit_byte(0xff & to_emit);
 }
 
-void emit_address(oop label) {
+void emit_address(symbol_t* label) {
   CHECK(result->address_positions_size < MAX_ADDRESS_TABLE_SIZE + 1,
         "Too many addresses emitted already.");
   struct label_index* tup =
@@ -145,11 +145,11 @@ void emit_address(oop label) {
   result->bytes_size += 2;  // Or something.
 }
 
-void emit_global_var_ref(oop label) {
+void emit_global_var_ref(symbol_t* label) {
   emit_oop(lookup_var_object_globally(label));
 }
 
-void emit_label(oop label) {
+void emit_label(symbol_t* label) {
   CHECK(result->label_positions_size < MAX_LABEL_TABLE_SIZE + 1,
         "Too many labels emitted already.");
   struct label_index* tup =
@@ -190,20 +190,20 @@ typedef unsigned char byte;
 /*
  * These are emitting bytecode instructions on a slightly higher level.
  */
-void JUMP(oop label)                           { emit_byte(0); emit_address(label); }
-void JUMP_IF_TRUE(oop label)                   { emit_byte(1); emit_address(label); adjust_stack(-1); }
-void LOAD_VALUE(oop value)                     { emit_byte(2); emit_oop(value); adjust_stack(1); }
-void READ_VAR(byte f_depth, byte v_index)      { emit_byte(3); emit_byte(f_depth); emit_byte(v_index); adjust_stack(1); }
-void WRITE_VAR(byte f_depth, byte v_index)     { emit_byte(4); emit_byte(f_depth); emit_byte(v_index); }
-void READ_GLOBAL(oop name)                     { emit_byte(5); emit_global_var_ref(name); adjust_stack(1); }
-void WRITE_GLOBAL(oop name)                    { emit_byte(6); emit_global_var_ref(name); }
-void DISCARD()                                 { emit_byte(7); adjust_stack(-1); }
-void MAKE_LAMBDA(oop label, byte s_sz, oop ll) { emit_byte(8); emit_address(label); emit_byte(s_sz); emit_oop(ll); adjust_stack(1); }
-void CALL(byte argnum)                         { emit_byte(9); emit_byte(argnum); adjust_stack(1 - argnum); }
-void TAIL_CALL(byte argnum)                    { emit_byte(10); emit_byte(argnum); adjust_stack(1 - argnum); }
-void RETURN()                                  { emit_byte(11); adjust_stack(-1); }
-void TAIL_CALL_APPLY()                         { emit_byte(12); adjust_stack(1 - 2); }  // unused.
-void LABEL(oop label)                          { emit_label(label); }
+void JUMP(symbol_t* label)                           { emit_byte(0); emit_address(label); }
+void JUMP_IF_TRUE(symbol_t* label)                   { emit_byte(1); emit_address(label); adjust_stack(-1); }
+void LOAD_VALUE(oop value)                           { emit_byte(2); emit_oop(value); adjust_stack(1); }
+void READ_VAR(byte f_depth, byte v_index)            { emit_byte(3); emit_byte(f_depth); emit_byte(v_index); adjust_stack(1); }
+void WRITE_VAR(byte f_depth, byte v_index)           { emit_byte(4); emit_byte(f_depth); emit_byte(v_index); }
+void READ_GLOBAL(symbol_t* name)                     { emit_byte(5); emit_global_var_ref(name); adjust_stack(1); }
+void WRITE_GLOBAL(symbol_t* name)                    { emit_byte(6); emit_global_var_ref(name); }
+void DISCARD()                                       { emit_byte(7); adjust_stack(-1); }
+void MAKE_LAMBDA(symbol_t* label, byte s_sz, oop ll) { emit_byte(8); emit_address(label); emit_byte(s_sz); emit_oop(ll); adjust_stack(1); }
+void CALL(byte argnum)                               { emit_byte(9); emit_byte(argnum); adjust_stack(1 - argnum); }
+void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum); adjust_stack(1 - argnum); }
+void RETURN()                                        { emit_byte(11); adjust_stack(-1); }
+void TAIL_CALL_APPLY()                               { emit_byte(12); adjust_stack(1 - 2); }  // unused.
+void LABEL(symbol_t* label)                          { emit_label(label); }
 
 
 // --------------------------------------------------------------------
@@ -216,6 +216,7 @@ void compile_literal(oop expr) {
 }
 
 void compile_var_access(oop expr, oop env, char is_write) {
+  CHECKV(is_symbol(expr), expr, "Variable needs to be denoted as symbol.");
   unsigned int frame_index = 0;
   while (!is_nil(env)) {
     oop frame = first(env);
@@ -242,9 +243,9 @@ void compile_var_access(oop expr, oop env, char is_write) {
   }
 
   if (is_write) {
-    WRITE_GLOBAL(expr);
+    WRITE_GLOBAL(to_symbol(expr));
   } else {
-    READ_GLOBAL(expr);
+    READ_GLOBAL(to_symbol(expr));
   }
 }
 
@@ -275,8 +276,8 @@ void compile_set(oop set_expr, oop env) {
 
 void compile_if(oop if_expr, oop env, boolean is_tail) {
   PARSE3(if_expr, cond_expr, conseq_expr, alt_expr);
-  oop true_branch = invent_symbol("true-branch");
-  oop after_if = invent_symbol("after-if");
+  symbol_t* true_branch = invent_symbol("true-branch");
+  symbol_t* after_if = invent_symbol("after-if");
 
   unsigned int stack_depth_before_if = result->stack_depth;
   compile(cond_expr, env, NO);
@@ -312,7 +313,7 @@ oop vars_from_lambda_list(oop ll) {
   if (is_nil(ll)) {
     return NIL;
   } else if (is_cons(ll)) {
-    if (value_eq(symbols._rest, first(ll))) {
+    if (value_eq(first(ll), symbol_to_oop(symbols._rest))) {
       return vars_from_lambda_list(rest(ll));
     } else {
       return append_lists(vars_from_lambda_list(first(ll)),
@@ -350,7 +351,8 @@ void compile_let(oop let_expr, oop env, boolean is_tail) {
   oop arguments = extract_exprs(clauses);
 
   oop body = rest(let_expr);
-  oop lambda_expr = make_cons(symbols._lambda, make_cons(vars, body));
+  oop lambda_expr = make_cons(symbol_to_oop(symbols._lambda),
+			      make_cons(vars, body));
   oop call_expr = make_cons(lambda_expr, arguments);
   compile(call_expr, env, is_tail);
 }
@@ -403,8 +405,8 @@ void compile_lambda(oop lambda_expr, oop env) {
   lambda_expr = rest(lambda_expr);
   oop lambda_list = first(lambda_expr);
   oop body = rest(lambda_expr);
-  oop lambda_entry = invent_symbol("lambda-entry");
-  oop after_lambda_body = invent_symbol("after-lambda-body");
+  symbol_t* lambda_entry = invent_symbol("lambda-entry");
+  symbol_t* after_lambda_body = invent_symbol("after-lambda-body");
 
   JUMP(after_lambda_body);
   LABEL(lambda_entry);
@@ -431,19 +433,23 @@ void compile(oop expr, oop env, boolean is_tail) {
   else if (is_symbol(expr))   { compile_var_read(expr, env); }
   else if (is_string(expr))   { compile_literal(expr); }
   else if (is_cons(expr)) {
-    oop head = first(expr);
-    if        (value_eq(head, symbols._quote)) {      compile_literal(first(rest(expr)));
-    } else if (value_eq(head, symbols._if)) {  compile_if(expr, env, is_tail);
-    } else if (value_eq(head, symbols._lambda)) { compile_lambda(expr, env);
-    } else if (value_eq(head, symbols._let)) { compile_let(expr, env, is_tail);
-    } else if (value_eq(head, symbols._def)) { compile_def(expr, env);
-    } else if (value_eq(head, symbols._set)) { compile_set(expr, env);
-    } else if (value_eq(head, symbols._progn)) { compile_seq(rest(expr), env, is_tail);
+    if (is_symbol(first(expr))) {
+      symbol_t* head = to_symbol(first(expr));
+      if        (head == symbols._quote) {      compile_literal(first(rest(expr)));
+      } else if (head == symbols._if) {  compile_if(expr, env, is_tail);
+      } else if (head == symbols._lambda) { compile_lambda(expr, env);
+      } else if (head == symbols._let) { compile_let(expr, env, is_tail);
+      } else if (head == symbols._def) { compile_def(expr, env);
+      } else if (head == symbols._set) { compile_set(expr, env);
+      } else if (head == symbols._progn) { compile_seq(rest(expr), env, is_tail);
+      } else {
+	compile_application(expr, env, is_tail);
+      }
     } else {
       compile_application(expr, env, is_tail);
     }
   } else {
-    // TODO: Error
+    CHECKV(NO, expr, "Unknown expression type.");
   }
 }
 

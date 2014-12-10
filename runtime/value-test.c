@@ -4,13 +4,13 @@
 #include "cons.h"
 
 TEST(symbol_identity) {
-  oop s = make_symbol("foo");
-  oop s2 = make_symbol("foo");
+  oop s = symbol_to_oop(make_symbol("foo"));
+  oop s2 = symbol_to_oop(make_symbol("foo"));
   ASSERT_EQ(s, s2);
 }
 
 TEST(identifying_symbols) {
-  oop a = make_symbol("eggs");
+  oop a = symbol_to_oop(make_symbol("eggs"));
   ASSERT_FALSE(is_char(a));
   ASSERT_FALSE(is_smallint(a));
   ASSERT_FALSE(is_cons(a));
@@ -18,7 +18,8 @@ TEST(identifying_symbols) {
 }
 
 TEST(identifying_conses) {
-  oop a = make_cons(make_symbol("a"), make_symbol("b"));
+  oop a = make_cons(symbol_to_oop(make_symbol("a")),
+		    symbol_to_oop(make_symbol("b")));
   ASSERT_FALSE(is_char(a));
   ASSERT_FALSE(is_smallint(a));
   ASSERT_TRUE(is_cons(a));

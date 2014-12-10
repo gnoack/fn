@@ -12,7 +12,7 @@
 
 fn_uint symbol_to_hash(oop symbol) {
   CHECKV(is_symbol(symbol), symbol, "Must be a symbol for hashing it.");
-  return get_smallint(symbol.mem[2]);
+  return get_smallint(to_symbol(symbol)->hash);
 }
 
 

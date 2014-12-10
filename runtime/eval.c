@@ -17,19 +17,21 @@ oop global_env;
 oop remaining_declarations;
 
 static inline
-void set_globally_oop(oop key, oop value) {
+void set_globally_oop(symbol_t* key, oop value) {
   var_set(lookup_var_object_globally(key), value);
 }
 
 static inline
-boolean is_defined_globally(oop key) {
-  return dict_has_key(global_env, key)
-    && is_set_var(dict_get(global_env, key));
+boolean is_defined_globally(symbol_t* key) {
+  return dict_has_key(global_env, symbol_to_oop(key))
+    && is_set_var(dict_get(global_env, symbol_to_oop(key)));
 }
 
 // Like the above, but also check for redefinitions.
-void register_globally_oop(oop key, oop value) {
-  CHECKV(!is_defined_globally(key), key, "Symbol already defined.");
+static inline
+void register_globally_symbol(symbol_t* key, oop value) {
+  CHECKV(!is_defined_globally(key), symbol_to_oop(key),
+	 "Symbol already defined.");
   set_globally_oop(key, value);
 }
 
@@ -39,8 +41,8 @@ boolean is_global_env(oop v) {
 
 // Registers a lisp value under a global variable name.
 void register_globally(const char* name, oop value) {
-  oop symbol = make_symbol(name);
-  register_globally_oop(symbol, value);
+  symbol_t* symbol = make_symbol(name);
+  register_globally_symbol(symbol, value);
 }
 
 // TODO: Move this to a different module.
@@ -49,17 +51,17 @@ void register_globally_fn(const char* name, function fn) {
   register_globally(name, make_native_procedure(fn));
 }
 
-oop lookup_globally(oop key) {
+oop lookup_globally(symbol_t* key) {
   // Doesn't use lookup_var_object_globally for performance reasons.
-  return var_get(dict_get(global_env, key));
+  return var_get(dict_get(global_env, symbol_to_oop(key)));
 }
 
 // This returns a set/unset var object as in vars.h, not the defined value!
-oop lookup_var_object_globally(oop key) {
-  if (!dict_has_key(global_env, key)) {
-    dict_put(global_env, key, make_undefined_var(key));
+oop lookup_var_object_globally(symbol_t* key) {
+  if (!dict_has_key(global_env, symbol_to_oop(key))) {
+    dict_put(global_env, symbol_to_oop(key), make_undefined_var(key));
   }
-  return dict_get(global_env, key);
+  return dict_get(global_env, symbol_to_oop(key));
 }
 
 void enumerate_gc_roots(void (*accept)(oop* place)) {

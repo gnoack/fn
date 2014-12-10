@@ -22,7 +22,7 @@ oop make_smallint(fn_uint i) {
   return a;
 }
 
-oop make_symbol(const char* str) {
+symbol_t* make_symbol(const char* str) {
   return make_or_lookup_symbol(str);
 }
 
@@ -75,9 +75,8 @@ fn_uint get_smallint(oop v) {
   return v.smallint >> 1;
 }
 
-const char* get_symbol(oop v) {
-  CHECKV(is_symbol(v), v, "Must be a symbol");
-  return (char*) mem_get(v, 1).mem;
+const char* get_symbol(symbol_t* v) {
+  return (const char*) v->raw_mem.mem;
 }
 
 unsigned char get_char(oop v) {

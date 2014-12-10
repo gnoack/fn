@@ -108,12 +108,16 @@ oop deserialize(FILE* input) {
     {
       // TODO: Don't go over strings, but deserialize symbols directly!
       char* c_str = c_string(deserialize(input));
-      oop result = make_symbol(c_str);
+      oop result = symbol_to_oop(make_symbol(c_str));
       free(c_str);
       return result;
     }
   case S_VAR:
-    return lookup_var_object_globally(deserialize(input));
+    {
+      oop sym = deserialize(input);
+      CHECKV(is_symbol(sym), sym, "Expected symbol.");
+      return lookup_var_object_globally(to_symbol(sym));
+    }
   }
   CHECK(NO, "Shouldn't reach end of deserialization function.");
 }

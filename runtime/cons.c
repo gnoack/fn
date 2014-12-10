@@ -70,7 +70,7 @@ void enumerate_end_marker_root(void (*accept)(oop* place)) {
 extern
 oop end_marker() {
   if (!initialized_marker) {
-    the_end_marker = make_symbol("hard to guess");
+    the_end_marker = symbol_to_oop(make_symbol("hard to guess"));
     gc_register_persistent_refs(enumerate_end_marker_root);
     initialized_marker = YES;
   }

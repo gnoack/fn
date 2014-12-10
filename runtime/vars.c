@@ -7,13 +7,13 @@
 
 typedef struct {
   oop type;
-  oop symbol;
+  symbol_t* symbol;
   oop value;
 } var_t;
 
 static inline var_t* to_var(oop o) { return (var_t*) o.mem; }
 
-oop make_undefined_var(oop symbol) {
+oop make_undefined_var(symbol_t* symbol) {
   var_t* var = MemAlloc(var_t);
   *var = (var_t) {
     .type   = symbols._undefined_var,
@@ -39,7 +39,7 @@ void var_set(oop var, oop value) {
 
   // If it's a procedure, set its name.
   if (is_procedure(value)) {
-    procedure_set_name(value, v->symbol);
+    procedure_set_name(value, symbol_to_oop(v->symbol));
   }
 }
 
@@ -54,7 +54,7 @@ oop var_get(oop var) {
   return to_var(var)->value;
 }
 
-oop var_name(oop var) {
+symbol_t* var_name(oop var) {
   return to_var(var)->symbol;
 }
 

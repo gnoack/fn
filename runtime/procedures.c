@@ -108,7 +108,7 @@ fn_uint num_vars_in_ll(oop ll) {
   while (is_cons(ll)) {
     oop ll_item = car(ll);
     if (is_symbol(ll_item)) {
-      if (value_eq(ll_item, symbols._rest)) {
+      if (to_symbol(ll_item) == symbols._rest) {
         ll = cdr(ll);
         CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
         CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
@@ -134,7 +134,7 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
   while (is_cons(ll)) {
     oop ll_item = car(ll);
     if (is_symbol(ll_item)) {
-      if (value_eq(ll_item, symbols._rest)) {
+      if (to_symbol(ll_item) == symbols._rest) {
         ll = cdr(ll);
         oop value = args;
         frame_set_var(frame, idx, value);

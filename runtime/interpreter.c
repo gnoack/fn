@@ -369,7 +369,7 @@ oop interpret(frame_t* frame, proc_t* proc) {
       oop var = read_oop(&state);
       oop value = var_get(var);
       IPRINT("load-global-var ");
-      IVALUE(var_name(var));
+      IVALUE(symbol_to_oop(var_name(var)));
       stack_push(&state.stack, value);
       break;
     }
@@ -379,7 +379,7 @@ oop interpret(frame_t* frame, proc_t* proc) {
       oop value = stack_peek(&state.stack);
       var_set(var, value);
       IPRINT("write-global-var ");
-      IVALUE(var_name(var));
+      IVALUE(symbol_to_oop(var_name(var)));
       IPRINT("                 ");
       IVALUE(value);
       break;

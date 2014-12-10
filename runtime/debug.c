@@ -66,7 +66,7 @@ void print_value(oop v) {
   } else if (value_eq(symbols._false, v)) {
     printf("false");
   } else if (is_symbol(v)) {
-    printf("%s", get_symbol(v));
+    printf("%s", get_symbol(to_symbol(v)));
   } else if (is_nil(v)) {
     printf("nil");
   } else if (is_cons(v)) {
