@@ -181,7 +181,7 @@ void initialize_state_from_fn(frame_t* frame, proc_t* proc,
 void writeback_to_frame(interpreter_state_t* state) {
   state->reg_frm->ip = make_smallint(state->ip);
   MEM_SET(state->reg_frm->stack, STACK_SIZE_IDX,
-	  make_smallint(state->stack.size));
+          make_smallint(state->stack.size));
 }
 
 static inline
@@ -395,11 +395,11 @@ oop interpret(frame_t* frame, proc_t* proc) {
       oop lambda_list = read_oop(&state);
       IVALUE(lambda_list);
       stack_push(&state.stack, to_oop(
-	 make_compiled_procedure(lambda_list, state.reg_frm,
-				 state.bytecode,
-				 make_smallint(start_ip),
-				 state.oop_lookups,
-				 max_stack_depth)));
+          make_compiled_procedure(lambda_list, state.reg_frm,
+                                  state.bytecode,
+                                  make_smallint(start_ip),
+                                  state.oop_lookups,
+                                  max_stack_depth)));
       break;
     }
     case BC_CALL: {
