@@ -23,7 +23,7 @@ fn_uint string_to_hash(const char* str) {
   return value;
 }
 
-inline static
+static inline
 fn_uint find_place(const char* key) {
   fn_uint i = string_to_hash(key);
   for (;;) {
@@ -39,7 +39,7 @@ fn_uint find_place(const char* key) {
   return i;
 }
 
-inline static
+static inline
 symbol_t* construct_symbol(const char* str) {
   int len = strlen(str);
 
