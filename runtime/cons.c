@@ -8,55 +8,51 @@
 #include "symbols.h"
 #include "value.h"
 
+typedef struct cons {
+  oop type;
+  oop car;
+  oop cdr;
+} cons_t;
+
+CONVERTERS(cons_t, cons);
+
 extern
 oop make_cons(oop car, oop cdr) {
-  oop cons = mem_alloc(3);
-  MEM_SET(cons, 0, symbols._cons);
-  MEM_SET(cons, 1, car);
-  MEM_SET(cons, 2, cdr);
-  return cons;
+  cons_t* cons = MemAlloc(cons_t);
+  *cons = (cons_t) {
+    .type = symbols._cons,
+    .car  = car,
+    .cdr  = cdr
+  };
+  return cons_to_oop(cons);
 }
 
 extern
 boolean is_cons(oop v) {
-  if (!is_mem(v)) {
-    return NO;
-  }
-  return value_eq(symbols._cons, MEM_GET(v, 0));
+  return TO_BOOL(is_mem(v) && value_eq(symbols._cons, MEM_GET(v, 0)));
 }
 
 extern
 oop first(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for caring");
-  return MEM_GET(cons, 1);
+  return to_cons(cons)->car;
 }
 
 extern
 oop rest(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for cdring");
-  return MEM_GET(cons, 2);
-}
-
-extern
-void set_rest(oop cons, oop value) {
-  CHECKV(is_cons(cons), cons, "must be a cons for setting the cdr");
-  MEM_SET(cons, 2, value);
-}
-
-extern
-void set_first(oop cons, oop value) {
-  CHECKV(is_cons(cons), cons, "must be a cons for setting the car");
-  MEM_SET(cons, 1, value);
+  return to_cons(cons)->cdr;
 }
 
 extern
 unsigned int length_int(oop list) {
-  if (is_cons(list)) {
-    return length_int(rest(list)) + 1;
-  } else {
-    CHECKV(is_nil(list), list, "Was expecting nil.");
-    return 0;
+  unsigned int result = 0;
+  while (is_cons(list)) {
+    list = to_cons(list)->cdr;
+    result ++;
   }
+  CHECKV(is_nil(list), list, "List must be nil-terminated.");
+  return result;
 }
 
 
@@ -83,19 +79,19 @@ boolean is_end_marker(oop v) {
 
 extern
 oop make_list(oop first, ...) {
-  oop firstcons = make_cons(first, NIL);
-  oop currcons = firstcons;
+  cons_t* firstcons = to_cons(make_cons(first, NIL));
+  cons_t* currcons = firstcons;
 
   va_list ap;
   va_start(ap, first);
   oop arg = va_arg(ap, oop);
   while (!is_end_marker(arg)) {
     oop nextcons = make_cons(arg, NIL);
-    set_rest(currcons, nextcons);
-    currcons = nextcons;
+    currcons->cdr = nextcons;
+    currcons = to_cons(nextcons);
 
     arg = va_arg(ap, oop);
   }
   va_end(ap);
-  return firstcons;
+  return cons_to_oop(firstcons);
 }

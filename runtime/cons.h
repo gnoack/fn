@@ -16,12 +16,6 @@ extern
 oop rest(oop cons);
 
 extern
-void set_first(oop cons, oop value);
-
-extern
-void set_rest(oop cons, oop value);
-
-extern
 unsigned int length_int(oop list);
 
 /** The end marker value is guaranteed to be hard to guess. */
