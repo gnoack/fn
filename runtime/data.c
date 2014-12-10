@@ -42,10 +42,7 @@ oop array_get(oop array, fn_uint index) {
 }
 
 boolean is_array(oop array) {
-  if (!is_mem(array)) {
-    return NO;
-  }
-  return value_eq(symbols._array, MEM_GET(array, 0));
+  return TO_BOOL(is_mem(array) && value_eq(symbols._array, MEM_GET(array, 0)));
 }
 
 
@@ -201,10 +198,7 @@ oop dict_key_value_pairs(oop dict) {
 }
 
 boolean is_dict(oop dict) {
-  if (!is_mem(dict)) {
-    return NO;
-  }
-  return value_eq(symbols._dict, MEM_GET(dict, 0));
+  return TO_BOOL(is_mem(dict) && value_eq(symbols._dict, MEM_GET(dict, 0)));
 }
 
 

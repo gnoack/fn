@@ -51,10 +51,7 @@ boolean is_smallint(oop v) {
 }
 
 boolean is_symbol(oop v) {
-  if (is_mem(v)) {
-    return value_eq(MEM_GET(v, 0), symbols._symbol);
-  }
-  return NO;
+  return TO_BOOL(is_mem(v) && value_eq(MEM_GET(v, 0), symbols._symbol));
 }
 
 boolean is_mem(oop v) {
