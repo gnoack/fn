@@ -22,8 +22,8 @@ fn_uint num_vars_in_ll(oop ll);
 
 // Compiled Lisp procedure.
 proc_t* make_compiled_procedure(oop lambda_list, frame_t* env,
-				oop bytecode, oop ip, oop oop_lookup_table,
-				fn_uint max_stack_depth) {
+                                oop bytecode, oop ip, oop oop_lookup_table,
+                                fn_uint max_stack_depth) {
   CHECKNUMBER(ip);
   CHECKV(is_raw_mem(bytecode), bytecode, "Needs to have bytecode.");
   // TODO: Check that num_vars_in_ll < 2**16, so it won't overlap.
@@ -121,7 +121,7 @@ fn_uint num_vars_in_ll(oop ll) {
       }
     } else {
       CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
-	     "Only symbols and nested lists supported in lambda lists.");
+             "Only symbols and nested lists supported in lambda lists.");
       count = (count + num_vars_in_ll(ll_item)) | 1;
     }
     ll = cdr(ll);
@@ -148,7 +148,7 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
       }
     } else {
       CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
-	     "Only symbols and nested lists supported in lambda lists.");
+             "Only symbols and nested lists supported in lambda lists.");
 
       oop arg_item = car(args);
       idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame, idx);

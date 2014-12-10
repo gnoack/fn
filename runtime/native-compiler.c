@@ -352,7 +352,7 @@ void compile_let(oop let_expr, oop env, boolean is_tail) {
 
   oop body = rest(let_expr);
   oop lambda_expr = make_cons(symbol_to_oop(symbols._lambda),
-			      make_cons(vars, body));
+                              make_cons(vars, body));
   oop call_expr = make_cons(lambda_expr, arguments);
   compile(call_expr, env, is_tail);
 }
@@ -443,7 +443,7 @@ void compile(oop expr, oop env, boolean is_tail) {
       } else if (head == symbols._set) { compile_set(expr, env);
       } else if (head == symbols._progn) { compile_seq(rest(expr), env, is_tail);
       } else {
-	compile_application(expr, env, is_tail);
+        compile_application(expr, env, is_tail);
       }
     } else {
       compile_application(expr, env, is_tail);
@@ -473,6 +473,6 @@ proc_t* compile_top_level_expression(oop expr) {
   finish();
 
   return make_compiled_procedure(lambda_list, NULL /* env */,
-				 bytecode, ip, oop_lookup_table,
-				 max_stack_size);
+                                 bytecode, ip, oop_lookup_table,
+                                 max_stack_size);
 }

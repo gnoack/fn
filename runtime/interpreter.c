@@ -154,7 +154,7 @@ void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
   state->ip          = get_smallint(frame->ip);
   state->bytecode    = proc->bytecode;
   state->oop_lookups = proc->oop_table;
-  
+
   oop stack = frame->stack;
   state->stack.stack    = &stack.mem[STACK_HEADER_SIZE];
   state->stack.size     = get_smallint(MEM_GET(stack, STACK_SIZE_IDX));
@@ -163,7 +163,7 @@ void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
 
 static inline
 void initialize_state_from_fn(frame_t* frame, proc_t* proc,
-			      interpreter_state_t* state) {
+                              interpreter_state_t* state) {
   state->reg_frm = frame;
   state->ip = get_smallint(proc->ip);
   state->bytecode = proc->bytecode;
@@ -484,8 +484,6 @@ void my_print_stack_trace() {
   }
   actual_print_stack_trace(frame);
 }
-
-#define MAX_STACK_SIZE 0x4000
 
 void init_interpreter() {
   print_stack_trace = my_print_stack_trace;
