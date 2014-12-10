@@ -64,11 +64,13 @@
     (defm Smalltalk 'prettyprint: (obj)            (pprint obj))
     (defm Smalltalk 'raise: (exception)            (raise exception))
     (defm Smalltalk 'eval: (str)
-          (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
+      (eval ((read-and-check-empty-remainder (@@ smalltalk-grammar statement)) str)))
     (defm Smalltalk 'makeObject:slot: (class slot1)
       ($make class slot1))
     (defm Smalltalk 'loadLisp: (filename)
       (load-file filename))
+    (defm Smalltalk 'gc ()
+      (run-gc))
 
     ($make Smalltalk)))
 

@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 
-static const int MAX_BYTES_SIZE = 0x1000;
+static const int MAX_BYTES_SIZE = 0x2000;
 static const int MAX_OOP_TABLE_SIZE = 0x100;
 static const int MAX_LABEL_TABLE_SIZE = 0x800;
 static const int MAX_ADDRESS_TABLE_SIZE = 0x800;
