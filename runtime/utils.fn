@@ -225,7 +225,7 @@
   ;; Evaluate the expression in the global environment.
   ;; This actually compiles the expression, creates a
   ;; zero-argument function from it, and calls that.
-  ((compile-top-level-expr expr)))
+  ((native-compile-top-level-expr expr)))
 
 ;; TODO: Move file code to another module.
 (defn with-file-reader (filename callback)
@@ -321,7 +321,7 @@
         (string-append filename "c")
         (file-timestamp filename)
 	;; TODO: This is not picking up the macros in the file on the fly.
-        (lambda () (map compile-top-level-expr
+        (lambda () (map native-compile-top-level-expr
                         (read-all (file->string filename)))))))
 
 ;; True if module loading should be cached.
