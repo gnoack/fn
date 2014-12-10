@@ -8,6 +8,13 @@ The compiler
   each other, with the exception that in bytecode, jump target indexes
   are already resolved and the oop lookup table is constructed.
 
+The C-based compiler
+====================
+
+The same compiler is also implemented in C.  The C variant skips the
+intermediate representation in memory and writes the resulting
+bytecode on the fly.
+
 Bytecode / Intermediate language
 ================================
 

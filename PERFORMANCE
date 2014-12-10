@@ -79,3 +79,8 @@ After switching to “char* argv, int argc”-style native functions: 1088-1099
   Neat. :)  This is cutting roughly a third of the time again. :)
 
   PS: With -O3, this becomes 1182-1331
+
+2014-12-10 (ARM)
+  Measured by loading Lisp grammar: ./fn -S examples/performance.fn
+  After introducing various structs, allowing to skip runtime CHECKs,
+  after introducing the C-based bytecode compiler: 1795-1939
