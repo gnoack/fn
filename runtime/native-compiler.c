@@ -208,48 +208,65 @@ void LABEL(symbol_t* label)                          { emit_label(label); }
 
 // --------------------------------------------------------------------
 
+typedef struct env env_t;
+
+typedef struct env {
+  void (*compile_var_access)(env_t* self, int frame_depth,
+                             symbol_t* name, char is_write);
+  env_t* next;
+  oop vars;
+} env_t;
+
 // Forward declaration.
-void compile(oop expr, oop env, boolean is_tail);
+void compile(oop expr, env_t* env, boolean is_tail);
 
 void compile_literal(oop expr) {
   LOAD_VALUE(expr);
 }
 
-void compile_var_access(oop expr, oop env, char is_write) {
-  CHECKV(is_symbol(expr), expr, "Variable needs to be denoted as symbol.");
-  unsigned int frame_index = 0;
-  while (!is_nil(env)) {
-    oop frame = first(env);
-
-    unsigned int var_index = 0;
-    while (!is_nil(frame)) {
-      if (value_eq(expr, first(frame))) {
-        if (is_write) {
-          WRITE_VAR(frame_index, var_index);
-        } else {
-          READ_VAR(frame_index, var_index);
-        }
-        return;
-      }
-
-      // Next variable.
-      frame = rest(frame);
-      var_index++;
-    }
-
-    // Next frame.
-    env = rest(env);
-    frame_index++;
-  }
-
+void compile_var_access_global(env_t* self, int frame_depth,
+                               symbol_t* name, char is_write) {
   if (is_write) {
-    WRITE_GLOBAL(to_symbol(expr));
+    WRITE_GLOBAL(name);
   } else {
-    READ_GLOBAL(to_symbol(expr));
+    READ_GLOBAL(name);
   }
 }
 
-void compile_var_read(oop expr, oop env) {
+// Return index of the name in vars, otherwise -1.
+int list_index_of(symbol_t* name, oop vars) {
+  int index = 0;
+  while (is_cons(vars)) {
+    if (value_eq(first(vars), symbol_to_oop(name))) {
+      return index;
+    }
+    index++;
+    vars = rest(vars);
+  }
+  CHECKV(is_nil(vars), vars, "Must be terminated with nil.");
+  return -1;
+}
+
+void compile_var_access_frame(env_t* self, int frame_depth,
+                              symbol_t* name, char is_write) {
+  int index = list_index_of(name, self->vars);
+  if (index == -1) {
+    self->next->compile_var_access(self->next, frame_depth+1, name, is_write);
+  } else {
+    if (is_write) {
+      WRITE_VAR(frame_depth, index);
+    } else {
+      READ_VAR(frame_depth, index);
+    }
+  }
+}
+
+void compile_var_access(oop expr, env_t* env, char is_write) {
+  CHECKV(is_symbol(expr), expr, "Variable needs to be denoted as symbol.");
+  env->compile_var_access(env, 0, to_symbol(expr), is_write);
+}
+
+void compile_var_read(oop expr, env_t* env) {
   compile_var_access(expr, env, NO);
 }
 
@@ -259,7 +276,7 @@ void compile_var_read(oop expr, oop env) {
   original = rest(original);     \
   oop n2 = first(original);
 
-void compile_set(oop set_expr, oop env) {
+void compile_set(oop set_expr, env_t* env) {
   PARSE2(set_expr, name, expr);
 
   compile(expr, env, NO);
@@ -274,7 +291,7 @@ void compile_set(oop set_expr, oop env) {
   original = rest(original);            \
   oop n3 = first(original);
 
-void compile_if(oop if_expr, oop env, boolean is_tail) {
+void compile_if(oop if_expr, env_t* env, boolean is_tail) {
   PARSE3(if_expr, cond_expr, conseq_expr, alt_expr);
   symbol_t* true_branch = invent_symbol("true-branch");
   symbol_t* after_if = invent_symbol("after-if");
@@ -343,7 +360,7 @@ oop extract_exprs(oop let_clauses) {
   }
 }
 
-void compile_let(oop let_expr, oop env, boolean is_tail) {
+void compile_let(oop let_expr, env_t* env, boolean is_tail) {
   // Transform to a lambda expression call, then compile.
   let_expr = rest(let_expr);
   oop clauses = first(let_expr);
@@ -357,14 +374,14 @@ void compile_let(oop let_expr, oop env, boolean is_tail) {
   compile(call_expr, env, is_tail);
 }
 
-void compile_def(oop def_expr, oop env) {
+void compile_def(oop def_expr, env_t* env) {
   PARSE2(def_expr, name, expr);
 
   compile(expr, env, NO);
   compile_var_access(name, env, YES);
 }
 
-void compile_application(oop expr, oop env, boolean is_tail) {
+void compile_application(oop expr, env_t* env, boolean is_tail) {
   CHECKV(is_cons(expr), expr, "Need at least a function to call!");
 
   int length = 0;
@@ -384,7 +401,7 @@ void compile_application(oop expr, oop env, boolean is_tail) {
   }
 }
 
-void compile_seq(oop exprs, oop env, boolean is_tail) {
+void compile_seq(oop exprs, env_t* env, boolean is_tail) {
   CHECKV(!is_nil(exprs), exprs, "Empty sequences not supported.");
   while (!is_nil(rest(exprs))) {
     compile(first(exprs), env, NO);
@@ -396,12 +413,12 @@ void compile_seq(oop exprs, oop env, boolean is_tail) {
   compile(first(exprs), env, is_tail);
 }
 
-void compile_lambda_body(oop exprs, oop env) {
+void compile_lambda_body(oop exprs, env_t* env) {
   compile_seq(exprs, env, YES);
   RETURN();
 }
 
-void compile_lambda(oop lambda_expr, oop env) {
+void compile_lambda(oop lambda_expr, env_t* env) {
   lambda_expr = rest(lambda_expr);
   oop lambda_list = first(lambda_expr);
   oop body = rest(lambda_expr);
@@ -417,7 +434,14 @@ void compile_lambda(oop lambda_expr, oop env) {
   saved.max_stack_depth = 0;
   swap_stack_depth(&saved);
 
-  compile_lambda_body(body, make_cons(vars_from_lambda_list(lambda_list), env));
+  env_t* inner_env = calloc(1, sizeof(env_t));
+  *inner_env = (env_t) {
+    .compile_var_access = compile_var_access_frame,
+    .next = env,
+    .vars = vars_from_lambda_list(lambda_list)
+  };
+  compile_lambda_body(body, inner_env);
+  free(inner_env);
   CHECK(result->stack_depth == 0,
         "Stack depth should be just zero after lambda body.");
 
@@ -427,7 +451,7 @@ void compile_lambda(oop lambda_expr, oop env) {
   MAKE_LAMBDA(lambda_entry, saved.max_stack_depth, lambda_list);
 }
 
-void compile(oop expr, oop env, boolean is_tail) {
+void compile(oop expr, env_t* env, boolean is_tail) {
   if      (is_smallint(expr)) { compile_literal(expr); }
   else if (is_char(expr))     { compile_literal(expr); }
   else if (is_symbol(expr))   { compile_var_read(expr, env); }
@@ -455,7 +479,16 @@ void compile(oop expr, oop env, boolean is_tail) {
 
 proc_t* compile_top_level_expression(oop expr) {
   init();
-  compile_lambda_body(make_cons(expr, NIL), NIL);
+
+  env_t* global_env = calloc(1, sizeof(env_t));
+  *global_env = (env_t) {
+    .compile_var_access = compile_var_access_global,
+    .next = NULL,
+    .vars = NIL
+  };
+  compile_lambda_body(make_cons(expr, NIL), global_env);
+  free(global_env);
+
   postprocess();
 
   oop lambda_list = NIL;
@@ -472,7 +505,7 @@ proc_t* compile_top_level_expression(oop expr) {
 
   finish();
 
-  return make_compiled_procedure(lambda_list, NULL /* env */,
+  return make_compiled_procedure(lambda_list, NULL /* global env */,
                                  bytecode, ip, oop_lookup_table,
                                  max_stack_size);
 }
