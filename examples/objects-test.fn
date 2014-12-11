@@ -1,0 +1,19 @@
+;; Defines the defstruct macro.
+(->true (load-file "examples/objects.fn"))
+
+(->true
+  (defstruct Adder (num)
+    (methods
+     (prettyprint () "Adder")
+     (plus (x)       (+ num x))
+     (set! (y)       (set! num y)))))
+
+(string=? "Adder" (! (! Adder 'new 5) 'prettyprint))
+
+(eq? 42 (! (! Adder 'new 37) 'plus 5))
+
+(progn
+  (def adder (! Adder 'new 3))
+  (! adder 'set! 7)
+
+  (eq? 17 (! adder 'plus 10)))
