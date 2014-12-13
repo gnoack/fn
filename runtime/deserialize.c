@@ -16,16 +16,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define S_ARRAY              '['
-#define S_CHARACTER          'c'
-#define S_COMPILED_PROCEDURE 'B'
-#define S_CONS               '.'
-#define S_MEM_BLOCK          '#'
-#define S_NIL                '0'
-#define S_SMALLINT           'i'
-#define S_STRING             '\"'
-#define S_SYMBOL             'S'
-#define S_VAR                'v'
+enum {
+  S_ARRAY              = '[',
+  S_CHARACTER          = 'c',
+  S_COMPILED_PROCEDURE = 'B',
+  S_CONS               = '.',
+  S_MEM_BLOCK          = '#',
+  S_NIL                = '0',
+  S_SMALLINT           = 'i',
+  S_STRING             = '\"',
+  S_SYMBOL             = 'S',
+  S_VAR                = 'v'
+};
 
 static inline unsigned char read_byte(FILE* input) {
   int result = fgetc(input);
