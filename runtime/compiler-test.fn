@@ -1,24 +1,21 @@
 ;; Variable environments
 (->true
- (def %xyz-env (send global-env 'linked-with-vars (list 'x 'y 'z)))
- (def %abz-env (send %xyz-env 'linked-with-vars (list 'a 'b 'z))))
+ (def %xyz-env (linked-env-with-vars global-env (list 'x 'y 'z)))
+ (def %abz-env (linked-env-with-vars %xyz-env (list 'a 'b 'z))))
 
-(string=? "GLOBAL" (send global-env 'prettyprint))
-(string=? "(x y z)::GLOBAL" (send %xyz-env 'prettyprint))
+(eql? '((read-var 0 0)) (env-generate-read %xyz-env 'x))
+(eql? '((read-var 0 1)) (env-generate-read %xyz-env 'y))
+(eql? '((read-var 0 2)) (env-generate-read %xyz-env 'z))
+(eql? '((read-global-var foo)) (env-generate-read %xyz-env 'foo))
 
-(eql? '((read-var 0 0)) (send %xyz-env 'generate-read 'x))
-(eql? '((read-var 0 1)) (send %xyz-env 'generate-read 'y))
-(eql? '((read-var 0 2)) (send %xyz-env 'generate-read 'z))
-(eql? '((read-global-var foo)) (send %xyz-env 'generate-read 'foo))
+(eql? '((read-var 0 0)) (env-generate-read %abz-env 'a))
+(eql? '((read-var 0 1)) (env-generate-read %abz-env 'b))
+(eql? '((read-var 0 2)) (env-generate-read %abz-env 'z)) ; Shadows z in xyz-env
+(eql? '((read-var 1 0)) (env-generate-read %abz-env 'x))
+(eql? '((read-var 1 1)) (env-generate-read %abz-env 'y))
 
-(eql? '((read-var 0 0)) (send %abz-env 'generate-read 'a))
-(eql? '((read-var 0 1)) (send %abz-env 'generate-read 'b))
-(eql? '((read-var 0 2)) (send %abz-env 'generate-read 'z)) ; Shadows z in xyz-env
-(eql? '((read-var 1 0)) (send %abz-env 'generate-read 'x))
-(eql? '((read-var 1 1)) (send %abz-env 'generate-read 'y))
-
-(eql? '((write-var 1 1)) (send %abz-env 'generate-write 'y))
-(eql? '((write-var 0 2)) (send %abz-env 'generate-write 'z))
+(eql? '((write-var 1 1)) (env-generate-write %abz-env 'y))
+(eql? '((write-var 0 2)) (env-generate-write %abz-env 'z))
 
 (->true
  ;; Predictable version of compile

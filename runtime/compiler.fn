@@ -17,35 +17,24 @@
 ;;; Static variable environments                                  ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def global-env
-  (dispatcher self
-    ('prettyprint ()                "GLOBAL")
-
-    ;; Construction
-    ('linked-with-vars (vars)       (linked-env-with-vars self vars))
-
-    ;; Code generation
-    ('generate-access (depth op x)  `((,(case op
-                                          ((write-var) 'write-global-var)
-                                          ((read-var)  'read-global-var)) ,x)))
-    ('generate-read (x)             (send self 'generate-access 0 'read-var x))
-    ('generate-write (x)            (send self 'generate-access 0 'write-var x))))
+;; Static variable environments are functions of signature
+;; depth op varname --> sexp-bytecode
+;; where depth is the frame depth,
+;;       op is 'read-var or 'write-var
+(defn global-env (depth op x)
+  `((,(case op
+        ((write-var) 'write-global-var)
+        ((read-var)  'read-global-var)) ,x)))
 
 (defn linked-env-with-vars (next-env my-vars)
-  (dispatcher self
-    ('prettyprint ()                (string-append (pprint my-vars) "::"
-                                                   (send next-env 'prettyprint)))
+  (defn generate-access (depth op x)
+    (if (list-contains? my-vars x)
+        `((,op ,depth ,(list-index-of my-vars x)))
+      (next-env (+ 1 depth) op x)))
+  generate-access)
 
-    ;; Construction
-    ('linked-with-vars (vars)       (linked-env-with-vars self vars))
-
-    ;; Code generation
-    ('generate-access (depth op x)  (if (list-contains? my-vars x)
-                                        `((,op ,depth ,(list-index-of my-vars x)))
-                                      (send next-env 'generate-access (+ 1 depth) op x)))
-    ('generate-read (x)             (send self 'generate-access 0 'read-var x))
-    ('generate-write (x)            (send self 'generate-access 0 'write-var x))))
-
+(defn env-generate-read (env x)  (env 0 'read-var x))
+(defn env-generate-write (env x) (env 0 'write-var x))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,7 +97,7 @@
     (,call-style ,(length expr))))
 
 (defn compile-variable-read (expr environment)
-  (send environment 'generate-read expr))
+  (env-generate-read environment expr))
 
 (defn compile-literal (expr)
   `((load-value ,expr)))
@@ -128,8 +117,8 @@
       (jump ,after-lambda)
       (label ,lambda-entry)
       ,@(compile-lambda-body body-exprs
-                             (send environment 'linked-with-vars
-                                   (vars-from-ll lambda-list)))
+                             (linked-env-with-vars
+                              environment (vars-from-ll lambda-list)))
       (label ,after-lambda))))
 
 (defn compile-sequence (exprs environment call-style)
@@ -145,7 +134,7 @@
 
 (defn compile-def ((def_ symbol value-expr) environment)
   `(,@(compile value-expr environment 'call)
-    ,@(send global-env 'generate-write symbol)))
+    ,@(env-generate-write global-env symbol)))
 
 ;; Transforming
 (defn transform-let->lambda ((let_ let-clauses &rest body-exprs))
@@ -160,7 +149,7 @@
 ;; TODO: This is exactly the same as 'def' right now... :-/
 (defn compile-set! ((set!_ symbol value-expr) environment)
   `(,@(compile value-expr environment 'call)
-    ,@(send environment 'generate-write symbol)))
+    ,@(env-generate-write environment symbol)))
 
 (defn compile-mem-get (($mem-get_ expr index) environment call-style)
   (if (number? index)
