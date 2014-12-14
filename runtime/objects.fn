@@ -124,7 +124,7 @@
   (%send receiver message (type-of receiver) arguments))
 
 (defn has-method? (receiver selector)
-  ;; Limitation: Only works for proper objects, not for Dispatchers.
+  ;; Limitation: Only works if 'unknownMessage:arguments: is not used.
   (dict-has-key? ($mem-get (type-of receiver) 1)
                  selector))
 

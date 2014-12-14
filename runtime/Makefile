@@ -10,7 +10,6 @@ RTOBJECTS = \
 	data.o \
 	debug.o \
 	deserialize.o \
-	dispatcher.o \
 	dl.o \
 	eval.o \
 	gc.o \
@@ -47,7 +46,6 @@ LISPTARGETS = \
 	byte-buffer.c \
 	compiler.c \
 	continuations.c \
-	dispatcher.c \
 	lang.c \
 	macros.c \
 	objects.c \

@@ -4,7 +4,7 @@
 
 ;; FN support.
 (add-to-list 'auto-mode-alist '("\\.fn\\'" . lisp-mode))
-(dolist (symbol (list 'with-asserts 'defm 'def 'with 'flet 'when 'dispatcher
+(dolist (symbol (list 'with-asserts 'defm 'def 'with 'flet 'when
                       'peg-let 'with-gensyms 'import 'match))
   (put symbol 'lisp-indent-function 1))
 
@@ -15,7 +15,6 @@
     ("\\<defmacro\\>"   . font-lock-keyword-face)
     ("\\<defn\\>"       . font-lock-keyword-face)
     ("\\<deftype\\>"    . font-lock-keyword-face)
-    ("\\<dispatcher\\>" . font-lock-keyword-face)
     ("\\<import\\>"     . font-lock-keyword-face)
     ("\\<labels\\>"     . font-lock-keyword-face)
     ("\\<match\\>"      . font-lock-keyword-face)

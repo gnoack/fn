@@ -100,9 +100,9 @@ void parse_args(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
   parse_args(argc, argv);
-  
+
   fn_runtime_init();
-  
+
   if (deserialize_arg) {
     gc_deserialize_from_file("fn.img");
   } else {

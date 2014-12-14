@@ -6,7 +6,6 @@
 #include "data.h"
 #include "debug.h"
 #include "deserialize.h"
-#include "dispatcher.h"
 #include "dl.h"
 #include "eval.h"
 #include "gc.h"
@@ -48,7 +47,6 @@ void fn_runtime_init_lisp_decls() {
   load_decls(arrays_decls());
 
   load_decls(byte_buffer_decls());
-  load_decls(dispatcher_decls());
   load_decls(compiler_decls());
 
   load_decls(serialize_decls());

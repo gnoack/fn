@@ -19,7 +19,7 @@
    (map (lambda (name) (string-append "runtime/" (symbol->string name) ".fn"))
         '(lang macros
                utils objects arrays
-               byte-buffer dispatcher compiler
+               byte-buffer compiler
                pprint modules continuations
                serialize
                pegs parser pegs-parser))))
