@@ -88,3 +88,8 @@ After switching to “char* argv, int argc”-style native functions: 1088-1099
 2014-12-10 (ARM)
   Loading Lisp grammars now uses the C-based bytecode compiler;
   ./fn -S examples/performance.fn is now at 899-921
+
+2014-12-14 (ARM)
+  ./fn -S examples/performance.fn is now at 936-983
+  after introducing a bytecode for mem-get and mem-set:
+  ./fn -S examples/performance.fn is now at 898-918

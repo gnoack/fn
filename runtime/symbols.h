@@ -13,6 +13,8 @@ typedef struct {
   symbol_t* _rest;
   symbol_t* _macroexpand;
   symbol_t* _set;
+  symbol_t* _mem_get;
+  symbol_t* _mem_set;
 
   // Built-in types.
   oop _array;

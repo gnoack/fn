@@ -120,6 +120,8 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   accept((oop*) &symbols._rest);
   accept((oop*) &symbols._macroexpand);
   accept((oop*) &symbols._set);
+  accept((oop*) &symbols._mem_get);
+  accept((oop*) &symbols._mem_set);
   // Types.
   accept(&symbols._array);
   accept(&symbols._cons);
@@ -178,6 +180,8 @@ void init_symbols() {
   symbols._rest = make_symbol("&rest");
   symbols._macroexpand = make_symbol("macroexpand");
   symbols._set = make_symbol("set!");
+  symbols._mem_get = make_symbol("$mem-get");
+  symbols._mem_set = make_symbol("$mem-set!");
 
   symbols._true = mem_alloc(1);
   mem_set(symbols._true, 0, symbols._True);

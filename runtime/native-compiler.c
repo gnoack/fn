@@ -203,6 +203,8 @@ void CALL(byte argnum)                               { emit_byte(9); emit_byte(a
 void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum); adjust_stack(1 - argnum); }
 void RETURN()                                        { emit_byte(11); adjust_stack(-1); }
 void TAIL_CALL_APPLY()                               { emit_byte(12); adjust_stack(1 - 2); }  // unused.
+void READ_FIELD(byte index)                          { emit_byte(13); emit_byte(index); }
+void WRITE_FIELD(byte index)                         { emit_byte(14); emit_byte(index); adjust_stack(-1); }
 void LABEL(symbol_t* label)                          { emit_label(label); }
 
 
@@ -270,10 +272,10 @@ void compile_var_read(oop expr, env_t* env) {
   compile_var_access(expr, env, NO);
 }
 
-#define PARSE2(original, n1, n2) \
-  original = rest(original);     \
-  oop n1 = first(original);      \
-  original = rest(original);     \
+#define PARSE2(original_expr, n1, n2) \
+  oop original = rest(original_expr); \
+  oop n1 = first(original);           \
+  original = rest(original);          \
   oop n2 = first(original);
 
 void compile_set(oop set_expr, env_t* env) {
@@ -283,12 +285,12 @@ void compile_set(oop set_expr, env_t* env) {
   compile_var_access(name, env, YES);
 }
 
-#define PARSE3(original, n1, n2, n3)    \
-  original = rest(original);            \
-  oop n1 = first(original);             \
-  original = rest(original);            \
-  oop n2 = first(original);             \
-  original = rest(original);            \
+#define PARSE3(original_expr, n1, n2, n3)       \
+  oop original = rest(original_expr);           \
+  oop n1 = first(original);                     \
+  original = rest(original);                    \
+  oop n2 = first(original);                     \
+  original = rest(original);                    \
   oop n3 = first(original);
 
 void compile_if(oop if_expr, env_t* env, boolean is_tail) {
@@ -451,6 +453,27 @@ void compile_lambda(oop lambda_expr, env_t* env) {
   MAKE_LAMBDA(lambda_entry, saved.max_stack_depth, lambda_list);
 }
 
+void compile_mem_get(oop mem_get_expr, env_t* env, boolean is_tail) {
+  PARSE2(mem_get_expr, expr, index);
+  if (is_smallint(index)) {
+    compile(expr, env, NO);
+    READ_FIELD(get_smallint(index));
+  } else {
+    compile_application(mem_get_expr, env, is_tail);
+  }
+}
+
+void compile_mem_set(oop mem_set_expr, env_t* env, boolean is_tail) {
+  PARSE3(mem_set_expr, expr, index, value);
+  if (is_smallint(index)) {
+    compile(expr, env, NO);
+    compile(value, env, NO);
+    WRITE_FIELD(get_smallint(index));
+  } else {
+    compile_application(mem_set_expr, env, is_tail);
+  }
+}
+
 void compile(oop expr, env_t* env, boolean is_tail) {
   if      (is_smallint(expr)) { compile_literal(expr); }
   else if (is_char(expr))     { compile_literal(expr); }
@@ -466,6 +489,8 @@ void compile(oop expr, env_t* env, boolean is_tail) {
       } else if (head == symbols._def) { compile_def(expr, env);
       } else if (head == symbols._set) { compile_set(expr, env);
       } else if (head == symbols._progn) { compile_seq(rest(expr), env, is_tail);
+      } else if (head == symbols._mem_get) { compile_mem_get(expr, env, is_tail);
+      } else if (head == symbols._mem_set) { compile_mem_set(expr, env, is_tail);
       } else {
         compile_application(expr, env, is_tail);
       }

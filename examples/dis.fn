@@ -38,6 +38,8 @@
 	((10) `(tail-call ,(read-byte!)))
 	((11) '(return))
 	((12) '(tail-call-apply))
+        ((13) `(read-field ,(read-byte!)))
+        ((14) `(write-field ,(read-byte!)))
 	(else (raise 'unknown-bytecode)))))
   read-instruction!)
 

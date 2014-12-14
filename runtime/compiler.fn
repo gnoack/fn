@@ -162,6 +162,20 @@
   `(,@(compile value-expr environment 'call)
     ,@(send environment 'generate-write symbol)))
 
+(defn compile-mem-get (($mem-get_ expr index) environment call-style)
+  (if (number? index)
+      `(,@(compile expr environment 'call)
+        (read-field ,index))
+    (compile-application (`(,$mem-get_ ,expr ,index) environment call-style))))
+
+(defn compile-mem-set (($mem-set!_ expr index value) environment call-style)
+  (if (number? index)
+      `(,@(compile expr environment 'call)
+        ,@(compile value environment 'call)
+        (write-field ,index))
+    (compile-application (`(,$mem-set!_ ,expr ,index ,value)
+                          environment call-style))))
+
 (defn compile (expr environment call-style)
   (cond
     ((number? expr)  (compile-literal expr))
@@ -177,6 +191,7 @@
        ((def)        (compile-def expr environment))
        ((set!)       (compile-set! expr environment))
        ((progn)      (compile-sequence (rest expr) environment call-style))
+       (($mem-get)   (compile-mem-get expr environment call-style))
        (else         (progn
                        (assert (list? expr))
                        (compile-application expr environment call-style)))))
@@ -206,6 +221,8 @@
      ((tail-call argnum)          (byte 10) (byte argnum))
      ((return)                    (byte 11))
      ((tail-call-apply)           (byte 12))
+     ((read-field index)          (byte 13) (byte index))
+     ((write-field index)         (byte 14) (byte index))
      ((label l)                   (save-label! l)))))
 
 (defn lower-byte (n) (mod n 256))

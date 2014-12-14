@@ -53,6 +53,8 @@ enum {
   BC_TAIL_CALL        = 10,
   BC_RETURN           = 11,
   BC_TAIL_CALL_APPLY  = 12,
+  BC_READ_FIELD       = 13,
+  BC_WRITE_FIELD      = 14,
 };
 
 #endif  // _INTERPRETER_H_

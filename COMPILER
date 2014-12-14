@@ -72,3 +72,13 @@ return                     Pop result value from stack.
 
 tail-call-apply            TODO: Used so that apply can be implemented in bytecode
                            and still have tail calls.
+
+read-field [n]             Pop target object from stack
+                           Read the object's nth field. 0 is its type.
+                           Push the nth field value to the stack.
+                           This assumes the object is_mem.
+
+write-field [n]            Pop value from stack
+                           Peek target object on stack
+                           Assign the value to the object's nth field.
+                           (Leaves the value on the stack.)

@@ -77,6 +77,12 @@ oop stack_peek(stack_t* stack) {
   return stack->stack[stack->size - 1];
 }
 
+oop stack_set_top(stack_t* stack, oop value) {
+  // No bounds check necessary.
+  stack->stack[stack->size - 1] = value;
+  return value;
+}
+
 // Peek at position n from top, 1 being the topmost element.
 oop stack_peek_at(stack_t* stack, fn_uint n) {
   int idx = stack->size - n;
@@ -285,24 +291,24 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
 
 
 
-unsigned char read_byte(interpreter_state_t* state) {
+static inline unsigned char read_byte(interpreter_state_t* state) {
   unsigned char result = ((unsigned char*) state->bytecode.mem)[state->ip];
   state->ip++;
   return result;
 }
 
-fn_uint read_label_address(interpreter_state_t* state) {
+static inline fn_uint read_label_address(interpreter_state_t* state) {
   fn_uint upper = read_byte(state);
   fn_uint lower = read_byte(state);
   return (upper << 8) | lower;
 }
 
-fn_uint read_index(interpreter_state_t* state) {
+static inline fn_uint read_index(interpreter_state_t* state) {
   return read_byte(state);
 }
 
 // TODO: Only one byte: Will it be enough?
-oop read_oop(interpreter_state_t* state) {
+static inline oop read_oop(interpreter_state_t* state) {
   // TODO: Depends on memory layout in arrays.
   return MEM_GET(state->oop_lookups, 1 + read_byte(state));
 }
@@ -447,7 +453,7 @@ oop interpret(frame_t* frame, proc_t* proc) {
       IPRINT("apply\n");
       oop arglist = stack_pop(&state.stack);
       oop fn = stack_pop(&state.stack);
-      if (is_compiled_lisp_procedure(fn)) {
+      if (likely(is_compiled_lisp_procedure(fn))) {
 	proc_t* proc = to_proc(fn);
         frame_t* caller = state.reg_frm->caller;
         frame_t* env = make_frame_for_application(proc, arglist, caller);
@@ -457,6 +463,20 @@ oop interpret(frame_t* frame, proc_t* proc) {
         stack_push(&state.stack,
                    apply_with_caller(make_cons(fn, arglist), state.reg_frm));
       }
+      break;
+    }
+    case BC_READ_FIELD: {
+      fn_uint index = read_index(&state);
+      oop target = stack_pop(&state.stack);
+      stack_push(&state.stack, MEM_GET(target, index));
+      break;
+    }
+    case BC_WRITE_FIELD: {
+      fn_uint index = read_index(&state);
+      oop value = stack_pop(&state.stack);
+      oop target = stack_peek(&state.stack);
+      MEM_SET(target, index, value);
+      stack_set_top(&state.stack, value);
       break;
     }
     default:
