@@ -77,12 +77,6 @@ oop stack_peek(stack_t* stack) {
   return stack->stack[stack->size - 1];
 }
 
-oop stack_set_top(stack_t* stack, oop value) {
-  // No bounds check necessary.
-  stack->stack[stack->size - 1] = value;
-  return value;
-}
-
 // Peek at position n from top, 1 being the topmost element.
 oop stack_peek_at(stack_t* stack, fn_uint n) {
   int idx = stack->size - n;
@@ -473,10 +467,9 @@ oop interpret(frame_t* frame, proc_t* proc) {
     }
     case BC_WRITE_FIELD: {
       fn_uint index = read_index(&state);
-      oop value = stack_pop(&state.stack);
-      oop target = stack_peek(&state.stack);
+      oop target = stack_pop(&state.stack);
+      oop value = stack_peek(&state.stack);
       MEM_SET(target, index, value);
-      stack_set_top(&state.stack, value);
       break;
     }
     default:

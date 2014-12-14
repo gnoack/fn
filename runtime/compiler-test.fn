@@ -118,8 +118,8 @@
     (return))
 
   (defn-compiled artisanal-set-car! (cell value) 2
-    (read-var 0 0)  ; cell
     (read-var 0 1)  ; value
+    (read-var 0 0)  ; cell
     (write-field 1)
     (return))
 
@@ -131,3 +131,19 @@
   (def artisanal-cons-cell (cons 1 2))
   (artisanal-set-car! artisanal-cons-cell 42)
   (eq? 42 (first artisanal-cons-cell)))
+
+;; Tests for $fields
+(eq? 2 (let ((x (cons 1 2)))
+         ($fields (x (type car cdr))
+           cdr)))
+
+;; (eq? 3 (let ((x (cons 1 2)))
+;;          ($fields (x (type car cdr))
+;;            (set! cdr 3)
+;;            cdr)))
+
+(eq? 2 (let ((x (cons 1 2)))
+         ($fields (x (type car cdr))
+           (let ((x (cons 100 200)))
+             ;; old x is shadowed, but we should still access the old one.
+             cdr))))

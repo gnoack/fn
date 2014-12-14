@@ -111,7 +111,7 @@
   (assert "broken"))
 
 (defn %send (receiver message type arguments)
-  (cond ((nil? type)
+  (cond ((nil? type)  ; at top of inheritance chain.
          (%send receiver 'unknownMessage:arguments: (type-of receiver)
                 (list message arguments)))
         ((dict-has-key? ($mem-get type 1) message)

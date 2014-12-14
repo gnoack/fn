@@ -466,12 +466,45 @@ void compile_mem_get(oop mem_get_expr, env_t* env, boolean is_tail) {
 void compile_mem_set(oop mem_set_expr, env_t* env, boolean is_tail) {
   PARSE3(mem_set_expr, expr, index, value);
   if (is_smallint(index)) {
-    compile(expr, env, NO);
+    // TODO: Would be better to calculate expr first, and then value!
     compile(value, env, NO);
+    compile(expr, env, NO);
     WRITE_FIELD(get_smallint(index));
   } else {
     compile_application(mem_set_expr, env, is_tail);
   }
+}
+
+void compile_var_access_fields(env_t* self, int frame_depth,
+                               symbol_t* name, char is_write) {
+  int index = list_index_of(name, rest(self->vars));
+  if (index == -1) {
+    self->next->compile_var_access(self->next, frame_depth, name, is_write);
+  } else {
+    symbol_t* objname = to_symbol(first(self->vars));
+    self->next->compile_var_access(self->next, frame_depth, objname, NO);
+    if (is_write) {
+      WRITE_FIELD(index);
+    } else {
+      READ_FIELD(index);
+    }
+  }
+}
+
+void compile_fields(oop fields_expr, env_t* env, boolean is_tail) {
+  // ($fields (objname (field1 field2 ...)) body...)
+  fields_expr = rest(fields_expr);
+  oop objname = first(first(fields_expr));
+  oop fieldnames = first(rest(first(fields_expr)));
+  oop body = rest(fields_expr);
+  env_t* inner_env = calloc(1, sizeof(env_t));
+  *inner_env = (env_t) {
+    .compile_var_access = compile_var_access_fields,
+    .next = env,
+    .vars = make_cons(objname, fieldnames)  // TODO: Not very nice.
+  };
+  compile_seq(body, inner_env, is_tail);
+  free(inner_env);
 }
 
 void compile(oop expr, env_t* env, boolean is_tail) {
@@ -482,7 +515,7 @@ void compile(oop expr, env_t* env, boolean is_tail) {
   else if (is_cons(expr)) {
     if (is_symbol(first(expr))) {
       symbol_t* head = to_symbol(first(expr));
-      if        (head == symbols._quote) {      compile_literal(first(rest(expr)));
+      if        (head == symbols._quote) { compile_literal(first(rest(expr)));
       } else if (head == symbols._if) {  compile_if(expr, env, is_tail);
       } else if (head == symbols._lambda) { compile_lambda(expr, env);
       } else if (head == symbols._let) { compile_let(expr, env, is_tail);
@@ -491,6 +524,7 @@ void compile(oop expr, env_t* env, boolean is_tail) {
       } else if (head == symbols._progn) { compile_seq(rest(expr), env, is_tail);
       } else if (head == symbols._mem_get) { compile_mem_get(expr, env, is_tail);
       } else if (head == symbols._mem_set) { compile_mem_set(expr, env, is_tail);
+      } else if (head == symbols._fields) { compile_fields(expr, env, is_tail);
       } else {
         compile_application(expr, env, is_tail);
       }

@@ -10,6 +10,7 @@ clean:
 	rm -rf *.o
 	rm -rf *~
 	rm -rf \#*\#
+	rm -rf fn.img
 	$(MAKE) -C repl clean
 	$(MAKE) -C runtime clean
 

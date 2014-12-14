@@ -33,6 +33,16 @@
       (next-env (+ 1 depth) op x)))
   generate-access)
 
+(defn linked-field-access-env (next-env basename fieldnames)
+  ;; Note: This is not a frame at runtime, so depth stays the same.
+  (defn generate-access (depth op x)
+    (if (list-contains? fieldnames x)
+        `(,@(next-env depth 'read-var basename)
+          (,(if (eq? op 'write-var) 'write-field 'read-field)
+           ,(list-index-of fieldnames x)))
+      (next-env depth op x)))
+  generate-access)
+
 (defn env-generate-read (env x)  (env 0 'read-var x))
 (defn env-generate-write (env x) (env 0 'write-var x))
 
@@ -159,11 +169,18 @@
 
 (defn compile-mem-set (($mem-set!_ expr index value) environment call-style)
   (if (number? index)
-      `(,@(compile expr environment 'call)
-        ,@(compile value environment 'call)
+      ;; TODO: Would be better to calculate first expr, then value!
+      `(,@(compile value environment 'call)
+        ,@(compile expr environment 'call)
         (write-field ,index))
     (compile-application (`(,$mem-set!_ ,expr ,index ,value)
                           environment call-style))))
+
+(defn compile-fields (($fields_ (objname fieldnames) &rest body)
+                      environment call-style)
+  (compile-sequence body
+                    (linked-field-access-env environment objname fieldnames)
+                    call-style))
 
 (defn compile (expr environment call-style)
   (cond
@@ -181,6 +198,7 @@
        ((set!)       (compile-set! expr environment))
        ((progn)      (compile-sequence (rest expr) environment call-style))
        (($mem-get)   (compile-mem-get expr environment call-style))
+       (($fields)    (compile-fields expr environment call-style))
        (else         (progn
                        (assert (list? expr))
                        (compile-application expr environment call-style)))))

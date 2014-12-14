@@ -1,5 +1,3 @@
-(load-file "examples/ast.fn")  ;; ast-transform
-
 (defn type-set-field-hints! (type fields)
   (install-method! (type-of type) 'fields
                    (lambda (self) fields)))
@@ -32,17 +30,6 @@
                        (filter (lambda (x) (smatch? 'methods x))
                                body))))
 
-  (defn transform-read (sym)
-    (if (list-contains? fields sym)
-        `($mem-get self ,(+ 1 (list-index-of fields sym)))
-      sym))
-  (defn transform-write (sym value)
-    (if (list-contains? fields sym)
-        `($mem-set! self ,(+ 1 (list-index-of fields sym)) ,value)
-      `(set! ,sym ,value)))
-  (defn transform-field-accesses (expr)
-    (ast-transform expr transform-read transform-write))
-
   (with-gensyms (type)
     `(def ,name
        (let ((,type (make-type ,(symbol->string name) Object)))
@@ -52,7 +39,9 @@
            (quote ,fields))
          ,@(map (lambda ((name ll &rest body))
                   `(defm ,type (quote ,name) ,ll
-                     ,@(map transform-field-accesses body)))
+                     ;; Using `nil' for the `type' field.
+                     ($fields (self ,(cons nil fields))
+                        ,@body)))
                 (extract-methods body))
          ,type))))
 

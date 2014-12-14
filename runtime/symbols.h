@@ -15,6 +15,7 @@ typedef struct {
   symbol_t* _set;
   symbol_t* _mem_get;
   symbol_t* _mem_set;
+  symbol_t* _fields;
 
   // Built-in types.
   oop _array;
