@@ -9,43 +9,43 @@
          256  ; buffer-size
 ))
 
-(defn byte-buffer-size (byte-buffer)    ($mem-get byte-buffer 2))
-(defn byte-buffer-bufsize (byte-buffer) ($mem-get byte-buffer 3))
+(defn byte-buffer-size (byte-buffer)
+  ($fields (byte-buffer (_ _buffer _index _bufsize))
+    _index))
 
 (defn byte-buffer-append! (byte-buffer byte)
-  (let ((buffer  ($mem-get byte-buffer 1))
-        (index   ($mem-get byte-buffer 2))
-        (bufsize ($mem-get byte-buffer 3)))
-    (when (<= bufsize index)
-      (let ((new-buffer ($make-mem-block (* index 2))))
+  ($fields (byte-buffer (_ _buffer _index _bufsize))
+    (when (<= _bufsize _index)
+      (let ((new-buffer ($make-mem-block (* _index 2))))
         ($memcpy new-buffer 0
-                 buffer 0
-                 index)
-        (set! buffer new-buffer)
-        ($mem-set! byte-buffer 1 new-buffer)
-        ($mem-set! byte-buffer 3 (* index 2))))
-    ($mem-block-byte-set! buffer index byte)
-    ($mem-set! byte-buffer 2 (+ 1 index)) ; size
+                 _buffer 0
+                 _index)
+        (set! _buffer new-buffer)
+        (set! _bufsize (* _index 2))))
+    ($mem-block-byte-set! _buffer _index byte)
+    (set! _index (+ 1 _index))
     byte))
 
 (defn byte-buffer-set! (byte-buffer pos byte)
-  (assert (< pos (byte-buffer-bufsize byte-buffer)))
-  ($mem-block-byte-set! ($mem-get byte-buffer 1) pos byte))
+  ($fields (byte-buffer (_ _buffer _index _bufsize))
+    (assert (< pos _bufsize))
+    ($mem-block-byte-set! _buffer pos byte)))
 
 (defn byte-buffer-ref (byte-buffer pos)
-  (assert (< pos (byte-buffer-bufsize byte-buffer)))
-  ($mem-block-byte-get ($mem-get byte-buffer 1) pos))
+  ($fields (byte-buffer (_ _buffer _index _bufsize))
+    (assert (< pos _bufsize))
+    ($mem-block-byte-get _buffer pos)))
 
+;; Return a subset of the buffer as list.
 (defn byte-buffer-slice (byte-buffer first last)
   (if (eq? first last)
       (list)
-    (cons ($mem-block-byte-get ($mem-get byte-buffer 1) first)
-          (byte-buffer-slice byte-buffer (+ 1 first) last))))
+    ($fields (byte-buffer (_ _buffer _index _bufsize))
+      (cons ($mem-block-byte-get _buffer first)
+            (byte-buffer-slice byte-buffer (+ 1 first) last)))))
 
 (defn byte-buffer->rawmem (byte-buffer)
-  (let ((index (byte-buffer-size byte-buffer)))
-    (let ((new-buffer ($make-mem-block index)))
-      ($memcpy new-buffer 0
-               ($mem-get byte-buffer 1) 0
-               index)
+  ($fields (byte-buffer (_ _buffer _index _bufsize))
+    (let ((new-buffer ($make-mem-block _index)))
+      ($memcpy new-buffer 0 _buffer 0 _index)
       new-buffer)))
