@@ -1,54 +1,44 @@
 ;; ---
 
 ;; TODO: Queues are limited to the initial queue size, this is bad.
-(deftype Queue)
+(defstruct Queue (_array _begin _end)
+  (constructor new ()
+    (set! _array (make-array 10))
+    (set! _begin 0)
+    (set! _end   0))
 
-(defn make-queue ()
-  ($make Queue (make-array 10) 0 0))
+  (method size ()
+    (mod (- (+ (array-size _array) _end)
+            _begin)
+         (array-size _array)))
 
-(defn queue-array    (queue)  ($mem-get queue 1))
-(defn queue-begin    (queue)  ($mem-get queue 2))
-(defn queue-end      (queue)  ($mem-get queue 3))
-(defn queue-capacity (queue)  (array-size (queue-array queue)))
-(defn queue-size     (queue)
-  (mod (- (+ (queue-capacity queue) (queue-end queue))
-	  (queue-begin queue))
-       (queue-capacity queue)))
+  (method push! (item)
+    (array-set! _array _end item)
+    (set! _end (mod (+ 1 _end) (array-size _array))))
 
-(defn queue-set-begin! (queue begin)
-  ($mem-set! queue 2 (mod begin (array-size (queue-array queue)))))
-
-(defn queue-set-end!   (queue end)
-  ($mem-set! queue 3 (mod end (array-size (queue-array queue)))))
-
-(defn queue-push! (queue item)
-  (let ((end (queue-end queue)))
-    (array-set! (queue-array queue) end item)
-    (queue-set-end! queue (+ 1 end))))
-
-(defn queue-pop! (queue)
-  (assert (< 0 (queue-size queue)))
-  (let ((begin (queue-begin queue)))
-    (queue-set-begin! queue (+ 1 begin))
-    (array-ref (queue-array queue) begin)))
+  (method pop! ()
+    (assert (< 0 (! self size)))
+    (let ((old-begin _begin))
+      (set! _begin (mod (+ 1 _begin) (array-size _array)))
+      (array-ref _array old-begin))))
 
 ;; ---
 
-(def *thread-queue* (make-queue))
+(def *thread-queue* (! Queue new))
 
 (defn next-thread! ()
-  (queue-push! *thread-queue* (frame-caller ($get-frame)))
+  (! *thread-queue* push! (frame-caller ($get-frame)))
   ;; Note: set-frame-caller! may not be tail-called here.
-  (set-frame-caller! ($get-frame) (queue-pop! *thread-queue*))
+  (set-frame-caller! ($get-frame) (! *thread-queue* pop!))
   nil)
 
 (defn thread-die! ()
   ;; Note: set-frame-caller! may not be tail-called here.
-  (set-frame-caller! ($get-frame) (queue-pop! *thread-queue*))
+  (set-frame-caller! ($get-frame) (! *thread-queue* pop!))
   nil)
 
 (defn thread-new! (thunk)
-  (queue-push! *thread-queue* (frame-caller ($get-frame)))
+  (! *thread-queue* push! (frame-caller ($get-frame)))
   ;; Note: set-frame-caller! may not be tail-called here.
   (set-frame-caller! ($get-frame) '*should-never-be-used*)
   ;; thread-die! needs to happen under all circumstances.

@@ -1,0 +1,51 @@
+(->true (load-file "examples/threads.fn"))
+
+;; -- Queue
+
+(progn
+  (def %tq (! Queue new))
+  (eq? 0 (! %tq size)))
+
+(progn
+  (! %tq push! 1)
+  (! %tq push! 2)
+  (! %tq push! 3)
+  (eq? 3 (! %tq size)))
+
+(eq? 1 (! %tq pop!))
+(eq? 2 (! %tq pop!))
+(eq? 1 (! %tq size))
+
+(progn
+  (dotimes 8
+    (! %tq push! 8))
+  (eq? 9 (! %tq size)))
+
+(eq? 3 (! %tq pop!))
+(eq? 8 (! %tq pop!))
+(eq? 8 (! %tq pop!))
+(eq? 8 (! %tq pop!))
+(eq? 5 (! %tq size))
+
+;; -- Threads
+
+(progn
+ (def %test-output '())
+
+ (defn %test-emit (&rest stuff)
+   ;; Add items to the global list, then pass control to the next thread.
+   (dolist (item stuff)
+     (add-to-list! %test-output item)
+     (next-thread!))
+   (thread-die!))
+
+ ;; Execute two of these threads interleaved.
+ (go %test-emit 10 20 30 40 50)
+ (go %test-emit 15 25 35 45 55)
+
+ (dotimes 15
+   (next-thread!))
+
+ (eql? %test-output
+       '(55 50 45 40 35 30 25 20 15 10)))
+
