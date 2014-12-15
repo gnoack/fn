@@ -63,3 +63,23 @@
   (defm ExampleType 'foo () 123)
   (def %example-object ($make ExampleType))
   (eq? 123 (send %example-object 'foo)))
+
+;; Structs and fields
+(->true
+ (defstruct Adder (_num)
+   (constructor new (num)
+     (set! _num num))
+
+   (method prettyprint ()  "Adder")
+   (method plus (x)        (+ _num x))
+   (method set! (y)        (set! _num y))))
+
+(string=? "Adder" (! (! Adder new 5) prettyprint))
+
+(eq? 42 (! (! Adder new 37) plus 5))
+
+(progn
+  (def adder (! Adder new 3))
+  (! adder set! 7)
+
+  (eq? 17 (! adder plus 10)))

@@ -1,20 +1,14 @@
 ;; Byte streams
 
-(deftype ByteBuffer)
+(defstruct ByteBuffer (_buffer _index _bufsize)
+  (constructor new ()
+    (set! _buffer  ($make-mem-block 256))
+    (set! _index   0)
+    (set! _bufsize 256))
 
-(defn make-byte-buffer ()
-  ($make ByteBuffer
-         ($make-mem-block 256)  ; buffer
-         0  ; index
-         256  ; buffer-size
-))
+  (method size () _index)
 
-(defn byte-buffer-size (byte-buffer)
-  ($fields (byte-buffer (_ _buffer _index _bufsize))
-    _index))
-
-(defn byte-buffer-append! (byte-buffer byte)
-  ($fields (byte-buffer (_ _buffer _index _bufsize))
+  (method append! (byte)
     (when (<= _bufsize _index)
       (let ((new-buffer ($make-mem-block (* _index 2))))
         ($memcpy new-buffer 0
@@ -24,28 +18,23 @@
         (set! _bufsize (* _index 2))))
     ($mem-block-byte-set! _buffer _index byte)
     (set! _index (+ 1 _index))
-    byte))
+    byte)
 
-(defn byte-buffer-set! (byte-buffer pos byte)
-  ($fields (byte-buffer (_ _buffer _index _bufsize))
+  (method set-at! (pos byte)
     (assert (< pos _bufsize))
-    ($mem-block-byte-set! _buffer pos byte)))
+    ($mem-block-byte-set! _buffer pos byte))
 
-(defn byte-buffer-ref (byte-buffer pos)
-  ($fields (byte-buffer (_ _buffer _index _bufsize))
+  (method at (pos)
     (assert (< pos _bufsize))
-    ($mem-block-byte-get _buffer pos)))
+    ($mem-block-byte-get _buffer pos))
 
-;; Return a subset of the buffer as list.
-(defn byte-buffer-slice (byte-buffer first last)
-  (if (eq? first last)
-      (list)
-    ($fields (byte-buffer (_ _buffer _index _bufsize))
+  (method slice (first last)
+    (if (eq? first last)
+	(list)
       (cons ($mem-block-byte-get _buffer first)
-            (byte-buffer-slice byte-buffer (+ 1 first) last)))))
+            (! self slice (+ 1 first) last))))
 
-(defn byte-buffer->rawmem (byte-buffer)
-  ($fields (byte-buffer (_ _buffer _index _bufsize))
+  (method as-mem-block ()
     (let ((new-buffer ($make-mem-block _index)))
       ($memcpy new-buffer 0 _buffer 0 _index)
       new-buffer)))

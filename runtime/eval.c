@@ -53,6 +53,7 @@ void register_globally_fn(const char* name, function fn) {
 
 oop lookup_globally(symbol_t* key) {
   // Doesn't use lookup_var_object_globally for performance reasons.
+  // The caller guarantees that the symbol is defined.
   return var_get(dict_get(global_env, symbol_to_oop(key)));
 }
 

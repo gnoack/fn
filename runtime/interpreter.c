@@ -332,7 +332,7 @@ oop interpret(frame_t* frame, proc_t* proc) {
         IPRINT("jump-if-true %lu (taken)\n", address);
         state.ip = address;
       } else {
-        CHECK(value_eq(condition, symbols._false),
+        CHECKV(value_eq(condition, symbols._false), condition,
               "Condition evaluated to non-boolean value.");
         IPRINT("jump-if-true %lu (not taken)\n", address);
       }

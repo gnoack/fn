@@ -71,6 +71,9 @@
     ((UndefinedVar) (string-append "#<UndefinedVar "
 				   (symbol->string ($mem-get item 1))
 				   ">"))
+    ((Frame)        (let ((id (int->string ($id item) 16))
+                          (name (fn-name (frame-procedure item))))
+                      (string-append "#<Frame " (pprint name) " @" id ">")))
     ((True)         "true")
     ((False)        "false")
     (else
@@ -88,11 +91,6 @@
   (map display args)
   (writeout "\n")
   nil)
-
-(defm Frame 'pprint ()
-  (let ((id (int->string ($id self) 16))
-	(name (fn-name (frame-procedure self))))
-    (string-append "#<Frame " (pprint name) " @" id ">")))
 
 ;; TODO: Rather implement stack traces in C, for robustness!
 ;; TODO: Break dependency on this.

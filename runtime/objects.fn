@@ -104,10 +104,10 @@
 ;;; Message sending
 
 (defm Object 'unknownMessage:arguments: (selector args)
-  (println self)
-  (println "Does not understand:")
-  (println "  - " selector)
-  (println "    " args)
+  (println "*** Crashing.")
+  (println self " does not understand the message")
+  (println "  with selector: " selector)
+  (println "  and arguments: " args)
   (assert "broken"))
 
 (defn %send (receiver message type arguments)
@@ -123,6 +123,10 @@
 (defn send (receiver message &rest arguments)
   (%send receiver message (type-of receiver) arguments))
 
+;; Shortcut for sending messages that reads a bit better :)
+(defmacro ! (receiver unquoted-selector &rest args)
+  `(send ,receiver (quote ,unquoted-selector) ,@args))
+
 (defn has-method? (receiver selector)
   ;; Limitation: Only works if 'unknownMessage:arguments: is not used.
   (dict-has-key? ($mem-get (type-of receiver) 1)
@@ -131,3 +135,52 @@
 ;; Like apply, but for sending messages.
 (defn send-apply (receiver message arguments)
   (%send receiver message (type-of receiver) arguments))
+
+
+;; Structs, fields and dynamic field hints.
+(defn type-set-field-hints! (type fields)
+  (install-method! (type-of type) 'fields
+                   (lambda (self) fields)))
+
+(type-set-field-hints! Object '())
+(type-set-field-hints! Cons '(car cdr))
+
+
+;; Example:
+;; (defstruct Foo (field1 field2)
+;;   (constructor new (meh)
+;;     (set! field1 nil)
+;;     (set! field2 meh))
+;;   (method pprint () (string-append "<Foo " field1 " " field2 ">"))
+;;   (method foo (x) (+ x field1)))
+(defmacro defstruct (name fields &rest body)
+  (with-gensyms (type)
+    (defn rewrite-clause (clause)
+      (match clause
+	((constructor name lambda-list &rest body)
+	 `(install-method! (type-of ,type) (quote ,name)
+            (lambda (class ,@lambda-list)
+	      ((lambda ,fields
+		 ,@body
+		 ($make ,type ,@fields))
+	       ,@(map (lambda (_) 'nil) fields)))))
+        ((method name lambda-list &rest body)
+         `(install-method! ,type (quote ,name)
+            (lambda (self ,@lambda-list)
+              ($fields (self ,(cons nil fields))
+                ,@body))))
+	((classmethod name lambda-list &rest body)
+         `(install-method! (type-of ,type) (quote ,name)
+            (lambda (self ,@lambda-list)
+	      ,@body)))))
+
+    `(def ,name
+       (let ((,type (make-type ,(symbol->string name) Object)))
+	 ;; The 'fields method comes for free.
+	 (type-set-field-hints! ,type (quote ,fields))
+
+         ,@(map rewrite-clause body)
+         ,type))))
+
+;; ;; Shortcut for sending messages that reads a bit better :)
+(def ! send)

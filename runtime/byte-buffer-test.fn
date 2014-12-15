@@ -3,19 +3,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (progn
-  (def %buf (make-byte-buffer))
-  (= 0 (byte-buffer-size %buf)))
+  (def %buf (! ByteBuffer new))
+  (= 0 (! %buf size)))
 
 (progn
-  (byte-buffer-append! %buf 0)
-  (byte-buffer-append! %buf 1)
-  (byte-buffer-append! %buf 2)
-  (byte-buffer-append! %buf 3)
-  (byte-buffer-append! %buf 4)
-  (byte-buffer-append! %buf 5)
-  (byte-buffer-append! %buf 6)
-  (byte-buffer-set! %buf 2 20)
+  (! %buf append! 0)
+  (! %buf append! 1)
+  (! %buf append! 2)
+  (! %buf append! 3)
+  (! %buf append! 4)
+  (! %buf append! 5)
+  (! %buf append! 6)
+  (! %buf set-at! 2 20)
   (eql? '(0 1 20 3 4 5 6)
-        (byte-buffer-slice %buf 0 7)))
+        (! %buf slice 0 7)))
 
-(= 7 (byte-buffer-size %buf))
+(= 7 (! %buf size))
