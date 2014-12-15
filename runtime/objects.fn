@@ -2,6 +2,31 @@
 ;;; Types                                                          ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; A type is an object with the layout
+;;
+;;   +------+--------------+------+-----------+
+;;   | type | method-table | name | supertype |
+;;   +------+--------------+------+-----------+
+;;      ^                               ^
+;;    is-a                        is-subclass-of
+;;
+;; Note:
+;;
+;;  * Any object has a type, so type objects do too.
+;;    A type object's type is Type.
+;;  * A type will usually have a supertype.
+;;  * The name is given as a string and reads often as "Foo class".
+;;
+;; In the following code we need to resolve a roundtrip:
+;;
+;;  * Object is-a Type
+;;  * Type is-subclass-of Object
+;;
+;; Only one of the two objects can be "complete" from scratch,
+;; the other one can't and needs to be patched afterwards.
+
+;; TODO: There is too much patching happening here.
+
 (def Object ($make 1 2 3 4))
 ; Type is set below, Object and Type refer to each other.
 ($mem-set! Object 1 (make-dict))
@@ -131,10 +156,6 @@
   ;; Limitation: Only works if 'unknownMessage:arguments: is not used.
   (dict-has-key? ($mem-get (type-of receiver) 1)
                  selector))
-
-;; Like apply, but for sending messages.
-(defn send-apply (receiver message arguments)
-  (%send receiver message (type-of receiver) arguments))
 
 
 ;; Structs, fields and dynamic field hints.
