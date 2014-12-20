@@ -10,12 +10,13 @@
 #include "memory.h"
 #include "symbols.h"
 #include "value.h"
+#include "c_array.h"
 
 #include "procedures.h"
 
-#define MAX_NATIVE_PROCEDURES 256
-function native_procedures[MAX_NATIVE_PROCEDURES];
-fn_uint next_native_procedure = 0;
+DEFARRAY(function_array, function)
+
+struct function_array native_procedures;
 
 // Count variables in a lambda list and do basic syntax checks (forward decl).
 fn_uint num_vars_in_ll(oop ll);
@@ -44,10 +45,8 @@ proc_t* make_compiled_procedure(oop lambda_list, frame_t* env,
 
 // Native procedures
 oop make_native_procedure(function c_function) {
-  fn_uint index = next_native_procedure;
-  CHECK(index < MAX_NATIVE_PROCEDURES, "Too many native functions registered.");
-  native_procedures[index] = c_function;
-  next_native_procedure++;
+  fn_uint index = native_procedures.size;
+  *function_array_append(&native_procedures) = c_function;
 
   oop result = mem_alloc(3);
   MEM_SET(result, 0, symbols._native_procedure);
@@ -62,7 +61,7 @@ oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
 
 // Get the C function stored in a native procedure.
 function native_fn_function(oop fn) {
-  return native_procedures[get_smallint(mem_get(fn, 2))];
+  return native_procedures.items[get_smallint(mem_get(fn, 2))];
 }
 
 
@@ -252,4 +251,8 @@ oop apply_with_caller(oop values, frame_t* caller) {
 // For convenience and top-level invocations.
 oop apply(oop values) {
   return apply_with_caller(values, NULL);
+}
+
+void init_procedures() {
+  init_function_array(&native_procedures, 256);
 }

@@ -10,35 +10,31 @@
 #include "symbols.h"
 #include "value.h"
 #include "memory.h"
+#include "c_array.h"
 
 #include <stdio.h>
-
-static const int MAX_BYTES_SIZE = 0x2000;
-static const int MAX_OOP_TABLE_SIZE = 0x100;
-static const int MAX_LABEL_TABLE_SIZE = 0x800;
-static const int MAX_ADDRESS_TABLE_SIZE = 0x800;
 
 struct label_index {
   symbol_t* label;
   unsigned int index;
 };
 
+DEFARRAY(byte_array, unsigned char)
+DEFARRAY(oop_array, oop)
+DEFARRAY(label_index_array, struct label_index)
+
 struct compiler_result {
   // Emitted bytecode
-  unsigned char* bytes;
-  unsigned int bytes_size;
+  struct byte_array bytes;
 
   // Emitted oop table
-  oop* oop_table;
-  unsigned int oop_table_size;
+  struct oop_array oop_table;
 
   // Where the jump targets are in the bytecode.
-  struct label_index* label_positions;
-  unsigned int label_positions_size;
+  struct label_index_array label_positions;
 
   // Where the addresses for the labels belong in the bytecode.
-  struct label_index* address_positions;
-  unsigned int address_positions_size;
+  struct label_index_array address_positions;
 
   // Calculating the maximum stack depth.
   unsigned int stack_depth;
@@ -49,45 +45,42 @@ struct compiler_result* result;
 
 void init() {
   result = malloc(sizeof(struct compiler_result));
-  result->bytes = calloc(sizeof(unsigned char), MAX_BYTES_SIZE);
-  result->bytes_size = 0;
-  result->oop_table = calloc(sizeof(oop), MAX_OOP_TABLE_SIZE);
-  result->oop_table_size = 0;
-  result->label_positions = calloc(sizeof(oop), MAX_LABEL_TABLE_SIZE);
-  result->label_positions_size = 0;
-  result->address_positions = calloc(sizeof(oop), MAX_ADDRESS_TABLE_SIZE);
-  result->address_positions_size = 0;
+  init_byte_array(&result->bytes, 1024);
+  init_oop_array(&result->oop_table, 32);
+  init_label_index_array(&result->label_positions, 16);
+  init_label_index_array(&result->address_positions, 16);
   result->stack_depth = 0;
   result->max_stack_depth = 0;
 }
 
 // Return the position of where a jump label is in the code.
 unsigned int lookup_label_position(symbol_t* label) {
-  unsigned int i;
-  for (i = 0; i < result->label_positions_size; i++) {
-    if (result->label_positions[i].label == label) {
-      return result->label_positions[i].index;
+  struct label_index* item = result->label_positions.items;
+  struct label_index* end =  label_index_array_end(&result->label_positions);
+  for (; item < end; item++) {
+    if (item->label == label) {
+      return item->index;
     }
   }
   CHECKV(NO, symbol_to_oop(label), "Jump target not found.")
 }
 
 void postprocess() {
-  unsigned int i;
-  for (i = 0; i < result->address_positions_size; i++) {
-    unsigned target_position =
-        lookup_label_position(result->address_positions[i].label);
-    unsigned address_position = result->address_positions[i].index;
-    result->bytes[address_position  ] = 0xff & (target_position >> 8);
-    result->bytes[address_position+1] = 0xff & target_position;
+  struct label_index* item = result->address_positions.items;
+  struct label_index* end =  label_index_array_end(&result->address_positions);
+  for (; item < end; item++) {
+    unsigned int target_position = lookup_label_position(item->label);
+    unsigned int addr_position = item->index;
+    *byte_array_at(&result->bytes, addr_position) = 0xff & (target_position >> 8);
+    *byte_array_at(&result->bytes, addr_position+1) = 0xff & target_position;
   }
 }
 
 void finish() {
-  free(result->bytes);
-  free(result->oop_table);
-  free(result->label_positions);
-  free(result->address_positions);
+  free_byte_array(&result->bytes);
+  free_oop_array(&result->oop_table);
+  free_label_index_array(&result->label_positions);
+  free_label_index_array(&result->address_positions);
 }
 
 // --------------------------------------------------------------
@@ -104,45 +97,30 @@ symbol_t* invent_symbol(const char* name) {
 }
 
 void emit_byte(unsigned char byte) {
-  CHECK(result->bytes_size < MAX_BYTES_SIZE + 1,
-        "Byte buffer is too small.");
-  result->bytes[result->bytes_size] = byte;
-  result->bytes_size++;
+  *byte_array_append(&result->bytes) = byte;
 }
 
 void emit_oop(oop object) {
   // Check whether object is already in the table.
-  unsigned int i;
-  for (i=0; i<result->oop_table_size; i++) {
-    if (value_eq(object, result->oop_table[i])) {
-      CHECK(i <= 0xff, "OOP table too large.");
-      emit_byte(0xff & i);
-      return;
-    }
+  int idx = oop_array_find(&result->oop_table, object, value_eq);
+  if (idx == -1) {
+    // Allocate something in the OOP table.
+    idx = result->oop_table.size;
+    *oop_array_append(&result->oop_table) = object;
   }
 
-  // Allocate something in the OOP table.
-  unsigned int to_emit = result->oop_table_size;
-
-  CHECK(result->oop_table_size < MAX_OOP_TABLE_SIZE + 1,
-        "OOP table buffer is too small.");
-  result->oop_table[result->oop_table_size] = object;
-  result->oop_table_size++;
-
-  CHECK(to_emit <= 0xff, "OOP table too large.");
-  emit_byte(0xff & to_emit);
+  CHECK(idx <= 0xff, "OOP table too large.");
+  emit_byte(0xff & idx);
 }
 
 void emit_address(symbol_t* label) {
-  CHECK(result->address_positions_size < MAX_ADDRESS_TABLE_SIZE + 1,
-        "Too many addresses emitted already.");
-  struct label_index* tup =
-    result->address_positions + result->address_positions_size;
-  tup->label = label;
-  tup->index = result->bytes_size;
-  result->address_positions_size++;
+  *label_index_array_append(&result->address_positions) = (struct label_index) {
+    .label = label,
+    .index = result->bytes.size
+  };
 
-  result->bytes_size += 2;  // Or something.
+  byte_array_append(&result->bytes);
+  byte_array_append(&result->bytes);
 }
 
 void emit_global_var_ref(symbol_t* label) {
@@ -150,13 +128,10 @@ void emit_global_var_ref(symbol_t* label) {
 }
 
 void emit_label(symbol_t* label) {
-  CHECK(result->label_positions_size < MAX_LABEL_TABLE_SIZE + 1,
-        "Too many labels emitted already.");
-  struct label_index* tup =
-    result->label_positions + result->label_positions_size;
-  tup->label = label;
-  tup->index = result->bytes_size;
-  result->label_positions_size++;
+  *label_index_array_append(&result->label_positions) = (struct label_index) {
+    .label = label,
+    .index = result->bytes.size
+  };
 }
 
 void adjust_stack(int delta) {
@@ -551,13 +526,13 @@ proc_t* compile_top_level_expression(oop expr) {
   postprocess();
 
   oop lambda_list = NIL;
-  oop bytecode = mem_raw_mem_make(result->bytes, result->bytes_size);
+  oop bytecode = mem_raw_mem_make(result->bytes.items, result->bytes.size);
   oop ip = make_smallint(0);
 
-  oop oop_lookup_table = make_array(result->oop_table_size);
+  oop oop_lookup_table = make_array(result->oop_table.size);
   unsigned int i;
-  for (i = 0; i < result->oop_table_size; i++) {
-    array_set(oop_lookup_table, i, result->oop_table[i]);
+  for (i = 0; i < result->oop_table.size; i++) {
+    array_set(oop_lookup_table, i, result->oop_table.items[i]);
   }
 
   fn_uint max_stack_size = result->max_stack_depth;

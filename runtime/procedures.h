@@ -62,4 +62,6 @@ static inline boolean proc_nested_args(proc_t* p) {
 // The caller of the currently executing native procedure.
 extern frame_t* native_procedure_caller();
 
+extern void init_procedures();
+
 #endif  // _PROCEDURES_H_

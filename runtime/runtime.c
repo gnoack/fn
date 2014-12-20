@@ -18,6 +18,7 @@
 #include "pegs.h"
 #include "pprint.h"
 #include "primitives.h"
+#include "procedures.h"
 #include "serialize.h"
 #include "strings.h"
 #include "symbols.h"
@@ -28,6 +29,7 @@
 #include <string.h>
 
 void fn_runtime_init() {
+  init_procedures();
   init_gc();
   init_symbols();
   init_eval();
