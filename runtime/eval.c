@@ -65,7 +65,7 @@ oop lookup_var_object_globally(symbol_t* key) {
   return dict_get(global_env, symbol_to_oop(key));
 }
 
-void enumerate_gc_roots(void (*accept)(oop* place)) {
+static void enumerate_gc_roots(void (*accept)(oop* place)) {
   accept(&global_env);
   accept(&remaining_declarations);
 }
@@ -96,7 +96,7 @@ void init_eval() {
 
 // TODO: Write REPL and file loading more in Lisp and remove the weird
 // compilation code from here.
-oop eval_global(oop program) {
+static inline oop eval_global(oop program) {
   if (is_defined_globally(symbols._macroexpand)) {
     oop macroexpand_fn = lookup_globally(symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));
@@ -105,7 +105,6 @@ oop eval_global(oop program) {
       compile_top_level_expression(program), NIL, NULL);
 }
 
-extern
 void load_decls(oop decls) {
   while (!is_nil(decls)) {
     // Protect the remaining declarations during GC.

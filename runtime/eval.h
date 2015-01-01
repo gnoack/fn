@@ -7,8 +7,6 @@
 // Global namespace.
 extern oop global_env;
 
-extern oop eval_global(oop program);
-
 extern void register_globally(const char* name, oop value);
 
 extern void register_globally_fn(const char* name, function fn);
