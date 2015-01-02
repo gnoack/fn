@@ -186,12 +186,28 @@ void writeback_to_frame(interpreter_state_t* state) {
 }
 
 static inline
-frame_t* make_frame_from_stack(stack_t* stack, proc_t* proc, frame_t* caller) {
-  fn_uint function_argnum = proc_argnum(proc);
+frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
+                               proc_t* proc, frame_t* caller) {
   frame_t* frm = make_frame(proc, caller);
+
+  // Positional arguments.
+  fn_uint has_varargs = proc_varargs(proc);
+  fn_uint num_fixargs = proc_argnum(proc) - has_varargs;
+
+  if (has_varargs) {
+    CHECK(num_fixargs <= arg_count, "Too few positonal arguments.");
+    fn_uint num_varargs = arg_count - num_fixargs;
+    oop varargs = stack_pop_list(stack, num_varargs);
+    frame_set_var(frm, num_fixargs, varargs);
+  } else {
+    CHECK(num_fixargs == arg_count, "Wrong number of arguments.");
+  }
+
   memcpy(frm + 1, // jump header.
-         &(stack->stack[stack->size - function_argnum]),
-         sizeof(oop) * function_argnum);
+         &(stack->stack[stack->size - num_fixargs]),
+         sizeof(oop) * num_fixargs);
+  stack_shrink(stack, num_fixargs);
+
   return frm;
 }
 
@@ -252,19 +268,9 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
       caller = state->reg_frm->caller;
     }
     frame_t* env;
-    if (proc_nested_args(proc)) {
-      oop args = stack_pop_list(stack, arg_count - 1);
-      stack_shrink(stack, 1);
-      env = make_frame_for_application(proc, args, caller);
-    } else {
-      // TODO: Do quick calls with vararg procedures, too.
-      env = make_frame_from_stack(stack, proc, caller);
-      if (unlikely(arg_count != proc_argnum(proc) + 1)) {
-        raise(state, "wrong-number-of-arguments");
-        return;  // Callers pass control back to interpreter directly.
-      }
-      stack_shrink(stack, arg_count);
-    }
+
+    env = make_frame_from_stack(stack, arg_count - 1, proc, caller);
+    stack_shrink(stack, 1);  // Remove function from stack.
 
     if (tailcall == NO) {
       // Only need to writeback when frame is not discarded.

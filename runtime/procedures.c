@@ -101,13 +101,14 @@ oop procedure_set_name(oop fn, oop name) {
 // TODO: Remove duplication between destructuring functions.
 
 // Returns twice the number of non-vararg variables in the lambda list,
-// plus 1, if lambda list had varargs.
+// plus 3 (2 + 1), if lambda list had varargs.
 fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
     oop ll_item = car(ll);
     CHECKV(is_symbol(ll_item), ll_item, "Expected a symbol.");
     if (to_symbol(ll_item) == symbols._rest) {
+      // From here on, expect a symbol and the end of the list.
       ll = cdr(ll);
       CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
       CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");

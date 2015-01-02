@@ -55,8 +55,9 @@ static inline fn_uint proc_max_stack_depth(proc_t* p) {
   return get_smallint(p->numbers) >> 16;
 }
 
-static inline boolean proc_nested_args(proc_t* p) {
-  return TO_BOOL(get_smallint(p->numbers) & 1);
+// 1 if the function had varargs.
+static inline fn_uint proc_varargs(proc_t* p) {
+  return get_smallint(p->numbers) & 1;
 }
 
 // The caller of the currently executing native procedure.
