@@ -138,22 +138,3 @@
 (eq? 5 (nth (list 5 6) 0))
 (eq? 6 (nth (list 5 6) 1))
 (eq? 2 (length (list 1 2)))
-
-; TODO: Fix bug: ((lambda (f o o) (list f o o)) 1 2 3) => '(1 2 2) !!!
-;; Destructure lambda lists
-(eql? (list (list 1 2 3)
-            (list 4 5 6)
-            (list 7 8 9))
-      ((lambda ((f o l &rest bar) baz)
-         (list (list f o l) bar baz))
-       (list 1 2 3 4 5 6) (list 7 8 9)))
-
-(let ((((symbol &rest var-bindings) consequent)
-       '((hello 1 2 3) more)))
-  (and (eq? 'hello symbol)
-       (eql? '(1 2 3) var-bindings)
-       (eq? 'more consequent)))
-
-; Destructuring a lambda list with empty sublist.
-(let ((kapow (lambda (()) 42)))
-  (eq? 42 (kapow '())))

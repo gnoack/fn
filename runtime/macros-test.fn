@@ -38,6 +38,9 @@
   ((expected a) false)
   (else true))
 
+(destructure ((foo bar) '(1 2))
+  (eq? 3 (+ foo bar)))
+
 ;; Does the hand-written defmacro
 ;; macro work?
 (eql?

@@ -100,28 +100,23 @@ oop procedure_set_name(oop fn, oop name) {
 // Lambda list destructuring.
 // TODO: Remove duplication between destructuring functions.
 
-// Returns twice the number of variables in the lambda list,
-// plus 1, if lambda list was nested or had varargs (not flat),
+// Returns twice the number of non-vararg variables in the lambda list,
+// plus 1, if lambda list had varargs.
 fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
     oop ll_item = car(ll);
-    if (is_symbol(ll_item)) {
-      if (to_symbol(ll_item) == symbols._rest) {
-        ll = cdr(ll);
-        CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
-        CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
-        count = (count + 2) | 1;
-        ll = cdr(ll);
-        CHECKV(is_nil(ll), ll, "Need only one symbol after &rest.");
-        return count;
-      } else {
-        count += 2;
-      }
+    CHECKV(is_symbol(ll_item), ll_item, "Expected a symbol.");
+    if (to_symbol(ll_item) == symbols._rest) {
+      ll = cdr(ll);
+      CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
+      CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
+      count = (count + 2) | 1;
+      ll = cdr(ll);
+      CHECKV(is_nil(ll), ll, "Need only one symbol after &rest.");
+      return count;
     } else {
-      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
-             "Only symbols and nested lists supported in lambda lists.");
-      count = (count + num_vars_in_ll(ll_item)) | 1;
+      count += 2;
     }
     ll = cdr(ll);
   }
@@ -132,25 +127,18 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
                                            fn_uint idx) {
   while (is_cons(ll)) {
     oop ll_item = car(ll);
-    if (is_symbol(ll_item)) {
-      if (to_symbol(ll_item) == symbols._rest) {
-        ll = cdr(ll);
-        oop value = args;
-        frame_set_var(frame, idx, value);
-        idx++;
-        return idx;
-      } else {
-        CHECKV(is_cons(args), args, "Not enough arguments.");
-        oop value = car(args);
-        frame_set_var(frame, idx, value);
-        idx++;
-      }
+    CHECKV(is_symbol(ll_item), ll_item, "Expected a symbol in the lambda list.");
+    if (to_symbol(ll_item) == symbols._rest) {
+      ll = cdr(ll);
+      oop value = args;
+      frame_set_var(frame, idx, value);
+      idx++;
+      return idx;
     } else {
-      CHECKV(is_cons(ll_item) || is_nil(ll_item), ll_item,
-             "Only symbols and nested lists supported in lambda lists.");
-
-      oop arg_item = car(args);
-      idx = destructure_lambda_list_into_frame(ll_item, arg_item, frame, idx);
+      CHECKV(is_cons(args), args, "Not enough arguments.");
+      oop value = car(args);
+      frame_set_var(frame, idx, value);
+      idx++;
     }
     ll = cdr(ll);
     args = cdr(args);

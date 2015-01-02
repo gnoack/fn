@@ -27,10 +27,12 @@
     (map macroexpand-rec exprs)))
 
 (def me-lambda-rec
-  (lambda ((lambda-list &rest body))
-    (cons 'lambda
-    (cons lambda-list
-          (macroexpand-sequence body)))))
+  (lambda (expr)
+    (let ((lambda-list (first expr))
+          (body        (rest expr)))
+      (cons 'lambda
+      (cons lambda-list
+            (macroexpand-sequence body))))))
 
 (def me-let-rec
   (lambda (xs)
@@ -157,8 +159,10 @@
                 (body-exprs (list-without-prefix-where def-expr? exprs)))
             (if (nil? def-forms)
                 exprs
-              (list (macroexpand `(labels ,(map (lambda ((def_ symbol value-expr))
-                                                  `(,symbol ,value-expr))
+              (list (macroexpand `(labels ,(map (lambda (def-form)
+                                                  (let ((symbol (second def-form))
+                                                        (value-expr (third def-form)))
+                                                    `(,symbol ,value-expr)))
                                                 def-forms)
                                     ,@body-exprs))))))))
 
@@ -245,6 +249,11 @@
        (set! ,expr-sym (first ,expr-var))
        (cond ,@(map transform-clause clauses)))))
 
+(defmacro destructure (clause &rest body-exprs)
+  (let ((lambda-list (first clause))
+        (arg-expr    (second clause)))
+    `(apply (lambda ,lambda-list ,@body-exprs) ,arg-expr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Procedure call tracing for debugging                           ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -274,9 +283,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO: Separate imperative macros into their own file?
-(defmacro dolist ((var items) &rest cmds)
-  `(map (lambda (,var) ,@cmds)
-        ,items))
+(defmacro dolist (clause &rest cmds)
+  (destructure ((var items) clause)
+    `(map (lambda (,var) ,@cmds)
+          ,items)))
 
 (defmacro add-to-list! (name value)
   `(set! ,name (cons ,value ,name)))

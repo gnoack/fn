@@ -86,16 +86,17 @@
 ;;; Compiler                                                      ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn compile-if ((if_ condition-expr consequent-expr alternative-expr)
-                  environment call-style)
-  (with-gensyms (true-branch after-if)
-    `(,@(compile condition-expr environment 'call)
-      (jump-if-true ,true-branch)
-      ,@(compile alternative-expr environment call-style)
-      (jump ,after-if)
-      (label ,true-branch)
-      ,@(compile consequent-expr environment call-style)
-      (label ,after-if))))
+(defn compile-if (expr environment call-style)
+  (destructure ((if_ condition-expr consequent-expr alternative-expr)
+                expr)
+    (with-gensyms (true-branch after-if)
+      `(,@(compile condition-expr environment 'call)
+        (jump-if-true ,true-branch)
+        ,@(compile alternative-expr environment call-style)
+        (jump ,after-if)
+        (label ,true-branch)
+        ,@(compile consequent-expr environment call-style)
+        (label ,after-if)))))
 
 (defn compile-application (expr environment call-style)
   (when (nil? expr)
@@ -120,16 +121,17 @@
                                                (vars-from-ll (rest lambda-list))))
         ((symbol? lambda-list)         (list lambda-list))))
 
-(defn compile-lambda ((lambda_ lambda-list &rest body-exprs) environment)
-  (with-gensyms (lambda-entry after-lambda)
-    `((make-lambda ,lambda-entry ,(max-stack-depth `(progn ,@body-exprs))
-                   ,lambda-list)
-      (jump ,after-lambda)
-      (label ,lambda-entry)
-      ,@(compile-lambda-body body-exprs
-                             (linked-env-with-vars
-                              environment (vars-from-ll lambda-list)))
-      (label ,after-lambda))))
+(defn compile-lambda (expr environment)
+  (destructure ((lambda_ lambda-list &rest body-exprs) expr)
+    (with-gensyms (lambda-entry after-lambda)
+      `((make-lambda ,lambda-entry ,(max-stack-depth `(progn ,@body-exprs))
+                     ,lambda-list)
+        (jump ,after-lambda)
+        (label ,lambda-entry)
+        ,@(compile-lambda-body body-exprs
+                               (linked-env-with-vars
+                                environment (vars-from-ll lambda-list)))
+        (label ,after-lambda)))))
 
 (defn compile-sequence (exprs environment call-style)
   ;; Only the last expression keeps the tail call property.
@@ -142,45 +144,51 @@
   `(,@(compile-sequence exprs environment 'tail-call)
     (return)))
 
-(defn compile-def ((def_ symbol value-expr) environment)
-  `(,@(compile value-expr environment 'call)
-    ,@(env-generate-write global-env symbol)))
+(defn compile-def (expr environment)
+  (destructure ((def_ symbol value-expr) expr)
+   `(,@(compile value-expr environment 'call)
+     ,@(env-generate-write global-env symbol))))
 
 ;; Transforming
-(defn transform-let->lambda ((let_ let-clauses &rest body-exprs))
-  (let ((let-variables (map first let-clauses))
-        (let-expressions (map second let-clauses)))
-    `((lambda ,let-variables ,@body-exprs)
-      ,@let-expressions)))
+(defn transform-let->lambda (expr)
+  (destructure ((let_ let-clauses &rest body-exprs) expr)
+    (let ((let-variables (map first let-clauses))
+          (let-expressions (map second let-clauses)))
+      `((lambda ,let-variables ,@body-exprs)
+        ,@let-expressions))))
 
 (defn compile-let (expr environment call-style)
   (compile (transform-let->lambda expr) environment call-style))
 
 ;; TODO: This is exactly the same as 'def' right now... :-/
-(defn compile-set! ((set!_ symbol value-expr) environment)
-  `(,@(compile value-expr environment 'call)
-    ,@(env-generate-write environment symbol)))
+(defn compile-set! (expr environment)
+  (destructure ((set!_ symbol value-expr) expr)
+    `(,@(compile value-expr environment 'call)
+      ,@(env-generate-write environment symbol))))
 
-(defn compile-mem-get (($mem-get_ expr index) environment call-style)
-  (if (number? index)
-      `(,@(compile expr environment 'call)
-        (read-field ,index))
-    (compile-application (`(,$mem-get_ ,expr ,index) environment call-style))))
+(defn compile-mem-get (expr environment call-style)
+  (destructure (($mem-get_ expr index) expr)
+    (if (number? index)
+        `(,@(compile expr environment 'call)
+          (read-field ,index))
+      (compile-application (`(,$mem-get_ ,expr ,index) environment call-style)))))
 
-(defn compile-mem-set (($mem-set!_ expr index value) environment call-style)
-  (if (number? index)
-      ;; TODO: Would be better to calculate first expr, then value!
-      `(,@(compile value environment 'call)
-        ,@(compile expr environment 'call)
-        (write-field ,index))
-    (compile-application (`(,$mem-set!_ ,expr ,index ,value)
-                          environment call-style))))
+(defn compile-mem-set (expr environment call-style)
+  (destructure (($mem-set!_ expr index value) expr)
+    (if (number? index)
+        ;; TODO: Would be better to calculate first expr, then value!
+        `(,@(compile value environment 'call)
+          ,@(compile expr environment 'call)
+          (write-field ,index))
+      (compile-application (`(,$mem-set!_ ,expr ,index ,value)
+                            environment call-style)))))
 
-(defn compile-fields (($fields_ (objname fieldnames) &rest body)
-                      environment call-style)
-  (compile-sequence body
-                    (linked-field-access-env environment objname fieldnames)
-                    call-style))
+(defn compile-fields (expr environment call-style)
+  (destructure (($fields_ clause &rest body) expr)
+    (destructure ((objname fieldnames) clause)
+      (compile-sequence body
+                        (linked-field-access-env environment objname fieldnames)
+                        call-style))))
 
 (defn compile (expr environment call-style)
   (cond
@@ -284,12 +292,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Wrapper around `make-compiled-procedure' that accepts a code-triple.
-(defn make-compiled-procedure* (name lambda-list frame
-                                (bytecode ip oop-table)
+(defn make-compiled-procedure* (name lambda-list frame code-triple
                                 max-stack-depth)
-  (make-compiled-procedure name lambda-list frame
-                           bytecode ip oop-table
-                           max-stack-depth))
+  (destructure ((bytecode ip oop-table) code-triple)
+    (make-compiled-procedure name lambda-list frame
+                             bytecode ip oop-table
+                             max-stack-depth)))
 
 ;; Invoked from C and Lisp to compile top-level expressions.
 ;; Should only be defined once compilation works.

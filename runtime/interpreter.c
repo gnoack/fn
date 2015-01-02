@@ -189,7 +189,7 @@ static inline
 frame_t* make_frame_from_stack(stack_t* stack, proc_t* proc, frame_t* caller) {
   fn_uint function_argnum = proc_argnum(proc);
   frame_t* frm = make_frame(proc, caller);
-  memcpy(frm + 1, // jump header. //&(result.mem[FRAME_HEADER_SIZE]),
+  memcpy(frm + 1, // jump header.
          &(stack->stack[stack->size - function_argnum]),
          sizeof(oop) * function_argnum);
   return frm;

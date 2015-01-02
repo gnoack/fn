@@ -14,15 +14,16 @@
        ,result)))
 
 (defn expand-module-clauses (module-clauses)
-  (defn normalize-var-clause (var)
-    ;; Calls emit with the binding name and the var name in the module.
-    (cond ((symbol? var)  (list var var))
-          ((list? var)    (list (first var) (second var)))
-          (true           (error "Unsupported module import clause " var))))
-  (defn expand-module-clause ((module-name &rest vars))
-    (map (lambda ((new-var-name old-var-name))
-           `(,new-var-name (dict-get ,module-name ',old-var-name)))
-         (map normalize-var-clause vars)))
+  (defn expand-module-clause (clause)
+    (destructure ((module-name &rest vars) clause)
+      (defn make-let-clause* (new-name old-name)
+        `(,new-name (dict-get ,module-name ',old-name)))
+      (defn make-let-clause (var)
+        ;; Calls emit with the binding name and the var name in the module.
+        (cond ((symbol? var)  (make-let-clause* var var))
+              ((list? var)    (make-let-clause* (first var) (second var)))
+              (true           (error "Unsupported module import clause " var))))
+      (map make-let-clause vars)))
   (apply append (map expand-module-clause module-clauses)))
 
 ;; Import and locally bind symbols from the given modules.
