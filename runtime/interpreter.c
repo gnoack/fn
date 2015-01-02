@@ -333,9 +333,9 @@ static void raise(interpreter_state_t* state, const char* name) {
   CHECKV(is_compiled_lisp_procedure(raise_fn), raise_fn,
          "`raise' needs to be a compiled Lisp procedure.");
 
-  oop arglist = make_cons(to_oop(make_symbol(name)), NIL);
   frame_t* caller = state->reg_frm->caller;
-  frame_t* env = make_frame_for_application(to_proc(raise_fn), arglist, caller);
+  frame_t* env = make_frame(to_proc(raise_fn), caller);
+  frame_set_var(env, 0, to_oop(make_symbol(name)));
   initialize_state_from_fn(env, state);
 }
 
