@@ -252,8 +252,14 @@ void print_frame(frame_t* frame) {
   printf("(");
   print_value(fn_name(proc_to_oop(frame->procedure)));
   int i;
+  oop varnames = frame->procedure->lambda_list;
   for (i=0; i<frame_size(frame); i++) {
     printf(" ");
+    if (is_cons(varnames)) {
+      print_value(first(varnames));
+      printf("=");
+      varnames = rest(varnames);
+    }
     print_value(frame_get_var(frame, i));
   }
   printf(")");
