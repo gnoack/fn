@@ -4,6 +4,7 @@
 #include "cons.h"
 #include "data.h"
 #include "debug.h"
+#include "eval.h"
 #include "gc.h"
 #include "interpreter.h"
 #include "memory.h"
@@ -308,6 +309,19 @@ static inline oop read_oop(interpreter_state_t* state) {
 }
 
 
+// Signaled if the interpreter encounters an error.
+void raise(interpreter_state_t* state, const char* name) {
+  oop raise_fn = lookup_globally(make_symbol("raise"));
+  CHECKV(is_compiled_lisp_procedure(raise_fn), raise_fn,
+         "`raise' needs to be a compiled Lisp procedure.");
+
+  oop arglist = make_cons(to_oop(make_symbol(name)), NIL);
+  proc_t* proc = to_proc(raise_fn);
+  frame_t* caller = state->reg_frm->caller;
+  frame_t* env = make_frame_for_application(proc, arglist, caller);
+  initialize_state_from_fn(env, proc, state);
+}
+
 // Interpreter
 oop interpret(frame_t* frame, proc_t* proc) {
   interpreter_state_t state;
@@ -367,7 +381,11 @@ oop interpret(frame_t* frame, proc_t* proc) {
     }
     case BC_READ_GLOBAL_VAR: {
       oop var = read_oop(&state);
-      oop value = var_get(var);
+      if (!is_set_var(var)) {
+        raise(&state, "undefined-symbol");
+        break;
+      }
+      oop value = var_get_unchecked(var);
       IPRINT("load-global-var ");
       IVALUE(symbol_to_oop(var_name(var)));
       stack_push(&state.stack, value);
@@ -473,8 +491,8 @@ oop interpret(frame_t* frame, proc_t* proc) {
       break;
     }
     default:
-      printf("Fatal: Unknown byte code!\n");
-      exit(1);
+      raise(&state, "unknown-bytecode");
+      break;
     }
   }
 }

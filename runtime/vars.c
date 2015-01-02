@@ -51,6 +51,11 @@ void var_unset(oop var) {
 
 oop var_get(oop var) {
   CHECKV(is_set_var(var), var, "Undefined variable.");
+  return var_get_unchecked(var);
+}
+
+oop var_get_unchecked(oop var) {
+  // The caller guarantees that the variable is defined.
   return to_var(var)->value;
 }
 
