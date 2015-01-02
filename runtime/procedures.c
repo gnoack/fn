@@ -124,28 +124,27 @@ fn_uint num_vars_in_ll(oop ll) {
   return count;
 }
 
-fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
-                                           fn_uint idx) {
-  while (is_cons(ll)) {
-    oop ll_item = car(ll);
-    CHECKV(is_symbol(ll_item), ll_item, "Expected a symbol in the lambda list.");
-    if (to_symbol(ll_item) == symbols._rest) {
-      ll = cdr(ll);
-      oop value = args;
-      frame_set_var(frame, idx, value);
-      idx++;
-      return idx;
-    } else {
-      CHECKV(is_cons(args), args, "Not enough arguments.");
-      oop value = car(args);
-      frame_set_var(frame, idx, value);
-      idx++;
-    }
-    ll = cdr(ll);
-    args = cdr(args);
+boolean fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
+  int has_varargs = proc_varargs(proc);
+  int num_fixargs = proc_argnum(proc) - has_varargs;
+  fn_uint idx = 0;
+
+  while (is_cons(args) && num_fixargs > 0) {
+    frame_set_var(frame, idx, first(args));
+
+    args = rest(args);
+    num_fixargs--;
+    idx++;
   }
-  CHECKV(is_nil(args), args, "Too many arguments.");
-  return idx;
+
+  if (unlikely(num_fixargs != 0)) { return NO; }
+
+  if (has_varargs) {
+    frame_set_var(frame, idx, args);
+  } else {
+    if (unlikely(!is_nil(args))) { return NO; }
+  }
+  return YES;
 }
 
 
@@ -153,7 +152,9 @@ fn_uint destructure_lambda_list_into_frame(oop ll, oop args, frame_t* frame,
 
 frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller) {
   frame_t* frame = make_frame(proc, caller);
-  destructure_lambda_list_into_frame(proc->lambda_list, args, frame, 0);
+  if (!fill_frame_from_args(args, proc, frame)) {
+    CHECKV(NO, to_oop(proc), "Called with wrong number of arguments.");
+  }
   return frame;
 }
 
