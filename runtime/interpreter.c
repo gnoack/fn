@@ -133,10 +133,13 @@ typedef struct frame {
 
 static const ssize_t FRAME_HEADER_SIZE = sizeof(frame_t) / sizeof(oop);
 
-// Frame.  Leaves space for the arguments that still needs to be filled.
+// Frame.  Leaves space for the arguments that still needs to be filled,
+// one slot for each fixed argument plus one for the varargs list.
 // TODO: Does IP always need to be set?
 frame_t* make_frame(proc_t* proc, frame_t* caller) {
-  frame_t* frm = to_frame(mem_alloc(FRAME_HEADER_SIZE + proc_argnum(proc)));
+  frame_t* frm = to_frame(mem_alloc(FRAME_HEADER_SIZE +
+                                    proc_num_fixargs(proc) +
+                                    proc_has_varargs(proc)));
   *frm = (frame_t) {
     .type      = symbols._frame,
     .next      = proc->env,  // Next lexical env.
@@ -192,8 +195,8 @@ frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
   frame_t* frm = make_frame(proc, caller);
 
   // Positional arguments.
-  fn_uint has_varargs = proc_varargs(proc);
-  fn_uint num_fixargs = proc_argnum(proc) - has_varargs;
+  fn_uint has_varargs = proc_has_varargs(proc);
+  fn_uint num_fixargs = proc_num_fixargs(proc);
 
   if (has_varargs) {
     if (unlikely(arg_count < num_fixargs)) {
@@ -216,8 +219,9 @@ frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
   return frm;
 }
 
-fn_uint frame_size(frame_t* frame) {
-  return proc_argnum(frame->procedure);
+static inline fn_uint frame_size(frame_t* frame) {
+  return proc_num_fixargs(frame->procedure) +
+    proc_has_varargs(frame->procedure);
 }
 
 static inline

@@ -47,7 +47,7 @@ extern oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* cal
 extern oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller);
 extern oop fn_name(oop fn);
 
-static inline fn_uint proc_argnum(proc_t* p) {
+static inline fn_uint proc_num_fixargs(proc_t* p) {
   return (get_smallint(p->numbers) & 0xffff) >> 1;
 }
 
@@ -56,7 +56,7 @@ static inline fn_uint proc_max_stack_depth(proc_t* p) {
 }
 
 // 1 if the function had varargs.
-static inline fn_uint proc_varargs(proc_t* p) {
+static inline fn_uint proc_has_varargs(proc_t* p) {
   return get_smallint(p->numbers) & 1;
 }
 

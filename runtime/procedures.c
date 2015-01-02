@@ -101,7 +101,7 @@ oop procedure_set_name(oop fn, oop name) {
 // TODO: Remove duplication between destructuring functions.
 
 // Returns twice the number of non-vararg variables in the lambda list,
-// plus 3 (2 + 1), if lambda list had varargs.
+// plus 1, if lambda list had varargs.
 fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
@@ -112,7 +112,7 @@ fn_uint num_vars_in_ll(oop ll) {
       ll = cdr(ll);
       CHECKV(is_cons(ll), ll, "Need one more item after &rest.");
       CHECKV(is_symbol(car(ll)), car(ll), "Need a symbol after &rest.");
-      count = (count + 2) | 1;
+      count |= 1;
       ll = cdr(ll);
       CHECKV(is_nil(ll), ll, "Need only one symbol after &rest.");
       return count;
@@ -125,8 +125,8 @@ fn_uint num_vars_in_ll(oop ll) {
 }
 
 boolean fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
-  int has_varargs = proc_varargs(proc);
-  int num_fixargs = proc_argnum(proc) - has_varargs;
+  int has_varargs = proc_has_varargs(proc);
+  int num_fixargs = proc_num_fixargs(proc);
   fn_uint idx = 0;
 
   while (is_cons(args) && num_fixargs > 0) {
