@@ -185,6 +185,7 @@ void writeback_to_frame(interpreter_state_t* state) {
           make_smallint(state->stack.size));
 }
 
+// On wrong number of arguments, returns NULL.
 static inline
 frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
                                proc_t* proc, frame_t* caller) {
@@ -195,12 +196,16 @@ frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
   fn_uint num_fixargs = proc_argnum(proc) - has_varargs;
 
   if (has_varargs) {
-    CHECK(num_fixargs <= arg_count, "Too few positonal arguments.");
+    if (unlikely(arg_count < num_fixargs)) {
+      return NULL;
+    }
     fn_uint num_varargs = arg_count - num_fixargs;
     oop varargs = stack_pop_list(stack, num_varargs);
     frame_set_var(frm, num_fixargs, varargs);
   } else {
-    CHECK(num_fixargs == arg_count, "Wrong number of arguments.");
+    if (unlikely(num_fixargs != arg_count)) {
+      return NULL;
+    }
   }
 
   memcpy(frm + 1, // jump header.
@@ -267,9 +272,12 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     if (tailcall == YES) {
       caller = state->reg_frm->caller;
     }
-    frame_t* env;
-
-    env = make_frame_from_stack(stack, arg_count - 1, proc, caller);
+    frame_t* frame = make_frame_from_stack(stack, arg_count - 1,
+                                           proc, caller);
+    if (frame == NULL) {
+      raise(state, "wrong-number-of-arguments");
+      return;
+    }
     stack_shrink(stack, 1);  // Remove function from stack.
 
     if (tailcall == NO) {
@@ -280,7 +288,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     IPRINT("call %lu         .oO ", arg_count);
 
     // Modify the interpreter state.
-    initialize_state_from_fn(env, state);
+    initialize_state_from_fn(frame, state);
   } else if (is_native_procedure(cfn)) {
     // Pass a reference to the local stack frame to the native function.
     size_t argc = arg_count - 1;
