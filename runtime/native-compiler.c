@@ -166,20 +166,20 @@ typedef unsigned char byte;
  * These are emitting bytecode instructions on a slightly higher level.
  */
 void JUMP(symbol_t* label)                           { emit_byte(0); emit_address(label); }
-void JUMP_IF_TRUE(symbol_t* label)                   { emit_byte(1); emit_address(label); adjust_stack(-1); }
-void LOAD_VALUE(oop value)                           { emit_byte(2); emit_oop(value); adjust_stack(1); }
-void READ_VAR(byte f_depth, byte v_index)            { emit_byte(3); emit_byte(f_depth); emit_byte(v_index); adjust_stack(1); }
+void JUMP_IF_TRUE(symbol_t* label)                   { emit_byte(1); emit_address(label);                                adjust_stack(-1); }
+void LOAD_VALUE(oop value)                           { emit_byte(2); emit_oop(value);                                    adjust_stack(1); }
+void READ_VAR(byte f_depth, byte v_index)            { emit_byte(3); emit_byte(f_depth); emit_byte(v_index);             adjust_stack(1); }
 void WRITE_VAR(byte f_depth, byte v_index)           { emit_byte(4); emit_byte(f_depth); emit_byte(v_index); }
-void READ_GLOBAL(symbol_t* name)                     { emit_byte(5); emit_global_var_ref(name); adjust_stack(1); }
+void READ_GLOBAL(symbol_t* name)                     { emit_byte(5); emit_global_var_ref(name);                          adjust_stack(1); }
 void WRITE_GLOBAL(symbol_t* name)                    { emit_byte(6); emit_global_var_ref(name); }
-void DISCARD()                                       { emit_byte(7); adjust_stack(-1); }
+void DISCARD()                                       { emit_byte(7);                                                     adjust_stack(-1); }
 void MAKE_LAMBDA(symbol_t* label, byte s_sz, oop ll) { emit_byte(8); emit_address(label); emit_byte(s_sz); emit_oop(ll); adjust_stack(1); }
-void CALL(byte argnum)                               { emit_byte(9); emit_byte(argnum); adjust_stack(1 - argnum); }
-void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum); adjust_stack(1 - argnum); }
-void RETURN()                                        { emit_byte(11); adjust_stack(-1); }
-void TAIL_CALL_APPLY()                               { emit_byte(12); adjust_stack(1 - 2); }  // unused.
+void CALL(byte argnum)                               { emit_byte(9); emit_byte(argnum);                                  adjust_stack(1 - argnum); }
+void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum);                                 adjust_stack(1 - argnum); }
+void RETURN()                                        { emit_byte(11);                                                    adjust_stack(-1); }
+void TAIL_CALL_APPLY()                               { emit_byte(12);                                                    adjust_stack(1 - 2); }  // unused.
 void READ_FIELD(byte index)                          { emit_byte(13); emit_byte(index); }
-void WRITE_FIELD(byte index)                         { emit_byte(14); emit_byte(index); adjust_stack(-1); }
+void WRITE_FIELD(byte index)                         { emit_byte(14); emit_byte(index);                                  adjust_stack(-1); }
 void LABEL(symbol_t* label)                          { emit_label(label); }
 
 
