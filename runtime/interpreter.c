@@ -283,11 +283,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     stack_shrink(stack, arg_count);
     stack_push(stack, result);
   } else {
-    // Call recursively on the C stack.
-    oop values = stack_pop_list(stack, arg_count);
-    IPRINT("call %lu         .oO ", arg_count);
-    IVALUE(values);
-    stack_push(stack, apply_with_caller(values, state->reg_frm));
+    raise(state, "tried-to-apply-non-procedure");
   }
 }
 
@@ -317,6 +313,7 @@ static inline oop read_oop(interpreter_state_t* state) {
 
 
 // Signaled if the interpreter encounters an error.
+// TODO: Use exception objects instead of symbols.
 static void raise(interpreter_state_t* state, const char* name) {
   oop raise_fn = lookup_globally(make_symbol("raise"));
   CHECKV(is_compiled_lisp_procedure(raise_fn), raise_fn,
@@ -475,10 +472,12 @@ oop interpret(frame_t* frame) {
         frame_t* caller = state.reg_frm->caller;
         frame_t* env = make_frame_for_application(to_proc(fn), arglist, caller);
         initialize_state_from_fn(env, &state);
-      } else {
+      } else if (likely(is_native_procedure(fn))) {
         // Call recursively on the C stack.
         stack_push(&state.stack,
-                   apply_with_caller(make_cons(fn, arglist), state.reg_frm));
+                   apply_native_fn(fn, arglist, state.reg_frm));
+      } else {
+        raise(&state, "tried-to-apply-non-procedure");
       }
       break;
     }

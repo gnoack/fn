@@ -186,7 +186,8 @@ void extract_args(oop args, oop** out_argv, size_t* out_argc) {
   }
 }
 
-oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* caller) {
+oop apply_native_fn_directly(
+    oop fn, oop* argv, size_t argc, frame_t* caller) {
   function c_function = native_fn_function(fn);
   gc_protect_counter++;
 
@@ -199,7 +200,6 @@ oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* caller) {
   return result;
 }
 
-static inline
 oop apply_native_fn(oop fn, oop args, frame_t* caller) {
   size_t argc;
   oop* argv;
@@ -233,24 +233,18 @@ void print_procedure(oop fn) {
 }
 
 
-// Function application.
+// Function application for top-level invocations.
 // First argument in values is function, rest are arguments.
-// Caller is the calling function frame.
-oop apply_with_caller(oop values, frame_t* caller) {
+oop apply(oop values) {
   oop fn = car(values);
   oop result;
   if (is_compiled_lisp_procedure(fn)) {
-    result = apply_compiled_lisp_procedure(to_proc(fn), cdr(values), caller);
+    result = apply_compiled_lisp_procedure(to_proc(fn), cdr(values), NULL);
   } else {
     CHECKV(is_native_procedure(fn), fn, "Must be a procedure for applying.");
-    result = apply_native_fn(fn, cdr(values), caller);
+    result = apply_native_fn(fn, cdr(values), NULL);
   }
   return result;
-}
-
-// For convenience and top-level invocations.
-oop apply(oop values) {
-  return apply_with_caller(values, NULL);
 }
 
 void init_procedures() {

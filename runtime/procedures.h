@@ -42,9 +42,9 @@ extern frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* call
 extern boolean is_compiled_lisp_procedure(oop fn);
 extern boolean is_native_procedure(oop fn);
 extern oop apply(oop values);
-extern oop apply_with_caller(oop values, frame_t* caller);
-extern oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller);
+extern oop apply_native_fn(oop fn, oop args, frame_t* caller);
 extern oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* caller);
+extern oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller);
 extern oop fn_name(oop fn);
 
 static inline fn_uint proc_argnum(proc_t* p) {
