@@ -133,7 +133,7 @@
   (println self " does not understand the message")
   (println "  with selector: " selector)
   (println "  and arguments: " args)
-  (assert "broken"))
+  (raise 'unknown-message))
 
 (defn %send (receiver message type arguments)
   (cond ((nil? type)  ; at top of inheritance chain.
@@ -202,6 +202,3 @@
 
          ,@(map rewrite-clause body)
          ,type))))
-
-;; ;; Shortcut for sending messages that reads a bit better :)
-(def ! send)
