@@ -169,7 +169,7 @@ frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller) {
 }
 
 oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller) {
-  return interpret(make_frame_for_application(proc, args, caller), proc);
+  return interpret(make_frame_for_application(proc, args, caller));
 }
 
 frame_t* current_native_procedure_caller = NULL;

@@ -4,7 +4,7 @@
 #include "value.h"
 
 extern void init_interpreter();
-extern oop interpret(frame_t* frame, proc_t* proc);
+extern oop interpret(frame_t* frame);
 
 // Stack
 typedef struct {

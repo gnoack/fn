@@ -163,8 +163,8 @@ void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
 }
 
 static inline
-void initialize_state_from_fn(frame_t* frame, proc_t* proc,
-                              interpreter_state_t* state) {
+void initialize_state_from_fn(frame_t* frame, interpreter_state_t* state) {
+  proc_t* proc = frame->procedure;
   state->reg_frm = frame;
   state->ip = get_smallint(proc->ip);
   state->bytecode = proc->bytecode;
@@ -235,8 +235,12 @@ void print_frame(frame_t* frame) {
 }
 
 
+static void raise(interpreter_state_t* state, const char* name);
+
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
+// Callers should pass control back to the interpreter directly.
+static
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
                             boolean tailcall) {
   stack_t* stack = &state->stack;
@@ -255,7 +259,10 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     } else {
       // TODO: Do quick calls with vararg procedures, too.
       env = make_frame_from_stack(stack, proc, caller);
-      CHECKV(arg_count == proc_argnum(proc) + 1, cfn, "Bad argument number.");
+      if (unlikely(arg_count != proc_argnum(proc) + 1)) {
+        raise(state, "wrong-number-of-arguments");
+        return;  // Callers pass control back to interpreter directly.
+      }
       stack_shrink(stack, arg_count);
     }
 
@@ -267,7 +274,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     IPRINT("call %lu         .oO ", arg_count);
 
     // Modify the interpreter state.
-    initialize_state_from_fn(env, proc, state);
+    initialize_state_from_fn(env, state);
   } else if (is_native_procedure(cfn)) {
     // Pass a reference to the local stack frame to the native function.
     size_t argc = arg_count - 1;
@@ -310,22 +317,21 @@ static inline oop read_oop(interpreter_state_t* state) {
 
 
 // Signaled if the interpreter encounters an error.
-void raise(interpreter_state_t* state, const char* name) {
+static void raise(interpreter_state_t* state, const char* name) {
   oop raise_fn = lookup_globally(make_symbol("raise"));
   CHECKV(is_compiled_lisp_procedure(raise_fn), raise_fn,
          "`raise' needs to be a compiled Lisp procedure.");
 
   oop arglist = make_cons(to_oop(make_symbol(name)), NIL);
-  proc_t* proc = to_proc(raise_fn);
   frame_t* caller = state->reg_frm->caller;
-  frame_t* env = make_frame_for_application(proc, arglist, caller);
-  initialize_state_from_fn(env, proc, state);
+  frame_t* env = make_frame_for_application(to_proc(raise_fn), arglist, caller);
+  initialize_state_from_fn(env, state);
 }
 
 // Interpreter
-oop interpret(frame_t* frame, proc_t* proc) {
+oop interpret(frame_t* frame) {
   interpreter_state_t state;
-  initialize_state_from_fn(frame, proc, &state);
+  initialize_state_from_fn(frame, &state);
 
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -466,10 +472,9 @@ oop interpret(frame_t* frame, proc_t* proc) {
       oop arglist = stack_pop(&state.stack);
       oop fn = stack_pop(&state.stack);
       if (likely(is_compiled_lisp_procedure(fn))) {
-	proc_t* proc = to_proc(fn);
         frame_t* caller = state.reg_frm->caller;
-        frame_t* env = make_frame_for_application(proc, arglist, caller);
-	initialize_state_from_fn(env, proc, &state);
+        frame_t* env = make_frame_for_application(to_proc(fn), arglist, caller);
+        initialize_state_from_fn(env, &state);
       } else {
         // Call recursively on the C stack.
         stack_push(&state.stack,
