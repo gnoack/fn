@@ -2,11 +2,7 @@
 ;; similar to Python's `dis' module.
 ;;
 ;; Usage:
-;; (def x (dis cons))
-;; (x)
-;; (x)
-;; (x)
-;; Each invocation of 'x' yields the next instruction.
+;; (dis FN)  ; Prints the function's human-readable bytecode.
 
 (defn mem-block-reader (mem-block index)
   (lambda ()
@@ -48,10 +44,11 @@
 	    ($mem-get fn 6)
 	    ($mem-get fn 7)))
 
+;; Print the function's human-readable bytecode.
 (defn dis (fn)
   (def next-instruction! (dis-fn fn))
   (defn print-remaining! ()
     (println (next-instruction!))
     (print-remaining!))
   (catch print-remaining!
-    identity))
+    identity))  ; stop execution on exception.
