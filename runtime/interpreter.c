@@ -354,6 +354,8 @@ oop interpret(frame_t* frame) {
   interpreter_state_t state;
   initialize_state_from_fn(frame, &state);
 
+  // TODO: Ugly state handling due to callbacks in native functions.
+  // Maybe use something else than readline... :-/
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
   }
@@ -450,9 +452,6 @@ oop interpret(frame_t* frame) {
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
       apply_into_interpreter(arg_count, &state, NO);
-      if (protected_interpreter_state == &state) {
-        gc_run();
-      }
       break;
     }
     case BC_TAIL_CALL: {

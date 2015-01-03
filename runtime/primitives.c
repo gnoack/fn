@@ -8,6 +8,7 @@
 
 #include "carcdr.h"
 #include "cons.h"
+#include "data.h"
 #include "debug.h"
 #include "eval.h"
 #include "gc.h"
@@ -157,11 +158,6 @@ oop primitive_list(oop* argv, size_t argc) {
     argc--;
   }
   return result;
-}
-
-FUNC(primitive_apply) {
-  PARSE_TWO_ARGS(procedure, arguments);
-  return apply(make_cons(procedure, arguments));
 }
 
 /* Attention: has side effect of printing, returns argument. */
@@ -356,7 +352,6 @@ void init_primitives() {
   register_globally_fn("number?", primitive_number_p);
   register_globally_fn("symbol?", primitive_symbol_p);
   register_globally_fn("list", primitive_list);
-  register_globally_fn("apply", primitive_apply);
   register_globally_fn("writeout", primitive_write_out);
   register_globally_fn("kill-lisp", primitive_kill_lisp);
   register_globally_fn("$make-mem-block", primitive_raw_mem_alloc);
@@ -382,4 +377,22 @@ void init_primitives() {
   register_globally_fn("$id", primitive_id);
   register_globally_fn("native-compile-top-level-expression",
 		       primitive_native_compile);
+
+  /* Construct a bytecode-compiled "apply" function.
+     Unlike a C implementation of apply, the bytecode version can use the
+     running interpreter loop for executing the function call. */
+  oop lambda_list = LIST(to_oop(make_symbol("proc")),
+                         to_oop(make_symbol("args")));
+  const char bytes[] = {
+    BC_READ_VAR, 0, 0,  // proc
+    BC_READ_VAR, 0, 1,  // args
+    BC_TAIL_CALL_APPLY,
+    BC_RETURN,
+  };
+  proc_t* compiled_apply =
+    make_compiled_procedure(lambda_list, NULL,
+                            mem_raw_mem_make(bytes, sizeof(bytes)),
+                            make_smallint(0),
+                            make_array(0), 2 /* max stack size */);
+  register_globally("apply", to_oop(compiled_apply));
 }

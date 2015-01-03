@@ -71,6 +71,8 @@
 (eql? (list 1 2 3)
       (apply list (list 1 2 3)))
 
+(cons? (apply $make (list Cons 1 2)))
+
 ; Writeout
 ; Prints its argument and returns it.
 
