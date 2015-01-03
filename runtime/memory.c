@@ -34,7 +34,7 @@ oop mem_raw_mem_alloc(fn_uint amount) {
   return gc_raw_memory_alloc(amount);  // in gc.c
 }
 
-oop mem_raw_mem_make(void* buf, fn_uint size) {
+oop mem_raw_mem_make(const void* buf, fn_uint size) {
   oop result = mem_raw_mem_alloc(size);
   memcpy(result.mem, buf, size);
   return result;

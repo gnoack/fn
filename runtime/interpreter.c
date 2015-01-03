@@ -354,9 +354,9 @@ oop interpret(frame_t* frame) {
   interpreter_state_t state;
   initialize_state_from_fn(frame, &state);
 
-  if (protected_interpreter_state == NULL) {
-    protected_interpreter_state = &state;
-  }
+  CHECK(protected_interpreter_state == NULL,
+        "Only one interpreter may run at once.");
+  protected_interpreter_state = &state;
 
   for (;;) {
     IPRINT("[i] %5lu: ", state.ip);
@@ -450,9 +450,6 @@ oop interpret(frame_t* frame) {
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
       apply_into_interpreter(arg_count, &state, NO);
-      if (protected_interpreter_state == &state) {
-        gc_run();
-      }
       break;
     }
     case BC_TAIL_CALL: {
@@ -470,9 +467,9 @@ oop interpret(frame_t* frame) {
       if (likely(caller != NULL)) {
         restore_from_frame(caller, &state);
         stack_push(&state.stack, retvalue);
-        if (protected_interpreter_state == &state) {
-          gc_run();
-        }
+        DEBUG_CHECK(protected_interpreter_state == &state,
+                    "Only one interpreter can run at once.");
+        gc_run();
       } else {
         // Leaving the interpreter loop.
         #ifdef INTERPRETER_DEBUG
@@ -482,9 +479,9 @@ oop interpret(frame_t* frame) {
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
-        if (protected_interpreter_state == &state) {
-          protected_interpreter_state = NULL;
-        }
+        CHECK(protected_interpreter_state == &state,
+              "Only one interpreter can run at once.");
+        protected_interpreter_state = NULL;
         return retvalue;
       }
       break;
