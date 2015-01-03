@@ -469,9 +469,9 @@ oop interpret(frame_t* frame) {
       if (likely(caller != NULL)) {
         restore_from_frame(caller, &state);
         stack_push(&state.stack, retvalue);
-        DEBUG_CHECK(protected_interpreter_state == &state,
-                    "Only one interpreter can run at once.");
-        gc_run();
+        if (protected_interpreter_state == &state) {
+          gc_run();
+        }
       } else {
         // Leaving the interpreter loop.
         #ifdef INTERPRETER_DEBUG
@@ -481,9 +481,9 @@ oop interpret(frame_t* frame) {
           exit(1);
         }
         #endif  // INTERPRETER_DEBUG
-        CHECK(protected_interpreter_state == &state,
-              "Only one interpreter can run at once.");
-        protected_interpreter_state = NULL;
+        if (protected_interpreter_state == &state) {
+          protected_interpreter_state = NULL;
+        }
         return retvalue;
       }
       break;
