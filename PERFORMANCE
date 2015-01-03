@@ -93,3 +93,8 @@ After switching to “char* argv, int argc”-style native functions: 1088-1099
   ./fn -S examples/performance.fn is now at 936-983
   after introducing a bytecode for mem-get and mem-set:
   ./fn -S examples/performance.fn is now at 898-918
+
+2015-01-03 (ARM)
+  Various changes; in particular: Removed nested lambda-lists,
+  and made varargs calls not rely on lambda-list destructuring any more.
+  ./fn -S examples/performance.fn is now at 903-933

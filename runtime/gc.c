@@ -7,6 +7,7 @@
 #include "value.h"
 
 // TODO: Eliminate a lot of code duplication here!
+// TODO: Make most of these functions static.
 
 
 // #define GC_SUMMARY 1
