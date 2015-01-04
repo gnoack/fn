@@ -14,6 +14,8 @@
 // char_start + (n << 2).
 fn_uint char_start = 0xcccc0000;
 
+void (*print_stack_trace)();
+
 oop make_smallint(fn_uint i) {
   oop a;
   a.smallint = (i << 1) | 1;

@@ -19,7 +19,7 @@ typedef int boolean;
 
 #define NIL ((oop) (fn_uint) NULL)
 
-void (*print_stack_trace)();
+extern void (*print_stack_trace)();
 
 // GCC only.
 #define unlikely(x) __builtin_expect(x, 0)
