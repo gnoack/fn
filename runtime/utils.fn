@@ -292,17 +292,18 @@
 (def *deserialize-using-c-impl* true)
 
 (defn deserialize-from-file! (filename)
-  (if (not (nil? (file-size filename)))
-      (if *deserialize-using-c-impl*
-          (let ((file-handle (fopen filename "r")))
-            (dynamic-wind ->true
-                          (lambda () (c-deserialize! file-handle))
-                          (lambda () (fclose file-handle))))
-        (with-file-reader
-         filename
-         (lambda (read-byte!)
-           (deserialize! read-byte!))))
-    (raise 'file-doesnt-exist)))
+  (when (nil? (file-size filename))
+    (raise 'file-doesnt-exist))
+
+  (if *deserialize-using-c-impl*
+      (let ((file-handle (fopen filename "r")))
+        (dynamic-wind ->true
+                      (lambda () (c-deserialize! file-handle))
+                      (lambda () (fclose file-handle))))
+    (with-file-reader
+     filename
+     (lambda (read-byte!)
+       (deserialize! read-byte!)))))
 
 (defn cached-load-file! (filename)
   (defn cache-up-to-date? (original-timestamp cache-timestamp)
