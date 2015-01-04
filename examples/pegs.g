@@ -19,7 +19,7 @@ grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
   string_expr     ::= whitespace* LISP-STRING:s         => (make-peg-seq-expr
                                                              (map (lambda (ch) `(peg= ,ch))
                                                                   (string->list s)));
-  symbol_expr     ::= whitespace* "\'" symbol:s  => `(peg= (quote ,s));
+  symbol_expr     ::= whitespace* "\'" symbol:s         => `(peg= (quote ,s));
   inv_args        ::= "(" listof_or_nothing(expr1, token(",")):as
                       ")" whitespace*                   => as
                     | EPSILON                           => (list);
@@ -35,12 +35,12 @@ grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
   star_expr       ::= expr4:e "*"                       => `(peg* ,e);
   expr3           ::= plus_expr | star_expr | expr4;
 
-  bindingvar      ::= ":" symbol:s                    => s
+  bindingvar      ::= ":" symbol:s                      => s
                     | EPSILON                           => (quote _);
 
   binding         ::= expr3:e bindingvar:v              => (list v e);
   action_sequence ::= listof(binding, whitespace*):bs
-                      token("=>") LISP-EXPR:action            => `(peg-let ,bs ,action);
+                      token("=>") LISP-EXPR:action      => `(peg-let ,bs ,action);
   sequence        ::= token(expr3)+:es                  => (make-peg-seq-expr es);
   expr2           ::= action_sequence | sequence;
   expr1           ::= listof(expr2, token("|")):es      => (make-peg-alt-expr es);
