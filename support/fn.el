@@ -34,4 +34,4 @@
     ("\\<when\\>"        . font-lock-keyword-face)))
 
 ;; TODO: Copied from a messy .emacs -- does that even work?
-(setq inferior-lisp-program "/home/me/proj/fn/fn")
+(setq inferior-lisp-program "/home/me/fn/fn repl/repl.fn")
