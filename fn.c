@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
     args = make_cons(make_string(argv[x]), args);
   }
   register_globally("*args*", args);
-  
+
   if (file_to_load != NULL) {
     fn_load_file(file_to_load);
   } else {
@@ -79,4 +79,3 @@ int main(int argc, char* argv[]) {
   }
   return 0;
 }
-

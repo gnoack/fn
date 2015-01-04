@@ -88,7 +88,7 @@
 
 ;; cons, cons?
 (def cons
-    (lambda (car cdr)	
+    (lambda (car cdr)
       ($make Cons car cdr)))
 
 ;; TODO: Use `type-of' instead?  (Defined in objects.fn)
@@ -100,4 +100,3 @@
 
 (def cons?
   (lambda (value) (%has-mem-type? value Cons)))
-

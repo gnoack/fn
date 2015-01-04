@@ -173,7 +173,7 @@ FUNC(primitive_write_out) {
 FUNC(primitive_kill_lisp) {
   PARSE_ONE_ARG(exit_status);
   CHECKNUMBER(exit_status);
-  CHECK(1==0, "Gaa, Lisp was killed!");
+  CHECK(NO, "Gaa, Lisp was killed!");
   exit(get_smallint(exit_status));
 }
 
