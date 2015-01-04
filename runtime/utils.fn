@@ -183,7 +183,7 @@
 (defn sequence-ordered? (in-order? seq)
   (cond ((nil? seq) true)
 	((nil? (rest seq)) true)
-	(true 
+	(true
 	 (and (in-order? (first seq)
 			 (first (rest seq)))
 	      (sequence-ordered?
@@ -289,43 +289,51 @@
    (lambda (write-byte!)
      (serialize! item write-byte!))))
 
-(def *use-c-impl* true)
+(def *deserialize-using-c-impl* true)
 
-(defn deserialize-from-file! (filename win lose)
+(defn deserialize-from-file! (filename)
   (if (not (nil? (file-size filename)))
-      (if *use-c-impl*
-          (win (let ((file-handle (fopen filename "r")))
-                 (dynamic-wind ->true
-                               (lambda () (c-deserialize! file-handle))
-                               (lambda () (fclose file-handle)))))
-          (win (with-file-reader
-                filename
-                (lambda (read-byte!)
-                  (deserialize! read-byte!)))))
-    (lose)))
-
-;; If the cache file's timestamp is min-timestamp or later, deserialize it.
-;; Otherwise, call `calculate' and return that.
-(defn deserialize-from-cache-file! (cache-filename min-timestamp calculate)
-  (defn calculate-and-save! ()
-    (let ((result (calculate)))
-      (serialize-to-file! cache-filename result)
-      result))
-  (let ((cache-timestamp (file-timestamp cache-filename)))
-    (if (and (not (nil? cache-timestamp))
-             (<= min-timestamp cache-timestamp))
-        (deserialize-from-file! cache-filename identity
-                                calculate-and-save!)
-      (calculate-and-save!))))
+      (if *deserialize-using-c-impl*
+          (let ((file-handle (fopen filename "r")))
+            (dynamic-wind ->true
+                          (lambda () (c-deserialize! file-handle))
+                          (lambda () (fclose file-handle))))
+        (with-file-reader
+         filename
+         (lambda (read-byte!)
+           (deserialize! read-byte!))))
+    (raise 'file-doesnt-exist)))
 
 (defn cached-load-file! (filename)
-  (map (lambda (proc) (proc))
-       (deserialize-from-cache-file!
-        (string-append filename "c")
-        (file-timestamp filename)
-	;; TODO: This is not picking up the macros in the file on the fly.
-        (lambda () (map macroexpand-and-compile-top-level-expr
-                        (read-all (file->string filename)))))))
+  (defn cache-up-to-date? (original-timestamp cache-timestamp)
+    (and (not (nil? cache-timestamp))
+         (<= original-timestamp cache-timestamp)))
+
+  ;; Compiles and evaluates in lockstep,
+  ;; so that file-local macros are available for expressions below.
+  ;; Pass a list of thunks to `write-cache!'.
+  ;; Return the evaluation results.
+  (defn lockstep-compile-and-eval (filename write-cache!)
+    ;; Compile and evaluate a top-level expr, returning (thunk . result)
+    (defn compile-and-eval-expr (expr)
+      (let ((thunk (macroexpand-and-compile-top-level-expr expr)))
+        (cons thunk (thunk))))
+
+    (let ((results (map compile-and-eval-expr
+                        (read-all (file->string filename)))))
+      (write-cache! (map first results))
+      (map rest results)))
+
+  (let ((cache-filename (string-append filename "c")))
+    (defn serialize-into-cache! (cachable-thunks)
+      (serialize-to-file! cache-filename cachable-thunks))
+
+    (if (cache-up-to-date? (file-timestamp filename)
+                           (file-timestamp cache-filename))
+        (dolist (expression-thunk (deserialize-from-file! cache-filename))
+          (expression-thunk))
+
+      (lockstep-compile-and-eval filename serialize-into-cache!))))
 
 ;; True if module loading should be cached.
 (def *module-caching* true)

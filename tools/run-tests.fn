@@ -1,11 +1,15 @@
 (def *assertions-executed* 0)
 
 ;; TODO: Cache compiled tests, not just expressions.
+;; We are currently caching expressions, because all expressions
+;; are being wrapped in (assert) in the tests.
 (defn read-cached (filename)
-  (deserialize-from-cache-file!
-   (string-append filename ".exprc")
-   (file-timestamp filename)
-   (lambda () (read-all (file->string filename)))))
+  (let ((cache-filename (string-append filename ".exprc")))
+    (catch (lambda () (deserialize-from-file! cache-filename))
+      (lambda (reason)
+        (let ((expressions (read-all (file->string filename))))
+          (serialize-to-file! cache-filename expressions)
+          expressions)))))
 
 (defn run-test-file (filename)
   (dolist (item (read-cached filename))
