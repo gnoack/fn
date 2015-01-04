@@ -266,7 +266,7 @@ void print_frame(frame_t* frame) {
 }
 
 
-static void raise(interpreter_state_t* state, const char* name);
+static void raise(interpreter_state_t* state, const char* name, oop value);
 
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
@@ -285,7 +285,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     frame_t* frame = make_frame_from_stack(stack, arg_count - 1,
                                            proc, caller);
     if (frame == NULL) {
-      raise(state, "wrong-number-of-arguments");
+      raise(state, "wrong-number-of-arguments", to_oop(proc));
       return;
     }
     stack_shrink(stack, 1);  // Remove function from stack.
@@ -307,7 +307,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     stack_shrink(stack, arg_count);
     stack_push(stack, result);
   } else {
-    raise(state, "tried-to-apply-non-procedure");
+    raise(state, "tried-to-apply-non-procedure", cfn);
   }
 }
 
@@ -338,14 +338,14 @@ static inline oop read_oop(interpreter_state_t* state) {
 
 // Signaled if the interpreter encounters an error.
 // TODO: Use exception objects instead of symbols.
-static void raise(interpreter_state_t* state, const char* name) {
+static void raise(interpreter_state_t* state, const char* name, oop value) {
   oop raise_fn = lookup_globally(make_symbol("raise"));
   CHECKV(is_compiled_lisp_procedure(raise_fn), raise_fn,
          "`raise' needs to be a compiled Lisp procedure.");
 
   frame_t* caller = state->reg_frm->caller;
   frame_t* env = make_frame(to_proc(raise_fn), caller);
-  frame_set_var(env, 0, to_oop(make_symbol(name)));
+  frame_set_var(env, 0, make_cons(to_oop(make_symbol(name)), value));
   initialize_state_from_fn(env, state);
 }
 
@@ -411,7 +411,7 @@ oop interpret(frame_t* frame) {
     case BC_READ_GLOBAL_VAR: {
       oop var = read_oop(&state);
       if (!is_set_var(var)) {
-        raise(&state, "undefined-symbol");
+        raise(&state, "undefined-symbol", var);
         break;
       }
       oop value = var_get_unchecked(var);
@@ -500,7 +500,7 @@ oop interpret(frame_t* frame) {
         stack_push(&state.stack,
                    apply_native_fn(fn, arglist, state.reg_frm));
       } else {
-        raise(&state, "tried-to-apply-non-procedure");
+        raise(&state, "tried-to-apply-non-procedure", fn);
       }
       break;
     }
@@ -518,7 +518,7 @@ oop interpret(frame_t* frame) {
       break;
     }
     default:
-      raise(&state, "unknown-bytecode");
+      raise(&state, "unknown-bytecode", make_smallint(operation));
       break;
     }
   }

@@ -263,6 +263,7 @@
 (def *trace-indent* "")
 
 ;; Wraps a method to print out its arguments.  (trace)
+;; TODO: Use `dynamic-wind'
 (defn debugging-wrap (func)
   (lambda (&rest args)
     (let ((old-indent *trace-indent*))
