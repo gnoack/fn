@@ -1,5 +1,5 @@
 (->true
-  (load-file "runtime/serialize.fn")
+  ;(load-file "runtime/serialize.fn")
   (defn serialize-to-list (value)
     (let ((buf '()))
       (serialize! value

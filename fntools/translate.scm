@@ -39,7 +39,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (c-include basename)
-  (format #f "#include \"~a.h\"~%" basename))
+  ;; TODO: 'runtime/' is a hack here -- should be configurable.
+  (format #f "#include \"runtime/~a.h\"~%" basename))
 
 (define (c-vardecl basename value)
   (format #f "oop ~a_decls() { return ~a; }~%~%"

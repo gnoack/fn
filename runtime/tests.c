@@ -110,6 +110,5 @@ int main(int argc, char* argv[]) {
   }
 
   run_all_c_tests();
-  return 0;
+  return failure_count;  // 0 on success.
 }
-
