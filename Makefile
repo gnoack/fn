@@ -25,7 +25,7 @@ repl/readline.so: force_look
 
 tests: fn fn.img
 	$(MAKE) -C runtime ctests
-	./fn -S tools/run-tests.fn `find . -name "*-test.fn"`
+	./fn -S fntools/run-tests.fn `find . -name "*-test.fn"`
 
 force_look:
 	@true

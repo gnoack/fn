@@ -57,7 +57,7 @@ LISPTARGETS = \
 	serialize.c \
 	utils.c \
 
-LISP = ../tools/translate.scm
+LISP = ../fntools/translate.scm
 
 fnrt.so: $(RTOBJECTS)
 	$(CC) $(CFLAGS) -shared -o fnrt.so $(RTOBJECTS)
@@ -78,4 +78,3 @@ clean:
 	rm -rf *.so
 	rm -rf *~
 	rm -rf \#*\#
-
