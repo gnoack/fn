@@ -491,7 +491,7 @@ void compile(oop expr, env_t* env, boolean is_tail) {
     if (is_symbol(first(expr))) {
       symbol_t* head = to_symbol(first(expr));
       if        (head == symbols._quote) { compile_literal(first(rest(expr)));
-      } else if (head == symbols._if) {  compile_if(expr, env, is_tail);
+      } else if (head == symbols._if) { compile_if(expr, env, is_tail);
       } else if (head == symbols._lambda) { compile_lambda(expr, env);
       } else if (head == symbols._let) { compile_let(expr, env, is_tail);
       } else if (head == symbols._def) { compile_def(expr, env);
