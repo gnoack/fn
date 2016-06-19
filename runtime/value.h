@@ -2,6 +2,7 @@
 #define _VALUE_H_
 
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,11 +12,6 @@
 #else
   typedef uint32_t fn_uint;
 #endif  // __WORDSIZE == 64
-
-typedef int boolean;
-#define NO 0
-#define YES 1
-#define TO_BOOL(b) ((b) ? YES : NO)
 
 #define NIL ((oop) (fn_uint) NULL)
 
@@ -84,17 +80,17 @@ extern symbol_t* make_symbol(const char* str);
 
 extern oop make_char(const unsigned char c);
 
-extern boolean is_nil(oop a);
+extern bool is_nil(oop a);
 
-extern boolean is_smallint(oop v);
+extern bool is_smallint(oop v);
 
-extern boolean is_symbol(oop v);
+extern bool is_symbol(oop v);
 
-extern boolean is_mem(oop v);
+extern bool is_mem(oop v);
 
-extern boolean is_raw_mem(oop v);
+extern bool is_raw_mem(oop v);
 
-extern boolean is_char(oop v);
+extern bool is_char(oop v);
 
 extern fn_uint get_smallint(oop v);
 
@@ -103,6 +99,6 @@ extern unsigned char get_char(oop v);
 // Returned object is immutable, forever, and owned by the symbol.
 extern const char* get_symbol(symbol_t* v);
 
-extern boolean value_eq(oop a, oop b);
+extern bool value_eq(oop a, oop b);
 
 #endif // _VALUE_H_

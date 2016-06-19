@@ -34,7 +34,7 @@ typedef struct {
   // Rescue the object from deletion in this GC round.
   void (*save)(oop obj);
   // True if the object is guaranteed to exist after the GC round.
-  boolean (*is_saved)(oop obj);
+  bool (*is_saved)(oop obj);
   // Returns the new pointer for the given pointer.
   oop (*update)(oop obj);
   // Updates all object references within the memory region.
@@ -55,7 +55,7 @@ static region_t* region(oop obj);
  * this type are automatically rescued into the next generation.
  */
 static void save_noop(oop obj) { /* Not needed. */ }
-static boolean is_saved_always_true(oop obj) { return YES; }
+static bool is_saved_always_true(oop obj) { return true; }
 static oop identity(oop obj) { return obj; }
 static void noop() { /* No-op. */ }
 static void enumerate_refs_none(oop obj, void (*callback)(oop ref)) {}
@@ -184,9 +184,10 @@ static oop half_space_alloc(half_space* space, fn_uint size) {
   return result;
 }
 
-static boolean half_space_contains(half_space* space, oop obj) {
-  return TO_BOOL(!is_smallint(obj) &&
-                 space->start <= obj.mem && obj.mem < space->end);
+static bool half_space_contains(half_space* space, oop obj) {
+  return !is_smallint(obj) &&
+    space->start <= obj.mem &&
+    obj.mem < space->end;
 }
 
 #ifdef GC_LOGGING
@@ -243,7 +244,7 @@ oop gc_object_alloc(fn_uint size) {
 }
 
 // True if obj references a broken heart.
-static boolean object_is_saved(oop obj) {
+static bool object_is_saved(oop obj) {
   GC_CHECK(is_nil(obj.mem[-1]) || is_smallint(obj.mem[-1]),
            "Must be int or nil (broken heart).");
   return is_nil(obj.mem[-1]);
@@ -327,7 +328,7 @@ static void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
 }
 
 // Only valid outside of GC run.
-extern boolean gc_is_object(oop obj) {
+extern bool gc_is_object(oop obj) {
   return half_space_contains(&object_memory.current, obj);
 }
 
@@ -404,7 +405,7 @@ static void raw_memory_save(oop obj) {
 }
 
 // Only valid outside of GC run.
-boolean gc_is_raw_memory(oop obj) {
+bool gc_is_raw_memory(oop obj) {
   return half_space_contains(&raw_memory.current, SANE(obj));
 }
 
@@ -488,14 +489,14 @@ static void traverse_object_graph(oop current) {
   current_region->enumerate_refs(current, &traverse_object_graph);
 }
 
-boolean _run_gc_soon;
+bool _run_gc_soon;
 
 extern void run_gc_soon() {
-  _run_gc_soon = YES;
+  _run_gc_soon = true;
 }
 
 extern void init_gc() {
-  _run_gc_soon = NO;
+  _run_gc_soon = false;
   object_region_init(1 << 27);  // TODO: Enough?
   raw_memory_region_init(1 << 17);  // TODO: Enough?
   immediate_region_init();
@@ -503,18 +504,18 @@ extern void init_gc() {
 }
 
 // Decide whether to do the garbage collection at all.
-static boolean should_skip_gc() {
+static bool should_skip_gc() {
   if (gc_protect_counter > 0) {
-    return YES;
+    return true;
   }
   if (_run_gc_soon) {
-    _run_gc_soon = NO;
-    return NO;
+    _run_gc_soon = false;
+    return false;
   }
   fn_uint obj_fill = object_memory.current.free - object_memory.current.start;
   fn_uint pri_fill = raw_memory.current.free - raw_memory.current.start;
-  return TO_BOOL((100*obj_fill / object_memory.current.size) < 50 &&
-                 (100*pri_fill / raw_memory.current.size) < 80);
+  return (100*obj_fill / object_memory.current.size) < 50 &&
+         (100*pri_fill / raw_memory.current.size) < 80;
 }
 
 #ifdef GC_DEBUG
@@ -652,10 +653,10 @@ extern void gc_deserialize_from_file(char* filename) {
 // has been mispointered along the way.
 
 static oop sane(oop obj) {
-  boolean is_mem = (half_space_contains(&object_memory.old, obj) ||
-                    half_space_contains(&object_memory.current, obj));
-  boolean is_raw = (half_space_contains(&raw_memory.old, obj) ||
-                    half_space_contains(&raw_memory.current, obj));
+  bool is_mem = (half_space_contains(&object_memory.old, obj) ||
+                 half_space_contains(&object_memory.current, obj));
+  bool is_raw = (half_space_contains(&raw_memory.old, obj) ||
+                 half_space_contains(&raw_memory.current, obj));
   if (is_mem || is_raw) {
     const char* allocation_type = is_mem ? "Pointer" : "Raw";
     if (is_nil(obj.mem[-1])) {
@@ -681,8 +682,8 @@ static void pointered_half_space_sanity_check(half_space* space) {
   printf("Start: %p\n", space->start);
   printf(" Free: %p\n", space->free);
   printf("  End: %p\n", space->end);
-  boolean is_raw = (space == &raw_memory.current ||
-                    space == &raw_memory.old);
+  bool is_raw = (space == &raw_memory.current ||
+                 space == &raw_memory.old);
   oop* current = space->start + 1;
   while (current < space->free) {
     oop size = current[-1];

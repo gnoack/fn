@@ -2,12 +2,13 @@
 #define _CONS_H_
 
 #include "value.h"
+#include <stdbool.h>
 
 extern
 oop make_cons(oop car, oop cdr);
 
 extern
-boolean is_cons(oop v);
+bool is_cons(oop v);
 
 extern
 oop first(oop cons);

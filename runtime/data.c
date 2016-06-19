@@ -41,8 +41,8 @@ oop array_get(oop array, fn_uint index) {
   return mem_get(array, 1 + index);
 }
 
-boolean is_array(oop array) {
-  return TO_BOOL(is_mem(array) && value_eq(symbols._array, MEM_GET(array, 0)));
+bool is_array(oop array) {
+  return is_mem(array) && value_eq(symbols._array, MEM_GET(array, 0));
 }
 
 
@@ -115,7 +115,7 @@ oop dict_table_get(oop table, oop key) {
   CHECKV(1==0, key, "Key not found.");
 }
 
-boolean dict_table_has_key(oop table, oop key) {
+bool dict_table_has_key(oop table, oop key) {
   int size = (int) array_size(table) >> 1;
   int i = symbol_to_hash(key) % size;
   oop current_key;
@@ -123,10 +123,10 @@ boolean dict_table_has_key(oop table, oop key) {
     i = (i + 1) % size;
     current_key = array_get(table, i);
     if (value_eq(current_key, key)) {
-      return YES;
+      return true;
     }
   } while (!is_nil(current_key));
-  return NO;
+  return false;
 }
 
 oop dict_table_key_value_pairs(oop table) {
@@ -182,7 +182,7 @@ oop dict_get(oop dict, oop key) {
   return dict_table_get(dict_table(dict), key);
 }
 
-boolean dict_has_key(oop dict, oop key) {
+bool dict_has_key(oop dict, oop key) {
   return dict_table_has_key(dict_table(dict), key);
 }
 
@@ -197,8 +197,8 @@ oop dict_key_value_pairs(oop dict) {
   return dict_table_key_value_pairs(dict_table(dict));
 }
 
-boolean is_dict(oop dict) {
-  return TO_BOOL(is_mem(dict) && value_eq(symbols._dict, MEM_GET(dict, 0)));
+bool is_dict(oop dict) {
+  return is_mem(dict) && value_eq(symbols._dict, MEM_GET(dict, 0));
 }
 
 

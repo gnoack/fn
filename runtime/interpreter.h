@@ -22,7 +22,7 @@ extern void stack_shrink(stack_t* stack, int n);
 
 // Frame
 extern frame_t* make_frame(proc_t* proc, frame_t* caller);
-extern boolean is_frame(oop);
+extern bool is_frame(oop);
 extern void print_frame(frame_t*);
 extern void frame_set_var(frame_t* frame, unsigned int index, oop value);
 

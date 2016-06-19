@@ -32,7 +32,7 @@ void fail(const char* filename,
 extern
 void assert_true(const char* filename,
                  unsigned int line,
-                 boolean b) {
+                 bool b) {
   init_assert();
   if (!b) {
     fail(filename, line, "Expected true, got false.");
@@ -42,7 +42,7 @@ void assert_true(const char* filename,
 extern
 void assert_false(const char* filename,
                   unsigned int line,
-                  boolean b) {
+                  bool b) {
   init_assert();
   if (b) {
     fail(filename, line, "Expected false, got true.");
@@ -65,7 +65,7 @@ void assert_eq(const char* filename,
                oop a,
                oop b) {
   init_assert();
-  if (value_eq(a, b) == NO) {
+  if (!value_eq(a, b)) {
     fail(filename, line, "Values not equal.");
     printf("  Expected: ");
     println_value(a);
@@ -88,12 +88,12 @@ void run_all_c_tests() {
   }
 }
 
-boolean deserialize_arg = NO;
+bool deserialize_arg = false;
 void parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
     if (strcmp(argv[i], "-S") == 0) {
-      deserialize_arg = YES; continue;
+      deserialize_arg = true; continue;
     }
   }
 }

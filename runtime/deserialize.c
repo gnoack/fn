@@ -121,7 +121,7 @@ oop deserialize(FILE* input) {
       return lookup_var_object_globally(to_symbol(sym));
     }
   }
-  CHECK(NO, "Shouldn't reach end of deserialization function.");
+  CHECK(false, "Shouldn't reach end of deserialization function.");
 }
 
 void deserialize_from_bootstrap_file(const char* filename) {

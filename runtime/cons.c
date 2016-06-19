@@ -28,8 +28,8 @@ oop make_cons(oop car, oop cdr) {
 }
 
 extern
-boolean is_cons(oop v) {
-  return TO_BOOL(is_mem(v) && value_eq(symbols._cons, MEM_GET(v, 0)));
+bool is_cons(oop v) {
+  return is_mem(v) && value_eq(symbols._cons, MEM_GET(v, 0));
 }
 
 extern
@@ -57,7 +57,7 @@ unsigned int length_int(oop list) {
 
 
 oop the_end_marker;
-boolean initialized_marker = NO;
+bool initialized_marker = false;
 
 void enumerate_end_marker_root(void (*accept)(oop* place)) {
   accept(&the_end_marker);
@@ -68,12 +68,12 @@ oop end_marker() {
   if (!initialized_marker) {
     the_end_marker = symbol_to_oop(make_symbol("hard to guess"));
     gc_register_persistent_refs(enumerate_end_marker_root);
-    initialized_marker = YES;
+    initialized_marker = true;
   }
   return the_end_marker;
 }
 
-boolean is_end_marker(oop v) {
+bool is_end_marker(oop v) {
   return value_eq(end_marker(), v);
 }
 

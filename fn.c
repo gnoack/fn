@@ -4,14 +4,14 @@
 #include "runtime/gc.h"  // gc serialization functions.
 #include "runtime/runtime.h"
 #include "runtime/strings.h"  // make_string.
-#include "runtime/value.h"  // boolean.
 
+#include <stdbool.h>  // bool.
 #include <string.h>  // strcmp.
 
-boolean deserialize_from_bootstrap_file_arg = NO;
-boolean deserialize_from_image_arg = NO;
-boolean exit_arg = NO;
-boolean serialize_to_image_arg = NO;
+bool deserialize_from_bootstrap_file_arg = false;
+bool deserialize_from_image_arg = false;
+bool exit_arg = false;
+bool serialize_to_image_arg = false;
 const char* file_to_load = NULL;
 
 // Returns the first index of the remaining arguments,
@@ -20,16 +20,16 @@ int parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
     if (strcmp(argv[i], "-s") == 0) {
-      serialize_to_image_arg = YES; continue;
+      serialize_to_image_arg = true; continue;
     }
     if (strcmp(argv[i], "-S") == 0) {
-      deserialize_from_image_arg = YES; continue;
+      deserialize_from_image_arg = true; continue;
     }
     if (strcmp(argv[i], "-B") == 0) {
-      deserialize_from_bootstrap_file_arg = YES; continue;
+      deserialize_from_bootstrap_file_arg = true; continue;
     }
     if (strcmp(argv[i], "-x") == 0) {
-      exit_arg = YES; continue;
+      exit_arg = true; continue;
     }
     file_to_load = argv[i];
     return i + 1;

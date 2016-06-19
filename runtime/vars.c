@@ -23,12 +23,12 @@ oop make_undefined_var(symbol_t* symbol) {
   return to_oop(var);
 }
 
-boolean is_var(oop var) {
+bool is_var(oop var) {
   return value_eq(to_var(var)->type, symbols._defined_var)
     || value_eq(to_var(var)->type, symbols._undefined_var);
 }
 
-boolean is_set_var(oop var) {
+bool is_set_var(oop var) {
   return value_eq(to_var(var)->type, symbols._defined_var);
 }
 

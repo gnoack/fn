@@ -22,7 +22,7 @@
                                                                         \
   /* Return the index of the item in the array, -1 if not found. */     \
   int name ## _find(struct name* arr, type item,                        \
-                    boolean (*equal)(type a, type b)) {                 \
+                    bool (*equal)(type a, type b)) {                    \
     int i;                                                              \
     for (i = 0; i < arr->size; i++) {                                   \
       if (equal(arr->items[i], item)) {                                 \
@@ -51,8 +51,4 @@
                                                                         \
   type* name ## _end(struct name* arr) {                                \
     return arr->items + arr->size;                                      \
-  }                                                                     \
-
-
-
-
+  }

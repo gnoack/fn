@@ -72,7 +72,7 @@ TEST(nil_equality) {
 
 TEST(char_conversion) {
   oop c = make_char('b');
-  ASSERT_TRUE(TO_BOOL(get_char(c) == 'b'));
+  ASSERT_TRUE(get_char(c) == 'b');
 }
 
 extern

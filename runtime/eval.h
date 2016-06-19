@@ -16,7 +16,7 @@ extern oop lookup_globally(symbol_t* key);
 // Avoid.  Use lookup_globally() to lookup values.
 extern oop lookup_var_object_globally(symbol_t* key);
 
-extern boolean is_global_env(oop v);
+extern bool is_global_env(oop v);
 
 extern void init_eval();
 

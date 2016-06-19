@@ -37,36 +37,36 @@ oop make_char(const unsigned char c) {
 /* Value identity.  Returns true for equal integers and symbols as
  * well.  (This works because symbols are always interned.)
  */
-boolean value_eq(oop a, oop b) {
-  return TO_BOOL(a.mem == b.mem);
+bool value_eq(oop a, oop b) {
+  return a.mem == b.mem;
 }
 
 // TODO: Reduce the is_* to a function that returns the
 // primitive type from the value.  This would ensure a value
 // can have only one type.
-boolean is_nil(oop a) {
-  return TO_BOOL(a.smallint == 0L);
+bool is_nil(oop a) {
+  return a.smallint == 0L;
 }
 
-boolean is_smallint(oop v) {
-  return TO_BOOL(((v.smallint) & 1) != 0);
+bool is_smallint(oop v) {
+  return ((v.smallint) & 1) != 0;
 }
 
-boolean is_symbol(oop v) {
-  return TO_BOOL(is_mem(v) && value_eq(MEM_GET(v, 0), symbols._symbol));
+bool is_symbol(oop v) {
+  return is_mem(v) && value_eq(MEM_GET(v, 0), symbols._symbol);
 }
 
-boolean is_mem(oop v) {
+bool is_mem(oop v) {
   return gc_is_object(v);
 }
 
-boolean is_raw_mem(oop v) {
+bool is_raw_mem(oop v) {
   return gc_is_raw_memory(v);
 }
 
-boolean is_char(oop v) {
-  return TO_BOOL(char_start <= v.smallint &&
-		 v.smallint < char_start + (256 << 2));
+bool is_char(oop v) {
+  return char_start <= v.smallint &&
+         v.smallint < char_start + (256 << 2);
 }
 
 fn_uint get_smallint(oop v) {

@@ -35,12 +35,12 @@ extern oop make_native_procedure(function c_function);
 extern oop procedure_set_name(oop fn, oop name);
 
 extern void print_procedure(oop fn);
-extern boolean is_procedure(oop fn);
+extern bool is_procedure(oop fn);
 
 // TODO: Better name.
 extern frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller);
-extern boolean is_compiled_lisp_procedure(oop fn);
-extern boolean is_native_procedure(oop fn);
+extern bool is_compiled_lisp_procedure(oop fn);
+extern bool is_native_procedure(oop fn);
 extern oop apply(oop values);
 extern oop apply_native_fn(oop fn, oop args, frame_t* caller);
 extern oop apply_native_fn_directly(oop fn, oop* argv, size_t argc, frame_t* caller);

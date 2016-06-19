@@ -69,19 +69,19 @@ function native_fn_function(oop fn) {
  * Identification.
  */
 
-boolean is_compiled_lisp_procedure(oop cfn) {
-  return TO_BOOL(is_mem(cfn) &&
-                 value_eq(symbols._compiled_procedure, MEM_GET(cfn, 0)));
+bool is_compiled_lisp_procedure(oop cfn) {
+  return is_mem(cfn) &&
+    value_eq(symbols._compiled_procedure, MEM_GET(cfn, 0));
 }
 
-boolean is_native_procedure(oop fn) {
-  return TO_BOOL(is_mem(fn) &&
-                 value_eq(symbols._native_procedure, MEM_GET(fn, 0)));
+bool is_native_procedure(oop fn) {
+  return is_mem(fn) &&
+    value_eq(symbols._native_procedure, MEM_GET(fn, 0));
 }
 
-boolean is_procedure(oop fn) {
-  return TO_BOOL(is_compiled_lisp_procedure(fn) ||
-                 is_native_procedure(fn));
+bool is_procedure(oop fn) {
+  return is_compiled_lisp_procedure(fn) ||
+    is_native_procedure(fn);
 }
 
 
@@ -124,7 +124,7 @@ fn_uint num_vars_in_ll(oop ll) {
   return count;
 }
 
-boolean fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
+bool fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
   int has_varargs = proc_has_varargs(proc);
   int num_fixargs = proc_num_fixargs(proc);
   fn_uint idx = 0;
@@ -137,14 +137,14 @@ boolean fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
     idx++;
   }
 
-  if (unlikely(num_fixargs != 0)) { return NO; }
+  if (unlikely(num_fixargs != 0)) { return false; }
 
   if (has_varargs) {
     frame_set_var(frame, idx, args);
   } else {
-    if (unlikely(!is_nil(args))) { return NO; }
+    if (unlikely(!is_nil(args))) { return false; }
   }
-  return YES;
+  return true;
 }
 
 
@@ -153,7 +153,7 @@ boolean fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
 frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller) {
   frame_t* frame = make_frame(proc, caller);
   if (!fill_frame_from_args(args, proc, frame)) {
-    CHECKV(NO, to_oop(proc), "Called with wrong number of arguments.");
+    CHECKV(false, to_oop(proc), "Called with wrong number of arguments.");
   }
   return frame;
 }

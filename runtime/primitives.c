@@ -128,7 +128,7 @@ FUNC(primitive_mod) {
 }
 
 // Helper function for predicate primitives.
-oop lisp_bool(boolean b) {
+oop lisp_bool(bool b) {
   return b ? symbols._true : symbols._false;
 }
 
@@ -173,7 +173,7 @@ FUNC(primitive_write_out) {
 FUNC(primitive_kill_lisp) {
   PARSE_ONE_ARG(exit_status);
   CHECKNUMBER(exit_status);
-  CHECK(NO, "Gaa, Lisp was killed!");
+  CHECK(false, "Gaa, Lisp was killed!");
   exit(get_smallint(exit_status));
 }
 

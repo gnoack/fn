@@ -22,9 +22,9 @@ void set_globally_oop(symbol_t* key, oop value) {
 }
 
 static inline
-boolean is_defined_globally(symbol_t* key) {
-  return dict_has_key(global_env, symbol_to_oop(key))
-    && is_set_var(dict_get(global_env, symbol_to_oop(key)));
+bool is_defined_globally(symbol_t* key) {
+  return dict_has_key(global_env, symbol_to_oop(key)) &&
+         is_set_var(dict_get(global_env, symbol_to_oop(key)));
 }
 
 // Like the above, but also check for redefinitions.
@@ -35,7 +35,7 @@ void register_globally_symbol(symbol_t* key, oop value) {
   set_globally_oop(key, value);
 }
 
-boolean is_global_env(oop v) {
+bool is_global_env(oop v) {
   return value_eq(global_env, v);
 }
 
@@ -71,7 +71,7 @@ static void enumerate_gc_roots(void (*accept)(oop* place)) {
 }
 
 void init_eval() {
-  static boolean initialized = NO;
+  static bool initialized = false;
   if (initialized) return;
   global_env = make_dict(47);
   remaining_declarations = NIL;

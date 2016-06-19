@@ -62,7 +62,7 @@ unsigned int lookup_label_position(symbol_t* label) {
       return item->index;
     }
   }
-  CHECKV(NO, symbol_to_oop(label), "Jump target not found.")
+  CHECKV(false, symbol_to_oop(label), "Jump target not found.")
 }
 
 void postprocess() {
@@ -195,7 +195,7 @@ typedef struct env {
 } env_t;
 
 // Forward declaration.
-void compile(oop expr, env_t* env, boolean is_tail);
+void compile(oop expr, env_t* env, bool is_tail);
 
 void compile_literal(oop expr) {
   LOAD_VALUE(expr);
@@ -244,7 +244,7 @@ void compile_var_access(oop expr, env_t* env, char is_write) {
 }
 
 void compile_var_read(oop expr, env_t* env) {
-  compile_var_access(expr, env, NO);
+  compile_var_access(expr, env, false);
 }
 
 #define PARSE2(original_expr, n1, n2) \
@@ -256,8 +256,8 @@ void compile_var_read(oop expr, env_t* env) {
 void compile_set(oop set_expr, env_t* env) {
   PARSE2(set_expr, name, expr);
 
-  compile(expr, env, NO);
-  compile_var_access(name, env, YES);
+  compile(expr, env, false);
+  compile_var_access(name, env, true);
 }
 
 #define PARSE3(original_expr, n1, n2, n3)       \
@@ -268,13 +268,13 @@ void compile_set(oop set_expr, env_t* env) {
   original = rest(original);                    \
   oop n3 = first(original);
 
-void compile_if(oop if_expr, env_t* env, boolean is_tail) {
+void compile_if(oop if_expr, env_t* env, bool is_tail) {
   PARSE3(if_expr, cond_expr, conseq_expr, alt_expr);
   symbol_t* true_branch = invent_symbol("true-branch");
   symbol_t* after_if = invent_symbol("after-if");
 
   unsigned int stack_depth_before_if = result->stack_depth;
-  compile(cond_expr, env, NO);
+  compile(cond_expr, env, false);
   JUMP_IF_TRUE(true_branch);
   CHECK(stack_depth_before_if == result->stack_depth,
         "Stack size corrupted after condition.");
@@ -337,7 +337,7 @@ oop extract_exprs(oop let_clauses) {
   }
 }
 
-void compile_let(oop let_expr, env_t* env, boolean is_tail) {
+void compile_let(oop let_expr, env_t* env, bool is_tail) {
   // Transform to a lambda expression call, then compile.
   let_expr = rest(let_expr);
   oop clauses = first(let_expr);
@@ -354,16 +354,16 @@ void compile_let(oop let_expr, env_t* env, boolean is_tail) {
 void compile_def(oop def_expr, env_t* env) {
   PARSE2(def_expr, name, expr);
 
-  compile(expr, env, NO);
-  compile_var_access(name, env, YES);
+  compile(expr, env, false);
+  compile_var_access(name, env, true);
 }
 
-void compile_application(oop expr, env_t* env, boolean is_tail) {
+void compile_application(oop expr, env_t* env, bool is_tail) {
   CHECKV(is_cons(expr), expr, "Need at least a function to call!");
 
   int length = 0;
   while (is_cons(expr)) {
-    compile(first(expr), env, NO);
+    compile(first(expr), env, false);
     length++;
 
     expr = rest(expr);
@@ -378,10 +378,10 @@ void compile_application(oop expr, env_t* env, boolean is_tail) {
   }
 }
 
-void compile_seq(oop exprs, env_t* env, boolean is_tail) {
+void compile_seq(oop exprs, env_t* env, bool is_tail) {
   CHECKV(!is_nil(exprs), exprs, "Empty sequences not supported.");
   while (!is_nil(rest(exprs))) {
-    compile(first(exprs), env, NO);
+    compile(first(exprs), env, false);
     DISCARD();
 
     exprs = rest(exprs);
@@ -391,7 +391,7 @@ void compile_seq(oop exprs, env_t* env, boolean is_tail) {
 }
 
 void compile_lambda_body(oop exprs, env_t* env) {
-  compile_seq(exprs, env, YES);
+  compile_seq(exprs, env, true);
   RETURN();
 }
 
@@ -428,22 +428,22 @@ void compile_lambda(oop lambda_expr, env_t* env) {
   MAKE_LAMBDA(lambda_entry, saved.max_stack_depth, lambda_list);
 }
 
-void compile_mem_get(oop mem_get_expr, env_t* env, boolean is_tail) {
+void compile_mem_get(oop mem_get_expr, env_t* env, bool is_tail) {
   PARSE2(mem_get_expr, expr, index);
   if (is_smallint(index)) {
-    compile(expr, env, NO);
+    compile(expr, env, false);
     READ_FIELD(get_smallint(index));
   } else {
     compile_application(mem_get_expr, env, is_tail);
   }
 }
 
-void compile_mem_set(oop mem_set_expr, env_t* env, boolean is_tail) {
+void compile_mem_set(oop mem_set_expr, env_t* env, bool is_tail) {
   PARSE3(mem_set_expr, expr, index, value);
   if (is_smallint(index)) {
     // TODO: Would be better to calculate expr first, and then value!
-    compile(value, env, NO);
-    compile(expr, env, NO);
+    compile(value, env, false);
+    compile(expr, env, false);
     WRITE_FIELD(get_smallint(index));
   } else {
     compile_application(mem_set_expr, env, is_tail);
@@ -457,7 +457,7 @@ void compile_var_access_fields(env_t* self, int frame_depth,
     self->next->compile_var_access(self->next, frame_depth, name, is_write);
   } else {
     symbol_t* objname = to_symbol(first(self->vars));
-    self->next->compile_var_access(self->next, frame_depth, objname, NO);
+    self->next->compile_var_access(self->next, frame_depth, objname, false);
     if (is_write) {
       WRITE_FIELD(index);
     } else {
@@ -466,7 +466,7 @@ void compile_var_access_fields(env_t* self, int frame_depth,
   }
 }
 
-void compile_fields(oop fields_expr, env_t* env, boolean is_tail) {
+void compile_fields(oop fields_expr, env_t* env, bool is_tail) {
   // ($fields (objname (field1 field2 ...)) body...)
   fields_expr = rest(fields_expr);
   oop objname = first(first(fields_expr));
@@ -482,7 +482,7 @@ void compile_fields(oop fields_expr, env_t* env, boolean is_tail) {
   free(inner_env);
 }
 
-void compile(oop expr, env_t* env, boolean is_tail) {
+void compile(oop expr, env_t* env, bool is_tail) {
   if      (is_smallint(expr)) { compile_literal(expr); }
   else if (is_char(expr))     { compile_literal(expr); }
   else if (is_symbol(expr))   { compile_var_read(expr, env); }
@@ -507,7 +507,7 @@ void compile(oop expr, env_t* env, boolean is_tail) {
       compile_application(expr, env, is_tail);
     }
   } else {
-    CHECKV(NO, expr, "Unknown expression type.");
+    CHECKV(false, expr, "Unknown expression type.");
   }
 }
 

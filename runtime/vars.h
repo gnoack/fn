@@ -13,8 +13,8 @@
 // in the var object.
 
 extern oop make_undefined_var(symbol_t* symbol);
-extern boolean is_var(oop var);
-extern boolean is_set_var(oop var);
+extern bool is_var(oop var);
+extern bool is_set_var(oop var);
 extern void var_set(oop var, oop value);
 extern void var_unset(oop var);
 extern oop var_get(oop var);

@@ -151,7 +151,7 @@ void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
 }
 
 void init_symbols() {
-  static boolean initialized = NO;
+  static bool initialized = false;
   if (initialized) return;
   // Note: Symbol map must be zeroed before creating symbols.
   symbol_hashmap_clear();
@@ -196,5 +196,5 @@ void init_symbols() {
 
   gc_register_persistent_refs(symbols_enumerate_oop_places);
 
-  initialized = YES;
+  initialized = true;
 }

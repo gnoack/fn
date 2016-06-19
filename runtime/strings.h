@@ -19,6 +19,6 @@ extern oop make_string_from_mem_block(oop raw_string, fn_uint size);
  */
 extern char* c_string(oop str);
 
-extern boolean is_string(oop str);
+extern bool is_string(oop str);
 
 #endif // _STRINGS_H_

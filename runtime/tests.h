@@ -18,12 +18,12 @@ void assert_eq(const char* filename,
 extern
 void assert_true(const char* filename,
 		 unsigned int line,
-		 boolean b);
+		 bool b);
 
 extern
 void assert_false(const char* filename,
 		  unsigned int line,
-		  boolean b);
+		  bool b);
 
 extern
 void assert_nil(const char* filename,

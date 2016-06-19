@@ -244,8 +244,8 @@ oop frame_get_var(frame_t* frame, unsigned int index) {
   return MEM_GET(frame_to_oop(frame), FRAME_HEADER_SIZE + index);
 }
 
-boolean is_frame(oop obj) {
-  return TO_BOOL(is_mem(obj) && value_eq(obj.mem[0], symbols._frame));
+bool is_frame(oop obj) {
+  return is_mem(obj) && value_eq(obj.mem[0], symbols._frame);
 }
 
 void print_frame(frame_t* frame) {
@@ -273,13 +273,13 @@ static void raise(interpreter_state_t* state, const char* name, oop value);
 // Callers should pass control back to the interpreter directly.
 static
 void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
-                            boolean tailcall) {
+                            bool tailcall) {
   stack_t* stack = &state->stack;
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
     proc_t* proc = to_proc(cfn);
     frame_t* caller = state->reg_frm;
-    if (tailcall == YES) {
+    if (tailcall == true) {
       caller = state->reg_frm->caller;
     }
     frame_t* frame = make_frame_from_stack(stack, arg_count - 1,
@@ -290,7 +290,7 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
     }
     stack_shrink(stack, 1);  // Remove function from stack.
 
-    if (tailcall == NO) {
+    if (!tailcall) {
       // Only need to writeback when frame is not discarded.
       writeback_to_frame(state);
     }
@@ -451,12 +451,12 @@ oop interpret(frame_t* frame) {
     }
     case BC_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, NO);
+      apply_into_interpreter(arg_count, &state, false);
       break;
     }
     case BC_TAIL_CALL: {
       fn_uint arg_count = read_index(&state);
-      apply_into_interpreter(arg_count, &state, YES);
+      apply_into_interpreter(arg_count, &state, true);
       break;
     }
     case BC_RETURN:

@@ -61,6 +61,6 @@ oop name(oop* argv, size_t argc) {      \
 }
 
 extern void init_primitives();
-extern oop lisp_bool(boolean b);
+extern oop lisp_bool(bool b);
 
 #endif  // _PRIMITIVES_H_
