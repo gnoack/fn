@@ -4,28 +4,23 @@
 #include "runtime/value.h"
 
 /* Fail a tests. Use the FAIL macro to call this. */
-extern
 void fail(const char* filename,
 	  unsigned int line,
 	  const char* msg);
 
-extern
 void assert_eq(const char* filename,
 	       unsigned int line,
 	       oop a,
 	       oop b);
 
-extern
 void assert_true(const char* filename,
 		 unsigned int line,
 		 bool b);
 
-extern
 void assert_false(const char* filename,
 		  unsigned int line,
 		  bool b);
 
-extern
 void assert_nil(const char* filename,
 		unsigned int line,
 		oop value);

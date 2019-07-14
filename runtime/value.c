@@ -34,13 +34,6 @@ oop make_char(const unsigned char c) {
   return a;
 }
 
-/* Value identity.  Returns true for equal integers and symbols as
- * well.  (This works because symbols are always interned.)
- */
-bool value_eq(oop a, oop b) {
-  return a.mem == b.mem;
-}
-
 // TODO: Reduce the is_* to a function that returns the
 // primitive type from the value.  This would ensure a value
 // can have only one type.
@@ -81,4 +74,11 @@ const char* get_symbol(symbol_t* v) {
 unsigned char get_char(oop v) {
   CHECKV(is_char(v), v, "Must be a character");
   return (unsigned char) ((v.smallint - char_start) >> 2);
+}
+
+/* Value identity.  Returns true for equal integers and symbols as
+ * well.  (This works because symbols are always interned.)
+ */
+bool value_eq(oop a, oop b) {
+  return a.mem == b.mem;
 }

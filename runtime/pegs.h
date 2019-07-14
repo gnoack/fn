@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop pegs_decls();
+oop pegs_decls();
 
 #endif  // _PEGS_H_

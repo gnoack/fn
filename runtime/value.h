@@ -15,6 +15,7 @@
 
 #define NIL ((oop) (fn_uint) NULL)
 
+// Function to print the stack trace. Set by interpreter module.
 extern void (*print_stack_trace)();
 
 // GCC only.
@@ -59,7 +60,7 @@ typedef union value_u {
   union value_u* mem;
 } oop;
 
-static inline oop to_oop(void* obj) { return *((oop*) &obj); }
+static oop to_oop(void* obj) { return *((oop*) &obj); }
 
 // Forward type definitions.
 typedef struct procedure proc_t;
@@ -74,31 +75,22 @@ CONVERTERS(frame_t, frame);
 CONVERTERS(proc_t, proc);
 CONVERTERS(symbol_t, symbol);
 
-extern oop make_smallint(fn_uint i);
+oop make_smallint(fn_uint i);
+symbol_t* make_symbol(const char* str);
+oop make_char(const unsigned char c);
 
-extern symbol_t* make_symbol(const char* str);
+bool is_nil(oop a);
+bool is_smallint(oop v);
+bool is_symbol(oop v);
+bool is_mem(oop v);
+bool is_raw_mem(oop v);
+bool is_char(oop v);
 
-extern oop make_char(const unsigned char c);
-
-extern bool is_nil(oop a);
-
-extern bool is_smallint(oop v);
-
-extern bool is_symbol(oop v);
-
-extern bool is_mem(oop v);
-
-extern bool is_raw_mem(oop v);
-
-extern bool is_char(oop v);
-
-extern fn_uint get_smallint(oop v);
-
-extern unsigned char get_char(oop v);
-
+fn_uint get_smallint(oop v);
+unsigned char get_char(oop v);
 // Returned object is immutable, forever, and owned by the symbol.
-extern const char* get_symbol(symbol_t* v);
+const char* get_symbol(symbol_t* v);
 
-extern bool value_eq(oop a, oop b);
+bool value_eq(oop a, oop b);
 
 #endif // _VALUE_H_

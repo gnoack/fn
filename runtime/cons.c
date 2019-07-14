@@ -16,35 +16,30 @@ typedef struct cons {
 
 CONVERTERS(cons_t, cons);
 
-extern
 oop make_cons(oop car, oop cdr) {
   cons_t* cons = MemAlloc(cons_t);
   *cons = (cons_t) {
     .type = symbols._cons,
     .car  = car,
-    .cdr  = cdr
+    .cdr  = cdr,
   };
   return cons_to_oop(cons);
 }
 
-extern
 bool is_cons(oop v) {
   return is_mem(v) && value_eq(symbols._cons, MEM_GET(v, 0));
 }
 
-extern
 oop first(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for caring");
   return to_cons(cons)->car;
 }
 
-extern
 oop rest(oop cons) {
   CHECKV(is_cons(cons), cons, "must be a cons for cdring");
   return to_cons(cons)->cdr;
 }
 
-extern
 unsigned int length_int(oop list) {
   unsigned int result = 0;
   while (is_cons(list)) {
@@ -56,14 +51,13 @@ unsigned int length_int(oop list) {
 }
 
 
-oop the_end_marker;
-bool initialized_marker = false;
+static oop the_end_marker;
+static bool initialized_marker = false;
 
-void enumerate_end_marker_root(void (*accept)(oop* place)) {
+static void enumerate_end_marker_root(void (*accept)(oop* place)) {
   accept(&the_end_marker);
 }
 
-extern
 oop end_marker() {
   if (!initialized_marker) {
     the_end_marker = symbol_to_oop(make_symbol("hard to guess"));
@@ -73,11 +67,10 @@ oop end_marker() {
   return the_end_marker;
 }
 
-bool is_end_marker(oop v) {
+static bool is_end_marker(oop v) {
   return value_eq(end_marker(), v);
 }
 
-extern
 oop make_list(oop first, ...) {
   cons_t* firstcons = to_cons(make_cons(first, NIL));
   cons_t* currcons = firstcons;

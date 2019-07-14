@@ -42,6 +42,7 @@ typedef struct {
   symbol_t* _c_void;
 } symbols_t;
 
+// Fixed symbols, initialized at runtime.
 extern symbols_t symbols;
 
 typedef struct symbol {
@@ -50,11 +51,11 @@ typedef struct symbol {
   oop hash;
 } symbol_t;
 
-extern void symbol_hashmap_clear();
-extern void symbol_hashmap_register(oop symbol);
+void symbol_hashmap_clear();
+void symbol_hashmap_register(oop symbol);
 
-extern void init_symbols();
+symbol_t* make_or_lookup_symbol(const char* str);
 
-extern symbol_t* make_or_lookup_symbol(const char* str);
+void init_symbols();
 
 #endif // _SYMBOLS_H_

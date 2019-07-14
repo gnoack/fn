@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop compiler_decls();
+oop compiler_decls();
 
 #endif  // _COMPILER_H_

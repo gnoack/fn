@@ -3,8 +3,19 @@
 
 #include "value.h"
 
-extern void init_interpreter();
-extern oop interpret(frame_t* frame);
+void init_interpreter();
+
+// Start interpreting the given frame.
+//
+// 'frame' needs to be populated with the necessary information:
+// - lexical environment (frame)
+// - caller frame to return to
+// - procedure and instruction pointer
+// - a stack sufficient for the function to execute
+// - appropriate args, set using frame_set_var().
+//
+// The frame is populated in procedures.c.
+oop interpret(frame_t* frame);
 
 // Stack
 typedef struct {
@@ -13,18 +24,18 @@ typedef struct {
   unsigned int max_size;
 } stack_t;
 
-extern void stack_push(stack_t* stack, oop value);
-extern oop stack_pop(stack_t* stack);
-extern unsigned int stack_size(stack_t* stack);
-extern oop stack_peek(stack_t* stack);
-extern oop stack_peek_at(stack_t* stack, fn_uint n);
-extern void stack_shrink(stack_t* stack, int n);
+void stack_push(stack_t* stack, oop value);
+oop stack_pop(stack_t* stack);
+unsigned int stack_size(stack_t* stack);
+oop stack_peek(stack_t* stack);
+oop stack_peek_at(stack_t* stack, fn_uint n);
+void stack_shrink(stack_t* stack, int n);
 
 // Frame
-extern frame_t* make_frame(proc_t* proc, frame_t* caller);
-extern bool is_frame(oop);
-extern void print_frame(frame_t*);
-extern void frame_set_var(frame_t* frame, unsigned int index, oop value);
+frame_t* make_frame(proc_t* proc, frame_t* caller);
+bool is_frame(oop);
+void print_frame(frame_t*);
+void frame_set_var(frame_t* frame, unsigned int index, oop value);
 
 typedef struct {
   // Current frame.

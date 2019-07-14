@@ -41,9 +41,10 @@ struct compiler_result {
   unsigned int max_stack_depth;
 };
 
+// global compiler state
 struct compiler_result* result;
 
-void init() {
+static void init() {
   result = malloc(sizeof(struct compiler_result));
   init_byte_array(&result->bytes, 1024);
   init_oop_array(&result->oop_table, 32);
@@ -54,7 +55,7 @@ void init() {
 }
 
 // Return the position of where a jump label is in the code.
-unsigned int lookup_label_position(symbol_t* label) {
+static unsigned int lookup_label_position(symbol_t* label) {
   struct label_index* item = result->label_positions.items;
   struct label_index* end =  label_index_array_end(&result->label_positions);
   for (; item < end; item++) {
@@ -65,7 +66,7 @@ unsigned int lookup_label_position(symbol_t* label) {
   CHECKV(false, symbol_to_oop(label), "Jump target not found.")
 }
 
-void postprocess() {
+static void postprocess() {
   struct label_index* item = result->address_positions.items;
   struct label_index* end =  label_index_array_end(&result->address_positions);
   for (; item < end; item++) {
@@ -76,7 +77,7 @@ void postprocess() {
   }
 }
 
-void finish() {
+static void finish() {
   free_byte_array(&result->bytes);
   free_oop_array(&result->oop_table);
   free_label_index_array(&result->label_positions);
@@ -85,7 +86,7 @@ void finish() {
 
 // --------------------------------------------------------------
 
-symbol_t* invent_symbol(const char* name) {
+static symbol_t* invent_symbol(const char* name) {
   static unsigned counter = 0;
   char* full_name;
   CHECK(asprintf(&full_name, "%s-%d", name, counter) != -1,
@@ -96,11 +97,11 @@ symbol_t* invent_symbol(const char* name) {
   return result;
 }
 
-void emit_byte(unsigned char byte) {
+static void emit_byte(unsigned char byte) {
   *byte_array_append(&result->bytes) = byte;
 }
 
-void emit_oop(oop object) {
+static void emit_oop(oop object) {
   // Check whether object is already in the table.
   int idx = oop_array_find(&result->oop_table, object, value_eq);
   if (idx == -1) {
@@ -113,7 +114,7 @@ void emit_oop(oop object) {
   emit_byte(0xff & idx);
 }
 
-void emit_address(symbol_t* label) {
+static void emit_address(symbol_t* label) {
   *label_index_array_append(&result->address_positions) = (struct label_index) {
     .label = label,
     .index = result->bytes.size
@@ -123,18 +124,18 @@ void emit_address(symbol_t* label) {
   byte_array_append(&result->bytes);
 }
 
-void emit_global_var_ref(symbol_t* label) {
+static void emit_global_var_ref(symbol_t* label) {
   emit_oop(lookup_var_object_globally(label));
 }
 
-void emit_label(symbol_t* label) {
+static void emit_label(symbol_t* label) {
   *label_index_array_append(&result->label_positions) = (struct label_index) {
     .label = label,
     .index = result->bytes.size
   };
 }
 
-void adjust_stack(int delta) {
+static void adjust_stack(int delta) {
   result->stack_depth += delta;
   if (result->max_stack_depth < result->stack_depth) {
     result->max_stack_depth = result->stack_depth;
@@ -146,7 +147,7 @@ struct stack_depth {
   unsigned int max_stack_depth;
 };
 
-void swap_stack_depth(struct stack_depth* sd) {
+static void swap_stack_depth(struct stack_depth* sd) {
   unsigned int tmp;
 
   tmp = sd->stack_depth;
@@ -165,23 +166,22 @@ typedef unsigned char byte;
 /*
  * These are emitting bytecode instructions on a slightly higher level.
  */
-void JUMP(symbol_t* label)                           { emit_byte(0); emit_address(label); }
-void JUMP_IF_TRUE(symbol_t* label)                   { emit_byte(1); emit_address(label);                                adjust_stack(-1); }
-void LOAD_VALUE(oop value)                           { emit_byte(2); emit_oop(value);                                    adjust_stack(1); }
-void READ_VAR(byte f_depth, byte v_index)            { emit_byte(3); emit_byte(f_depth); emit_byte(v_index);             adjust_stack(1); }
-void WRITE_VAR(byte f_depth, byte v_index)           { emit_byte(4); emit_byte(f_depth); emit_byte(v_index); }
-void READ_GLOBAL(symbol_t* name)                     { emit_byte(5); emit_global_var_ref(name);                          adjust_stack(1); }
-void WRITE_GLOBAL(symbol_t* name)                    { emit_byte(6); emit_global_var_ref(name); }
-void DISCARD()                                       { emit_byte(7);                                                     adjust_stack(-1); }
-void MAKE_LAMBDA(symbol_t* label, byte s_sz, oop ll) { emit_byte(8); emit_address(label); emit_byte(s_sz); emit_oop(ll); adjust_stack(1); }
-void CALL(byte argnum)                               { emit_byte(9); emit_byte(argnum);                                  adjust_stack(1 - argnum); }
-void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum);                                 adjust_stack(1 - argnum); }
-void RETURN()                                        { emit_byte(11);                                                    adjust_stack(-1); }
-void TAIL_CALL_APPLY()                               { emit_byte(12);                                                    adjust_stack(1 - 2); }  // unused.
-void READ_FIELD(byte index)                          { emit_byte(13); emit_byte(index); }
-void WRITE_FIELD(byte index)                         { emit_byte(14); emit_byte(index);                                  adjust_stack(-1); }
-void LABEL(symbol_t* label)                          { emit_label(label); }
-
+static void JUMP(symbol_t* label)                           { emit_byte(0); emit_address(label); }
+static void JUMP_IF_TRUE(symbol_t* label)                   { emit_byte(1); emit_address(label);                                adjust_stack(-1); }
+static void LOAD_VALUE(oop value)                           { emit_byte(2); emit_oop(value);                                    adjust_stack(1); }
+static void READ_VAR(byte f_depth, byte v_index)            { emit_byte(3); emit_byte(f_depth); emit_byte(v_index);             adjust_stack(1); }
+static void WRITE_VAR(byte f_depth, byte v_index)           { emit_byte(4); emit_byte(f_depth); emit_byte(v_index); }
+static void READ_GLOBAL(symbol_t* name)                     { emit_byte(5); emit_global_var_ref(name);                          adjust_stack(1); }
+static void WRITE_GLOBAL(symbol_t* name)                    { emit_byte(6); emit_global_var_ref(name); }
+static void DISCARD()                                       { emit_byte(7);                                                     adjust_stack(-1); }
+static void MAKE_LAMBDA(symbol_t* label, byte s_sz, oop ll) { emit_byte(8); emit_address(label); emit_byte(s_sz); emit_oop(ll); adjust_stack(1); }
+static void CALL(byte argnum)                               { emit_byte(9); emit_byte(argnum);                                  adjust_stack(1 - argnum); }
+static void TAIL_CALL(byte argnum)                          { emit_byte(10); emit_byte(argnum);                                 adjust_stack(1 - argnum); }
+static void RETURN()                                        { emit_byte(11);                                                    adjust_stack(-1); }
+static void TAIL_CALL_APPLY()                               { emit_byte(12);                                                    adjust_stack(1 - 2); }  // unused.
+static void READ_FIELD(byte index)                          { emit_byte(13); emit_byte(index); }
+static void WRITE_FIELD(byte index)                         { emit_byte(14); emit_byte(index);                                  adjust_stack(-1); }
+static void LABEL(symbol_t* label)                          { emit_label(label); }
 
 // --------------------------------------------------------------------
 
@@ -195,14 +195,14 @@ typedef struct env {
 } env_t;
 
 // Forward declaration.
-void compile(oop expr, env_t* env, bool is_tail);
+static void compile(oop expr, env_t* env, bool is_tail);
 
-void compile_literal(oop expr) {
+static void compile_literal(oop expr) {
   LOAD_VALUE(expr);
 }
 
-void compile_var_access_global(env_t* self, int frame_depth,
-                               symbol_t* name, char is_write) {
+static void compile_var_access_global(env_t* self, int frame_depth,
+                                      symbol_t* name, char is_write) {
   if (is_write) {
     WRITE_GLOBAL(name);
   } else {
@@ -211,7 +211,7 @@ void compile_var_access_global(env_t* self, int frame_depth,
 }
 
 // Return index of the name in vars, otherwise -1.
-int list_index_of(symbol_t* name, oop vars) {
+static int list_index_of(symbol_t* name, oop vars) {
   int index = 0;
   while (is_cons(vars)) {
     if (value_eq(first(vars), symbol_to_oop(name))) {
@@ -224,8 +224,8 @@ int list_index_of(symbol_t* name, oop vars) {
   return -1;
 }
 
-void compile_var_access_frame(env_t* self, int frame_depth,
-                              symbol_t* name, char is_write) {
+static void compile_var_access_frame(env_t* self, int frame_depth,
+                                     symbol_t* name, char is_write) {
   int index = list_index_of(name, self->vars);
   if (index == -1) {
     self->next->compile_var_access(self->next, frame_depth+1, name, is_write);
@@ -238,12 +238,12 @@ void compile_var_access_frame(env_t* self, int frame_depth,
   }
 }
 
-void compile_var_access(oop expr, env_t* env, char is_write) {
+static void compile_var_access(oop expr, env_t* env, char is_write) {
   CHECKV(is_symbol(expr), expr, "Variable needs to be denoted as symbol.");
   env->compile_var_access(env, 0, to_symbol(expr), is_write);
 }
 
-void compile_var_read(oop expr, env_t* env) {
+static void compile_var_read(oop expr, env_t* env) {
   compile_var_access(expr, env, false);
 }
 
@@ -253,7 +253,7 @@ void compile_var_read(oop expr, env_t* env) {
   original = rest(original);          \
   oop n2 = first(original);
 
-void compile_set(oop set_expr, env_t* env) {
+static void compile_set(oop set_expr, env_t* env) {
   PARSE2(set_expr, name, expr);
 
   compile(expr, env, false);
@@ -268,7 +268,7 @@ void compile_set(oop set_expr, env_t* env) {
   original = rest(original);                    \
   oop n3 = first(original);
 
-void compile_if(oop if_expr, env_t* env, bool is_tail) {
+static void compile_if(oop if_expr, env_t* env, bool is_tail) {
   PARSE3(if_expr, cond_expr, conseq_expr, alt_expr);
   symbol_t* true_branch = invent_symbol("true-branch");
   symbol_t* after_if = invent_symbol("after-if");
@@ -293,7 +293,7 @@ void compile_if(oop if_expr, env_t* env, bool is_tail) {
 
 }
 
-oop append_lists(oop a, oop b) {
+static oop append_lists(oop a, oop b) {
   if (is_nil(a)) {
     return b;
   } else {
@@ -303,7 +303,7 @@ oop append_lists(oop a, oop b) {
 }
 
 // Compare with destructuring of lambda lists in procedures.c.
-oop vars_from_lambda_list(oop ll) {
+static oop vars_from_lambda_list(oop ll) {
   if (is_nil(ll)) {
     return NIL;
   } else if (is_cons(ll)) {
@@ -319,7 +319,7 @@ oop vars_from_lambda_list(oop ll) {
   }
 }
 
-oop extract_vars(oop let_clauses) {
+static oop extract_vars(oop let_clauses) {
   if (is_cons(let_clauses)) {
     return make_cons(first(first(let_clauses)),
                      extract_vars(rest(let_clauses)));
@@ -328,7 +328,7 @@ oop extract_vars(oop let_clauses) {
   }
 }
 
-oop extract_exprs(oop let_clauses) {
+static oop extract_exprs(oop let_clauses) {
   if (is_cons(let_clauses)) {
     return make_cons(first(rest(first(let_clauses))),
                      extract_exprs(rest(let_clauses)));
@@ -337,7 +337,7 @@ oop extract_exprs(oop let_clauses) {
   }
 }
 
-void compile_let(oop let_expr, env_t* env, bool is_tail) {
+static void compile_let(oop let_expr, env_t* env, bool is_tail) {
   // Transform to a lambda expression call, then compile.
   let_expr = rest(let_expr);
   oop clauses = first(let_expr);
@@ -351,14 +351,14 @@ void compile_let(oop let_expr, env_t* env, bool is_tail) {
   compile(call_expr, env, is_tail);
 }
 
-void compile_def(oop def_expr, env_t* env) {
+static void compile_def(oop def_expr, env_t* env) {
   PARSE2(def_expr, name, expr);
 
   compile(expr, env, false);
   compile_var_access(name, env, true);
 }
 
-void compile_application(oop expr, env_t* env, bool is_tail) {
+static void compile_application(oop expr, env_t* env, bool is_tail) {
   CHECKV(is_cons(expr), expr, "Need at least a function to call!");
 
   int length = 0;
@@ -378,7 +378,7 @@ void compile_application(oop expr, env_t* env, bool is_tail) {
   }
 }
 
-void compile_seq(oop exprs, env_t* env, bool is_tail) {
+static void compile_seq(oop exprs, env_t* env, bool is_tail) {
   CHECKV(!is_nil(exprs), exprs, "Empty sequences not supported.");
   while (!is_nil(rest(exprs))) {
     compile(first(exprs), env, false);
@@ -390,12 +390,12 @@ void compile_seq(oop exprs, env_t* env, bool is_tail) {
   compile(first(exprs), env, is_tail);
 }
 
-void compile_lambda_body(oop exprs, env_t* env) {
+static void compile_lambda_body(oop exprs, env_t* env) {
   compile_seq(exprs, env, true);
   RETURN();
 }
 
-void compile_lambda(oop lambda_expr, env_t* env) {
+static void compile_lambda(oop lambda_expr, env_t* env) {
   lambda_expr = rest(lambda_expr);
   oop lambda_list = first(lambda_expr);
   oop body = rest(lambda_expr);
@@ -428,7 +428,7 @@ void compile_lambda(oop lambda_expr, env_t* env) {
   MAKE_LAMBDA(lambda_entry, saved.max_stack_depth, lambda_list);
 }
 
-void compile_mem_get(oop mem_get_expr, env_t* env, bool is_tail) {
+static void compile_mem_get(oop mem_get_expr, env_t* env, bool is_tail) {
   PARSE2(mem_get_expr, expr, index);
   if (is_smallint(index)) {
     compile(expr, env, false);
@@ -438,7 +438,7 @@ void compile_mem_get(oop mem_get_expr, env_t* env, bool is_tail) {
   }
 }
 
-void compile_mem_set(oop mem_set_expr, env_t* env, bool is_tail) {
+static void compile_mem_set(oop mem_set_expr, env_t* env, bool is_tail) {
   PARSE3(mem_set_expr, expr, index, value);
   if (is_smallint(index)) {
     // TODO: Would be better to calculate expr first, and then value!
@@ -450,8 +450,8 @@ void compile_mem_set(oop mem_set_expr, env_t* env, bool is_tail) {
   }
 }
 
-void compile_var_access_fields(env_t* self, int frame_depth,
-                               symbol_t* name, char is_write) {
+static void compile_var_access_fields(env_t* self, int frame_depth,
+                                      symbol_t* name, char is_write) {
   int index = list_index_of(name, rest(self->vars));
   if (index == -1) {
     self->next->compile_var_access(self->next, frame_depth, name, is_write);
@@ -466,7 +466,7 @@ void compile_var_access_fields(env_t* self, int frame_depth,
   }
 }
 
-void compile_fields(oop fields_expr, env_t* env, bool is_tail) {
+static void compile_fields(oop fields_expr, env_t* env, bool is_tail) {
   // ($fields (objname (field1 field2 ...)) body...)
   fields_expr = rest(fields_expr);
   oop objname = first(first(fields_expr));
@@ -482,7 +482,7 @@ void compile_fields(oop fields_expr, env_t* env, bool is_tail) {
   free(inner_env);
 }
 
-void compile(oop expr, env_t* env, bool is_tail) {
+static void compile(oop expr, env_t* env, bool is_tail) {
   if      (is_smallint(expr)) { compile_literal(expr); }
   else if (is_char(expr))     { compile_literal(expr); }
   else if (is_symbol(expr))   { compile_var_read(expr, env); }

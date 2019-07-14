@@ -9,6 +9,7 @@
 // TODO: Eliminate a lot of code duplication here!
 
 
+// Enable these for debugging if needed.
 // #define GC_SUMMARY 1
 // #define GC_DEBUG 1
 // #define GC_LOGGING 1
@@ -22,6 +23,7 @@
 #endif  // GC_DEBUG
 
 
+// Definition.
 unsigned int gc_protect_counter;
 
 
@@ -62,7 +64,7 @@ static void enumerate_refs_none(oop obj, void (*callback)(oop ref)) {}
 
 region_t immediate_region;
 
-void immediate_region_init() {
+static void immediate_region_init() {
   immediate_region.on_gc_start = noop;
   immediate_region.on_gc_stop = noop;
   immediate_region.save = save_noop;
@@ -328,7 +330,7 @@ static void object_enumerate_refs(oop obj, void (*callback)(oop ref)) {
 }
 
 // Only valid outside of GC run.
-extern bool gc_is_object(oop obj) {
+bool gc_is_object(oop obj) {
   return half_space_contains(&object_memory.current, obj);
 }
 
@@ -376,7 +378,6 @@ static inline fn_uint raw_memory_oop_size(fn_uint byte_size) {
   return size;
 }
 
-// Size in bytes
 oop gc_raw_memory_alloc(fn_uint byte_size) {
   fn_uint size = raw_memory_oop_size(byte_size);
   oop result = half_space_alloc(&raw_memory.current, size + 1);
@@ -491,11 +492,11 @@ static void traverse_object_graph(oop current) {
 
 bool _run_gc_soon;
 
-extern void run_gc_soon() {
+void run_gc_soon() {
   _run_gc_soon = true;
 }
 
-extern void init_gc() {
+void init_gc() {
   _run_gc_soon = false;
   object_region_init(1 << 27);  // TODO: Enough?
   raw_memory_region_init(1 << 17);  // TODO: Enough?
@@ -528,7 +529,7 @@ static void pointered_half_space_sanity_check(half_space* space);
 static void pointered_half_space_print_object_types(half_space* a);
 #endif
 
-extern void gc_run() {
+void gc_run() {
   if (should_skip_gc()) {
     return;
   }
@@ -604,7 +605,7 @@ static void relocate_symbols_struct(
 /*
  * Deserializes the program state from a file.
  */
-extern void gc_deserialize_from_file(char* filename) {
+void gc_deserialize_from_file(char* filename) {
   FILE* in = fopen(filename, "r");
 
   // Copy file contents over existing symbols map and global env ptr.

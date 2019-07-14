@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop serialize_decls();
+oop serialize_decls();
 
 #endif  // _SERIALIZE_H_

@@ -29,8 +29,7 @@ def guard(file, guarddef)
 end
 
 files << ["#{modname}-test.h",
-          guard(newline + "extern" +
-                newline + "void #{modname}_tests();" +
+          guard(newline + "void #{modname}_tests();" +
                 newline,
                 "_#{modname.upcase}_TEST_H_")]
 
@@ -41,7 +40,6 @@ if lisp_mode
 
   files << ["#{modname}.h",
             guard(newline + mkinclude("value") +
-                  newline + "extern" +
                   newline + "oop #{modname}_decls();" +
                   newline,
                   "_#{modname.upcase}_H_")]
@@ -58,7 +56,6 @@ else
             newline + "  // TODO" +
             newline + "}" +
             newline +
-            newline + "extern" +
             newline + "void #{modname}_tests() {" +
             newline + "  TESTRUN(#{modname}_simple);" +
             newline + "}" +
@@ -86,4 +83,3 @@ if lisp_mode
   puts "* Call load_decls(#{modname}_decls()) in init() in tests.c"
   puts "  and include #{modname}.h there, too."
 end
-

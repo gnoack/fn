@@ -13,23 +13,22 @@
 #include "value.h"
 #include "vars.h"
 
+// Definition.
 oop global_env;
-oop remaining_declarations;
 
-static inline
-void set_globally_oop(symbol_t* key, oop value) {
+static oop remaining_declarations;
+
+static void set_globally_oop(symbol_t* key, oop value) {
   var_set(lookup_var_object_globally(key), value);
 }
 
-static inline
-bool is_defined_globally(symbol_t* key) {
+static bool is_defined_globally(symbol_t* key) {
   return dict_has_key(global_env, symbol_to_oop(key)) &&
          is_set_var(dict_get(global_env, symbol_to_oop(key)));
 }
 
 // Like the above, but also check for redefinitions.
-static inline
-void register_globally_symbol(symbol_t* key, oop value) {
+static void register_globally_symbol(symbol_t* key, oop value) {
   CHECKV(!is_defined_globally(key), symbol_to_oop(key),
 	 "Symbol already defined.");
   set_globally_oop(key, value);
@@ -96,7 +95,7 @@ void init_eval() {
 
 // TODO: Write REPL and file loading more in Lisp and remove the weird
 // compilation code from here.
-static inline oop eval_global(oop program) {
+static oop eval_global(oop program) {
   if (is_defined_globally(symbols._macroexpand)) {
     oop macroexpand_fn = lookup_globally(symbols._macroexpand);
     program = apply(make_cons(macroexpand_fn, make_cons(program, NIL)));

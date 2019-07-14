@@ -61,14 +61,14 @@ void mem_raw_mem_set(oop target, fn_uint index, fn_uint value) {
   ptr[index] = (unsigned char) value;
 }
 
-void* mem_raw_get_ptr(oop target) {
-  CHECKV(is_raw_mem(target), target, "Expected raw memory block.");
-  return (void*) target.mem;
-}
-
 // NOTE: This returns the actual allocated size, so that may be
 // higher than what was requested on allocation.
 fn_uint mem_raw_mem_size(oop target) {
   CHECKV(is_raw_mem(target), target, "Must be raw memory object.");
   return get_smallint(target.mem[-1]);
+}
+
+void* mem_raw_get_ptr(oop target) {
+  CHECKV(is_raw_mem(target), target, "Expected raw memory block.");
+  return (void*) target.mem;
 }

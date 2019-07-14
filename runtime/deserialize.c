@@ -36,9 +36,9 @@ static inline unsigned char read_byte(FILE* input) {
 }
 
 // Forward declaration.
-oop deserialize(FILE* input);
+static oop deserialize(FILE* input);
 
-fn_uint deserialize_int(FILE* input) {
+static fn_uint deserialize_int(FILE* input) {
   fn_uint result = 0;
   unsigned char c;
   do {
@@ -48,7 +48,7 @@ fn_uint deserialize_int(FILE* input) {
   return result;
 }
 
-oop deserialize_array(FILE* input) {
+static oop deserialize_array(FILE* input) {
   fn_uint size = deserialize_int(input);
   oop result = make_array(size);
   int i;
@@ -58,7 +58,7 @@ oop deserialize_array(FILE* input) {
   return result;
 }
 
-oop deserialize_mem_block(FILE* input, fn_uint size) {
+static oop deserialize_mem_block(FILE* input, fn_uint size) {
   oop result = mem_raw_mem_alloc(size);
   fn_uint read_bytes = 0;
   read_bytes = fread(result.mem + read_bytes, 1, size - read_bytes, input);
@@ -66,7 +66,7 @@ oop deserialize_mem_block(FILE* input, fn_uint size) {
   return result;
 }
 
-oop deserialize(FILE* input) {
+static oop deserialize(FILE* input) {
   switch (read_byte(input)) {
   case S_ARRAY:
     return deserialize_array(input);

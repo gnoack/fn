@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop byte_buffer_decls();
+oop byte_buffer_decls();
 
 #endif  // _BYTE-BUFFER_H_

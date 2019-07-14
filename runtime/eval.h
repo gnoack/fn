@@ -7,19 +7,15 @@
 // Global namespace.
 extern oop global_env;
 
-extern void register_globally(const char* name, oop value);
+bool is_global_env(oop v);
 
-extern void register_globally_fn(const char* name, function fn);
-
-extern oop lookup_globally(symbol_t* key);
-
+void register_globally(const char* name, oop value);
+void register_globally_fn(const char* name, function fn);
+oop lookup_globally(symbol_t* key);
 // Avoid.  Use lookup_globally() to lookup values.
-extern oop lookup_var_object_globally(symbol_t* key);
+oop lookup_var_object_globally(symbol_t* key);
 
-extern bool is_global_env(oop v);
-
-extern void init_eval();
-
-extern void load_decls(oop decls);
+void init_eval();
+void load_decls(oop decls);
 
 #endif  // _EVAL_H_

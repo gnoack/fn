@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop arrays_decls();
+oop arrays_decls();
 
 #endif  // _ARRAYS_H_

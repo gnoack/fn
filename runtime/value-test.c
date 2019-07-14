@@ -75,7 +75,6 @@ TEST(char_conversion) {
   ASSERT_TRUE(get_char(c) == 'b');
 }
 
-extern
 void value_tests() {
   TESTRUN(symbol_identity);
   TESTRUN(identifying_symbols);

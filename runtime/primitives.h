@@ -60,7 +60,7 @@ oop name(oop* argv, size_t argc) {      \
   return lisp_bool(c_tester(value));    \
 }
 
-extern void init_primitives();
-extern oop lisp_bool(bool b);
+void init_primitives();
+oop lisp_bool(bool b);
 
 #endif  // _PRIMITIVES_H_

@@ -36,7 +36,7 @@
 #define STACK_SIZE_IDX 1
 #define STACK_HEADER_SIZE 2
 
-oop make_stack(unsigned int max_size) {
+static oop make_stack(unsigned int max_size) {
   oop result = mem_alloc(STACK_HEADER_SIZE + max_size);
   MEM_SET(result, 0, symbols._stack);
   MEM_SET(result, 1, make_smallint(0));
@@ -48,7 +48,7 @@ oop make_stack(unsigned int max_size) {
 // This will be the first interpreter state on the stack.
 interpreter_state_t* protected_interpreter_state = NULL;
 
-void enumerate_interpreter_roots(void (*accept)(oop* place)) {
+static void enumerate_interpreter_roots(void (*accept)(oop* place)) {
   if (protected_interpreter_state != NULL) {
     accept((oop*) &(protected_interpreter_state->reg_frm));
     accept(&(protected_interpreter_state->bytecode));
@@ -69,6 +69,12 @@ void stack_push(stack_t* stack, oop value) {
   stack->size++;
 }
 
+oop stack_pop(stack_t* stack) {
+  DEBUG_CHECK(stack->size > 0, "Stack empty, can't pop.");
+  stack->size--;
+  return stack->stack[stack->size];
+}
+
 unsigned int stack_size(stack_t* stack) {
   return stack->size;
 }
@@ -86,21 +92,15 @@ oop stack_peek_at(stack_t* stack, fn_uint n) {
   return stack->stack[idx];
 }
 
-oop stack_pop(stack_t* stack) {
-  DEBUG_CHECK(stack->size > 0, "Stack empty, can't pop.");
-  stack->size--;
-  return stack->stack[stack->size];
-}
-
 // Shrink stack by n elements.
 void stack_shrink(stack_t* stack, int n) {
   DEBUG_CHECK(stack->size >= n, "Can't shrink below stack size 0.");
   stack->size -= n;
 }
 
-// Convenience function to pop n elements from the stack and make them
-// into a list.
-oop stack_pop_list(stack_t* stack, fn_uint size) {
+// Convenience function to pop n elements from the stack
+// and return the in a list.
+static oop stack_pop_list(stack_t* stack, fn_uint size) {
   oop list = NIL;
   while (size > 0) {
     list = make_cons(stack_pop(stack), list);
@@ -110,7 +110,7 @@ oop stack_pop_list(stack_t* stack, fn_uint size) {
 }
 
 #ifdef INTERPRETER_DEBUG
-void print_stack(stack_t* stack) {
+static void print_stack(stack_t* stack) {
   int i;
   for (i=stack->size-1; i>=0; i--) {
     printf(" [s] %03d ", i);
@@ -142,8 +142,8 @@ frame_t* make_frame(proc_t* proc, frame_t* caller) {
                                     proc_has_varargs(proc)));
   *frm = (frame_t) {
     .type      = symbols._frame,
-    .next      = proc->env,  // Next lexical env.
-    .caller    = caller,  // Caller frame.
+    .next      = proc->env,  // Next lexical env, the frame where proc was defined.
+    .caller    = caller,  // Caller frame, the frame we return to after execution.
     .procedure = proc,
     .ip        = proc->ip,  // Initial IP.
     .stack     = make_stack(proc_max_stack_depth(proc))
@@ -151,8 +151,7 @@ frame_t* make_frame(proc_t* proc, frame_t* caller) {
   return frm;
 }
 
-static inline
-void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
+static void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
   proc_t* proc = frame->procedure;
   state->reg_frm     = frame;
   state->ip          = get_smallint(frame->ip);
@@ -165,8 +164,7 @@ void restore_from_frame(frame_t* frame, interpreter_state_t* state) {
   state->stack.max_size = mem_size(stack) - STACK_HEADER_SIZE;
 }
 
-static inline
-void initialize_state_from_fn(frame_t* frame, interpreter_state_t* state) {
+static void initialize_state_from_fn(frame_t* frame, interpreter_state_t* state) {
   proc_t* proc = frame->procedure;
   state->reg_frm = frame;
   state->ip = get_smallint(proc->ip);
@@ -182,16 +180,15 @@ void initialize_state_from_fn(frame_t* frame, interpreter_state_t* state) {
 }
 
 // Because interpreter_state_t is only a cache for the frame.
-void writeback_to_frame(interpreter_state_t* state) {
+static void writeback_to_frame(interpreter_state_t* state) {
   state->reg_frm->ip = make_smallint(state->ip);
   MEM_SET(state->reg_frm->stack, STACK_SIZE_IDX,
           make_smallint(state->stack.size));
 }
 
 // On wrong number of arguments, returns NULL.
-static inline
-frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
-                               proc_t* proc, frame_t* caller) {
+static frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
+                                      proc_t* proc, frame_t* caller) {
   frame_t* frm = make_frame(proc, caller);
 
   // Positional arguments.
@@ -219,13 +216,12 @@ frame_t* make_frame_from_stack(stack_t* stack, fn_uint arg_count,
   return frm;
 }
 
-static inline fn_uint frame_size(frame_t* frame) {
+static fn_uint frame_size(frame_t* frame) {
   return proc_num_fixargs(frame->procedure) +
     proc_has_varargs(frame->procedure);
 }
 
-static inline
-frame_t* nth_frame(frame_t* frame, unsigned int depth) {
+static frame_t* nth_frame(frame_t* frame, unsigned int depth) {
   while (depth > 0) {
     frame = frame->next;
     depth--;
@@ -238,8 +234,7 @@ void frame_set_var(frame_t* frame, unsigned int index, oop value) {
   MEM_SET(frame_to_oop(frame), FRAME_HEADER_SIZE + index, value);
 }
 
-static inline
-oop frame_get_var(frame_t* frame, unsigned int index) {
+static oop frame_get_var(frame_t* frame, unsigned int index) {
   DEBUG_CHECK(index < frame_size(frame), "Index out of bounds.");
   return MEM_GET(frame_to_oop(frame), FRAME_HEADER_SIZE + index);
 }
@@ -271,9 +266,8 @@ static void raise(interpreter_state_t* state, const char* name, oop value);
 // Apply compiled Lisp procedures by modifying
 // the bytecode interpreter state and letting the interpreter do it.
 // Callers should pass control back to the interpreter directly.
-static
-void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
-                            bool tailcall) {
+static void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
+                                   bool tailcall) {
   stack_t* stack = &state->stack;
   oop cfn = stack_peek_at(stack, arg_count);
   if (is_compiled_lisp_procedure(cfn)) {
@@ -313,24 +307,24 @@ void apply_into_interpreter(fn_uint arg_count, interpreter_state_t* state,
 
 
 
-static inline unsigned char read_byte(interpreter_state_t* state) {
+static unsigned char read_byte(interpreter_state_t* state) {
   unsigned char result = ((unsigned char*) state->bytecode.mem)[state->ip];
   state->ip++;
   return result;
 }
 
-static inline fn_uint read_label_address(interpreter_state_t* state) {
+static fn_uint read_label_address(interpreter_state_t* state) {
   fn_uint upper = read_byte(state);
   fn_uint lower = read_byte(state);
   return (upper << 8) | lower;
 }
 
-static inline fn_uint read_index(interpreter_state_t* state) {
+static fn_uint read_index(interpreter_state_t* state) {
   return read_byte(state);
 }
 
 // TODO: Only one byte: Will it be enough?
-static inline oop read_oop(interpreter_state_t* state) {
+static oop read_oop(interpreter_state_t* state) {
   // TODO: Depends on memory layout in arrays.
   return MEM_GET(state->oop_lookups, 1 + read_byte(state));
 }
@@ -354,7 +348,9 @@ oop interpret(frame_t* frame) {
   interpreter_state_t state;
   initialize_state_from_fn(frame, &state);
 
-  // TODO: Ugly state handling due to callbacks in native functions.
+  // TODO: We can have two nested interpret() loops because readline calls back
+  // into a Lisp function.  Only the outermost loop state is taken into account
+  // after GC, because GC is disabled for the inner interpret() loop anyway.
   // Maybe use something else than readline... :-/
   if (protected_interpreter_state == NULL) {
     protected_interpreter_state = &state;
@@ -524,7 +520,7 @@ oop interpret(frame_t* frame) {
   }
 }
 
-void actual_print_stack_trace(frame_t* frame) {
+static void actual_print_stack_trace(frame_t* frame) {
   while (frame != NULL) {
     printf(" - ");
     print_frame(frame);
@@ -534,7 +530,7 @@ void actual_print_stack_trace(frame_t* frame) {
   }
 }
 
-void my_print_stack_trace() {
+static void my_print_stack_trace() {
   frame_t* frame = native_procedure_caller();
   if (frame == NULL) {
     printf("Outside of C function -- current frame is unknown!\n");

@@ -14,7 +14,6 @@ TEST(memory_alloc_zero_by_default) {
   ASSERT_NIL(mem_get(obj, 0));
 }
 
-extern
 void memory_tests() {
   TESTRUN(memory_alloc);
   TESTRUN(memory_alloc_zero_by_default);

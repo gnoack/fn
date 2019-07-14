@@ -10,7 +10,7 @@
 #include "value.h"
 
 
-fn_uint symbol_to_hash(oop symbol) {
+static fn_uint symbol_to_hash(oop symbol) {
   CHECKV(is_symbol(symbol), symbol, "Must be a symbol for hashing it.");
   return get_smallint(to_symbol(symbol)->hash);
 }
@@ -65,13 +65,11 @@ oop make_dict(fn_uint table_size) {
   return result;
 }
 
-static inline
-fn_uint dict_size(oop dict) {
+static fn_uint dict_size(oop dict) {
   return get_smallint(mem_get(dict, 1));
 }
 
-static inline
-oop dict_table(oop dict) {
+static oop dict_table(oop dict) {
   return mem_get(dict, 2);
 }
 
@@ -84,7 +82,7 @@ oop dict_table(oop dict) {
  */
 
 // Returns 1 if element was put, 0 if it was replced.
-int dict_table_put(oop table, oop key, oop value) {
+static int dict_table_put(oop table, oop key, oop value) {
   int size = (int) array_size(table) >> 1;
   int i = symbol_to_hash(key) % size;
   oop current_key;
@@ -101,7 +99,7 @@ int dict_table_put(oop table, oop key, oop value) {
   return 1;
 }
 
-oop dict_table_get(oop table, oop key) {
+static oop dict_table_get(oop table, oop key) {
   int size = (int) array_size(table) >> 1;
   int i = symbol_to_hash(key) % size;
   oop current_key;
@@ -115,7 +113,7 @@ oop dict_table_get(oop table, oop key) {
   CHECKV(1==0, key, "Key not found.");
 }
 
-bool dict_table_has_key(oop table, oop key) {
+static bool dict_table_has_key(oop table, oop key) {
   int size = (int) array_size(table) >> 1;
   int i = symbol_to_hash(key) % size;
   oop current_key;
@@ -129,7 +127,7 @@ bool dict_table_has_key(oop table, oop key) {
   return false;
 }
 
-oop dict_table_key_value_pairs(oop table) {
+static oop dict_table_key_value_pairs(oop table) {
   int size = array_size(table) >> 1;
   int i;
   oop result = NIL;
@@ -145,7 +143,7 @@ oop dict_table_key_value_pairs(oop table) {
 }
 
 // Destructively resizes the dictionary to a new size.
-void dict_resize(oop dict, fn_uint new_table_size) {
+static void dict_resize(oop dict, fn_uint new_table_size) {
   oop old_table = dict_table(dict);
   oop new_table = make_array(new_table_size * 2);
   fn_uint old_table_size = array_size(old_table) >> 1;
@@ -161,7 +159,7 @@ void dict_resize(oop dict, fn_uint new_table_size) {
   mem_set(dict, 2, new_table);
 }
 
-void dict_change_count(oop dict, int amount) {
+static void dict_change_count(oop dict, int amount) {
   fn_uint old_count = dict_size(dict);
   fn_uint table_size = array_size(dict_table(dict)) >> 1;
   fn_uint new_count = old_count + amount;

@@ -15,13 +15,12 @@
 unsigned int assertion_count = 0;
 unsigned int failure_count = 0;
 
-void init_assert() {
+static void init_assert() {
   putchar('.');
   fflush(stdout);
   assertion_count++;
 }
 
-extern
 void fail(const char* filename,
           unsigned int line,
           const char* msg) {
@@ -29,7 +28,6 @@ void fail(const char* filename,
   failure_count++;
 }
 
-extern
 void assert_true(const char* filename,
                  unsigned int line,
                  bool b) {
@@ -39,7 +37,6 @@ void assert_true(const char* filename,
   }
 }
 
-extern
 void assert_false(const char* filename,
                   unsigned int line,
                   bool b) {
@@ -49,7 +46,6 @@ void assert_false(const char* filename,
   }
 }
 
-extern
 void assert_nil(const char* filename,
                 unsigned int line,
                 oop value) {
@@ -59,7 +55,6 @@ void assert_nil(const char* filename,
   }
 }
 
-extern
 void assert_eq(const char* filename,
                unsigned int line,
                oop a,
@@ -74,7 +69,7 @@ void assert_eq(const char* filename,
   }
 }
 
-void run_all_c_tests() {
+static void run_all_c_tests() {
   interpreter_tests();
   cons_tests();
   value_tests();
@@ -89,7 +84,8 @@ void run_all_c_tests() {
 }
 
 bool deserialize_arg = false;
-void parse_args(int argc, char* argv[]) {
+
+static void parse_args(int argc, char* argv[]) {
   int i;
   for (i=1; i<argc; i++) {
     if (strcmp(argv[i], "-S") == 0) {

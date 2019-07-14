@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop parser_decls();
+oop parser_decls();
 
 #endif  // _PARSER_H_

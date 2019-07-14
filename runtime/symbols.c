@@ -14,7 +14,7 @@ char* interned_symbols_keys[HASH_MAP_SIZE];
 symbol_t* interned_symbols_values[HASH_MAP_SIZE];
 
 // TODO: Strip most significant bit directly?
-fn_uint string_to_hash(const char* str) {
+static fn_uint string_to_hash(const char* str) {
   fn_uint value = 1;
   while (*str) {
     value = value * 7 + *str;
@@ -23,8 +23,7 @@ fn_uint string_to_hash(const char* str) {
   return value;
 }
 
-static inline
-fn_uint find_place(const char* key) {
+static fn_uint find_place(const char* key) {
   fn_uint i = string_to_hash(key);
   for (;;) {
     i = (i + 1) % HASH_MAP_SIZE;
@@ -39,8 +38,7 @@ fn_uint find_place(const char* key) {
   return i;
 }
 
-static inline
-symbol_t* construct_symbol(const char* str) {
+static symbol_t* construct_symbol(const char* str) {
   int len = strlen(str);
 
   fn_uint hash = string_to_hash(str);
@@ -107,7 +105,7 @@ void symbol_hashmap_register(oop obj) {
 
 symbols_t symbols;
 
-void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
+static void symbols_enumerate_oop_places(void (*accept)(oop* place)) {
   // Symbols.
   accept((oop*) &symbols._if);
   accept((oop*) &symbols._def);

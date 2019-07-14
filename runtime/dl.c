@@ -13,13 +13,12 @@
 #include "symbols.h"
 #include "carcdr.h"
 
-
-oop pack_aligned_cptr(void* i) {
+static oop pack_aligned_cptr(void* i) {
   CHECK((((fn_uint) i) & 1) == 0, "Needs to be an aligned pointer.");
   return make_smallint(((fn_uint) i) >> 1);
 }
 
-void* unpack_aligned_cptr(oop ptr) {
+static void* unpack_aligned_cptr(oop ptr) {
   return (void*) (get_smallint(ptr) << 1);
 }
 
@@ -56,22 +55,19 @@ typedef union {
   int integer;
 } c_value;
 
-static inline
-void init_ptrs_to_free(ptrs_to_free_t* ptrs_to_free, int argnum) {
+static void init_ptrs_to_free(ptrs_to_free_t* ptrs_to_free, int argnum) {
   ptrs_to_free->ptrs = malloc(argnum * sizeof(void*));
   ptrs_to_free->size = 0;
 
 }
 
 // No bounds checks performed here.
-static inline
-void add_ptr(ptrs_to_free_t* ptrs_to_free, void* ptr) {
+static void add_ptr(ptrs_to_free_t* ptrs_to_free, void* ptr) {
   ptrs_to_free->ptrs[ptrs_to_free->size] = ptr;
   ptrs_to_free->size++;
 }
 
-static inline
-void free_all(ptrs_to_free_t* ptrs_to_free) {
+static void free_all(ptrs_to_free_t* ptrs_to_free) {
   int i;
   for(i = 0; i < ptrs_to_free->size; i++) {
     free(ptrs_to_free->ptrs[i]);
@@ -80,7 +76,7 @@ void free_all(ptrs_to_free_t* ptrs_to_free) {
   ptrs_to_free->size = 0;
 }
 
-oop c_to_oop(c_value value, symbol_t* type, ptrs_to_free_t* ptrs_to_free) {
+static oop c_to_oop(c_value value, symbol_t* type, ptrs_to_free_t* ptrs_to_free) {
   if (type == symbols._c_int) {
     return make_smallint(value.integer);
   } else if (type == symbols._c_void) {
@@ -102,7 +98,7 @@ oop c_to_oop(c_value value, symbol_t* type, ptrs_to_free_t* ptrs_to_free) {
   }
 }
 
-c_value oop_to_c(oop input, oop type, ptrs_to_free_t* ptrs_to_free) {
+static c_value oop_to_c(oop input, oop type, ptrs_to_free_t* ptrs_to_free) {
   CHECKV(is_symbol(type), type, "C type specifier must be a symbol.");
   c_value result;
   if (to_symbol(type) == symbols._c_int) {

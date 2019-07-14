@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop pprint_decls();
+oop pprint_decls();
 
 #endif  // _PPRINT_H_

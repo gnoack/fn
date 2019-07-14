@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop utils_decls();
+oop utils_decls();
 
 #endif  // _UTILS_H_

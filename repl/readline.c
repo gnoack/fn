@@ -8,8 +8,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-static
-char* symbol_completion_entry(const char* text, int state) {
+static char* symbol_completion_entry(const char* text, int state) {
   oop result =
     apply(LIST(lookup_globally(make_symbol("readline-completion-entry")),
                make_string(text), make_smallint(state), global_env));
@@ -20,8 +19,7 @@ char* symbol_completion_entry(const char* text, int state) {
   }
 }
 
-static
-FUNC(primitive_add_history) {
+static FUNC(primitive_add_history) {
   PARSE_ONE_ARG(item);
   char* c_item = c_string(item);
   add_history(c_item);
@@ -29,8 +27,7 @@ FUNC(primitive_add_history) {
   return item;
 }
 
-static
-FUNC(primitive_read_history) {
+static FUNC(primitive_read_history) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   read_history(c_filename);
@@ -38,8 +35,7 @@ FUNC(primitive_read_history) {
   return filename;
 }
 
-static
-FUNC(primitive_write_history) {
+static FUNC(primitive_write_history) {
   PARSE_ONE_ARG(filename);
   char* c_filename = c_string(filename);
   write_history(c_filename);
@@ -47,8 +43,7 @@ FUNC(primitive_write_history) {
   return filename;
 }
 
-static
-FUNC(primitive_readline) {
+static FUNC(primitive_readline) {
   PARSE_ONE_ARG(prompt);
   char* c_prompt = c_string(prompt);
   char* c_result = readline(c_prompt);
@@ -61,13 +56,11 @@ FUNC(primitive_readline) {
   return result;
 }
 
-static
-FUNC(primitive_get_home_directory) {
+static FUNC(primitive_get_home_directory) {
   CHECK(argc == 0, "Expected 0, but got args.");
   return make_string(getenv("HOME"));
 }
 
-extern
 void init_readline() {
   rl_completion_entry_function = symbol_completion_entry;
 

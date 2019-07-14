@@ -3,7 +3,6 @@
 
 #include "value.h"
 
-extern
 oop continuations_decls();
 
 #endif  // _CONTINUATIONS_H_

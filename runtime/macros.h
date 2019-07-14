@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop macros_decls();
+oop macros_decls();
 
 #endif  // _MACROS_H_

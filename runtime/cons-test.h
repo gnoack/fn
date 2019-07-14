@@ -1,3 +1,6 @@
+#ifndef _CONS_TEST_H_
+#define _CONS_TEST_H_
 
-extern
 void cons_tests();
+
+#endif  // _CONS_TEST_H_

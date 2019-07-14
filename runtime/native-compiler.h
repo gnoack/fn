@@ -4,6 +4,6 @@
 #include "value.h"
 #include "procedures.h"
 
-extern proc_t* compile_top_level_expression(oop expr);
+proc_t* compile_top_level_expression(oop expr);
 
 #endif // _NATIVE_COMPILER_H_

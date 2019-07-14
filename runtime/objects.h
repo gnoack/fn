@@ -3,6 +3,6 @@
 
 #include "value.h"
 
-extern oop objects_decls();
+oop objects_decls();
 
 #endif  // _OBJECTS_H_

@@ -19,7 +19,7 @@ DEFARRAY(function_array, function)
 struct function_array native_procedures;
 
 // Count variables in a lambda list and do basic syntax checks (forward decl).
-fn_uint num_vars_in_ll(oop ll);
+static fn_uint num_vars_in_ll(oop ll);
 
 // Compiled Lisp procedure.
 proc_t* make_compiled_procedure(oop lambda_list, frame_t* env,
@@ -57,10 +57,10 @@ oop make_native_procedure(function c_function) {
 
 // TODO: Rename to cfn_*?
 oop fn_name(oop fn) { return mem_get(fn, 1); }
-oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
+static oop fn_lambda_list(oop fn) { return mem_get(fn, 2); }
 
 // Get the C function stored in a native procedure.
-function native_fn_function(oop fn) {
+static function native_fn_function(oop fn) {
   return native_procedures.items[get_smallint(mem_get(fn, 2))];
 }
 
@@ -102,7 +102,7 @@ oop procedure_set_name(oop fn, oop name) {
 
 // Returns twice the number of non-vararg variables in the lambda list,
 // plus 1, if lambda list had varargs.
-fn_uint num_vars_in_ll(oop ll) {
+static fn_uint num_vars_in_ll(oop ll) {
   fn_uint count = 0L;
   while (is_cons(ll)) {
     oop ll_item = car(ll);
@@ -124,7 +124,7 @@ fn_uint num_vars_in_ll(oop ll) {
   return count;
 }
 
-bool fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
+static bool fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
   int has_varargs = proc_has_varargs(proc);
   int num_fixargs = proc_num_fixargs(proc);
   fn_uint idx = 0;
@@ -165,7 +165,7 @@ oop apply_compiled_lisp_procedure(proc_t* proc, oop args, frame_t* caller) {
 frame_t* current_native_procedure_caller = NULL;
 
 // Convert an consed argument list into argv, argc form.
-void extract_args(oop args, oop** out_argv, size_t* out_argc) {
+static void extract_args(oop args, oop** out_argv, size_t* out_argc) {
   size_t length = length_int(args);
   size_t idx;
   *out_argc = length;

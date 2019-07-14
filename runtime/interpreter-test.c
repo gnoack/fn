@@ -64,7 +64,7 @@ TEST(stack_peek_at_depth) {
   ASSERT_TRUE(stack_size(&s) == 0);
 }
 
-extern void interpreter_tests() {
+void interpreter_tests() {
   TESTRUN(stack_simple);
   TESTRUN(stack_size_and_shrink);
   TESTRUN(stack_peek_at_top);

@@ -31,7 +31,6 @@ TEST(cons_list_macro_test) {
   ASSERT_NIL(rest(rest(l)));
 }
 
-extern
 void cons_tests() {
   TESTRUN(cons_simple_test);
   TESTRUN(cons_list_test);

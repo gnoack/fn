@@ -13,7 +13,7 @@
 
 /* Debugging helpers. */
 
-unsigned char extract_byte(fn_uint value, char shift) {
+static unsigned char extract_byte(fn_uint value, char shift) {
   unsigned char result = (value >> (8 * shift)) & 0xff;
   if (result < ' ' || result >= 127) {
     result = '.';
@@ -157,7 +157,6 @@ void print_value(oop v) {
   }
 }
 
-extern
 void println_value(oop v) {
   print_value(v);
   printf("\n");
