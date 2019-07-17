@@ -1,12 +1,18 @@
-;; Transcribed from the paper
+;; Implements parsing expression grammars and the `defgrammar` macro.
+;;
+;; PEGs are transcribed from the paper
 ;; 'Parsing Expression Grammars' by Bryan Ford.
-
+;;
 ;; A parsing expression grammar is a function with arguments
-;; (input win lose) that parses the input.  On success, `win'
-;; is called with the parse result and the input remainder as
-;; arguments.  On failure, `lose' is called with the input
-;; remainder as first argument and potentially more arguments
-;; describing the error.
+;; (input win lose) that parses the input, where:
+;;
+;;  `input' is a list of objects (e.g. characters, but anything is possible)
+;;  `win'   is the success function, invoked with (win result remainder)
+;;          where `result' is the parse result
+;;            and `remainder' is the remaining input
+;;  `lose'  is the failure function, invoked with (lose remainder ERR*)
+;;          where `remainder' is the input where it failed
+;;            and `ERR*' are more arguments describing the error
 
 (defn empty? (x)
   (nil? x))
@@ -122,17 +128,40 @@
   (raise reason))
 
 
+;;; The following macros are used for `defgrammar`.
+
+;; Indirect lookup for PEG rules to resolve circular dependencies.
+;;
+;; (peg-indirect R)     => R        ; through indirect with same args
+;; (peg-indirect R a b) => (R a b)  ; invoke high-level PEG
+;;
+;; The result of peg-indirect should always be a PEG
+;; (a function with the arguments input win lose).
 (defmacro peg-indirect (name &rest args)
   (if (nil? args)
       `(lambda (input win lose)
          (,name input win lose))
     `(,name ,@args)))
 
+;; Shortcut for (def ...) in grammar definitions for consistent syntax
+;; for basic and high-level rules (a.k.a. functions).
+;;
+;; (defrule name ()   peg)       => (def name peg)
+;; (defrule name (x)  (mypeg x)) => (defn name (x) (mypeg x))
 (defmacro defrule (name params peg)
   (if (nil? params)
       `(def ,name ,peg)
     `(defn ,name ,params ,peg)))
 
+;; Define the grammar under the given name.
+;;
+;; Import clauses are as specified in modules.fn,
+;; ex: (MODULE a b c) to import a, b and c.
+;; ex: (MODULE (my-a a) (my-b b)) to import a, b as my-a, my-b.
+;;
+;; The rules should macroexpand to (def x ...) clauses, which
+;; are normally defined with the (defrule x () ...) helper above
+;; for uniformity.
 (defmacro defgrammar (name import-clauses &rest rules)
   ;; Rules are (def name rule)
   (let ((rules (map macroexpand rules)))

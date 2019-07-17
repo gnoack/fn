@@ -1,4 +1,26 @@
-
+// Self-describing Parsing Expression Grammar syntax.
+//
+// This is used to bootstrap the runtime/pegs-parser.fn file.
+//
+// A grammar can import rules from other grammars at the top.
+// In this example, we import rules like ALPHA and DIGIT from the
+// "base" grammar.
+//
+// Rule Syntax:
+//   rulename ::= PEXPR => LEXPR
+// where
+//   PEXPR  is a parsing expression and may define variables along the way
+//   LEXPR  is a Lisp expression using these variables and producing the result
+//
+// Common PEG operations:
+//   P        ; the PEG itself
+//   P Q      ; P, then Q
+//   P | Q    ; P or Q
+//   P+       ; P once or more
+//   P*       ; P 0 or more times
+//   P:x      ; name the result of P as `x'
+//   ~P       ; negative lookahead (positive lookahead: ~~P)
+//
 grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
                       (lisp (LISP-STRING string) (LISP-EXPR expr))) {
   whitespace      ::= WHITESPACE | "//" (~"\n" ANY)+;
