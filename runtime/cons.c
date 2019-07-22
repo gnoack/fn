@@ -50,20 +50,10 @@ unsigned int length_int(oop list) {
   return result;
 }
 
-
-static oop the_end_marker;
-static bool initialized_marker = false;
-
-static void enumerate_end_marker_root(void (*accept)(oop* place)) {
-  accept(&the_end_marker);
-}
+// It's just a value that hopefully won't ever be a valid oop.
+static oop the_end_marker = {.smallint = (~1)};
 
 oop end_marker() {
-  if (!initialized_marker) {
-    the_end_marker = symbol_to_oop(make_symbol("hard to guess"));
-    gc_register_persistent_refs(enumerate_end_marker_root);
-    initialized_marker = true;
-  }
   return the_end_marker;
 }
 

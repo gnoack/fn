@@ -59,7 +59,11 @@ typedef union value_u {
   /* Pointer to a series of values. */
   union value_u* mem;
 } oop;
+_Static_assert(sizeof(union value_u*) == sizeof(fn_uint),
+               "Union members must align in size");
 
+_Static_assert(sizeof(oop) == sizeof(void*),
+               "oop must be the same size as a pointer");
 static oop to_oop(void* obj) { return *((oop*) &obj); }
 
 // Forward type definitions.

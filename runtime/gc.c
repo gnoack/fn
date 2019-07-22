@@ -17,7 +17,7 @@
 #ifdef GC_DEBUG
   #define SANE(x) (sane(x))
   // Forward declaration.
-  oop sane(oop obj);
+  static oop sane(oop obj);
 #else
   #define SANE(x) (x)
 #endif  // GC_DEBUG
@@ -602,9 +602,10 @@ static void relocate_symbols_struct(
   }
 }
 
-/*
- * Deserializes the program state from a file.
- */
+// Deserializes the program state from a file.
+//
+// TODO: Very brittle: This does not interact well with persistent refs
+// referenced from C code. These might not get updated correctly.
 void gc_deserialize_from_file(char* filename) {
   FILE* in = fopen(filename, "r");
 
@@ -659,10 +660,10 @@ static oop sane(oop obj) {
   bool is_raw = (half_space_contains(&raw_memory.old, obj) ||
                  half_space_contains(&raw_memory.current, obj));
   if (is_mem || is_raw) {
-    const char* allocation_type = is_mem ? "Pointer" : "Raw";
     if (is_nil(obj.mem[-1])) {
       return obj;  // Broken heart.
     }
+    const char* allocation_type = is_mem ? "Pointer" : "Raw";
     if (!is_smallint(obj.mem[-1])) {
       printf("%s object at address %p is missing a size.\n",
              allocation_type, obj.mem);
@@ -676,6 +677,20 @@ static oop sane(oop obj) {
     }
   }
   return obj;
+}
+
+// Check that the object is in the current half space right now.
+static void check_is_current(oop obj) {
+  if (is_smallint(obj) || is_char(obj) || is_symbol(obj) || is_nil(obj)) {
+    return; // immediate region
+  }
+  if (half_space_contains(&object_memory.current, obj)) {
+    return;
+  }
+  if (half_space_contains(&raw_memory.current, obj)) {
+    return;
+  }
+  CHECK(0, "This object is in the 'old' half space");
 }
 
 // Check consistency of pointered half space between GC runs.
@@ -701,6 +716,7 @@ static void pointered_half_space_sanity_check(half_space* space) {
       // In object space, this makes sure the types at index 0 exist.
       sane(*current);
     }
+    region(to_oop(current))->enumerate_refs(to_oop(current), check_is_current);
     // Raw memory space is allocated in bytes, not in oops.
     if (is_raw) {
       current += raw_memory_oop_size(get_smallint(size)) + 1;
