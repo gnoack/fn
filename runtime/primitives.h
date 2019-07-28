@@ -15,7 +15,7 @@
   oop second_arg = argv[1];                                      \
 
 #define PARSE_THREE_ARGS(first_arg, second_arg, third_arg)       \
-  CHECK(argc == 3, "Need exactly 4 arguments.");                 \
+  CHECK(argc == 3, "Need exactly 3 arguments.");                 \
   oop first_arg = argv[0];                                       \
   oop second_arg = argv[1];                                      \
   oop third_arg = argv[2];                                       \
