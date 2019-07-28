@@ -164,8 +164,7 @@
 ;; for uniformity.
 (defmacro defgrammar (name import-clauses &rest rules)
   ;; Rules are (def name rule)
-  (let ((rules (map macroexpand rules)))
-    `(def ,name
-       (import ,import-clauses
-         ,@rules
-         (make-module ,@(map second rules))))))
+  `(def ,name
+     (import ,import-clauses
+       ,@(map macroexpand rules)
+       (make-module ,@(map second rules)))))
