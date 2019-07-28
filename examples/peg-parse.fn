@@ -1,11 +1,10 @@
 
 (load-file "examples/grammar-utils.fn")
-
 (load-grammar! "examples/lisp.g")
 
-(def parse-lisp-exprs (dict-get (lisp-grammar base-grammar)
-                                'exprs))
+(def parse-lisp-exprs (@@ lisp-grammar exprs))
 
+;; Parse this file itself.
 (println (parse-lisp-exprs (string->list (file->string "examples/peg-parse.fn"))
                            list
                            print-parse-error-and-raise))
