@@ -1,5 +1,5 @@
 
-grammar smalltalk-grammar ((base ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON)) {
+grammar smalltalk-grammar ((base-grammar ALPHA DIGIT ANY END-OF-INPUT WHITESPACE EPSILON)) {
   kwordlist R         ::= (WORDK R)+:xs  =>
                                `(,(string->symbol (apply string-append (map first xs)))
                                  ,(map second xs));

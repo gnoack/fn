@@ -21,8 +21,8 @@
 //   P:x      ; name the result of P as `x'
 //   ~P       ; negative lookahead (positive lookahead: ~~P)
 //
-grammar pegs-grammar ((base ALPHA DIGIT ANY WHITESPACE EPSILON)
-                      (lisp (LISP-STRING string) (LISP-EXPR expr))) {
+grammar pegs-grammar ((base-grammar ALPHA DIGIT ANY WHITESPACE EPSILON)
+                      (lisp-grammar (LISP-STRING string) (LISP-EXPR expr))) {
   whitespace      ::= WHITESPACE | "//" (~"\n" ANY)+;
 
   token peg                  ::= whitespace* peg:t whitespace*  => t;
