@@ -690,7 +690,7 @@ static void check_is_current(oop obj) {
   if (half_space_contains(&raw_memory.current, obj)) {
     return;
   }
-  CHECK(0, "This object is in the 'old' half space");
+  FATAL("This object is in the 'old' half space");
 }
 
 // Check consistency of pointered half space between GC runs.

@@ -23,21 +23,23 @@ extern void (*print_stack_trace)();
 #define likely(x) __builtin_expect(x, 1)
 
 
-#define CHECK(x, msg)                                \
-  if (unlikely(!(x))) {                              \
-    printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
-    print_stack_trace();                             \
-    exit(1);                                         \
-  }
+#define FATAL(msg)                                   \
+  printf("%s:%d: %s\n", __FILE__, __LINE__, msg);    \
+  print_stack_trace();                               \
+  exit(1);
 
-#define CHECKV(x, value, msg)                        \
-  if (unlikely(!(x))) {                              \
+#define FATALV(value, msg)                           \
     printf("%s:%d: %s\n", __FILE__, __LINE__, msg);  \
     printf("Offending value: ");                     \
     println_value(value);                            \
     print_stack_trace();                             \
-    exit(1);                                         \
-  }
+    exit(1);
+
+#define CHECK(x, msg)                                \
+  if (unlikely(!(x))) { FATAL(msg); }
+
+#define CHECKV(x, value, msg)                        \
+  if (unlikely(!(x))) { FATALV(value, msg); }
 
 // A check where only the error message is printed out.
 // Useful during GC.

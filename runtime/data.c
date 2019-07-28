@@ -10,9 +10,30 @@
 #include "value.h"
 
 
-static fn_uint symbol_to_hash(oop symbol) {
-  CHECKV(is_symbol(symbol), symbol, "Must be a symbol for hashing it.");
-  return get_smallint(to_symbol(symbol)->hash);
+static fn_uint get_hash(oop obj) {
+  if (unlikely(is_char(obj))) {
+    return get_char(obj);
+  } else if (unlikely(is_cons(obj))) {
+    // Look at first 10 items of linked list.
+    fn_uint h = 0;
+    for (int i = 0; i < 10; i++) {
+      if (unlikely(is_nil(obj))) {
+        break;
+      }
+      h = h * 31 + get_hash(first(obj));
+      obj = rest(obj);
+    }
+    return h & 0x7fffff;  // make it fit into smallint
+  } else if (likely(is_symbol(obj))) {
+    return get_smallint(to_symbol(obj)->hash);
+  } else {
+    FATALV(obj, "Object does not support hashing");
+  }
+}
+
+static bool key_eq(oop a, oop b) {
+  // TODO: Should this use deep equality?
+  return value_eq(a, b);
 }
 
 
@@ -74,7 +95,7 @@ static oop dict_table(oop dict) {
 }
 
 
-/**
+/*
  * Inner hash table.
  *
  * Table is an array of size 2n where the first n elements are keys,
@@ -84,12 +105,12 @@ static oop dict_table(oop dict) {
 // Returns 1 if element was put, 0 if it was replced.
 static int dict_table_put(oop table, oop key, oop value) {
   int size = (int) array_size(table) >> 1;
-  int i = symbol_to_hash(key) % size;
+  int i = get_hash(key) % size;
   oop current_key;
   do {
     i = (i + 1) % size;
     current_key = array_get(table, i);
-    if (value_eq(current_key, key)) {
+    if (key_eq(current_key, key)) {
       array_set(table, size + i, value);
       return 0;
     }
@@ -101,12 +122,12 @@ static int dict_table_put(oop table, oop key, oop value) {
 
 static oop dict_table_get(oop table, oop key) {
   int size = (int) array_size(table) >> 1;
-  int i = symbol_to_hash(key) % size;
+  int i = get_hash(key) % size;
   oop current_key;
   do {
     i = (i + 1) % size;
     current_key = array_get(table, i);
-    if (value_eq(current_key, key)) {
+    if (key_eq(current_key, key)) {
       return array_get(table, size + i);
     }
   } while (!is_nil(current_key));
@@ -115,12 +136,12 @@ static oop dict_table_get(oop table, oop key) {
 
 static bool dict_table_has_key(oop table, oop key) {
   int size = (int) array_size(table) >> 1;
-  int i = symbol_to_hash(key) % size;
+  int i = get_hash(key) % size;
   oop current_key;
   do {
     i = (i + 1) % size;
     current_key = array_get(table, i);
-    if (value_eq(current_key, key)) {
+    if (key_eq(current_key, key)) {
       return true;
     }
   } while (!is_nil(current_key));
@@ -204,9 +225,9 @@ bool is_dict(oop dict) {
  * Lisp interface.
  */
 
-FUNC(primitive_symbol_to_hash) {
+FUNC(primitive_get_hash) {
   PARSE_ONE_ARG(sym);
-  return make_smallint(symbol_to_hash(sym));
+  return make_smallint(get_hash(sym));
 }
 
 FUNC(primitive_dict_get) {
@@ -239,7 +260,7 @@ FUNC(primitive_make_dict) {
 
 void init_data() {
   // Some simple utilities defined in utils.fn.
-  register_globally_fn("symbol->hash", primitive_symbol_to_hash);
+  register_globally_fn("hash", primitive_get_hash);
   register_globally_fn("make-dict", primitive_make_dict);
   register_globally_fn("dict-get", primitive_dict_get);
   register_globally_fn("dict-put!", primitive_dict_put);

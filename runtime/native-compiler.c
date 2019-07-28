@@ -63,7 +63,7 @@ static unsigned int lookup_label_position(symbol_t* label) {
       return item->index;
     }
   }
-  CHECKV(false, symbol_to_oop(label), "Jump target not found.")
+  FATALV(symbol_to_oop(label), "Jump target not found.")
 }
 
 static void postprocess() {
@@ -507,7 +507,7 @@ static void compile(oop expr, env_t* env, bool is_tail) {
       compile_application(expr, env, is_tail);
     }
   } else {
-    CHECKV(false, expr, "Unknown expression type.");
+    FATALV(expr, "Unknown expression type.");
   }
 }
 

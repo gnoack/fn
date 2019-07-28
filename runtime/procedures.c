@@ -153,7 +153,7 @@ static bool fill_frame_from_args(oop args, proc_t* proc, frame_t* frame) {
 frame_t* make_frame_for_application(proc_t* proc, oop args, frame_t* caller) {
   frame_t* frame = make_frame(proc, caller);
   if (!fill_frame_from_args(args, proc, frame)) {
-    CHECKV(false, to_oop(proc), "Called with wrong number of arguments.");
+    FATALV(to_oop(proc), "Called with wrong number of arguments.");
   }
   return frame;
 }

@@ -168,7 +168,7 @@ FUNC(primitive_call_dlsym) {
   }
     break;
   default:
-    CHECK(false, "Too many arguments to dlsym-loaded function.");  // No!
+    FATAL("Too many arguments to dlsym-loaded function.");  // No!
     break;
   }
 

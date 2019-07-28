@@ -1,3 +1,16 @@
+;; Hash function tests.
+(= (hash 'foo) (hash 'foo))
+(not (= (hash 'foo) (hash 'bar)))
+
+(= (hash #\x) (hash #\x))
+
+(= (hash (string->list "hello world"))
+   (hash (string->list "hello world")))
+
+(not (= (hash (string->list "hallo welt"))
+        (hash (string->list "hello world"))))
+
+;; Dictionary tests.
 (->true
  (def %dict (make-dict))
  (dict-put! %dict 'foo 1)
@@ -25,3 +38,9 @@
 ;;   (= 2 (dict-size %dict)))
 
 ;; (= 2 (length (dict-key-value-pairs %dict)))
+
+;; Try with character list key
+(progn
+  (def %my-key (string->list "example"))
+  (dict-put! %dict %my-key 42)
+  (= 42 (dict-get %dict %my-key)))
