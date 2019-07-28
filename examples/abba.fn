@@ -10,8 +10,6 @@
        (lambda (result rest) result)
        error))
 
-(set! abba (abba))
-
 (defmacro assert (&rest stuff)
   (if (= 1 (length stuff))
       `(unless ,(first stuff)
