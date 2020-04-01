@@ -12,6 +12,7 @@ clean:
 	rm -rf \#*\#
 	rm -rf fn.img
 	rm -rf */*.fnc *.fnc
+	rm -rf */*.exprc
 	$(MAKE) -C repl clean
 	$(MAKE) -C runtime clean
 
