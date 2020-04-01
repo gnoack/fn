@@ -23,7 +23,8 @@ static fn_uint get_hash(oop obj) {
       h = h * 31 + get_hash(first(obj));
       obj = rest(obj);
     }
-    return h & 0x7fffff;  // make it fit into smallint
+    // TODO: This is a hacky way to make it fit into smallint.
+    return h & 0x7fffff;
   } else if (likely(is_symbol(obj))) {
     return get_smallint(to_symbol(obj)->hash);
   } else {
@@ -102,7 +103,7 @@ static oop dict_table(oop dict) {
  * the second n elements are the corresponding values.
  */
 
-// Returns 1 if element was put, 0 if it was replced.
+// Returns 1 if element was put, 0 if it was replaced.
 static int dict_table_put(oop table, oop key, oop value) {
   int size = (int) array_size(table) >> 1;
   int i = get_hash(key) % size;
@@ -131,7 +132,7 @@ static oop dict_table_get(oop table, oop key) {
       return array_get(table, size + i);
     }
   } while (!is_nil(current_key));
-  CHECKV(1==0, key, "Key not found.");
+  FATALV(key, "Key not found.");
 }
 
 static bool dict_table_has_key(oop table, oop key) {
