@@ -110,10 +110,10 @@
 ;; memory-allocated values, the value at position 0
 ;; is used as type.
 (defn type-of (x)
-  (cond ((mem? x) ($mem-get x 0))
-        ((number? x) Smallint)
-	((char? x) Character)
-	((nil? x) Nil)
+  (cond ((mem? x)       ($mem-get x 0))
+        ((number? x)    Smallint)
+        ((char? x)      Character)
+        ((nil? x)       Nil)
         ((mem-block? x) MemBlock)))
 
 ;;; Method definition
