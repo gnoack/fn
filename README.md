@@ -188,6 +188,53 @@ grammar math-grammar ((base-grammar DIGIT)) {
 
 ```
 
+### Create coroutines that work like Python's generators
+
+```
+fn> (load-file "examples/generators.fn")
+(<COMPILED-PROCEDURE make-generator (yielder-proc)> <COMPILED-PROCEDURE f123 (yield)>)
+fn> (defn hello (yield) (yield "hello") (yield "generator") (yield "world"))
+<COMPILED-PROCEDURE hello (yield)>
+fn> (def g (make-generator hello))
+<COMPILED-PROCEDURE g ()>
+fn> (g)
+"hello"
+fn> (g)
+"generator"
+fn> (g)
+"world"
+fn> (g)
+Error: stop-iteration
+fn>
+```
+
+Unlike Python's generators, these are proper coroutines and have their own
+stack. The bytecode interpreter only keeps Lisp stack frames on the heap, and
+there is a (risky) instruction to get a handle on your own stack frame. The
+implementation for generator-coroutines is less than 30 lines and uses stack
+frame introspection to switch out the return pointer and manipulate the flow of
+control between different logical stacks of execution.
+
+You can find the implementation at [`examples/generators.fn`](examples/generators.fn).
+
+#### Round-robin coroutine scheduling
+
+Another coroutine example is [`examples/threads.fn`](examples/threads.fn). (The
+core implementation fits on an index card.) For entertainment and familiarity,
+this comes with a `(go func arg1 arg2...)` helper, but unlike Go, scheduling is
+cooperative here - threads need to call `(next-thread!)` to yield the control to
+the next. This is more manual but also gives more control over scheduling - a
+nice application are computer games where multiple logical threads can execute
+in lock step. The popular game scripting language Lua has this feature.
+
+Overall, the `$get-frame` function to get your current stack frame is powerful
+and simple (definitely simpler to wrap your head around than continuations).
+There is one major pitfall though that is also remarked in the `threads.fn`
+code: If you get the current frame, make sure that you're not using it in a tail
+call context - if you do that, the current frame is unlinked from the Lisp stack
+before its return pointer is read and the return pointer change doesn't have the
+desired effect.
+
 ## Dependencies
 
 * libc
@@ -207,9 +254,12 @@ This language is inspired by:
   * Alessandro Warth's OMeta experiments and papers
 * Adele Goldberg's and David Robson's Smalltalk-80 blue book
 * Guido van Rossum's Python 2 implementation (the bytecode interpreters are very similar)
+* Gerald Jay Sussman's and Hal Abelson's [Structure and Interpretation of Computer Programs](https://mitpress.mit.edu/sites/default/files/sicp/full-text/book/book.html)
 * Scheme
-* Parsers based on Bryan Ford's [parsing expression grammars (PEGs) and packrat
-   parsers](https://bford.info/packrat/)
+* Bryan Ford's [parsing expression grammars (PEGs) and packrat parsers](https://bford.info/packrat/)
   * Self-bootstrapping grammar for defining grammars at [examples/pegs.g](examples/pegs.g)
   * A grammar that converts Smalltalk syntax to Lisp at [examples/smalltalk.g](examples/smalltalk.g)
 * Rich Hickey's Clojure, where I dug around in the source code
+* Ron Gilbert's [Thimbleweed Park blog](https://blog.thimbleweedpark.com/),
+  which inspired me to play more with coroutines. (The blog has great technical
+  articles on the coroutine-based scripting which they created for the game.)
