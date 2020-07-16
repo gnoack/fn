@@ -1,0 +1,19 @@
+(load-file "examples/threads.fn")
+
+(defn print-bottles (n)
+  (when (< 0 n)
+    (println n " bottles of beer on the wall, " n " bottles of beer.")
+    (println "Take one down, pass it around, " (- n 1) " bottles of beer on the wall...")
+    (println)
+    (next-thread!)
+    (print-bottles (- n 1))))
+
+(defn falala (n)
+  (when (< 0 n)
+    (println "Falala! Falala! Falala!")
+    (println)
+    (next-thread!)
+    (falala (- n 1))))
+
+(go print-bottles 10)
+(falala 10)
