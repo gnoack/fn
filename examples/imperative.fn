@@ -1,0 +1,9 @@
+
+(defmacro while (condition &rest body)
+  `(do-while (lambda () ,condition)
+             (lambda () ,@body)))
+
+(defn do-while (condition body)
+  (when (condition)
+    (body)
+    (do-while condition body)))

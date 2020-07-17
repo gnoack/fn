@@ -1,0 +1,114 @@
+(load-file "examples/threads.fn")
+(load-file "examples/imperative.fn")
+
+;; Returns the first non-nil element in l.
+(defn first-non-nil (l)
+  (reduce (lambda (a b) (if (nil? a) b a)) l nil))
+
+;; Returns a if a, b and c are identical.
+(defn row-winner (a b c)
+  (if (and (eq? a b) (eq? b c))
+      a
+    nil))
+
+(defn random ()
+  ;; Very hacky random number generator for 0,1,2:
+  ;; read a byte from /dev/urandom and use mod 3.
+  (mod (with-file-reader "/dev/urandom"
+                         (lambda (read-byte!) (read-byte!)))
+       3))
+
+;; Tic tac toe playing board
+(defstruct Board (_array)
+  (constructor new ()
+    (set! _array (make-array 9)))
+
+  (method at (x y)
+    (assert (<= 0 x 2))
+    (assert (<= 0 y 2))
+    (array-ref _array (+ (* 3 y) x)))
+
+  (method repr (x y)
+    (let ((s (! self at x y)))
+      (if (nil? s) "_" s)))
+
+  (method free? (x y)
+    (nil? (! self at x y)))
+
+  (method set! (player-symbol x y)
+    (assert (! self free? x y))
+    (println "Player " player-symbol ": " x ", " y)
+    (array-set! _array (+ (* 3 y) x) player-symbol))
+
+  (method println! ()
+    (println)
+    (println "  " (! self repr 0 0) " " (! self repr 1 0) " " (! self repr 2 0))
+    (println "  " (! self repr 0 1) " " (! self repr 1 1) " " (! self repr 2 1))
+    (println "  " (! self repr 0 2) " " (! self repr 1 2) " " (! self repr 2 2)))
+
+  (method winner ()
+    (first-non-nil
+     (list
+      ;; Verticals
+      (row-winner (! self at 0 0) (! self at 0 1) (! self at 0 2))
+      (row-winner (! self at 1 0) (! self at 1 1) (! self at 1 2))
+      (row-winner (! self at 2 0) (! self at 2 1) (! self at 2 2))
+      ;; Horizontals
+      (row-winner (! self at 0 0) (! self at 1 0) (! self at 2 0))
+      (row-winner (! self at 0 1) (! self at 1 1) (! self at 2 1))
+      (row-winner (! self at 0 2) (! self at 1 2) (! self at 2 2))
+      ;; Diagonals
+      (row-winner (! self at 0 0) (! self at 1 1) (! self at 2 2))
+      (row-winner (! self at 0 2) (! self at 1 1) (! self at 2 0)))))
+
+  (method space-left? ()
+    (or (nil? (array-ref _array 0))
+        (nil? (array-ref _array 1))
+        (nil? (array-ref _array 2))
+        (nil? (array-ref _array 3))
+        (nil? (array-ref _array 4))
+        (nil? (array-ref _array 5))
+        (nil? (array-ref _array 6))
+        (nil? (array-ref _array 7))
+        (nil? (array-ref _array 8))))
+
+  (method game-over? ()
+    (or (not (! self space-left?))
+        (not (nil? (! self winner))))))
+
+;; A few functions as wrappers so the example is free from method call macros.
+(defn make-board ()           (! Board new))
+(defn print-board! (b)        (! b println!))
+(defn game-over? (b)          (! b game-over?))
+(defn winner (b)              (! b winner))
+(defn board-free? (b x y)     (! b free? x y))
+(defn board-set! (b sym x y)  (! b set! sym x y))
+
+(defn play-tic-tac-toe (player-symbol board)
+  (while (not (game-over? board))
+    ;; Make a random move
+    (let ((x (random))
+          (y (random)))
+      (while (not (board-free? board x y))
+        (set! x (random))
+        (set! y (random)))
+      (board-set! board player-symbol x y))
+
+    ;; Yield to next player
+    (next-thread!)))
+
+(defn wait-for-winner (board)
+  (while (not (game-over? board))
+    (next-thread!))
+
+  (println "Game over! Player " (winner board) " wins.")
+  (print-board! board))
+
+(println "***************************")
+(println "*** VIRTUAL TIC TAC TOE ***")
+(println "***************************")
+
+(def *board* (make-board))
+(go play-tic-tac-toe 'X *board*)
+(go play-tic-tac-toe 'O *board*)
+(wait-for-winner *board*)
