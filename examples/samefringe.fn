@@ -1,0 +1,73 @@
+;; Samefringe
+;;
+;; A tree's "fringe" is defined as the sequence of tree leaf values in the order
+;; in which you would visit them when iterating the tree depth-first.
+;;
+;; The same-fringe problem is to tell whether two trees have the same fringe.
+;;
+;; For example, the following two trees have the same fringe, it is a, b, c in
+;; both cases:
+;;
+;;        /\             /\
+;;       /  \           /  \
+;;      /\   c         a   /\
+;;     /  \               /  \
+;;    a    b             b    c
+;;
+;; This problem is hard to solve with normal recursion. This essay by Richard
+;; Gabriel gives an overview of older approaches:
+;; http://www.dreamsongs.com/10ideas.html
+
+(load-file "examples/imperative.fn")
+(load-file "examples/generators.fn")
+
+;; Call emit! for each element in the tree's fringe, in order.
+;;
+;; EXAMPLE: The following invocation prints the tree's fringe:
+;;
+;;   (fringe '(a b (c d) e (f (g h)))
+;;           println)
+(defn fringe (tree emit!)
+  (cond ((cons? tree) (progn
+                        (fringe (first tree) emit!)
+                        (fringe (rest tree) emit!)))
+        ((nil? tree)  nil)
+        (true         (emit! tree))))
+
+
+;; Returns a function which generates the tree's fringe elements on successive
+;; invocations, then nil.
+;;
+;; EXAMPLE:
+;; fn> (def x (iter-fringe '(a (b c))))
+;; <COMPILED-PROCEDURE x ()>
+;; fn> (x)
+;; a
+;; fn> (x)
+;; b
+;; fn> (x)
+;; c
+;; fn> (x)
+;; ()
+(defn iter-fringe (tree)
+  (defn emit-fringe (yield!)
+    (fringe tree yield!)
+    (yield! nil))
+  (make-generator emit-fringe))
+
+;; Returns true iff tree-a and tree-b have the same fringe, otherwise false.
+(defn same-fringe? (tree-a tree-b)
+  (let ((next-a (iter-fringe tree-a))
+        (next-b (iter-fringe tree-b)))
+    (defn loop (a b)
+      (cond ((and (nil? a) (nil? b))  true)
+            ((eq? a b)                (loop (next-a) (next-b)))
+            (true                     false)))
+    (loop (next-a) (next-b))))
+
+;; EXAMPLE:
+;; (println (same-fringe? '(a b (c d))
+;;                        '(a (b c) d)))  ;; same
+
+;; (println (same-fringe? '(a b (c d))
+;;                        '(a (b c d) e)))  ;; not the same
