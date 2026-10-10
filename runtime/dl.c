@@ -1,6 +1,7 @@
 /* Support for dynamic loading of C libraries via libdl. */
 
 #include <dlfcn.h>
+#include <string.h>  // memcpy.
 #include <unistd.h>
 
 #include "debug.h"  // for println_value.
@@ -13,36 +14,42 @@
 #include "symbols.h"
 #include "carcdr.h"
 
-static oop pack_aligned_cptr(void* i) {
-  CHECK((((fn_uint) i) & 1) == 0, "Needs to be an aligned pointer.");
-  return make_smallint(((fn_uint) i) >> 1);
+// C pointers are boxed in raw memory blocks, so that they keep all their
+// bits regardless of pointer width or alignment.
+static oop pack_cptr(void* ptr) {
+  return mem_raw_mem_make(&ptr, sizeof(ptr));
 }
 
-static void* unpack_aligned_cptr(oop ptr) {
-  return (void*) (get_smallint(ptr) << 1);
+static void* unpack_cptr(oop obj) {
+  CHECKV(is_raw_mem(obj) && mem_raw_mem_size(obj) >= sizeof(void*), obj,
+         "Expected a C pointer.");
+  void* ptr;
+  memcpy(&ptr, mem_raw_get_ptr(obj), sizeof(ptr));
+  return ptr;
 }
 
 FUNC(primitive_dlopen) {
   PARSE_ONE_ARG(name);
-  char* c_name = c_string(name);
+  // A nil name opens the main program, as with dlopen(NULL, ...).
+  char* c_name = is_nil(name) ? NULL : c_string(name);
   void* handle = dlopen(c_name, RTLD_LOCAL | RTLD_NOW);
   free(c_name);
 
   char* error = dlerror();
   CHECK(error == NULL, error);
-  return pack_aligned_cptr(handle);
+  return pack_cptr(handle);
 }
 
 FUNC(primitive_dlsym) {
   PARSE_TWO_ARGS(handle, symbolname);
   char* c_symbolname = c_string(symbolname);
-  void* c_handle = unpack_aligned_cptr(handle);
+  void* c_handle = unpack_cptr(handle);
   void* (*c_sym)(void* arg, ...) = dlsym(c_handle, c_symbolname);
   free(c_symbolname);
 
   char* error = dlerror();
   CHECK(error == NULL, error);
-  return pack_aligned_cptr(c_sym);
+  return pack_cptr(c_sym);
 }
 
 typedef struct {
@@ -126,7 +133,7 @@ FUNC(primitive_call_dlsym) {
   fn_uint argnum = get_smallint(argnum_oop);
 
   // TODO: Is this the proper type for a generic C function?!?
-  void* fn_addr = unpack_aligned_cptr(sym_oop);
+  void* fn_addr = unpack_cptr(sym_oop);
   c_value (*c_function)(c_value arg, ...) = (c_value (*)(c_value, ...)) fn_addr;
 
   // Keep track of pointers to free after execution,

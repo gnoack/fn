@@ -1,9 +1,7 @@
 
 (progn
   (defn loadsym (lib name resulttype argtypes)
-    (let ((lib (if (nil? lib)
-                   0
-                 (_dlopen lib))))
+    (let ((lib (_dlopen lib)))
       (let ((funcptr (_dlsym lib name))
             (argnum  (length argtypes)))
         (lambda (&rest args)
