@@ -5,11 +5,17 @@
 ;; are being wrapped in (assert) in the tests.
 (defn read-cached (filename)
   (let ((cache-filename (string-append filename ".exprc")))
-    (catch (lambda () (deserialize-from-file! cache-filename))
-      (lambda (reason)
-        (let ((expressions (read-all (file->string filename))))
-          (serialize-to-file! cache-filename expressions)
-          expressions)))))
+    (defn read-and-cache! ()
+      (let ((expressions (read-all (file->string filename))))
+        (serialize-to-file! cache-filename expressions)
+        expressions))
+
+    (let ((cache-timestamp (file-timestamp cache-filename)))
+      (if (and (not (nil? cache-timestamp))
+               (<= (file-timestamp filename) cache-timestamp))
+          (catch (lambda () (deserialize-from-file! cache-filename))
+            (lambda (reason) (read-and-cache!)))
+        (read-and-cache!)))))
 
 (defn run-test-file (filename)
   (dolist (item (read-cached filename))
