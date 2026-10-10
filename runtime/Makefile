@@ -59,22 +59,23 @@ LISPTARGETS = \
 
 LISP = ../fntools/translate.scm
 
-fnrt.so: $(RTOBJECTS)
-	$(CC) $(CFLAGS) -shared -o fnrt.so $(RTOBJECTS)
+fnrt.a: $(RTOBJECTS)
+	$(AR) rcs fnrt.a $(RTOBJECTS)
 
 %.c: %.fn
 	$(LISP) -o $@ $^
 
-run-c-tests: fnrt.so $(TESTOBJECTS)
-	$(CC) $(CFLAGS) -o run-c-tests tests.c $(TESTOBJECTS) fnrt.so $(LIBS)
+run-c-tests: fnrt.a $(TESTOBJECTS)
+	$(CC) $(CFLAGS) -o run-c-tests tests.c $(TESTOBJECTS) fnrt.a $(LIBS)
 
 ctests: run-c-tests
-	LD_LIBRARY_PATH=`pwd` ./run-c-tests
+	./run-c-tests
 
 clean:
 	rm -rf $(LISPTARGETS)
 	rm -rf run-c-tests
 	rm -rf *.o
+	rm -rf *.a
 	rm -rf *.so
 	rm -rf *~
 	rm -rf \#*\#

@@ -40,6 +40,6 @@ utils.c
 bootstrap.out
 fn.img*
 fn
-fnrt.so
+fnrt.a
 readline.so
 run-c-tests

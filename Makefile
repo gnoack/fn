@@ -2,8 +2,9 @@ LIBS = -lrt -ldl
 PROFILING_CFLAGS = -pg -fprofile-arcs
 CFLAGS = -g -Wall -fPIC
 
-fn: fn.c runtime/fnrt.so
-	$(CC) $(CFLAGS) -o fn fn.c runtime/fnrt.so $(LIBS)
+# -rdynamic exports the runtime's symbols to dlopen()ed C modules.
+fn: fn.c runtime/fnrt.a
+	$(CC) $(CFLAGS) -rdynamic -o fn fn.c runtime/fnrt.a $(LIBS)
 
 clean:
 	rm -rf fn
@@ -19,8 +20,8 @@ clean:
 fn.img: fn
 	./fn -s -x
 
-runtime/fnrt.so: force_look
-	$(MAKE) -C runtime -j8 fnrt.so
+runtime/fnrt.a: force_look
+	$(MAKE) -C runtime -j8 fnrt.a
 
 repl/readline.so: force_look
 	$(MAKE) -C repl

@@ -30,9 +30,9 @@ in programming languages. I'm publishing it today in 2020.
 
 ```
 gnoack:~/fn(master)$ ./ifn
-make -C runtime -j8 fnrt.so
+make -C runtime -j8 fnrt.a
 make[1]: Entering directory '/home/gnoack/fn/runtime'
-make[1]: 'fnrt.so' is up to date.
+make[1]: 'fnrt.a' is up to date.
 make[1]: Leaving directory '/home/gnoack/fn/runtime'
 make: 'fn.img' is up to date.
 make -C repl
